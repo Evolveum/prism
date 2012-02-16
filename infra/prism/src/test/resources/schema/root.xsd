@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema 
+	xmlns="http://www.w3.org/2001/XMLSchema" 
+	targetNamespace="http://example.com/xml/ns/test/root.xsd"
+	xmlns:tns="http://example.com/xml/ns/test/root.xsd"
+	xmlns:a="http://midpoint.evolveum.com/xml/ns/public/common/annotation-1.xsd"
+	elementFormDefault="qualified">
+	
+	<import namespace="http://midpoint.evolveum.com/xml/ns/public/common/annotation-1.xsd" />
+	
+	<complexType name="RootType">
+		<annotation>
+			<appinfo>
+				<a:propertyContainer/>
+				<a:object/>
+			</appinfo>
+		</annotation>
+		<sequence>
+			<element name="name" type="string"/>
+			<element name="foo" type="tns:FooType"/>
+		</sequence>
+		<attribute name="oid" type="string"/>
+		<attribute name="version" type="string" use="optional"/>
+	</complexType>
+	
+	<element name="root" type="tns:RootType"/>
+	
+	<complexType name="FooType">
+		<sequence>
+			<element name="foo" type="string"/>
+			<element name="bar" type="integer" minOccurs="0"/>
+			<element name="barbar" type="string" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+</schema>
