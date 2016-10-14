@@ -14,33 +14,20 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism;
+package com.evolveum.midpoint.prism.schema;
 
-import com.evolveum.midpoint.prism.delta.ItemDelta;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.prism.Containerable;
+import com.evolveum.midpoint.prism.Definition;
+import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 
 /**
  * @author mederly
  */
-public interface PrismReferenceDefinition extends ItemDefinition<PrismReference> {
-	QName getTargetTypeName();
+public interface GlobalDefinitionSearchContext<D extends Definition> extends DefinitionSearchContext<D> {
 
-	QName getCompositeObjectElementName();
+//	D byType(@NotNull QName type);
+//	<C extends Containerable> D byCompileTimeClass(@NotNull Class<C> clazz);
 
-	boolean isComposite();
-
-	@Override
-	PrismReference instantiate();
-
-	@Override
-	PrismReference instantiate(QName name);
-
-	@Override
-	ItemDelta createEmptyDelta(ItemPath path);
-
-	@Override
-	PrismReferenceDefinition clone();
 }
