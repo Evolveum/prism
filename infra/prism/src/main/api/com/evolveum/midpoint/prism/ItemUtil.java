@@ -14,22 +14,28 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.xnode;
+package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.Visitable;
-import com.evolveum.midpoint.util.DebugDumpable;
-
-import javax.xml.namespace.QName;
-import java.io.Serializable;
+import com.evolveum.midpoint.prism.delta.PropertyDelta;
 
 /**
  *
  */
-public interface XNode extends DebugDumpable, Visitable, Cloneable, Serializable {
-	
-	boolean isEmpty();
+public class ItemUtil {
+	public static <T> PropertyDelta<T> diff(PrismProperty<T> a, PrismProperty<T> b) {
+			if (a == null) {
+				if (b == null) {
+					return null;
+				}
+				PropertyDelta<T> delta = b.createDelta();
+				delta.addValuesToAdd(PrismValueCollectionsUtil.cloneCollection(b.getValues()));
+				return delta;
+			} else {
+				return a.diff(b);
+			}
+		}
 
-	QName getTypeQName();
-
-	RootXNode toRootXNode();
+	public static <T> T getRealValue(PrismProperty<T> property) {
+    	return property != null ? property.getRealValue() : null;
+	}
 }

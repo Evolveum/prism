@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum
+ * Copyright (c) 2010-2013 Evolveum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.xnode;
+package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.Visitable;
-import com.evolveum.midpoint.util.DebugDumpable;
+public interface Matchable<T> {
 
-import javax.xml.namespace.QName;
-import java.io.Serializable;
-
-/**
- *
- */
-public interface XNode extends DebugDumpable, Visitable, Cloneable, Serializable {
 	
-	boolean isEmpty();
-
-	QName getTypeQName();
-
-	RootXNode toRootXNode();
+	public boolean match(T other);
+	
+	public boolean matches(String regex);
 }

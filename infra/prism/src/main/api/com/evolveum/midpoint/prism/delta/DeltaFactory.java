@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.xnode;
+package com.evolveum.midpoint.prism.delta;
 
-import com.evolveum.midpoint.prism.Visitable;
-import com.evolveum.midpoint.util.DebugDumpable;
-
-import javax.xml.namespace.QName;
-import java.io.Serializable;
+import com.evolveum.midpoint.prism.PrismValue;
 
 /**
  *
  */
-public interface XNode extends DebugDumpable, Visitable, Cloneable, Serializable {
-	
-	boolean isEmpty();
+public interface DeltaFactory {
 
-	QName getTypeQName();
+	<T> DeltaSetTriple<T> createDeltaSetTriple();
 
-	RootXNode toRootXNode();
+	<V extends PrismValue> PrismValueDeltaSetTriple<V> createPrismValueDeltaSetTriple();
 }
