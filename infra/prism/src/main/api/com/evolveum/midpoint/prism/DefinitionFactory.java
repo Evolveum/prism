@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.delta;
-
-import com.evolveum.midpoint.prism.Objectable;
-import com.evolveum.midpoint.prism.PrismValue;
+package com.evolveum.midpoint.prism;
 
 /**
- *
+ *  Factory for prism definitions (Definition and all its subtypes in prism-api).
  */
-public interface DeltaFactory {
-
-	<T> DeltaSetTriple<T> createDeltaSetTriple();
-
-	<V extends PrismValue> PrismValueDeltaSetTriple<V> createPrismValueDeltaSetTriple();
-
-	<O extends Objectable> ObjectDelta<O> createObjectDelta(Class<O> type, ChangeType changeType);
+public interface DefinitionFactory {
 }

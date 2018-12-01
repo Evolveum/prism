@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.delta;
+package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.Objectable;
-import com.evolveum.midpoint.prism.PrismValue;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public interface DeltaFactory {
+public class DefinitionFactoryImpl implements DefinitionFactory {
 
-	<T> DeltaSetTriple<T> createDeltaSetTriple();
+	@NotNull private final PrismContextImpl prismContext;
 
-	<V extends PrismValue> PrismValueDeltaSetTriple<V> createPrismValueDeltaSetTriple();
-
-	<O extends Objectable> ObjectDelta<O> createObjectDelta(Class<O> type, ChangeType changeType);
+	public DefinitionFactoryImpl(@NotNull PrismContextImpl prismContext) {
+		this.prismContext = prismContext;
+	}
 }
