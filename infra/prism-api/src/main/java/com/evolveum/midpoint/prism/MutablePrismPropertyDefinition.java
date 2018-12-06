@@ -31,7 +31,7 @@ public interface MutablePrismPropertyDefinition<T> extends PrismPropertyDefiniti
 
 	@NotNull
 	@Override
-	MutablePrismPropertyDefinition<T> clone();
+	PrismPropertyDefinition<T> clone();
 
 	void setInherited(boolean value);
 }
