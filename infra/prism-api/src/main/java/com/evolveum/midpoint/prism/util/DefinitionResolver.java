@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2010-2019 Evolveum
+/**
+ * Copyright (c) 2019 Evolveum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.evolveum.midpoint.prism;
+package com.evolveum.midpoint.prism.util;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
- * Interface for properties that have inner structur, such as PolyString.
- * This was created due to a limitation that we cannot make every structured
- * data into a container (yet).
+ * Resolves a definition in a parent. Used in cases when there are non-standard resolution exceptions,
+ * e.g. default string definitions for items in dynamic schema.
  * 
- * This is a temporary solution in 3.x and 4.x. It should be gone in 5.x.
- * Do not realy on this with any new development.
+ * @param <PD> parent definition
+ * @param <ID> subitem definition
  * 
- * @author Radovan Semancik
+ * @author semancik
  */
 @FunctionalInterface
-public interface Structured {
-
-	Object resolve(ItemPath subpath);
-
+public interface DefinitionResolver<PD extends ItemDefinition, ID extends ItemDefinition> {
+	
+	ID resolve(PD parentDefinition, ItemPath path) throws SchemaException;
+	
 }
