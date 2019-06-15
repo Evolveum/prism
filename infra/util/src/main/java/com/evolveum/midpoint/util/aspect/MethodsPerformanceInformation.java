@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum
+ * Copyright (c) 2010-2019 Evolveum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,18 @@
  * limitations under the License.
  */
 
-package com.evolveum.midpoint.prism.xnode;
+package com.evolveum.midpoint.util.aspect;
 
-import com.evolveum.midpoint.prism.Visitable;
 import com.evolveum.midpoint.util.DebugDumpable;
-import org.jetbrains.annotations.NotNull;
 
-import javax.xml.namespace.QName;
-import java.io.Serializable;
+import java.util.Map;
 
 /**
  *
  */
-public interface XNode extends DebugDumpable, Visitable, Cloneable, Serializable {
-	
-	boolean isEmpty();
+public interface MethodsPerformanceInformation extends DebugDumpable {
 
-	QName getTypeQName();
+	void clear();
 
-	RootXNode toRootXNode();
-
-	boolean isExplicitTypeDeclaration();
-
-	@NotNull
-	XNode clone();
-
-	Integer getMaxOccurs();
+	Map<String, MethodPerformanceInformation> getAllData();
 }
