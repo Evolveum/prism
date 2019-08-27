@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2010-2019 Evolveum
+/**
+ * Copyright (c) 2019 Evolveum
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.evolveum.midpoint.prism;
 
-import javax.xml.namespace.QName;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
+ * @author semancik
  *
  */
-public interface MutableDefinition extends Definition {
-
-	void setProcessing(ItemProcessing processing);
-
-	void setDeprecated(boolean deprecated);
-
-	void setExperimental(boolean experimental);
-
-	void setEmphasized(boolean emphasized);
-
-	void setDisplayName(String displayName);
-
-	void setDisplayOrder(Integer displayOrder);
-
-	void setHelp(String help);
-
-	void setRuntimeSchema(boolean value);
-
-	void setTypeName(QName typeName);
-
-	void setDocumentation(String value);
+public enum SchemaMigrationOperation {
 	
-	void addSchemaMigration(SchemaMigration schemaMigration);
+	REMOVED;
+	
+	public static SchemaMigrationOperation parse(String s) throws SchemaException {
+		if (s == null) {
+			return null;
+		}
+		switch (s) {
+			case "removed":
+				return REMOVED;
+			default:
+				throw new SchemaException("Unknown schema migration operation "+s);
+		}
+	}
+
 }
