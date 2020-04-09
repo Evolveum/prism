@@ -8,11 +8,8 @@
 package com.evolveum.midpoint.prism;
 
 /**
- *  Experimental.
+ *
  */
-public class ImmutableUtil {
+public interface MutablePrismObjectDefinition<O extends Objectable> extends PrismObjectDefinition<O>, MutablePrismContainerDefinition<O> {
 
-    public static void throwImmutable(Object object) {
-        throw new IllegalStateException("Object " + object + " couldn't be modified as it is immutable");
-    }
 }
