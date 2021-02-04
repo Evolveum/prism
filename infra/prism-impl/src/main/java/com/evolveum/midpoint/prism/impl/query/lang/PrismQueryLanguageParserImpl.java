@@ -1,5 +1,13 @@
+/*
+ * Copyright (C) 2020-2021 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +25,11 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.LiteralValueContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.OrFilterContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.PathContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.PrefixedNameContext;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.SingleValueContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.StringValueContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.SubFilterContext;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.SubfilterOrValueContext;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.ValueSpecificationContext;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.ValueSetContext;
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
@@ -49,6 +58,7 @@ import com.evolveum.midpoint.prism.query.LogicalFilter;
 import com.evolveum.midpoint.prism.query.NaryLogicalFilter;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrFilter;
+import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -58,7 +68,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 
-public class PrismQueryLanguageParser {
+public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     public static final String QUERY_NS = "http://prism.evolveum.com/xml/ns/public/query-3";
     public static final String MATCHING_RULE_NS = "http://prism.evolveum.com/xml/ns/public/matching-rule-3";
@@ -89,7 +99,8 @@ public class PrismQueryLanguageParser {
             Preconditions.checkArgument(subfilterOrValue != null);
             schemaCheck(definition instanceof PrismPropertyDefinition<?>, "Definition %s is not property", definition);
             PrismPropertyDefinition<?> propDef = (PrismPropertyDefinition<?>) definition;
-            ValueSpecificationContext valueSpec = subfilterOrValue.valueSpecification();
+            SingleValueContext valueSpec = subfilterOrValue.singleValue();
+            schemaCheck(valueSpec != null, "Single value is required.");
             if (valueSpec.path() != null) {
                 ItemPath rightPath = path(parentDef, valueSpec.path());
                 PrismPropertyDefinition<?> rightDef = findDefinition(parentDef,rightPath, PrismPropertyDefinition.class);
@@ -258,7 +269,7 @@ public class PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return FullTextFilterImpl.createFullText(requireStringLiteral(filterName, subfilterOrValue));
+                    return FullTextFilterImpl.createFullText(requireLiterals(String.class,filterName, subfilterOrValue));
                 }
             })
             .put(queryName("inOid"), new SelfFilterFactory("inOid") {
@@ -266,7 +277,7 @@ public class PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return InOidFilterImpl.createInOid(requireStringLiteral(filterName,subfilterOrValue));
+                    return InOidFilterImpl.createInOid(requireLiterals(String.class,filterName,subfilterOrValue));
                 }
             })
             .put(queryName("ownedByOid"), new SelfFilterFactory("ownedByOid") {
@@ -274,7 +285,7 @@ public class PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return InOidFilterImpl.createOwnerHasOidIn(requireStringLiteral(filterName,subfilterOrValue));
+                    return InOidFilterImpl.createOwnerHasOidIn(requireLiterals(String.class,filterName,subfilterOrValue));
                 }
             })
             .put(queryName("inOrg"), new SelfFilterFactory("inOrg") {
@@ -282,7 +293,7 @@ public class PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return OrgFilterImpl.createOrg(requireStringLiteral(filterName,subfilterOrValue), Scope.SUBTREE);
+                    return OrgFilterImpl.createOrg(requireLiteral(String.class, filterName,subfilterOrValue.singleValue()), Scope.SUBTREE);
                 }
             })
             .put(queryName("isRoot"), new SelfFilterFactory("isRoot") {
@@ -313,23 +324,44 @@ public class PrismQueryLanguageParser {
     private final PrismContext context;
     private final Map<String, String> namespaceContext;
 
-    public PrismQueryLanguageParser(PrismContext context) {
+    public PrismQueryLanguageParserImpl(PrismContext context) {
         this(context, ImmutableMap.of());
     }
 
-    protected String requireStringLiteral(String filterName, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-        schemaCheck(subfilterOrValue.valueSpecification() != null, "String literal must be specified for %s.", filterName);
-        schemaCheck(subfilterOrValue.valueSpecification().literalValue() != null, "String literal must be specified for %s.", filterName);
-        return parseLiteral(String.class, subfilterOrValue.valueSpecification().literalValue());
+    protected <T> Collection<T> requireLiterals(Class<T> type, String filterName,  SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+        schemaCheck(subfilterOrValue.subfilterSpec() == null, "Value required for filter %s", filterName);
+        if(subfilterOrValue.singleValue() != null) {
+            return Collections.singletonList(requireLiteral(type, filterName, subfilterOrValue.singleValue()));
+        } else if (subfilterOrValue.valueSet() != null) {
+            ValueSetContext valueSet = subfilterOrValue.valueSet();
+            ArrayList<T> ret = new ArrayList<>(valueSet.values.size());
+            for(SingleValueContext value : valueSet.values) {
+                ret.add(requireLiteral(type, filterName, value));
+            }
+            return ret;
+        }
+        throw new IllegalStateException();
     }
 
-    public PrismQueryLanguageParser(PrismContext context, Map<String, String> namespaceContext) {
+    protected <T> T requireLiteral(Class<T> type, String filterName, SingleValueContext value) throws SchemaException {
+        schemaCheck(value != null, "%s literal must be specified for %s.", type.getSimpleName(), filterName);
+        schemaCheck(value.literalValue() != null, "%s literal must be specified for %s.", type.getSimpleName(), filterName);
+        return parseLiteral(type, value.literalValue());
+    }
+
+    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext) {
         this.context = context;
         this.namespaceContext = namespaceContext;
     }
 
+    @Override
     public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {
         return parseQuery(typeClass, AxiomQuerySource.from(query));
+    }
+
+    @Override
+    public ObjectFilter parseQuery(PrismContainerDefinition<?> definition, String query) throws SchemaException {
+        return parseQuery(definition, AxiomQuerySource.from(query));
     }
 
     public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, AxiomQuerySource source)
@@ -339,9 +371,12 @@ public class PrismQueryLanguageParser {
         if (complexType == null) {
             throw new IllegalArgumentException("Couldn't find definition for complex type " + typeClass);
         }
+        return parseQuery(complexType, source);
+    }
 
-        ObjectFilter rootFilter = parseFilter(complexType, source.root());
-        return rootFilter;
+    public <C extends Containerable> ObjectFilter parseQuery(PrismContainerDefinition<?> definition, AxiomQuerySource source)
+            throws SchemaException {
+        return parseFilter(definition, source.root());
     }
 
     private static QName queryName(String localName) {
@@ -522,14 +557,14 @@ public class PrismQueryLanguageParser {
 
     @SuppressWarnings("unchecked")
     private <T> T extractValue(Class<T> type, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-        schemaCheck(subfilterOrValue.valueSpecification() != null, "Constant value required");
+        schemaCheck(subfilterOrValue.singleValue() != null, "Constant value required");
         if (QName.class.isAssignableFrom(type)) {
-            PathContext path = subfilterOrValue.valueSpecification().path();
+            PathContext path = subfilterOrValue.singleValue().path();
             schemaCheck(path != null, "QName value expected");
             return (T) XmlTypeConverter.toJavaValue(path.getText(), new HashMap<>(), QName.class);
 
         }
-        LiteralValueContext literalContext = subfilterOrValue.valueSpecification().literalValue();
+        LiteralValueContext literalContext = subfilterOrValue.singleValue().literalValue();
         schemaCheck(literalContext != null, "Literal value required");
         return type.cast(parseLiteral(type, literalContext));
     }
@@ -585,7 +620,7 @@ public class PrismQueryLanguageParser {
         return result;
     }
 
-    public static PrismQueryLanguageParser create(PrismContext prismContext) {
-        return new PrismQueryLanguageParser(prismContext);
+    public static PrismQueryLanguageParserImpl create(PrismContext prismContext) {
+        return new PrismQueryLanguageParserImpl(prismContext);
     }
 }
