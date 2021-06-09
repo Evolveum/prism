@@ -10,12 +10,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>midpoint</artifactId>
-        <groupId>com.evolveum.midpoint</groupId>
+        <artifactId>prism-parent</artifactId>
+        <groupId>com.evolveum.prism</groupId>
         <version>4.4-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.evolveum.midpoint.tools</groupId>
+    <groupId>com.evolveum.prism.tools</groupId>
     <artifactId>tools</artifactId>
     <packaging>pom</packaging>
 
@@ -25,6 +25,5 @@
         <module>test-ng</module>
         <module>xjc-plugin</module>
         <module>schema-dist-maven-plugin</module>
-        <module>ninja</module>
     </modules>
 </project>

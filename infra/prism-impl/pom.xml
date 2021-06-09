@@ -11,8 +11,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>infra</artifactId>
-        <groupId>com.evolveum.midpoint.infra</groupId>
+        <artifactId>prism</artifactId>
+        <groupId>com.evolveum.prism</groupId>
         <version>4.4-SNAPSHOT</version>
     </parent>
 
@@ -26,14 +26,14 @@
             <artifactId>axiom</artifactId>
             <version>4.4-SNAPSHOT</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
         </dependency>
-        
+
         <dependency>
-            <groupId>com.evolveum.midpoint.infra</groupId>
+            <groupId>com.evolveum.commons</groupId>
             <artifactId>util</artifactId>
             <version>4.4-SNAPSHOT</version>
             <exclusions>
@@ -44,7 +44,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.evolveum.midpoint.infra</groupId>
+            <groupId>com.evolveum.prism</groupId>
             <artifactId>prism-api</artifactId>
             <version>4.4-SNAPSHOT</version>
             <exclusions>
@@ -143,7 +143,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.evolveum.midpoint.tools</groupId>
+            <groupId>com.evolveum.commons</groupId>
             <artifactId>test-ng</artifactId>
             <scope>test</scope>
         </dependency>

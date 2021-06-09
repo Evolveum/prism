@@ -9,13 +9,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>midpoint</artifactId>
-        <groupId>com.evolveum.midpoint</groupId>
+        <artifactId>prism-parent</artifactId>
+        <groupId>com.evolveum.prism</groupId>
         <version>4.4-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.evolveum.midpoint.infra</groupId>
-    <artifactId>infra</artifactId>
+    <groupId>com.evolveum.prism</groupId>
+    <artifactId>prism</artifactId>
     <packaging>pom</packaging>
 
     <name>midPoint Infrastructure</name>
@@ -24,10 +24,6 @@
         <module>concepts</module>
         <module>axiom</module>
         <module>util</module>
-        <module>schema</module>
-        <module>schema-pure-jaxb</module>
-        <module>common</module>
-        <module>test-util</module>
         <module>prism-maven-plugin</module>
         <module>prism-api</module>
         <module>prism-impl</module>

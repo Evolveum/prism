@@ -11,10 +11,11 @@
 
     <parent>
         <artifactId>tools</artifactId>
-        <groupId>com.evolveum.midpoint.tools</groupId>
+        <groupId>com.evolveum.prism.tools</groupId>
         <version>4.4-SNAPSHOT</version>
     </parent>
 
+    <groupId>com.evolveum.commons</groupId>
     <artifactId>test-ng</artifactId>
     <packaging>jar</packaging>
 

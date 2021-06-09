@@ -78,13 +78,13 @@
         -->
     </parent>
 
-    <groupId>com.evolveum.midpoint</groupId>
-    <artifactId>midpoint</artifactId>
+    <groupId>com.evolveum.prism</groupId>
+    <artifactId>prism-parent</artifactId>
     <version>4.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>midPoint Project</name>
-    <description>Utility module to compile all of the maven based midPoint projects.</description>
+    <name>Prism Project</name>
+    <description>Utility module to compile all of the maven based Prism projects.</description>
     <organization>
         <name>evolveum</name>
         <url>https://www.evolveum.com</url>
@@ -95,34 +95,24 @@
             <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
-        <license>
-            <name>European Union Public License</name>
-            <url>https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</url>
-            <distribution>repo</distribution>
-        </license>
     </licenses>
 
     <modules>
         <module>tools</module>
         <module>infra</module>
-        <module>repo</module>
-        <module>provisioning</module>
-        <module>model</module>
-        <module>custom</module>
-        <module>gui</module>
-        <module>icf-connectors</module>
-        <module>testing</module>
     </modules>
 
     <scm>
-        <connection>https://github.com/Evolveum/midpoint.git</connection>
-        <developerConnection>git@github.com:Evolveum/midpoint.git</developerConnection>
-        <url>https://github.com/Evolveum/midpoint.git</url>
+        <connection>https://github.com/Evolveum/prism.git</connection>
+        <developerConnection>git@github.com:Evolveum/prism.git</developerConnection>
+        <url>https://github.com/Evolveum/prism.git</url>
     </scm>
     <issueManagement>
         <system>Atlassian JIRA</system>
         <url>https://jira.evolveum.com/browse/MID</url>
     </issueManagement>
+
+  <!--
     <distributionManagement>
         <repository>
             <id>evolveum-nexus</id>
@@ -135,6 +125,7 @@
             <url>https://nexus.evolveum.com/nexus/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+  -->
 
     <properties>
         <!-- Build system options -->
@@ -1565,12 +1556,12 @@
                 <version>${testng.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.evolveum.midpoint.tools</groupId>
+                <groupId>com.evolveum.commons</groupId>
                 <artifactId>test-ng</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.evolveum.midpoint.infra</groupId>
+                <groupId>com.evolveum.prism.infra</groupId>
                 <artifactId>test-util</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2065,18 +2056,6 @@
     </reporting>
 
     <profiles>
-        <profile>
-            <id>dist</id>
-            <activation>
-                <property>
-                    <name>!skipDist</name>
-                </property>
-            </activation>
-            <modules>
-                <module>dist</module>
-            </modules>
-        </profile>
-
         <!--
         Activating extra tests (tests under testing module), skipping other tests.
         Often we want to combine with disabling dist: -P extratest,-dist

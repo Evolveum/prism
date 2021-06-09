@@ -11,12 +11,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>infra</artifactId>
-        <groupId>com.evolveum.midpoint.infra</groupId>
-        <version>4.4-SNAPSHOT</version>
+      <relativePath>../..</relativePath>
+      <artifactId>prism-parent</artifactId>
+      <groupId>com.evolveum.prism</groupId>
+      <version>4.4-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.evolveum.concepts</groupId>
+    <groupId>com.evolveum.commons</groupId>
     <artifactId>concepts</artifactId>
 
     <name>Concepts</name>
@@ -41,7 +42,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.evolveum.midpoint.tools</groupId>
+            <groupId>com.evolveum.commons</groupId>
             <artifactId>test-ng</artifactId>
             <scope>test</scope>
         </dependency>
