@@ -1,0 +1,157 @@
+= Prism
+
+
+_Prism_ is a data representation layer.
+Prism is responsible for parsing the data from _data representation formats_ such as XML, JSON or YAML.
+Prism makes the data available to Java application in an abstract, format-independent way.
+
+Prism can read and write the data in any of the common data formats (XML, JSON or YAML).
+The data are made available to the application in a common form, regardless of which representation format was used.
+Prism can then write the data to any data format as well.
+The users may use any data format of their choice when working with the Prism-based application.
+
+The data are usually available to the application through several _facets_.
+One of the facets makes the data available in a form of generated code (Java beans).
+This makes the use of the data very easy, it also allows the compiler to catch basic programming errors.
+The other facet allows to iterate over the data, inspect the data structures and values in a way that is similar to working with hashmaps.
+This method allows to access all the details about data (and metadata).
+It provides access to data structures in a programmatic way, which allows the application to work with custom schema extensions.
+
+Prism is a completely schema-based system.
+Prism knows the definition of every data item in every data structure.
+It knows data item names, data types, multiplicity and all the details of data model.
+Prism is designed to work with _dynamic_ schemas, schemas that are available only in runtime.
+
+.Why "Prism"?
+TIP: An optical prism is a multi-faceted optical element that breaks the light to its constituent spectral colors.
+Similarly to optical prism, the Prism framework has many facets and its "breaks" data to its constituent elements.
+The data can be accessed by many ways (facets, or spectral colors).
+It allows to inspect even a miniscule detail of the data or meta data.
+Prism can also represent the data in many ways, such as XML, JSON or YAML.
+
+== Data Representation Formats
+
+Prism can work with the data in several data formats.
+The following representations describe the same _user_ data structure in XML, JSON and YAML:
+
+.XML
+[source,xml]
+----
+<user>
+    <name>alice</name>
+    <fullName>Alice Anderson</fullName>
+    <activation>
+        <administrativeStatus>enabled</administrativeStatus>
+    </activation>
+</user>
+----
+
+.JSON
+[source,json]
+----
+{
+    "@root" : "user",
+    "name" : "alice",
+    "fullName" : "Alice Anderson",
+    "activation" : {
+        "administrativeStatus" : "enabled"
+    }
+}
+----
+
+.YAML
+[source,yaml]
+----
+"@root": "user"
+name: "alice"
+fullName: "Alice Anderson"
+activation:
+    administrativeStatus: "enabled"
+----
+
+All the three files will result in the same Prism data structures when they are parsed.
+Prism data can be stored in any of these formats.
+
+
+== Prism Java API
+
+Prism is a Java framework, designed to be used in Java applications.
+Prism data are represented as Java data structures.
+There are two ways how data can be accessed.
+
+The native Prism way is to use the concepts of items and values.
+This method is similar to working with hashmaps and lists.
+The following pseudo-code illustrates the way how to access full name of a user data structure:
+
+[source,java]
+----
+user.findProperty("fullName").getRealValue()
+----
+
+Then there is another way to access the data.
+This method relies on a code generated from the schema at build time:
+
+[source,java]
+----
+user.getFullName()
+----
+
+
+
+== Migration from 4.3
+
+Before version 4.3 Prism was part of midPoint project. As of version 4.4 Prism
+is separate project and this resulted in Maven group IDs change.
+
+If you were using any of following artifacts in your maven dependencies, please
+update group ID based on following table. (Note: packages names are still same,
+in order to ease migration and provide stable API compatiblity).
+
+|===
+| Artifact ID | New Group ID | Old Group ID (before 4.4)
+
+| axiom
+| com.evolveum.axiom
+| com.evolveum.axiom
+
+| concepts
+| com.evolveum.commons
+| com.evolveum.midpoint.infra
+
+| util
+| com.evolveum.commons
+| com.evolveum.midpoint.tools
+
+| test-ng
+| com.evolveum.commons
+| com.evolveum.midpoint.infra
+
+
+
+
+| prism-api
+| com.evolveum.prism
+| com.evolveum.midpoint.infra
+
+| prism-impl
+| com.evolveum.prism
+| com.evolveum.midpoint.infra
+
+
+| prism-maven-plugin
+| com.evolveum.prism
+| com.evolveum.midpoint.infra
+
+
+| schema-dist-maven-plugin
+| com.evolveum.prism.tools
+| com.evolveum.midpoint.tools
+
+
+| xjc-plugin
+| com.evolveum.prism.tools
+| com.evolveum.midpoint.tools
+
+
+
+|===
