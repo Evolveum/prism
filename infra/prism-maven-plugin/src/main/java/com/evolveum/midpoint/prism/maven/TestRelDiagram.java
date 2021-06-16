@@ -27,8 +27,6 @@ public class TestRelDiagram {
     public static final QName OBJECT_TYPE_QNAME = new QName("http://midpoint.evolveum.com/xml/ns/public/common/common-3", "ObjectType");
 
     File myObj;
-    File testFile;
-    FileWriter testFileWriter;
     FileWriter myWriter;
     String diagramName;
     SchemaRegistry schemaRegistry;
@@ -51,8 +49,6 @@ public class TestRelDiagram {
         this.diagramName = diagramName;
         this.myObj = new File(filePath);
         this.myWriter = new FileWriter(myObj);
-        this.testFile = new File("/home/jan/examplePath.js");
-        this.testFileWriter = new FileWriter(testFile);
         myWriter.write("var config = {\n"
                 + "\tcontainer: \"#hierarchy\",\n"
                 + "\t\tlevelSeparation: 45,\n"
@@ -141,10 +137,6 @@ public class TestRelDiagram {
             }
         }
 
-        if (!hasConDefBeen) {
-            //callWriteDefinition((PrismContainerDefinition<?>) complexDefinition);
-        }
-
         if (added) {
             path.remove(complexDefinition);
         }
@@ -182,7 +174,6 @@ public class TestRelDiagram {
             if (!path.contains(complexDefinition)) {
                 path.add(complexDefinition);
                 idPath.add(parentId);
-                //testPathWriter.write("\n" + "path (add): " + path + " idPath: " + idPath);
             }
             int idBefore = id;
 
@@ -199,11 +190,7 @@ public class TestRelDiagram {
     public void callWriteDefinition(String definitionString, PrismContainerDefinition definition) throws IOException {
         if (definition.getItemName().getLocalPart().equals("configured")) {
             testDefinition = definition;
-            testFileWriter.write("\nSOMTU" + path);
         }
-//        if (testDefinition != null && path.contains(testDefinition)) {
-//            testFileWriter.write("\nSUBDEF" + definition);
-//        }
 
         boolean pathInSchema = true;
 
@@ -258,7 +245,6 @@ public class TestRelDiagram {
             writeSelectedDefinitions();
             myWriter.write("\n" + charConfig + "];");
             myWriter.close();
-            testFileWriter.close();
         } else {
 
             HashMap<Definition, Integer> defsAndIds = written.get("schema");
@@ -331,10 +317,6 @@ public class TestRelDiagram {
                         }
                     }
                 }
-
-//                else if (!refs.contains(OBJECT_TYPE_QNAME)){
-//                    refs.add(OBJECT_TYPE_QNAME);
-//                }
             }
         }
 
@@ -439,7 +421,6 @@ public class TestRelDiagram {
     }
 
     public void writeSelectedDefinitions() throws IOException, SchemaException {
-        // todo maybe more files if there is more selected definitions
         for (Definition def : selectedDefinitions) {
             boolean isInDiagram = false;
             for (ItemDiagramSpecification spec : def.getDiagrams()) {
@@ -503,10 +484,6 @@ public class TestRelDiagram {
                             //myWriter.write("\nparentlevel" + String.valueOf(levelsMap.get(nParentDefinition)) + "myLevel" + level);
                         }
 
-                        //myWriter.write("\nparent" + nParentDefinition + "needed" + neededNotClosedUls + "notClosedUls" + notClosedUls);
-
-                        //description += nParentDefinition;
-
                         if (neededNotClosedUls == null || neededNotClosedUls > notClosedUls || nParentLevel != level) {
                             myWriter.write("\nBUG" + subDefinition);
                         } else {
@@ -534,11 +511,7 @@ public class TestRelDiagram {
             Definition originalDef = stringToDef.get(originalDefString);
             PrismContainerDefinition<?> parent = (PrismContainerDefinition<?>) mapOfParents.get(originalDefString);
 
-//            if (parent != null) {
-//                throw new Error("HALOOOOO" + parent);
-//            }
-
-            if (originalDef != null) { //refs != null
+            if (originalDef != null) {
 
                 ArrayList<ArrayList<String>> refsArrays = new ArrayList<>(mapOfRefs.get(def).values());
                 ArrayList<String> refs = refsArrays.get(0);
@@ -581,11 +554,7 @@ public class TestRelDiagram {
     }
 
     public String writeProperties(Definition definition, PrismContainerDefinition<?> parentDefinition) throws IOException, SchemaException {  //, PrismContainerDefinition parentDefinition, Integer parentId
-//        fileWriter.write("\n" + definition.getItemName().getLocalPart() + id + " = {");
-//        fileWriter.write("\n\t" + "parent: " + parentDefinition.getItemName().getLocalPart() + parentId + ",");
-//        fileWriter.write("\n\t" + "collapsed: true,");
-//        fileWriter.write("\n\t" + "text: {");
-//        fileWriter.write("\n\t\t" + "title: '" + definition.getItemName().getLocalPart() +"',");
+
         if (definition != null) {
 
             for (Definition definition1 : ((PrismContainerDefinition<?>) definition).getDefinitions()) {
@@ -609,8 +578,6 @@ public class TestRelDiagram {
                     if (definition.getDiagrams().get(index).getForm() == (DiagramElementFormType.parse("expanded"))) {
                         expanded = true;
                     }
-                    //myWriter.write(String.valueOf(definition.getDiagrams().get(index).getForm()));
-                    //myWriter.write(String.valueOf(definition.getDiagrams().get(index).getName()));
                 }
             }
 
@@ -623,7 +590,6 @@ public class TestRelDiagram {
                     for (Definition definition2 : parentDefinitions) {
                         if (definition2 instanceof PrismPropertyDefinition) {
                             PrismPropertyDefinition<?> definitionUsed = (PrismPropertyDefinition<?>) definition2;
-                            //description += "<li class = \"parentDef\">" + definitionUsed.getItemName().getLocalPart() + "\\n" + "</li>";
                             usedDefinitions.add(definitionUsed.getItemName().getLocalPart());
                         }
                     }
