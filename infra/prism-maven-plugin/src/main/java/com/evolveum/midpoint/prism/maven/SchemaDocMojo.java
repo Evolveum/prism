@@ -89,6 +89,7 @@ public class SchemaDocMojo extends AbstractMojo {
         return templateDir.getAbsolutePath();
     }
 
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         getLog().debug( "SchemaDoc plugin started" );
 
@@ -198,12 +199,14 @@ public class SchemaDocMojo extends AbstractMojo {
         WriteHTMLandCSSForDiagram writeDiagram = new WriteHTMLandCSSForDiagram();
         writeDiagram.writeDocument(path, libraryPath, htmlName, jsName, cssName);
 
-        try {
+        /*
+
             TestRelDiagram testSchema = new TestRelDiagram(path + jsName, diagramName, schemaRegistry); //ObjectType.class, "/home/jan/example.js"
             testSchema.testSchema2(schema);
         } catch (IOException | SchemaException e) {
             e.printStackTrace();
         }
+        */
     }
 
     private void renderObjectDefinition(PrismObjectDefinition objectDefinition, PrismSchema schema, PrismContext prismContext, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
