@@ -980,6 +980,19 @@ public class MiscUtil {
         }
     }
 
+    public static boolean isSingleNull(Object[] values) {
+        return values.length == 1 && values[0] == null;
+    }
+
+    // To be used in contexts where we can safely ignore the interruption, e.g. in tests.
+    public static void sleepIgnoringInterruptedException(long delay) {
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
@@ -1011,6 +1024,12 @@ public class MiscUtil {
     public static void stateCheck(boolean condition, String template, Object... arguments) {
         if (!condition) {
             throw new IllegalStateException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
+    public static void assertCheck(boolean condition, String template, Object... arguments) {
+        if (!condition) {
+            throw new AssertionError(Strings.lenientFormat(template, arguments));
         }
     }
 
@@ -1090,5 +1109,15 @@ public class MiscUtil {
         } else {
             return Math.max(a, b);
         }
+    }
+
+    public static boolean startsWith(List<?> wholeList, List<?> subList) {
+        Iterator<?> wholeIterator = wholeList.iterator();
+        for (Object subListItem : subList) {
+            if (!wholeIterator.hasNext() || !Objects.equals(subListItem, wholeIterator.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 }
