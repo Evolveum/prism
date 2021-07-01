@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.MetadataAware;
 import com.evolveum.midpoint.prism.xnode.XNode;
@@ -526,12 +527,29 @@ public class PrismMarshaller {
             } else {
                 throw new SchemaException("Cannot marshall empty RawType: " + value);
             }
-        } else if (realValue instanceof PolyString) {
+        }
+        if (realValue instanceof PolyString) {
             return beanMarshaller.marshalPolyString((PolyString) realValue);
-        } else if (realValue instanceof PolyStringType) {   // should not occur ...
+        }
+        if (realValue instanceof PolyStringType) {   // should not occur ...
             return beanMarshaller.marshalPolyString(((PolyStringType) realValue).toPolyString());
-        } else if (beanMarshaller.canProcess(typeName)) {
-            XNodeImpl xnode = beanMarshaller.marshall(realValue, ctx);
+        }
+
+        /*
+         * This is to allow serializing properties of `xsd:anyType` type. For such cases we simply
+         * determine the XSD type and store it along with the value. Note that this is more a hack than
+         * a serious solution: a similar mechanism is needed not only for xsd:anyType but also for
+         * other cases of inclusion polymorphism (subtyping).
+         */
+        boolean explicit = false;
+        if (typeName == null || QNameUtil.match(typeName, DOMUtil.XSD_ANYTYPE)) {
+            typeName = XsdTypeMapper.getJavaToXsdMapping(realValue.getClass()); // may be null
+            explicit = typeName != null;
+        }
+
+        XNodeImpl xnode;
+        if (beanMarshaller.canProcess(typeName)) {
+            xnode = beanMarshaller.marshall(realValue, ctx);
             if (xnode == null) {
                 // Marshaling attempt may process the expression in raw element
                 expression = value.getExpression();
@@ -557,11 +575,14 @@ public class PrismMarshaller {
                     xnode.setExplicitTypeDeclaration(true);
                 }
             }
-            return xnode;
         } else {
             // primitive value
-            return createPrimitiveXNode(realValue, typeName);
+            xnode = createPrimitiveXNode(realValue, typeName);
         }
+        if (explicit && !xnode.isExplicitTypeDeclaration()) {
+            xnode.setExplicitTypeDeclaration(true);
+        }
+        return xnode;
     }
 
     @NotNull
