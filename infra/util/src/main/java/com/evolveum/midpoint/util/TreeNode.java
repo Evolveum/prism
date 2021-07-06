@@ -84,6 +84,12 @@ public class TreeNode<T> implements DebugDumpable {
         children.forEach(child -> child.acceptDepthFirst(visitor));
     }
 
+    public List<T> getAllDataDepthFirst() {
+        List<T> allData = new ArrayList<>();
+        acceptDepthFirst(node -> allData.add(node.getUserObject()));
+        return allData;
+    }
+
     public int getDepth() {
         return parent != null ? parent.getDepth() + 1 : 0;
     }
