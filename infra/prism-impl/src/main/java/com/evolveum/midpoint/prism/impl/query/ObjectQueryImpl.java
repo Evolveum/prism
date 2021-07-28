@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.util.DebugUtil;
 
 public class ObjectQueryImpl implements ObjectQuery {
+
     private static final long serialVersionUID = 1L;
 
     private ObjectFilter filter;
@@ -75,14 +76,14 @@ public class ObjectQueryImpl implements ObjectQuery {
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     public ObjectQueryImpl clone() {
-        ObjectQueryImpl clone = cloneEmpty();
+        ObjectQueryImpl clone = cloneWithoutFilter();
         if (this.filter != null) {
             clone.filter = this.filter.clone();
         }
         return clone;
     }
 
-    public ObjectQueryImpl cloneEmpty() {
+    public ObjectQueryImpl cloneWithoutFilter() {
         ObjectQueryImpl clone = new ObjectQueryImpl();
         if (this.paging != null) {
             clone.paging = this.paging.clone();

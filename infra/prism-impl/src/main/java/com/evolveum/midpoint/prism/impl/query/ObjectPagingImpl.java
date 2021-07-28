@@ -1,11 +1,17 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectGrouping;
@@ -13,12 +19,6 @@ import com.evolveum.midpoint.prism.query.ObjectOrdering;
 import com.evolveum.midpoint.prism.query.ObjectPaging;
 import com.evolveum.midpoint.prism.query.OrderDirection;
 import com.evolveum.midpoint.util.DebugUtil;
-import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public final class ObjectPagingImpl implements ObjectPaging {
 
@@ -70,7 +70,7 @@ public final class ObjectPagingImpl implements ObjectPaging {
         setGrouping(groupBy);
     }
 
-    public static ObjectPaging createPaging(Integer offset, Integer maxSize){
+    public static ObjectPaging createPaging(Integer offset, Integer maxSize) {
         return new ObjectPagingImpl(offset, maxSize);
     }
 
@@ -111,18 +111,16 @@ public final class ObjectPagingImpl implements ObjectPaging {
         return new ObjectPagingImpl(groupBy);
     }
 
-    public static ObjectPaging createEmptyPaging(){
+    public static ObjectPaging createEmptyPaging() {
         return new ObjectPagingImpl();
     }
 
-    // TODO rename to getPrimaryOrderingDirection
-    public OrderDirection getDirection() {
+    public OrderDirection getPrimaryOrderingDirection() {
         ObjectOrdering primary = getPrimaryOrdering();
         return primary != null ? primary.getDirection() : null;
     }
 
-    // TODO rename to getPrimaryOrderingPath
-    public ItemPath getOrderBy() {
+    public ItemPath getPrimaryOrderingPath() {
         ObjectOrdering primary = getPrimaryOrdering();
         return primary != null ? primary.getOrderBy() : null;
     }
@@ -135,7 +133,7 @@ public final class ObjectPagingImpl implements ObjectPaging {
         }
     }
 
-    public ItemPath getGroupBy(){
+    public ItemPath getGroupBy() {
         ObjectGrouping primary = getPrimaryGrouping();
         return primary != null ? primary.getGroupBy() : null;
     }
@@ -148,7 +146,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
         }
     }
 
-    // TODO name?
     public List<? extends ObjectOrdering> getOrderingInstructions() {
         return ordering;
     }
@@ -320,12 +317,12 @@ public final class ObjectPagingImpl implements ObjectPaging {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("PAGING: ");
-        if (getOffset() != null){
+        if (getOffset() != null) {
             sb.append("O: ");
             sb.append(getOffset());
             sb.append(",");
         }
-        if (getMaxSize() != null){
+        if (getMaxSize() != null) {
             sb.append("M: ");
             sb.append(getMaxSize());
             sb.append(",");
@@ -355,8 +352,8 @@ public final class ObjectPagingImpl implements ObjectPaging {
     }
 
     public boolean equals(Object o, boolean exact) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
 
         ObjectPagingImpl that = (ObjectPagingImpl) o;
 
