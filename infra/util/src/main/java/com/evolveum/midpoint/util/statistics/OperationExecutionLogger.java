@@ -24,7 +24,7 @@ public class OperationExecutionLogger {
     static Level globalLevelOverride = null;
     static final ThreadLocal<Level> THREAD_LOCAL_LEVEL_OVERRIDE = new ThreadLocal<>();
 
-    static boolean isProfilingActive = false;       // TODO decide what to do with this one
+    static boolean isProfilingActive = false; // TODO decide what to do with this one
 
     @SuppressWarnings("unused")
     public static Level getGlobalOperationInvocationLevelOverride() {
