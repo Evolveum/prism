@@ -12,21 +12,23 @@ import ch.qos.logback.core.Layout;
 import org.apache.commons.lang.StringUtils;
 
 /**
- *  Used to collect log entries for tracing purposes.
+ * Collects log entries e.g. for tracing purposes in midPoint.
+ *
+ * It sends log lines to an instance of {@link LoggingEventSink} that has been set up for the current thread.
  */
 public class TracingAppender<E> extends AppenderBase<E> {
 
     private Layout<E> layout;
 
-    private static ThreadLocal<LoggingEventSink> eventSinkThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<LoggingEventSink> EVENT_SINK_THREAD_LOCAL = new ThreadLocal<>();
 
     @Override
     protected void append(E eventObject) {
-        LoggingEventSink loggingEventSink = eventSinkThreadLocal.get();
+        LoggingEventSink loggingEventSink = EVENT_SINK_THREAD_LOCAL.get();
         if (loggingEventSink != null) {
             String text = layout.doLayout(eventObject);
             String normalized = StringUtils.removeEnd(text, "\n");
-            loggingEventSink.add(normalized);
+            loggingEventSink.consume(normalized);
         }
     }
 
@@ -38,23 +40,11 @@ public class TracingAppender<E> extends AppenderBase<E> {
         this.layout = layout;
     }
 
-    public static void terminateCollecting() {
-        eventSinkThreadLocal.remove();
+    public static void removeSink() {
+        EVENT_SINK_THREAD_LOCAL.remove();
     }
 
-    public static void openSink(LoggingEventCollector collector) {
-        LoggingEventSink currentSink = eventSinkThreadLocal.get();
-        if (currentSink != null) {
-            currentSink.collectEvents();
-        }
-        eventSinkThreadLocal.set(new LoggingEventSink(collector, currentSink));
-    }
-
-    public static void closeCurrentSink() {
-        LoggingEventSink currentSink = eventSinkThreadLocal.get();
-        if (currentSink != null) {
-            currentSink.collectEvents();
-            eventSinkThreadLocal.set(currentSink.getParent());
-        }
+    public static void setSink(LoggingEventSink sink) {
+        EVENT_SINK_THREAD_LOCAL.set(sink);
     }
 }
