@@ -45,6 +45,10 @@ public class SerializationContext implements Cloneable {
         return ctx != null && SerializationOptions.isSerializeForExport(ctx.getOptions());
     }
 
+    public static boolean isSkipIds(SerializationContext ctx) {
+        return ctx != null && SerializationOptions.isSkipContainerIds(ctx.getOptions());
+    }
+
     public static SerializationContext forOptions(SerializationOptions options) {
         return new SerializationContext(options);
     }
