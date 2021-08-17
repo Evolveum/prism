@@ -1,24 +1,20 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.path;
+
+import java.util.Collections;
+import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 
-import org.jetbrains.annotations.NotNull;
-
-import javax.xml.namespace.QName;
-import java.util.Collections;
-import java.util.List;
-
-/**
- *
- */
 public class ItemName extends QName implements ItemPath {
 
     public ItemName(String namespaceURI, String localPart) {
@@ -47,14 +43,6 @@ public class ItemName extends QName implements ItemPath {
         }
     }
 
-//    public static ItemName fromString(String name) {
-//        if (name == null) {
-//            return null;
-//        } else {
-//            return new ItemName(name);
-//        }
-//    }
-
     @Override
     public boolean isEmpty() {
         return false;
@@ -63,7 +51,8 @@ public class ItemName extends QName implements ItemPath {
     @NotNull
     @Override
     public List<?> getSegments() {
-        return Collections.singletonList(new QName(getNamespaceURI(), getLocalPart(), getPrefix()));      // todo eliminate QName construction while avoiding endless recursion
+        // TODO eliminate QName construction while avoiding endless recursion
+        return Collections.singletonList(new QName(getNamespaceURI(), getLocalPart(), getPrefix()));
     }
 
     @Override
@@ -119,7 +108,7 @@ public class ItemName extends QName implements ItemPath {
     }
 
     @Override
-    public QName asSingleName() {
+    public ItemName asSingleName() {
         return this;
     }
 
@@ -164,7 +153,7 @@ public class ItemName extends QName implements ItemPath {
 
     @Override
     public void shortDump(StringBuilder sb) {
-        sb.append(toString());
+        sb.append(this);
     }
 
     @Override

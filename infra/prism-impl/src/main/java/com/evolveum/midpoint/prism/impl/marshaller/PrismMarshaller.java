@@ -311,11 +311,15 @@ public class PrismMarshaller {
         return xmap;
     }
 
+    private boolean shouldSerializeContainerId(Long id, SerializationContext context) {
+        return id != null && !SerializationContext.isSkipIds(context);
+    }
+
     private void marshalContainerValue(MapXNodeImpl xmap, PrismContainerValue<?> containerVal,
             PrismContainerDefinition<?> containerDefinition, SerializationContext ctx,
             Collection<? extends QName> itemsToSkip) throws SchemaException {
         Long id = containerVal.getId();
-        if (id != null) {
+        if (shouldSerializeContainerId(id, ctx)) {
             PrimitiveXNodeImpl<Long> infraId = createPrimitiveXNodeAttr(id, DOMUtil.XSD_LONG);
             infraId.setInfra(true);
             xmap.put(XNodeImpl.KEY_CONTAINER_ID, infraId);
