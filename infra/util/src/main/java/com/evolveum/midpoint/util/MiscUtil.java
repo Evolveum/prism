@@ -984,12 +984,57 @@ public class MiscUtil {
         return values.length == 1 && values[0] == null;
     }
 
-    // To be used in contexts where we can safely ignore the interruption, e.g. in tests.
-    public static void sleepIgnoringInterruptedException(long delay) {
+    /**
+     * Sleeps watching "can run" flag. {@link InterruptedException} is caught (causing checking can run flag) but
+     * not propagated.
+     */
+    public static void sleepWatchfully(long until, long increment, Supplier<Boolean> canRunSupplier) {
+        while (System.currentTimeMillis() <= until) {
+            try {
+                //noinspection BusyWait
+                Thread.sleep(increment);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // ignored, we are driven by canRunSupplier
+            }
+            if (!canRunSupplier.get()) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * Sleeps for specified time. {@link InterruptedException} is caught (causing immediate exit) but not propagated.
+     */
+    public static void sleepCatchingInterruptedException(long delay) {
         try {
             Thread.sleep(delay);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Sleeps for specified time. {@link InterruptedException} is ignored - after we get it,
+     * we simply continue sleeping, until the whole specified time elapses.
+     *
+     * This is e.g. to simulate non-interruptible execution of a task.
+     */
+    public static void sleepNonInterruptibly(long delay) {
+        long sleepUntil = System.currentTimeMillis() + delay;
+        for (;;) {
+            long delta = sleepUntil - System.currentTimeMillis();
+            if (delta <= 0) {
+                break; // we have slept enough
+            }
+
+            try {
+                //noinspection BusyWait
+                Thread.sleep(delta);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                // We continue sleeping until the specified time is over.
+            }
         }
     }
 
