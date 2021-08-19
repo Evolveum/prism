@@ -1,21 +1,22 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.path;
 
-import com.evolveum.midpoint.util.QNameUtil;
-import com.evolveum.midpoint.util.ShortDumpable;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.midpoint.util.ShortDumpable;
 
 /**
  * General interface to ItemPath objects.
@@ -52,9 +53,10 @@ import java.util.List;
  * Objects of ItemPath type are designed to be immutable. Modification operations in this API always create new objects.
  *
  * Naming convention:
- * - A path consists of SEGMENTS.
- * - However, when creating the path, we provide a sequence of COMPONENTS. We transform components into segments by applying
- *   a normalization procedure.
+ *
+ * * A path consists of SEGMENTS.
+ * * However, when creating the path, we provide a sequence of COMPONENTS.
+ * We transform components into segments by applying a normalization procedure.
  */
 public interface ItemPath extends ShortDumpable, Serializable {
 
@@ -79,6 +81,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
 
     /**
      * Creates the path from given components.
+     *
      * @see ItemPath#create(Object...)
      */
     @NotNull
@@ -136,6 +139,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
 
     /**
      * Returns the given path segment.
+     *
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     @Nullable
@@ -334,7 +338,6 @@ public interface ItemPath extends ShortDumpable, Serializable {
     }
     //endregion
 
-
     //region Splitting the path
 
     /**
@@ -388,7 +391,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
      * Returns all segments up to the specified one (including it).
      */
     default ItemPath allUpToIncluding(int i) {
-        return subPath(0, i+1);
+        return subPath(0, i + 1);
     }
 
     /**
@@ -461,7 +464,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
      * If the path consists of a single name segment (not variable nor special symbol), returns the corresponding value.
      * Otherwise returns null.
      */
-    default QName asSingleName() {
+    default ItemName asSingleName() {
         return isSingleName() ? ItemPath.toName(first()) : null;
     }
 
@@ -474,7 +477,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
         if (isSingleName()) {
             return ItemPath.toName(first());
         } else {
-            throw new IllegalArgumentException("Expected a single-name path, bug got "+this);
+            throw new IllegalArgumentException("Expected a single-name path, bug got " + this);
         }
     }
 
@@ -486,11 +489,36 @@ public interface ItemPath extends ShortDumpable, Serializable {
     }
 
     /**
-     * Returns the value of the first segment if it is a name segment; otherwise null.
+     * Returns the value of the first segment if it is a name segment or throws.
      */
     @NotNull
     default ItemName firstToName() {
         return ItemPath.toName(first());
+    }
+
+    /**
+     * Returns the value of the first segment if it is a name segment or throws.
+     * parent, id, name, variable
+     */
+    @NotNull
+    default QName firstToQName() {
+        if (isEmpty()) {
+            throw new IllegalArgumentException("Item path is empty!");
+        }
+
+        Object first = first();
+        QName qName = isName(first) ? toName(first)
+                : isIdentifier(first) ? PrismConstants.T_ID
+                : isParent(first) ? PrismConstants.T_PARENT
+                : isVariable(first) ? toVariableName(first)
+                : null;
+
+        if (qName == null) {
+            throw new IllegalArgumentException(
+                    "First component of the Item path can't be converted to to QName: " + this);
+        }
+
+        return qName;
     }
 
     /**
@@ -581,7 +609,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
      * Returns the last name segment index; or -1 if there's no such segment.
      */
     default int lastNameIndex() {
-        for (int i = size()-1; i >= 0; i--) {
+        for (int i = size() - 1; i >= 0; i--) {
             if (ItemPath.isName(getSegment(i))) {
                 return i;
             }

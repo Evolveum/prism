@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
+import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
@@ -57,6 +58,11 @@ public class SerializationOptions implements Cloneable {
      */
     @Experimental
     private boolean serializeUnsupportedTypesAsString;
+
+    /**
+     * Does not export container ids.
+     */
+    private boolean skipContainerIds = false;
 
 //    private NameQualificationStrategy itemTypeQualificationStrategy;
 //    private NameQualificationStrategy itemPathQualificationStrategy;
@@ -257,6 +263,23 @@ public class SerializationOptions implements Cloneable {
                 ", itemNameQualificationStrategy=" + itemNameQualificationStrategy +
                 ", serializeForExport=" + serializeForExport +
                 ", escapeInvalidCharacters=" + escapeInvalidCharacters +
+                ", skipContainerIds=" + skipContainerIds +
                 '}';
+    }
+
+    public static boolean isSkipContainerIds(SerializationOptions options) {
+        if (options != null) {
+            return options.isSkipContainerIds();
+        }
+        return false;
+    }
+
+    public boolean isSkipContainerIds() {
+        return skipContainerIds;
+    }
+
+    public @NotNull SerializationOptions skipContainerIds(boolean skipIds) {
+        this.skipContainerIds = skipIds;
+        return this;
     }
 }
