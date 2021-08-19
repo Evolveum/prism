@@ -728,6 +728,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
     @VisibleForTesting
     PrismContext getPrismContextLocal();
 
+    @Deprecated
     void setPrismContext(PrismContext prismContext); // todo remove
 
     Long getHighestId();

@@ -59,7 +59,7 @@ public abstract class PropertyValueFilterImpl<T>
         }
         if (value instanceof Collection) {
             for (Object o : (Collection) value) {
-                addToPrismValues(pVals, prismContext, o);
+                addToPrismValues(pVals, PrismContext.get(), o);
             }
             return;
         }
@@ -76,12 +76,13 @@ public abstract class PropertyValueFilterImpl<T>
         } else {
             pVal = new PrismPropertyValueImpl<>(value);
         }
-        PrismUtil.recomputePrismPropertyValue(pVal, prismContext);
+        PrismUtil.recomputePrismPropertyValue(pVal, PrismContext.get());
         pVals.add(pVal);
     }
 
     // TODO cleanup this mess - how values are cloned, that expression is not cloned in LT/GT filter etc
 
+    @Override
     public abstract PropertyValueFilterImpl clone();
 
     void checkPrismPropertyValue(Object value) {

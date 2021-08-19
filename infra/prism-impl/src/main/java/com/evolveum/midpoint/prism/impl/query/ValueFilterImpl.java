@@ -230,17 +230,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
 
     @Override
     public PrismContext getPrismContext() {
-        if (super.getPrismContext() != null) {
-            return super.getPrismContext();
-        }
-        D def = getDefinition();
-        if (def != null && def.getPrismContext() != null) {
-            PrismContext prismContext = def.getPrismContext();
-            super.setPrismContext(prismContext);
-            return prismContext;
-        } else {
-            return null;
-        }
+        return PrismContext.get();
     }
 
     @Override

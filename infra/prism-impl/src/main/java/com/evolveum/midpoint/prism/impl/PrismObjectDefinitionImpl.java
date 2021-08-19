@@ -49,7 +49,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
         if (isAbstract()) {
             throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
-        return new PrismObjectImpl<>(getItemName(), this, prismContext);
+        return new PrismObjectImpl<>(getItemName(), this, getPrismContext());
     }
 
     @NotNull
@@ -59,13 +59,13 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
             throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
-        return new PrismObjectImpl<>(name, this, prismContext);
+        return new PrismObjectImpl<>(name, this, getPrismContext());
     }
 
     @NotNull
     @Override
     public PrismObjectDefinitionImpl<O> clone() {
-        PrismObjectDefinitionImpl<O> clone = new PrismObjectDefinitionImpl<>(itemName, complexTypeDefinition, prismContext, compileTimeClass);
+        PrismObjectDefinitionImpl<O> clone = new PrismObjectDefinitionImpl<>(itemName, complexTypeDefinition, getPrismContext(), compileTimeClass);
         copyDefinitionData(clone);
         return clone;
     }
@@ -123,7 +123,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
 
     @Override
     public PrismObjectValue<O> createValue() {
-        return new PrismObjectValueImpl<>(prismContext);
+        return new PrismObjectValueImpl<>(getPrismContext());
     }
 
 

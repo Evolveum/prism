@@ -65,9 +65,10 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         super(name, definition, prismContext);
     }
 
+    @Override
     public PrismObjectValue<O> createNewValue() {
         checkMutable();
-        PrismObjectValue<O> newValue = new PrismObjectValueImpl<>(prismContext);
+        PrismObjectValue<O> newValue = new PrismObjectValueImpl<>(getPrismContext());
         try {
             addIgnoringEquivalents(newValue);
             return newValue;
@@ -77,6 +78,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         }
     }
 
+    @Override
     @NotNull
     public PrismObjectValue<O> getValue() {
         if (values.isEmpty()) {
@@ -121,19 +123,23 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
      *
      * @return Object ID (OID)
      */
+    @Override
     public String getOid() {
         return getValue().getOid();
     }
 
+    @Override
     public void setOid(String oid) {
         checkMutable();
         getValue().setOid(oid);
     }
 
+    @Override
     public String getVersion() {
         return getValue().getVersion();
     }
 
+    @Override
     public void setVersion(String version) {
         checkMutable();
         getValue().setVersion(version);
@@ -144,11 +150,13 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return (PrismObjectDefinition<O>) super.getDefinition();
     }
 
+    @Override
     @NotNull
     public O asObjectable() {
         return getValue().asObjectable();
     }
 
+    @Override
     public PolyString getName() {
         PrismProperty<PolyString> nameProperty = getValue().findProperty(getNamePropertyElementName());
         if (nameProperty == null) {
@@ -161,16 +169,19 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return new ItemName(getElementName().getNamespaceURI(), PrismConstants.NAME_LOCAL_NAME);
     }
 
+    @Override
     public PrismContainer<?> getExtension() {
         //noinspection unchecked
-        return (PrismContainer<?>) getValue().findItem(getExtensionContainerElementName(), PrismContainer.class);
+        return getValue().findItem(getExtensionContainerElementName(), PrismContainer.class);
     }
 
+    @Override
     public PrismContainer<?> getOrCreateExtension() throws SchemaException {
         //noinspection unchecked
-        return (PrismContainer<?>) getValue().findOrCreateItem(getExtensionContainerElementName(), PrismContainer.class);
+        return getValue().findOrCreateItem(getExtensionContainerElementName(), PrismContainer.class);
     }
 
+    @Override
     public PrismContainerValue<?> getExtensionContainerValue() {
         PrismContainer<?> extension = getExtension();
         if (extension == null || extension.getValues().isEmpty()) {
@@ -180,10 +191,12 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         }
     }
 
+    @Override
     public <I extends Item> I findExtensionItem(String elementLocalName) {
         return findExtensionItem(new QName(null, elementLocalName));
     }
 
+    @Override
     public <I extends Item> I findExtensionItem(@NotNull QName elementName) {
         PrismContainer<?> extension = getExtension();
         if (extension == null) {
@@ -193,6 +206,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return (I) extension.findItem(ItemName.fromQName(elementName));
     }
 
+    @Override
     public <I extends Item> void addExtensionItem(I item) throws SchemaException {
         PrismContainer<?> extension = getExtension();
         if (extension == null) {
@@ -201,6 +215,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         extension.add(item);
     }
 
+    @Override
     public PrismContainer<?> createExtension() throws SchemaException {
         PrismObjectDefinition<O> objeDef = getDefinition();
         PrismContainerDefinition<Containerable> extensionDef = objeDef.findContainerDefinition(getExtensionContainerElementName());
@@ -228,6 +243,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         ((PrismObjectValueImpl<O>) getValue()).removeItem(path, itemType);
     }
 
+    @Override
     public void addReplaceExisting(Item<?,?> item) throws SchemaException {
         getValue().addReplaceExisting(item);
     }
@@ -244,15 +260,15 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public PrismObjectImpl<O> cloneComplex(CloneStrategy strategy) {
-        if (prismContext != null && prismContext.getMonitor() != null) {
-            prismContext.getMonitor().beforeObjectClone(this);
+        if (getPrismContext().getMonitor() != null) {
+            getPrismContext().getMonitor().beforeObjectClone(this);
         }
 
-        PrismObjectImpl<O> clone = new PrismObjectImpl<>(getElementName(), getDefinition(), prismContext);
+        PrismObjectImpl<O> clone = new PrismObjectImpl<>(getElementName(), getDefinition(), getPrismContext());
         copyValues(strategy, clone);
 
-        if (prismContext != null && prismContext.getMonitor() != null) {
-            prismContext.getMonitor().afterObjectClone(this, clone);
+        if (getPrismContext().getMonitor() != null) {
+            getPrismContext().getMonitor().afterObjectClone(this, clone);
         }
         return clone;
     }
@@ -261,15 +277,18 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         super.copyValues(strategy, clone);
     }
 
+    @Override
     public PrismObjectDefinition<O> deepCloneDefinition(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
         return (PrismObjectDefinition<O>) super.deepCloneDefinition(ultraDeep, postCloneAction);
     }
 
+    @Override
     @NotNull
     public ObjectDelta<O> diff(PrismObject<O> other) {
         return diff(other, ParameterizedEquivalenceStrategy.FOR_DELTA_ADD_APPLICATION);
     }
 
+    @Override
     @NotNull
     public ObjectDelta<O> diff(PrismObject<O> other, ParameterizedEquivalenceStrategy strategy) {
         if (other == null) {
@@ -288,6 +307,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return objectDelta;
     }
 
+    @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public Collection<? extends ItemDelta<?,?>> narrowModifications(Collection<? extends ItemDelta<?, ?>> modifications,
             @NotNull ParameterizedEquivalenceStrategy plusStrategy, @NotNull ParameterizedEquivalenceStrategy minusStrategy,
@@ -306,12 +326,14 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return narrowedModifications;
     }
 
+    @Override
     public ObjectDelta<O> createDelta(ChangeType changeType) {
         ObjectDelta<O> delta = new ObjectDeltaImpl<>(getCompileTimeClass(), changeType, getPrismContext());
         delta.setOid(getOid());
         return delta;
     }
 
+    @Override
     public ObjectDelta<O> createAddDelta() {
         ObjectDelta<O> delta = createDelta(ChangeType.ADD);
         // TODO: clone?
@@ -319,18 +341,21 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         return delta;
     }
 
+    @Override
     public ObjectDelta<O> createModifyDelta() {
         ObjectDelta<O> delta = createDelta(ChangeType.MODIFY);
         delta.setOid(this.getOid());
         return delta;
     }
 
+    @Override
     public ObjectDelta<O> createDeleteDelta() {
         ObjectDelta<O> delta = createDelta(ChangeType.DELETE);
         delta.setOid(this.getOid());
         return delta;
     }
 
+    @Override
     public void setParent(PrismContainerValue<?> parentValue) {
         throw new IllegalStateException("Cannot set parent for an object");
     }
@@ -380,6 +405,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
      * in a form suitable for log and diagnostic messages (understandable for
      * system administrator).
      */
+    @Override
     public String toDebugName() {
         return toDebugType()+":"+getOid()+"("+getNamePropertyStringValue()+")";
     }
@@ -408,6 +434,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
      * but it rather has to be compact. E.g. short element names are preferred to long
      * QNames or URIs.
      */
+    @Override
     public String toDebugType() {
         QName elementName = getElementName();
         if (elementName == null) {
@@ -419,6 +446,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     /**
      * Return a human readable name of this class suitable for logs.
      */
+    @Override
     protected String getDebugDumpClassName() {
         return "PO";
     }
@@ -439,6 +467,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     /**
      * Return display name intended for business users of midPoint
      */
+    @Override
     public String getBusinessDisplayName() {
         return getNamePropertyStringValue();
     }
@@ -461,6 +490,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         super.performFreeze();
     }
 
+    @Override
     public PrismObject<O> cloneIfImmutable() {
         return isImmutable() ? clone() : this;
     }

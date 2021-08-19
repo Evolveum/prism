@@ -99,6 +99,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return itemName;
     }
 
+    @Override
     public void setItemName(@NotNull QName name) {
         checkMutable();
         this.itemName = ItemName.fromQName(name); // todo
@@ -119,6 +120,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return minOccurs;
     }
 
+    @Override
     public void setMinOccurs(int minOccurs) {
         checkMutable();
         this.minOccurs = minOccurs;
@@ -136,6 +138,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return maxOccurs;
     }
 
+    @Override
     public void setMaxOccurs(int maxOccurs) {
         checkMutable();
         this.maxOccurs = maxOccurs;
@@ -177,6 +180,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return dynamic;
     }
 
+    @Override
     public void setDynamic(boolean dynamic) {
         checkMutable();
         this.dynamic = dynamic;
@@ -203,6 +207,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     /**
      *
      */
+    @Override
     public void setReadOnly() {
         checkMutable();
         canAdd = false;
@@ -242,6 +247,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return substitutionHead;
     }
 
+    @Override
     public void setSubstitutionHead(QName substitutionHead) {
         checkMutable();
         this.substitutionHead = substitutionHead;
@@ -252,6 +258,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         return heterogeneousListItem;
     }
 
+    @Override
     public void setHeterogeneousListItem(boolean heterogeneousListItem) {
         checkMutable();
         this.heterogeneousListItem = heterogeneousListItem;
@@ -367,10 +374,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
 
     @Override
     public void revive(PrismContext prismContext) {
-        if (this.prismContext != null) {
-            return;
-        }
-        this.prismContext = prismContext;
+        // NOOP
     }
 
     @Override

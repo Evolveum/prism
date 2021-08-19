@@ -102,22 +102,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public PrismContext getPrismContext() {
-        if (prismContext != null) {
-            return prismContext;
-        }
-        if (complexTypeDefinition != null && complexTypeDefinition.getPrismContext() != null) {
-            return complexTypeDefinition.getPrismContext();
-        }
-        if (getParent() != null) {
-            return getParent().getPrismContext();
-        }
-        return null;
+        return PrismContext.get();
     }
 
     // Primarily for testing
     @Override
     public PrismContext getPrismContextLocal() {
-        return prismContext;
+        return getPrismContext();
     }
 
     /**
@@ -320,8 +311,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             throw new SystemException("Can't create instance of class '" + clazz.getSimpleName() + "', it's abstract.");
         }
         try {
-            if (prismContext != null) {
-                containerable = clazz.getConstructor(PrismContext.class).newInstance(prismContext);
+            if (getPrismContext() != null) {
+                containerable = clazz.getConstructor(PrismContext.class).newInstance(getPrismContext());
             } else {
                 containerable = clazz.newInstance();
             }
@@ -796,7 +787,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 throw new IllegalStateException("PrismObject instantiated as a subItem in " + this + " from definition " + itemDefinition);
             }
         } else {
-            newItem = ItemImpl.createNewDefinitionlessItem(name, type, prismContext);
+            newItem = ItemImpl.createNewDefinitionlessItem(name, type, getPrismContext());
             if (newItem instanceof PrismObject) {
                 throw new IllegalStateException("PrismObject instantiated as a subItem in " + this + " as definitionless instance of class " + type);
             }
@@ -861,7 +852,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
         PrismProperty<X> property;
         if (propertyDefinition == null) {
-            property = new PrismPropertyImpl<>(propertyName, prismContext);        // Definitionless
+            property = new PrismPropertyImpl<>(propertyName, getPrismContext());        // Definitionless
         } else {
             property = propertyDefinition.instantiate();
         }
@@ -1212,7 +1203,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     // this is the case in which we are going to overwrite a specific definition
                     // (e.g. WfPrimaryChangeProcessorStateType) with a generic one (e.g. WfProcessorSpecificStateType)
                     // --> we should either skip this, or fetch the fresh definition from the prism context
-                    ComplexTypeDefinition freshCtd = prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(complexTypeDefinition.getTypeName());
+                    ComplexTypeDefinition freshCtd = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(complexTypeDefinition.getTypeName());
                     if (freshCtd != null) {
                         //System.out.println("Using " + freshCtd + " instead of " + definitionToUse);
                         definitionToUse = freshCtd;
@@ -1262,7 +1253,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                         + ") to a non-raw property value: " + value);
             } else {
                 RootXNodeImpl rootXnode = new RootXNodeImpl(containerDefinition.getItemName(), rawElement);
-                PrismValue parsedValue = prismContext.parserFor(rootXnode).definition(containerDefinition).parseItemValue();
+                PrismValue parsedValue = getPrismContext().parserFor(rootXnode).definition(containerDefinition).parseItemValue();
                 if (parsedValue instanceof PrismContainerValue) {
                     //noinspection unchecked
                     container.add((PrismContainerValue<C1>) parsedValue);
@@ -1299,9 +1290,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public void revive(PrismContext prismContext) throws SchemaException {
-        if (this.prismContext == null) {
-            this.prismContext = prismContext;
-        }
         super.revive(prismContext);
         for (Item<?, ?> item : items.values()) {
             item.revive(prismContext);
@@ -1380,7 +1368,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public PrismContainerValueImpl<C> cloneComplex(CloneStrategy strategy) {    // TODO resolve also the definition?
         PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(getOriginType(), getOriginObject(), getParent(), null,
-                this.complexTypeDefinition, this.prismContext);
+                this.complexTypeDefinition, this.getPrismContext());
         copyValues(strategy, clone);
         return clone;
     }
@@ -1586,7 +1574,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (containerable == null) {
             return parentCTD;
         }
-        if (prismContext == null) {
+        if (getPrismContext() == null) {
             // check if parentCTD matches containerable
             if (parentCTD != null && containerable.getClass().equals(parentCTD.getCompileTimeClass())) {
                 return parentCTD;
@@ -1595,7 +1583,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return null;
             }
         }
-        ComplexTypeDefinition def = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(containerable.getClass());
+        ComplexTypeDefinition def = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(containerable.getClass());
         return def;        // may be null at this place
     }
 

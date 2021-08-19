@@ -187,7 +187,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     //region Creating definitions
     @Override
     public PrismPropertyDefinitionImpl createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, prismContext);
+        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
         add(propDef);
         return propDef;
     }
@@ -196,7 +196,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     // TODO: maybe check if the name is in different namespace
     // TODO: maybe create entirely new concept of property reference?
     public PrismPropertyDefinition createPropertyDefinition(QName name) {
-        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, prismContext);
+        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, getPrismContext());
         add(propDef);
         return propDef;
     }
@@ -274,9 +274,9 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 PrismPropertyDefinitionImpl<?> oidDefinition;
                 // experimental
                 if (objectMarker) {
-                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_STRING, prismContext);
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_STRING, getPrismContext());
                 } else if (containerMarker) {
-                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_INTEGER, prismContext);
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_INTEGER, getPrismContext());
                 } else {
                     throw new IllegalStateException("No identifier for complex type " + this);
                 }
@@ -338,10 +338,6 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @Override
     public void revive(PrismContext prismContext) {
-        if (this.prismContext != null) {
-            return;
-        }
-        this.prismContext = prismContext;
         for (ItemDefinition def: itemDefinitions) {
             def.revive(prismContext);
         }
@@ -367,7 +363,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @NotNull
     @Override
     public ComplexTypeDefinitionImpl clone() {
-        ComplexTypeDefinitionImpl clone = new ComplexTypeDefinitionImpl(this.typeName, prismContext);
+        ComplexTypeDefinitionImpl clone = new ComplexTypeDefinitionImpl(this.typeName, getPrismContext());
         copyDefinitionData(clone);
         clone.shared = false;
         return clone;

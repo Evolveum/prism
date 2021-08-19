@@ -128,12 +128,12 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     @Override
     public PrismReference instantiate(QName name) {
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
-        return new PrismReferenceImpl(name, this, prismContext);
+        return new PrismReferenceImpl(name, this, getPrismContext());
     }
 
     @Override
     public ItemDelta createEmptyDelta(ItemPath path) {
-        return new ReferenceDeltaImpl(path, this, prismContext);
+        return new ReferenceDeltaImpl(path, this, getPrismContext());
     }
 
     @Override

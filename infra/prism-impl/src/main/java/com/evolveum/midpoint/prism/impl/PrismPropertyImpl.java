@@ -22,7 +22,6 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -68,7 +67,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         super(name, prismContext);
     }
 
-    protected PrismPropertyImpl(QName name, PrismPropertyDefinition<T> definition, PrismContext prismContext) {
+    public PrismPropertyImpl(QName name, PrismPropertyDefinition<T> definition, PrismContext prismContext) {
         super(name, definition, prismContext);
     }
 
@@ -80,6 +79,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      *
      * @return applicable property definition
      */
+    @Override
     public PrismPropertyDefinition<T> getDefinition() {
         return definition;
     }
@@ -90,6 +90,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      * TODO remove (method in Item is sufficient)
      * @param definition the definition to set
      */
+    @Override
     public void setDefinition(PrismPropertyDefinition<T> definition) {
         checkMutable();
         this.definition = definition;
@@ -98,6 +99,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     /**
      * Type override, also for compatibility.
      */
+    @Override
     public <X> List<PrismPropertyValue<X>> getValues(Class<X> type) {
         return (List) getValues();
     }
@@ -116,6 +118,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      * Type override, also for compatibility.
      */
 
+    @Override
     public <X> Collection<X> getRealValues(Class<X> type) {
         Collection<X> realValues = new ArrayList<>(getValues().size());
         for (PrismPropertyValue<T> pValue: getValues()) {
@@ -124,6 +127,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return realValues;
     }
 
+    @Override
     public T getAnyRealValue() {
         Collection<T> values = getRealValues();
         if (values.isEmpty()) {
@@ -141,6 +145,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     /**
      * Type override, also for compatibility.
      */
+    @Override
     public <X> PrismPropertyValue<X> getValue(Class<X> type) {
         if (getDefinition() != null) {
             if (getDefinition().isMultiValue()) {
@@ -163,11 +168,13 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      * Means as a short-hand for setting just a value for single-valued attributes.
      * Will remove all existing values.
      */
+    @Override
     public void setValue(PrismPropertyValue<T> value) {
         clear();
         addValue(value);
     }
 
+    @Override
     public void setRealValue(T realValue) {
         if (realValue == null) {
             // Just make sure there are no values
@@ -177,6 +184,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         }
     }
 
+    @Override
     public void setRealValues(T... realValues) {
         clear();
         if (realValues == null || realValues.length == 0) {
@@ -188,6 +196,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         }
     }
 
+    @Override
     public void addValues(Collection<PrismPropertyValue<T>> pValuesToAdd) {
         if (pValuesToAdd == null) {
             return;
@@ -197,6 +206,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         }
     }
 
+    @Override
     public void addValue(PrismPropertyValue<T> pValueToAdd) {
         addValue(pValueToAdd, true);
     }
@@ -220,6 +230,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         getValues().add(pValueToAdd);
     }
 
+    @Override
     public void addRealValue(T valueToAdd) {
         addValue(new PrismPropertyValueImpl<>(valueToAdd));
     }
@@ -229,6 +240,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         addValue(new PrismPropertyValueImpl<>(valueToAdd), false);
     }
 
+    @Override
     public boolean deleteValues(Collection<PrismPropertyValue<T>> pValuesToDelete) {
         checkMutable();
         boolean changed = false;
@@ -242,6 +254,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return changed;
     }
 
+    @Override
     public boolean deleteValue(PrismPropertyValue<T> pValueToDelete) {
         checkMutable();
         Iterator<PrismPropertyValue<T>> iterator = getValues().iterator();
@@ -261,11 +274,13 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return found;
     }
 
+    @Override
     public void replaceValues(Collection<PrismPropertyValue<T>> valuesToReplace) {
         clear();
         addValues(valuesToReplace);
     }
 
+    @Override
     public boolean hasRealValue(PrismPropertyValue<T> value) {
         for (PrismPropertyValue<T> propVal : getValues()) {
             if (propVal.equals(value, EquivalenceStrategy.REAL_VALUE)) {
@@ -276,6 +291,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return false;
     }
 
+    @Override
     public Class<T> getValueClass() {
         if (getDefinition() != null) {
             return getDefinition().getTypeClass();
@@ -295,12 +311,12 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     public PropertyDelta<T> createDelta() {
-        return new PropertyDeltaImpl<>(getPath(), getDefinition(), prismContext);
+        return new PropertyDeltaImpl<>(getPath(), getDefinition(), getPrismContext());
     }
 
     @Override
     public PropertyDelta<T> createDelta(ItemPath path) {
-        return new PropertyDeltaImpl<>(path, getDefinition(), prismContext);
+        return new PropertyDeltaImpl<>(path, getDefinition(), getPrismContext());
     }
 
     @Override
@@ -329,10 +345,12 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return new PartiallyResolvedItem<>((Item<IV, ID>) this, path);
     }
 
+    @Override
     public PropertyDelta<T> diff(PrismProperty<T> other) {
         return (PropertyDelta<T>) super.diff(other);
     }
 
+    @Override
     public PropertyDelta<T> diff(PrismProperty<T> other, ParameterizedEquivalenceStrategy strategy) {
         return (PropertyDelta<T>) super.diff(other, strategy);
     }
@@ -356,7 +374,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     public PrismProperty<T> cloneComplex(CloneStrategy strategy) {
-        PrismPropertyImpl<T> clone = new PrismPropertyImpl<>(getElementName(), getDefinition(), prismContext);
+        PrismPropertyImpl<T> clone = new PrismPropertyImpl<>(getElementName(), getDefinition(), getPrismContext());
         copyValues(strategy, clone);
         return clone;
     }
@@ -462,7 +480,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                                     sb.append(((DebugDumpable)realValue).debugDump(indent + 1));
                                 } else {
                                     if (DebugUtil.isDetailedDebugDump()) {
-                                        PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, prismContext, getElementName(), null);
+                                        PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getPrismContext(), getElementName(), null);
                                     } else {
                                         sb.append("SS{"+realValue+"}");
                                         PrettyPrinter.shortDump(sb, realValue);
@@ -489,7 +507,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                         T realValue = value.getValue();
                         if (DebugUtil.isDetailedDebugDump() ||
                                 !(realValue instanceof ShortDumpable) && DebugUtil.getPrettyPrintBeansAs() != null) {
-                            PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, prismContext, getElementName(), null);
+                            PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getPrismContext(), getElementName(), null);
                         } else {
                             PrettyPrinter.shortDump(sb, realValue);
                         }
@@ -538,6 +556,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         }
     }
 
+    @Override
     public String toHumanReadableString() {
         StringBuilder sb = new StringBuilder();
         sb.append(PrettyPrinter.prettyPrint(getElementName())).append(" = ");
@@ -561,6 +580,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     /**
      * Return a human readable name of this class suitable for logs.
      */
+    @Override
     protected String getDebugDumpClassName() {
         return "PP";
     }

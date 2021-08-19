@@ -11,7 +11,6 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.util.exception.SchemaException;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,36 +54,44 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
         this.version = version;
     }
 
+    @Override
     public String getOid() {
         return oid;
     }
 
+    @Override
     public void setOid(String oid) {
         checkMutable();
         this.oid = oid;
     }
 
+    @Override
     public String getVersion() {
         return version;
     }
 
+    @Override
     public void setVersion(String version) {
         checkMutable();
         this.version = version;
     }
 
+    @Override
     public O asObjectable() {
         return asContainerable();
     }
 
+    @Override
     public PrismObject<O> asPrismObject() {
         return asObjectable().asPrismObject();
     }
 
+    @Override
     public PolyString getName() {
         return asPrismObject().getName();
     }
 
+    @Override
     public PrismContainer<?> getExtension() {
         return asPrismObject().getExtension();
     }
@@ -97,7 +104,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     @Override
     public PrismObjectValueImpl<O> cloneComplex(CloneStrategy strategy) {
         PrismObjectValueImpl<O> clone = new PrismObjectValueImpl<>(
-                getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, this.prismContext, oid, version);
+                getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, getPrismContext(), oid, version);
         copyValues(strategy, clone);
         return clone;
     }

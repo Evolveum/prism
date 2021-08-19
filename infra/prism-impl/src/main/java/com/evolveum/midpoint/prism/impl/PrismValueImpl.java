@@ -43,7 +43,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     // FIXME: always null
     protected EquivalenceStrategy defaultEquivalenceStrategy;
 
-    protected transient PrismContext prismContext;
 
     private boolean isTransient;
 
@@ -51,7 +50,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     PrismValueImpl(PrismContext prismContext) {
-        this.prismContext = prismContext;
     }
 
     PrismValueImpl(OriginType type, Objectable source) {
@@ -59,13 +57,11 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     PrismValueImpl(PrismContext prismContext, OriginType type, Objectable source) {
-        this.prismContext = prismContext;
         this.originType = type;
         this.originObject = source;
     }
 
     PrismValueImpl(PrismContext prismContext, OriginType type, Objectable source, Itemable parent) {
-        this.prismContext = prismContext;
         this.originType = type;
         this.originObject = source;
         this.parent = parent;
@@ -73,7 +69,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public void setPrismContext(PrismContext prismContext) {
-        this.prismContext = prismContext;
     }
 
     @Override
@@ -150,14 +145,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public PrismContext getPrismContext() {
-        if (prismContext != null) {
-            return prismContext;
-        }
-        if (parent != null) {
-            prismContext = parent.getPrismContext();
-            return prismContext;
-        }
-        return null;
+        return PrismContext.get();
     }
 
     protected ItemDefinition getDefinition() {
@@ -182,11 +170,8 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public void revive(PrismContext prismContext) throws SchemaException {
-        if (this.prismContext == null) {
-            this.prismContext = prismContext;
-        }
         if (isMutable()) {
-            recompute(prismContext);
+            recompute(getPrismContext());
         }
     }
 
@@ -258,9 +243,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         // and setting the parent will make it difficult to add it there.
         clone.parent = null;
         // Do not clone immutable flag.
-        if (clone.prismContext == null) {
-            clone.prismContext = this.prismContext;
-        }
         clone.valueMetadata = valueMetadata != null ? valueMetadata.clone() : null;
         clone.isTransient = isTransient;
     }
@@ -409,8 +391,8 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     private ValueMetadata createEmptyMetadata() {
-        if (prismContext != null && prismContext.getValueMetadataFactory() != null) {
-            return prismContext.getValueMetadataFactory().createEmpty();
+        if (PrismContext.get().getValueMetadataFactory() != null) {
+            return PrismContext.get().getValueMetadataFactory().createEmpty();
         } else {
             return ValueMetadataAdapter.holding(new PrismContainerImpl<>(PrismConstants.VALUE_METADATA_CONTAINER_NAME));
         }

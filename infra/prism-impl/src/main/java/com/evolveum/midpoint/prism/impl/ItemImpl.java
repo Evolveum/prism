@@ -74,8 +74,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     protected boolean immutable;
     protected boolean incomplete;
 
-    protected transient PrismContext prismContext;          // beware, this one can easily be null
-
     /**
      * This is used for definition-less construction, e.g. in JAXB beans.
      *
@@ -90,7 +88,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     ItemImpl(QName elementName, PrismContext prismContext) {
         super();
         this.elementName = ItemName.fromQName(elementName);
-        this.prismContext = prismContext;
     }
 
 
@@ -102,7 +99,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         super();
         this.elementName = ItemName.fromQName(elementName);
         this.definition = definition;
-        this.prismContext = prismContext;
     }
 
     static <T extends Item> T createNewDefinitionlessItem(QName name, Class<T> type, PrismContext prismContext) {
@@ -172,24 +168,18 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
 
     @Override
     public PrismContext getPrismContext() {
-        if (prismContext != null) {
-            return prismContext;
-        } else if (parent != null) {
-            return parent.getPrismContext();
-        } else {
-            return null;
-        }
+        return PrismContext.get();
     }
 
     // Primarily for testing
     @Override
     public PrismContext getPrismContextLocal() {
-        return prismContext;
+        return getPrismContext();
     }
 
     @Override
     public void setPrismContext(PrismContext prismContext) {
-        this.prismContext = prismContext;
+        // NOOp
     }
 
     @Override
@@ -392,10 +382,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         }
 
         checkMutable();
-        if (newValue.getPrismContext() == null) {
-            newValue.setPrismContext(prismContext);
-        }
-
         // The parent is needed also for comparisons. So we set it here.
         Itemable originalParent = newValue.getParent();
         newValue.setParent(this);
@@ -711,9 +697,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         if (definition != null) {
             checkDefinition(definition);
         }
-        if (this.prismContext == null && definition != null) {
-            this.prismContext = definition.getPrismContext();
-        }
         this.definition = definition;
         for (PrismValue pval: getValues()) {
             pval.applyDefinition(definition, force);
@@ -722,12 +705,10 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
 
     @Override
     public void revive(PrismContext prismContext) throws SchemaException {
+        // Is revive neccessary if prism context is static?
         // it is necessary to do e.g. PolyString recomputation even if PrismContext is set
-        if (this.prismContext == null) {
-            this.prismContext = prismContext;
-            if (definition != null) {
-                definition.revive(prismContext);
-            }
+        if (definition != null) {
+            definition.revive(prismContext);
         }
         for (V value: values) {
             value.revive(prismContext);
@@ -737,7 +718,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     protected void copyValues(CloneStrategy strategy, ItemImpl clone) {
         clone.elementName = this.elementName;
         clone.definition = this.definition;
-        clone.prismContext = this.prismContext;
         // Do not clone parent so the cloned item can be safely placed to
         // another item
         clone.parent = null;
@@ -893,8 +873,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     }
 
     private void incrementObjectCompareCounterIfNeeded(Object obj) {
-        if (this instanceof PrismObject && prismContext != null && prismContext.getMonitor() != null) {
-            prismContext.getMonitor().recordPrismObjectCompareCount((PrismObject<? extends Objectable>) this, obj);
+        if (this instanceof PrismObject &&  PrismContext.get().getMonitor() != null) {
+            PrismContext.get().getMonitor().recordPrismObjectCompareCount((PrismObject<? extends Objectable>) this, obj);
         }
     }
 

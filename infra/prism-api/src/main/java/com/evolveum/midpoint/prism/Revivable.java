@@ -14,6 +14,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 @FunctionalInterface
 public interface Revivable {
 
+    // TODO: Is revive necessary if prism context is static?
     void revive(PrismContext prismContext) throws SchemaException;
 
 }
