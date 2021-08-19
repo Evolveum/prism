@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -1036,6 +1037,10 @@ public class MiscUtil {
                 // We continue sleeping until the specified time is over.
             }
         }
+    }
+
+    public static <T> T getRandomItem(List<T> collection) {
+        return collection.get(ThreadLocalRandom.current().nextInt(collection.size()));
     }
 
     @FunctionalInterface
