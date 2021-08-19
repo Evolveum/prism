@@ -989,7 +989,7 @@ public class MiscUtil {
      * not propagated.
      */
     public static void sleepWatchfully(long until, long increment, Supplier<Boolean> canRunSupplier) {
-        while (System.currentTimeMillis() <= until) {
+        while (System.currentTimeMillis() < until) {
             try {
                 //noinspection BusyWait
                 Thread.sleep(increment);
