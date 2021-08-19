@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.delta.builder.S_ValuesEntry;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -42,6 +43,9 @@ public interface Containerable extends Serializable, DebugDumpable {
      * TODO Make this something like copyForReuse, using cloneComplex(CloneStrategy.REUSE).
      *  Unfortunately, this currently fails because of the required conversion of Containerable -> PCV -> Containerable.
      *  So for now we use a minimalistic version here.
+     *
+     * TODO Using parameterized return type like here results in confusion of Java type inference mechanism
+     *  at some places (e.g. when used in {@link S_ValuesEntry#delete(PrismValue...)} method call). Should be fixed.
      */
     @Experimental
     default <C extends Containerable> C cloneWithoutId() {
