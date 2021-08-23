@@ -134,6 +134,9 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public void revive(PrismContext prismContext) {
+        if (getPrismContext() != null) {
+            return;
+        }
         if (complexTypeDefinition != null) {
             complexTypeDefinition.revive(prismContext);
         }
