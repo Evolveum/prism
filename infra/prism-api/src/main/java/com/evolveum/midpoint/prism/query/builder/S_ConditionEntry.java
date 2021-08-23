@@ -50,7 +50,7 @@ public interface S_ConditionEntry {
     S_AtomicFilterExit ref(RefFilter filter);
 
     /**
-     * Creates filter matching any of provided OIDs; works like {@link #isNull()} with no/null OID.
+     * Creates filter matching any of provided OIDs; works like oid is Any with no/null OID.
      */
     S_AtomicFilterExit ref(String... oid);
 

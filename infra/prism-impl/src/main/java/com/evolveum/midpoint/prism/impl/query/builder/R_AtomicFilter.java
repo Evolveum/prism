@@ -312,9 +312,10 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
                     EqualFilterImpl.createEqual(
                             itemPath, propertyDefinition, null, owner.getPrismContext()));
         } else if (referenceDefinition != null) {
-            return new R_AtomicFilter(this,
-                    RefFilterImpl.createReferenceEqual(
-                            itemPath, referenceDefinition, Collections.emptyList()));
+            RefFilterImpl refFilter = (RefFilterImpl) RefFilterImpl.createReferenceEqual(
+                    itemPath, referenceDefinition, Collections.emptyList());
+            refFilter.setOidNullAsAny(false);
+            return new R_AtomicFilter(this, refFilter);
         } else {
             throw new IllegalStateException("No definition");
         }
