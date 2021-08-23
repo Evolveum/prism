@@ -57,7 +57,10 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
 
     @Override
     public RefFilterImpl clone() {
-        return new RefFilterImpl(getFullPath(), getDefinition(), getClonedValues(), getExpression());
+        RefFilterImpl ret = new RefFilterImpl(getFullPath(), getDefinition(), getClonedValues(), getExpression());
+        ret.setOidNullAsAny(oidNullAsAny);
+        ret.setTargetTypeNullAsAny(targetTypeNullAsAny);
+        return ret;
     }
 
     @Override
