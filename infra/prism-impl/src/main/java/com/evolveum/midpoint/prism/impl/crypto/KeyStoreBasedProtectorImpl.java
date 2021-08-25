@@ -455,10 +455,28 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
         return keyStorePath;
     }
 
+    /**
+     * Sets the fixed salt value, used for all salt-hashed values.
+     *
+     * WARNING: USE OF FIXED SALT IS DANGEROUS.
+     * Fixed salt makes all the salting ineffective.
+     * DO NOT USE unless you really know what you are doing, and if you want to sacrifice security for convenience.
+     *
+     * Fixed salt was implemented to allow new scenarios when using hashed password storage.
+     */
     public void setFixedSalt(String fixedSalt) {
         this.fixedSalt = fixedSalt;
     }
 
+    /**
+     * Returns fixed salt value, used for all salt-hashed values.
+     *
+     * WARNING: USE OF FIXED SALT IS DANGEROUS.
+     * Fixed salt makes all the salting ineffective.
+     * DO NOT USE unless you really know what you are doing, and if you want to sacrifice security for convenience.
+     *
+     * Fixed salt was implemented to allow new scenarios when using hashed password storage.
+     */
     private String getFixedSalt() {
         return fixedSalt;
     }
