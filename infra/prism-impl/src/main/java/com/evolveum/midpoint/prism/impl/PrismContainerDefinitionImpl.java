@@ -134,10 +134,9 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public void revive(PrismContext prismContext) {
-        if (this.prismContext != null) {
+        if (getPrismContext() != null) {
             return;
         }
-        this.prismContext = prismContext;
         if (complexTypeDefinition != null) {
             complexTypeDefinition.revive(prismContext);
         }
@@ -283,12 +282,12 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
             throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
         elementName = DefinitionUtil.addNamespaceIfApplicable(elementName, this.itemName);
-        return new PrismContainerImpl<>(elementName, this, prismContext);
+        return new PrismContainerImpl<>(elementName, this, getPrismContext());
     }
 
     @Override
     public ContainerDelta<C> createEmptyDelta(ItemPath path) {
-        return new ContainerDeltaImpl<>(path, this, prismContext);
+        return new ContainerDeltaImpl<>(path, this, getPrismContext());
     }
 
     @Override
@@ -309,7 +308,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @NotNull
     @Override
     public PrismContainerDefinitionImpl<C> clone() {
-        PrismContainerDefinitionImpl<C> clone = new PrismContainerDefinitionImpl<>(itemName, complexTypeDefinition, prismContext, compileTimeClass);
+        PrismContainerDefinitionImpl<C> clone = new PrismContainerDefinitionImpl<>(itemName, complexTypeDefinition, getPrismContext(), compileTimeClass);
         copyDefinitionData(clone);
         return clone;
     }
@@ -358,7 +357,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      */
     @Override
     public PrismPropertyDefinitionImpl createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, prismContext);
+        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
         addDefinition(propDef);
         return propDef;
     }
@@ -388,7 +387,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismPropertyDefinition<?> createPropertyDefinition(QName name, QName typeName,
             int minOccurs, int maxOccurs) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, prismContext);
+        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
         propDef.setMinOccurs(minOccurs);
         propDef.setMaxOccurs(maxOccurs);
         addDefinition(propDef);
@@ -399,7 +398,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     // TODO: maybe check if the name is in different namespace
     // TODO: maybe create entirely new concept of property reference?
     public PrismPropertyDefinition createPropertyDefinition(QName name) {
-        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, prismContext);
+        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, getPrismContext());
         addDefinition(propDef);
         return propDef;
     }
@@ -462,7 +461,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismContainerDefinition<?> createContainerDefinition(QName name, QName typeName,
             int minOccurs, int maxOccurs) {
-        PrismSchema typeSchema = prismContext.getSchemaRegistry().findSchemaByNamespace(typeName.getNamespaceURI());
+        PrismSchema typeSchema = getPrismContext().getSchemaRegistry().findSchemaByNamespace(typeName.getNamespaceURI());
         if (typeSchema == null) {
             throw new IllegalArgumentException("Schema for namespace "+typeName.getNamespaceURI()+" is not known in the prism context");
         }
@@ -476,7 +475,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition complexTypeDefinition,
             int minOccurs, int maxOccurs) {
-        PrismContainerDefinitionImpl<C> def = new PrismContainerDefinitionImpl<>(name, complexTypeDefinition, prismContext);
+        PrismContainerDefinitionImpl<C> def = new PrismContainerDefinitionImpl<>(name, complexTypeDefinition, getPrismContext());
         def.setMinOccurs(minOccurs);
         def.setMaxOccurs(maxOccurs);
         addDefinition(def);
@@ -510,7 +509,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public PrismContainerValue<C> createValue() {
-        return new PrismContainerValueImpl<>(prismContext);
+        return new PrismContainerValueImpl<>(getPrismContext());
     }
 
     @Override

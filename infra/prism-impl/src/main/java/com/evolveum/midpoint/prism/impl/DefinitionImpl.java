@@ -90,11 +90,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
      */
     protected boolean emphasized = false;
 
-    protected transient PrismContext prismContext;
 
     DefinitionImpl(@NotNull QName typeName, @NotNull PrismContext prismContext) {
         this.typeName = typeName;
-        this.prismContext = prismContext;
     }
 
     @Override
@@ -103,6 +101,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return typeName;
     }
 
+    @Override
     public void setTypeName(@NotNull QName typeName) {
         checkMutable();
         this.typeName = typeName;
@@ -239,6 +238,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return documentation;
     }
 
+    @Override
     public void setDocumentation(String documentation) {
         checkMutable();
         this.documentation = documentation;
@@ -262,6 +262,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return isRuntimeSchema;
     }
 
+    @Override
     public void setRuntimeSchema(boolean isRuntimeSchema) {
         checkMutable();
         this.isRuntimeSchema = isRuntimeSchema;
@@ -269,7 +270,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public PrismContext getPrismContext() {
-        return prismContext;
+        return PrismContext.get();
     }
 
     @Override
@@ -301,10 +302,12 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         annotations.put(qname, value);
     }
 
+    @Override
     public List<SchemaMigration> getSchemaMigrations() {
         return schemaMigrations;
     }
 
+    @Override
     public void addSchemaMigration(SchemaMigration schemaMigration) {
         checkMutable();
         if (schemaMigrations == null) {
@@ -315,10 +318,12 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         }
     }
 
+    @Override
     public List<ItemDiagramSpecification> getDiagrams() {
         return diagrams;
     }
 
+    @Override
     public void addDiagram(ItemDiagramSpecification diagram) {
         checkMutable();
         if (diagrams == null) {
@@ -329,6 +334,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         }
     }
 
+    @Override
     public abstract void revive(PrismContext prismContext);
 
     protected void copyDefinitionData(DefinitionImpl clone) {

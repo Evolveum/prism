@@ -179,7 +179,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             if (value == null) {
                 // Be careful here. Expression element can be legal sub-element of complex properties.
                 // Therefore parse expression only if there is no legal value.
-                expression = PrismUtilInternal.parseExpression(rawElement, prismContext);
+                expression = PrismUtilInternal.parseExpression(rawElement, getPrismContext());
             }
             rawElement = null;
         }
@@ -355,7 +355,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, PrismPropertyDefinition<T> definition)
             throws SchemaException {
-        PrismContext prismCtx = definition.getPrismContext() != null ? definition.getPrismContext() : prismContext;
+        PrismContext prismCtx = definition.getPrismContext() != null ? definition.getPrismContext() : getPrismContext();
         if (prismCtx == null) {
             throw new SchemaException("Unexpected null prism context.");
         }
@@ -513,7 +513,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 if (!wasIndent) {
                     DebugUtil.indentDebugDump(sb, indent);
                 }
-                PrismPrettyPrinter.debugDumpValue(sb, indent, value, prismContext, null, null);
+                PrismPrettyPrinter.debugDumpValue(sb, indent, value, getPrismContext(), null, null);
             }
         } else if (expression != null) {
             if (!wasIndent) {

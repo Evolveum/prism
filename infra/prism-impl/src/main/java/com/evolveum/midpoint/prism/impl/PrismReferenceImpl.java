@@ -44,7 +44,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
         super(name);
     }
 
-    PrismReferenceImpl(QName name, PrismReferenceDefinition definition, PrismContext prismContext) {
+    public PrismReferenceImpl(QName name, PrismReferenceDefinition definition, PrismContext prismContext) {
         super(name, definition, prismContext);
     }
 
@@ -106,6 +106,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
         return realValues;
     }
 
+    @Override
     public boolean merge(PrismReferenceValue value) {
         try {
             String newOid = value.getOid();
@@ -153,14 +154,17 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     }
 
 
+    @Override
     public String getOid() {
         return getValue().getOid();
     }
 
+    @Override
     public PolyString getTargetName() {
         return getValue().getTargetName();
     }
 
+    @Override
     public PrismReferenceValue findValueByOid(String oid) {
         for (PrismReferenceValue pval: getValues()) {
             if (oid.equals(pval.getOid())) {
@@ -198,12 +202,12 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
 
     @Override
     public ReferenceDelta createDelta() {
-        return new ReferenceDeltaImpl(getPath(), getDefinition(), prismContext);
+        return new ReferenceDeltaImpl(getPath(), getDefinition(), getPrismContext());
     }
 
     @Override
     public ReferenceDelta createDelta(ItemPath path) {
-        return new ReferenceDeltaImpl(path, getDefinition(), prismContext);
+        return new ReferenceDeltaImpl(path, getDefinition(), getPrismContext());
     }
 
     @Override
@@ -225,7 +229,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
 
     @Override
     public PrismReferenceImpl cloneComplex(CloneStrategy strategy) {
-        PrismReferenceImpl clone = new PrismReferenceImpl(getElementName(), getDefinition(), prismContext);
+        PrismReferenceImpl clone = new PrismReferenceImpl(getElementName(), getDefinition(), getPrismContext());
         copyValues(strategy, clone);
         return clone;
     }
@@ -290,6 +294,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     /**
      * Return a human readable name of this class suitable for logs.
      */
+    @Override
     protected String getDebugDumpClassName() {
         return "PR";
     }

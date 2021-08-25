@@ -64,7 +64,6 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      */
     private Class<O> objectTypeClass;
 
-    private transient PrismContext prismContext;
 
     public ObjectDeltaImpl(Class<O> objectTypeClass, ChangeType changeType, PrismContext prismContext) {
         Validate.notNull(objectTypeClass, "No objectTypeClass");
@@ -73,14 +72,13 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
         this.changeType = changeType;
         this.objectTypeClass = objectTypeClass;
-        this.prismContext = prismContext;
         objectToAdd = null;
         modifications = createEmptyModifications();
     }
 
     @NotNull
     private ObjectDeltaImpl<O> createOffspring() {
-        ObjectDeltaImpl<O> offspring = new ObjectDeltaImpl<>(objectTypeClass, ChangeType.MODIFY, prismContext);
+        ObjectDeltaImpl<O> offspring = new ObjectDeltaImpl<>(objectTypeClass, ChangeType.MODIFY, getPrismContext());
         offspring.setOid(getAnyOid());
         return offspring;
     }
@@ -90,6 +88,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         accept(visitor, true);
     }
 
+    @Override
     public void accept(Visitor visitor, boolean includeOldValues) {
         visitor.visit(this);
         if (isAdd()) {
@@ -115,30 +114,37 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public ChangeType getChangeType() {
         return changeType;
     }
 
+    @Override
     public void setChangeType(ChangeType changeType) {
         this.changeType = changeType;
     }
 
+    @Override
     public boolean isAdd() {
         return changeType == ChangeType.ADD;
     }
 
+    @Override
     public boolean isDelete() {
         return changeType == ChangeType.DELETE;
     }
 
+    @Override
     public boolean isModify() {
         return changeType == ChangeType.MODIFY;
     }
 
+    @Override
     public String getOid() {
         return oid;
     }
 
+    @Override
     public void setOid(String oid) {
         checkMutable();
         this.oid = oid;
@@ -156,18 +162,21 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public PrismContext getPrismContext() {
-        return prismContext;
+        return PrismContext.get();
     }
 
+    @Override
     public void setPrismContext(PrismContext prismContext) {
-        this.prismContext = prismContext;
     }
 
+    @Override
     public PrismObject<O> getObjectToAdd() {
         return objectToAdd;
     }
 
+    @Override
     public void setObjectToAdd(PrismObject<O> objectToAdd) {
         checkMutable();
         if (getChangeType() != ChangeType.ADD) {
@@ -204,6 +213,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public boolean containsModification(ItemDelta itemDelta, EquivalenceStrategy strategy) {
         for (ItemDelta<?, ?> modification : modifications) {
             if (modification.contains(itemDelta, strategy)) {
@@ -223,18 +233,21 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return true;
     }
 
+    @Override
     public void addModifications(Collection<? extends ItemDelta> itemDeltas) {
         for (ItemDelta<?, ?> modDelta : itemDeltas) {
             addModification(modDelta);
         }
     }
 
+    @Override
     public void addModifications(ItemDelta<?, ?>... itemDeltas) {
         for (ItemDelta<?, ?> modDelta : itemDeltas) {
             addModification(modDelta);
         }
     }
 
+    @Override
     public <IV extends PrismValue, ID extends ItemDefinition> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath) {
         //noinspection unchecked
         return findItemDelta(itemPath, ItemDelta.class, Item.class, false);
@@ -246,6 +259,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return findItemDelta(itemPath, ItemDelta.class, Item.class, strict);
     }
 
+    @Override
     public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>, DD extends ItemDelta<IV, ID>>
     DD findItemDelta(ItemPath propertyPath, Class<DD> deltaType, Class<I> itemType, boolean strict) {
         if (changeType == ChangeType.ADD) {
@@ -263,6 +277,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public <IV extends PrismValue, ID extends ItemDefinition> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
             ItemPath propertyPath) {
         if (changeType == ChangeType.ADD) {
@@ -295,6 +310,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public boolean hasItemDelta(ItemPath propertyPath) {
         if (changeType == ChangeType.ADD) {
             Item item = objectToAdd.findItem(propertyPath, Item.class);
@@ -307,6 +323,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public boolean hasItemOrSubitemDelta(ItemPath propertyPath) {
         if (changeType == ChangeType.ADD) {
             // Easy case. Even if there is a sub-sub-property there must be also a container.
@@ -323,6 +340,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return false;
     }
 
+    @Override
     public boolean hasCompleteDefinition() {
         if (isAdd()) {
             return getObjectToAdd().hasCompleteDefinition();
@@ -344,20 +362,22 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             ItemPath propertyPath, ItemDefinition itemDef, Class<I> itemType) {
 
         if (PrismProperty.class.isAssignableFrom(itemType)) {
-            return (D) new PropertyDeltaImpl<>(propertyPath, (PrismPropertyDefinition) itemDef, prismContext);
+            return (D) new PropertyDeltaImpl<>(propertyPath, (PrismPropertyDefinition) itemDef, getPrismContext());
         } else if (PrismContainer.class.isAssignableFrom(itemType)) {
-            return (D) new ContainerDeltaImpl<>(propertyPath, (PrismContainerDefinition) itemDef, prismContext);
+            return (D) new ContainerDeltaImpl<>(propertyPath, (PrismContainerDefinition) itemDef, getPrismContext());
         } else if (PrismReference.class.isAssignableFrom(itemType)) {
-            return (D) new ReferenceDeltaImpl(propertyPath, (PrismReferenceDefinition) itemDef, prismContext);
+            return (D) new ReferenceDeltaImpl(propertyPath, (PrismReferenceDefinition) itemDef, getPrismContext());
         } else {
             throw new IllegalArgumentException("Unknown item type " + itemType);
         }
     }
 
+    @Override
     public Class<O> getObjectTypeClass() {
         return objectTypeClass;
     }
 
+    @Override
     public void setObjectTypeClass(Class<O> objectTypeClass) {
         this.objectTypeClass = objectTypeClass;
     }
@@ -375,15 +395,18 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     /**
      * Top-level path is assumed.
      */
+    @Override
     public <X> PropertyDelta<X> findPropertyDelta(ItemPath parentPath, QName propertyName) {
         return findPropertyDelta(ItemPath.create(parentPath, propertyName));
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <X> PropertyDelta<X> findPropertyDelta(ItemPath propertyPath) {
         return findItemDelta(propertyPath, PropertyDelta.class, PrismProperty.class, false);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <X extends Containerable> ContainerDelta<X> findContainerDelta(ItemPath propertyPath) {
         return findItemDelta(propertyPath, ContainerDelta.class, PrismContainer.class, false);
@@ -405,6 +428,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public ReferenceDelta findReferenceModification(ItemPath itemPath) {
         return findModification(itemPath, ReferenceDelta.class, false);
     }
@@ -412,6 +436,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     /**
      * Returns all item deltas at or below a specified path.
      */
+    @Override
     public Collection<? extends ItemDelta<?, ?>> findItemDeltasSubPath(ItemPath itemPath) {
         return ItemDeltaCollectionsUtil.findItemDeltasSubPath(modifications, itemPath);
     }
@@ -427,18 +452,22 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         ItemDeltaCollectionsUtil.removeItemDelta(modifications, itemDelta);
     }
 
+    @Override
     public void removeReferenceModification(ItemPath itemPath) {
         removeModification(itemPath, ReferenceDelta.class);
     }
 
+    @Override
     public void removeContainerModification(ItemPath itemName) {
         removeModification(itemName, ContainerDelta.class);
     }
 
+    @Override
     public void removePropertyModification(ItemPath itemPath) {
         removeModification(itemPath, PropertyDelta.class);
     }
 
+    @Override
     public boolean isEmpty() {
         if (getChangeType() == ChangeType.DELETE) {
             // Delete delta is never empty
@@ -458,6 +487,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return true;
     }
 
+    @Override
     public void normalize() {
         checkMutable();
         if (objectToAdd != null) {
@@ -473,13 +503,14 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public ObjectDeltaImpl<O> narrow(PrismObject<O> existingObject, @NotNull ParameterizedEquivalenceStrategy plusStrategy,
             @NotNull ParameterizedEquivalenceStrategy minusStrategy, boolean assumeMissingItems) {
         checkMutable();
         if (!isModify()) {
             throw new UnsupportedOperationException("Narrow is supported only for modify deltas");
         }
-        ObjectDeltaImpl<O> narrowedDelta = new ObjectDeltaImpl<>(this.objectTypeClass, this.changeType, this.prismContext);
+        ObjectDeltaImpl<O> narrowedDelta = new ObjectDeltaImpl<>(this.objectTypeClass, this.changeType, this.getPrismContext());
         narrowedDelta.oid = this.oid;
         for (ItemDelta<?, ?> modification : modifications) {
             ItemDelta<?, ?> narrowedModification = modification.narrow(existingObject, plusStrategy.prismValueComparator(),
@@ -492,6 +523,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     // TODO better name
+    @Override
     public void applyDefinitionIfPresent(PrismObjectDefinition<O> definition, boolean tolerateNoDefinition) throws SchemaException {
         if (objectToAdd != null) {
             objectToAdd.applyDefinition(definition);            // TODO tolerateNoDefinition
@@ -502,8 +534,9 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     /**
      * Deep clone.
      */
+    @Override
     public ObjectDeltaImpl<O> clone() {
-        ObjectDeltaImpl<O> clone = new ObjectDeltaImpl<>(this.objectTypeClass, this.changeType, this.prismContext);
+        ObjectDeltaImpl<O> clone = new ObjectDeltaImpl<>(this.objectTypeClass, this.changeType, this.getPrismContext());
         copyValues(clone);
         return clone;
     }
@@ -563,12 +596,14 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public void mergeModifications(Collection<? extends ItemDelta> modificationsToMerge) throws SchemaException {
         for (ItemDelta<?, ?> propDelta : modificationsToMerge) {
             mergeModification(propDelta);
         }
     }
 
+    @Override
     public void mergeModification(ItemDelta<?, ?> modificationToMerge) throws SchemaException {
         swallow(modificationToMerge);
     }
@@ -579,6 +614,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * <p>
      * TODO incorporate equivalence strategy
      */
+    @Override
     public void swallow(ItemDelta<?, ?> newItemDelta) throws SchemaException {
         checkMutable();
         if (changeType == ChangeType.ADD) {
@@ -596,6 +632,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         // nothing to do for DELETE
     }
 
+    @Override
     public void applyTo(PrismObject<O> targetObject) throws SchemaException {
         if (isEmpty()) {
             // nothing to do
@@ -621,6 +658,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * @param objectOld object before change
      * @return object with applied changes or null if the object should not exit (was deleted)
      */
+    @Override
     public PrismObject<O> computeChangedObject(PrismObject<O> objectOld) throws SchemaException {
         if (objectOld == null) {
             if (getChangeType() == ChangeType.ADD) {
@@ -642,6 +680,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return objectNew;
     }
 
+    @Override
     public void swallow(List<ItemDelta<?, ?>> itemDeltas) throws SchemaException {
         for (ItemDelta<?, ?> itemDelta : itemDeltas) {
             swallow(itemDelta);
@@ -653,37 +692,42 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return new ArrayList<>();
     }
 
+    @Override
     public <X> PropertyDelta<X> createPropertyModification(ItemPath path) {
         PrismObjectDefinition<O> objDef = getPrismContext().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
         PrismPropertyDefinition<X> propDef = objDef.findPropertyDefinition(path);
         return createPropertyModification(path, propDef);
     }
 
+    @Override
     public <C> PropertyDelta<C> createPropertyModification(ItemPath path, PrismPropertyDefinition propertyDefinition) {
-        PropertyDelta<C> propertyDelta = new PropertyDeltaImpl<>(path, propertyDefinition, prismContext);
+        PropertyDelta<C> propertyDelta = new PropertyDeltaImpl<>(path, propertyDefinition, getPrismContext());
         // No point in adding the modification to this delta. It will get merged anyway and it may disappear
         // it is not reliable and therefore it is better not to add it now.
         return propertyDelta;
     }
 
     public ReferenceDelta createReferenceModification(QName name, PrismReferenceDefinition referenceDefinition) {
-        ReferenceDelta referenceDelta = new ReferenceDeltaImpl(ItemName.fromQName(name), referenceDefinition, prismContext);
+        ReferenceDelta referenceDelta = new ReferenceDeltaImpl(ItemName.fromQName(name), referenceDefinition, getPrismContext());
         return addModification(referenceDelta);
     }
 
+    @Override
     public ReferenceDelta createReferenceModification(ItemPath path, PrismReferenceDefinition referenceDefinition) {
-        ReferenceDelta referenceDelta = new ReferenceDeltaImpl(path, referenceDefinition, prismContext);
+        ReferenceDelta referenceDelta = new ReferenceDeltaImpl(path, referenceDefinition, getPrismContext());
         return addModification(referenceDelta);
     }
 
+    @Override
     public <C extends Containerable> ContainerDelta<C> createContainerModification(ItemPath path) {
         PrismObjectDefinition<O> objDef = getPrismContext().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
         PrismContainerDefinition<C> propDef = objDef.findContainerDefinition(path);
         return createContainerModification(path, propDef);
     }
 
+    @Override
     public <C extends Containerable> ContainerDelta<C> createContainerModification(ItemPath path, PrismContainerDefinition<C> containerDefinition) {
-        ContainerDelta<C> containerDelta = new ContainerDeltaImpl<>(path, containerDefinition, prismContext);
+        ContainerDelta<C> containerDelta = new ContainerDeltaImpl<>(path, containerDefinition, getPrismContext());
         return addModification(containerDelta);
     }
 
@@ -706,7 +750,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public <C extends Containerable> void addModificationAddContainer(ItemPath propertyPath, C... containerables) throws SchemaException {
-        ObjectDeltaFactoryImpl.fillInModificationAddContainer(this, propertyPath, prismContext, containerables);
+        ObjectDeltaFactoryImpl.fillInModificationAddContainer(this, propertyPath, getPrismContext(), containerables);
     }
 
     @Override
@@ -716,7 +760,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public <C extends Containerable> void addModificationDeleteContainer(ItemPath propertyPath, C... containerables) throws SchemaException {
-        ObjectDeltaFactoryImpl.fillInModificationDeleteContainer(this, propertyPath, prismContext, containerables);
+        ObjectDeltaFactoryImpl.fillInModificationDeleteContainer(this, propertyPath, getPrismContext(), containerables);
     }
 
     @Override
@@ -744,6 +788,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         ObjectDeltaFactoryImpl.fillInModificationReplaceReference(this, path, refValues);
     }
 
+    @Override
     public ReferenceDelta createReferenceModification(ItemPath refPath) {
         PrismObjectDefinition<O> objDef = getPrismContext().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
         PrismReferenceDefinition refDef = objDef.findReferenceDefinition(refPath);
@@ -778,6 +823,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return objectDelta;
     }
 
+    @Override
     public ObjectDeltaImpl<O> createReverseDelta() throws SchemaException {
         if (isAdd()) {
             return createDeleteDelta(getObjectTypeClass(), getOid(), getPrismContext());
@@ -792,20 +838,24 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return reverseDelta;
     }
 
+    @Override
     public void checkConsistence() {
         checkConsistence(ConsistencyCheckScope.THOROUGH);
     }
 
+    @Override
     public void checkConsistence(ConsistencyCheckScope scope) {
         checkConsistence(true, false, false, scope);
     }
 
+    @Override
     public void checkConsistence(boolean requireOid, boolean requireDefinition, boolean prohibitRaw) {
         checkConsistence(requireOid, requireDefinition, prohibitRaw, ConsistencyCheckScope.THOROUGH);
     }
 
+    @Override
     public void checkConsistence(boolean requireOid, boolean requireDefinition, boolean prohibitRaw, ConsistencyCheckScope scope) {
-        if (scope.isThorough() && prismContext == null) {
+        if (scope.isThorough() && getPrismContext() == null) {
             throw new IllegalStateException("No prism context in " + this);
         }
         if (getChangeType() == ChangeType.ADD) {
@@ -851,14 +901,17 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public void assertDefinitions() throws SchemaException {
         assertDefinitions("");
     }
 
+    @Override
     public void assertDefinitions(String sourceDescription) throws SchemaException {
         assertDefinitions(false, sourceDescription);
     }
 
+    @Override
     public void assertDefinitions(boolean tolerateRawElements) throws SchemaException {
         assertDefinitions(tolerateRawElements, "");
     }
@@ -866,6 +919,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     /**
      * Assert that all the items has appropriate definition.
      */
+    @Override
     public void assertDefinitions(boolean tolerateRawElements, String sourceDescription) throws SchemaException {
         if (changeType == ChangeType.ADD) {
             objectToAdd.assertDefinitions("add delta in " + sourceDescription);
@@ -877,6 +931,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public void revive(PrismContext prismContext) throws SchemaException {
         if (objectToAdd != null) {
             objectToAdd.revive(prismContext);
@@ -884,12 +939,9 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         for (ItemDelta<?, ?> modification : modifications) {
             modification.revive(prismContext);
         }
-        // todo is this correct? [pm]
-        if (this.prismContext == null) {
-            this.prismContext = prismContext;
-        }
     }
 
+    @Override
     public void applyDefinition(PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException {
         if (objectToAdd != null) {
             objectToAdd.applyDefinition(objectDefinition, force);
@@ -999,6 +1051,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * but it rather has to be compact. E.g. short element names are preferred to long
      * QNames or URIs.
      */
+    @Override
     public String toDebugType() {
         if (objectTypeClass == null) {
             return "(unknown)";
@@ -1043,12 +1096,13 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * Currently compares paths by "equals" predicate -- in the future we might want to treat sub/super/equivalent paths!
      * So consider this method highly experimental.
      */
+    @Override
     public ObjectDeltaImpl<O> subtract(@NotNull Collection<ItemPath> paths) {
         checkMutable();
         if (!isModify()) {
             throw new UnsupportedOperationException("Only for MODIFY deltas, not for " + this);
         }
-        ObjectDeltaImpl<O> rv = new ObjectDeltaImpl<>(this.objectTypeClass, ChangeType.MODIFY, this.prismContext);
+        ObjectDeltaImpl<O> rv = new ObjectDeltaImpl<>(this.objectTypeClass, ChangeType.MODIFY, this.getPrismContext());
         rv.oid = this.oid;
         Iterator<? extends ItemDelta<?, ?>> iterator = modifications.iterator();
         while (iterator.hasNext()) {
@@ -1061,6 +1115,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return rv;
     }
 
+    @Override
     @NotNull
     public FactorOutResultSingle<O> factorOut(Collection<? extends ItemPath> paths, boolean cloneDelta) {
         if (isAdd()) {
@@ -1072,6 +1127,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     @NotNull
     public FactorOutResultMulti<O> factorOutValues(ItemPath path, boolean cloneDelta) throws SchemaException {
         if (isAdd()) {
@@ -1150,7 +1206,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         FactorOutResultMulti<O> rv = new FactorOutResultMulti<>(remainder);
 
         MultiValuedMap<Long, ItemDelta<?, ?>> modificationsForId = new ArrayListValuedHashMap<>();
-        PrismObjectDefinition<O> objDef = objectTypeClass != null ? prismContext.getSchemaRegistry().findObjectDefinitionByCompileTimeClass(objectTypeClass) : null;
+        PrismObjectDefinition<O> objDef = objectTypeClass != null ? getPrismContext().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(objectTypeClass) : null;
         ItemDefinition itemDef = objDef != null ? objDef.findItemDefinition(path) : null;
         Boolean isSingle = itemDef != null ? itemDef.isSingleValue() : null;
         if (isSingle == null) {
@@ -1230,6 +1286,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * @param dryRun only testing if value could be subtracted; not changing anything
      * @return true if the delta originally contained an instruction to add (or set) 'itemPath' to 'value'.
      */
+    @Override
     public boolean subtract(@NotNull ItemPath itemPath, @NotNull PrismValue value, boolean fromMinusSet, boolean dryRun) {
         checkMutable();
         if (isAdd()) {
@@ -1290,6 +1347,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     @NotNull
     public List<ItemPath> getModifiedItems() {
         if (!isModify()) {
@@ -1329,6 +1387,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * (3) For DELETE item delta for PrismContainers, content of items deleted might not be known
      * (only ID could be provided on PCVs).
      */
+    @Override
     @SuppressWarnings("unused")            // used from scripts
     public List<PrismValue> getDeletedValuesFor(ItemPath itemPath) {
         if (isAdd()) {
@@ -1349,6 +1408,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    @Override
     public void clear() {
         checkMutable();
         if (isAdd()) {

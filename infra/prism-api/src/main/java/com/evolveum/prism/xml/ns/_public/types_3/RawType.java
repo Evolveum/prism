@@ -147,7 +147,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
     @Override
     public PrismContext getPrismContext() {
-        return current().prismContext;
+        return current().getPrismContext();
     }
 
     // experimental
@@ -319,21 +319,23 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
     private static abstract class State implements Serializable {
 
-        protected transient PrismContext prismContext;
-
         private static final long serialVersionUID = 1L;
 
         public State(PrismContext prismContext) {
-            this.prismContext = prismContext;
+
         }
 
         protected abstract RawType performClone();
 
         protected PrismContext checkPrismContext() {
-            if (prismContext == null) {
+            if (getPrismContext() == null) {
                 throw new IllegalStateException("prismContext is not set - perhaps a forgotten call to adopt() somewhere?");
             }
-            return prismContext;
+            return getPrismContext();
+        }
+
+        protected PrismContext getPrismContext() {
+            return PrismContext.get();
         }
 
         boolean isTransient() {
@@ -353,7 +355,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         protected abstract Parsed<?> asParsed();
 
         protected void revive(PrismContext prismContext) throws SchemaException {
-            this.prismContext = prismContext;
+            // NOOP
         }
 
         abstract <IV extends PrismValue> Parsed<IV> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName) throws SchemaException;
@@ -454,8 +456,8 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         @Override
         XNode toXNode() throws SchemaException {
             checkPrismContext();
-            XNode rv = prismContext.xnodeSerializer().root(new QName("dummy")).serialize(value).getSubnode();
-            prismContext.xnodeMutator().setXNodeType(rv, explicitTypeName, explicitTypeDeclaration());
+            XNode rv = getPrismContext().xnodeSerializer().root(new QName("dummy")).serialize(value).getSubnode();
+            getPrismContext().xnodeMutator().setXNodeType(rv, explicitTypeName, explicitTypeDeclaration());
             return rv;
         }
 
@@ -537,7 +539,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         @Override
         protected RawType performClone() {
             // FIXME: MID-6833 We clone value since Midpoint assumes clone to mutable contract
-            return new RawType(new Parsed<PrismValue>(prismContext, value.clone(), explicitTypeName));
+            return new RawType(new Parsed<PrismValue>(getPrismContext(), value.clone(), explicitTypeName));
         }
     }
 
@@ -597,10 +599,10 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                     javaClass = XsdTypeMapper.getXsdToJavaMapping(node.getTypeQName());
                 }
                 if (javaClass != null) {
-                    return new Parsed<>(prismContext, valueFor(realValue(javaClass)), node.getTypeQName());
+                    return new Parsed<>(getPrismContext(), valueFor(realValue(javaClass)), node.getTypeQName());
                 }
-                PrismValue asValue = prismContext.parserFor(node.toRootXNode()).parseItemValue();
-                return new Parsed<PrismValue>(prismContext, asValue, node.getTypeQName());
+                PrismValue asValue = getPrismContext().parserFor(node.toRootXNode()).parseItemValue();
+                return new Parsed<PrismValue>(getPrismContext(), asValue, node.getTypeQName());
             }
 
             // unknown or null type -- try parsing as string
@@ -615,7 +617,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @Override
         protected <T> T realValue(Class<T> javaClass) throws SchemaException {
-            return prismContext.parserFor(node.toRootXNode()).parseRealValue(javaClass);
+            return getPrismContext().parserFor(node.toRootXNode()).parseRealValue(javaClass);
         }
 
         @Override
@@ -626,8 +628,8 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                     itemName = itemDefinition.getItemName();
                 }
                 checkPrismContext();
-                var rootNode = prismContext.xnodeFactory().root(itemName, node);
-                Item<IV, ItemDefinition<?>> subItem = prismContext.parserFor(rootNode).name(itemName).definition(itemDefinition).<IV,ItemDefinition<?>>parseItem();
+                var rootNode = getPrismContext().xnodeFactory().root(itemName, node);
+                Item<IV, ItemDefinition<?>> subItem = getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).<IV,ItemDefinition<?>>parseItem();
                 if (!subItem.isEmpty()) {
                     value = subItem.getAnyValue();
                 } else {
@@ -636,7 +638,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                 if (value != null && !itemDefinition.canBeDefinitionOf(value)) {
                     throw new SchemaException("Attempt to parse raw value into "+value+" that does not match provided definition "+itemDefinition);
                 }
-                return new Parsed<>(prismContext, value, itemDefinition.getTypeName());
+                return new Parsed<>(getPrismContext(), value, itemDefinition.getTypeName());
             }
             // we don't really want to set 'parsed', as we didn't performed real parsing
             @SuppressWarnings("unchecked")
@@ -711,9 +713,9 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                 return ((Referencable) parsedValue).asReferenceValue();
             }
             if (parsedValue instanceof PolyStringType) {
-                return prismContext.itemFactory().createPropertyValue(PolyString.toPolyString((PolyStringType) parsedValue));   // hack
+                return getPrismContext().itemFactory().createPropertyValue(PolyString.toPolyString((PolyStringType) parsedValue));   // hack
             }
-            return prismContext.itemFactory().createPropertyValue(parsedValue);
+            return getPrismContext().itemFactory().createPropertyValue(parsedValue);
         }
 
         @Override

@@ -34,6 +34,7 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
     public void revive(PrismContext prismContext) {
     }
 
+    @Override
     public String getDebugDumpClassName() {
         return "STD";
     }
@@ -43,6 +44,7 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
         return "simple type";
     }
 
+    @Override
     public QName getBaseTypeName() {
         return baseTypeName;
     }
@@ -55,7 +57,7 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
     @NotNull
     @Override
     public SimpleTypeDefinitionImpl clone() {
-        SimpleTypeDefinitionImpl clone = new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod, prismContext);
+        SimpleTypeDefinitionImpl clone = new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod, getPrismContext());
         super.copyDefinitionData(clone);
         return clone;
     }
