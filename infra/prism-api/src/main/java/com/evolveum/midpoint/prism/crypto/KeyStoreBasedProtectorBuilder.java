@@ -22,6 +22,7 @@ public final class KeyStoreBasedProtectorBuilder {
     private String requestedJceProviderName;
     private String encryptionAlgorithm;
     private String digestAlgorithm;
+    private String fixedSalt;
     private List<TrustManager> trustManagers;
 
     @NotNull private final ProtectorCreator protectorCreator;
@@ -59,6 +60,11 @@ public final class KeyStoreBasedProtectorBuilder {
         return this;
     }
 
+    public KeyStoreBasedProtectorBuilder fixedSalt(String val) {
+        fixedSalt = val;
+        return this;
+    }
+
     public KeyStoreBasedProtectorBuilder digestAlgorithm(String val) {
         digestAlgorithm = val;
         return this;
@@ -87,6 +93,10 @@ public final class KeyStoreBasedProtectorBuilder {
 
     public String getEncryptionAlgorithm() {
         return encryptionAlgorithm;
+    }
+
+    public String getFixedSalt() {
+        return fixedSalt;
     }
 
     public String getDigestAlgorithm() {

@@ -72,6 +72,7 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
     private String requestedJceProviderName = null;
     private String encryptionAlgorithm;
     private String digestAlgorithm;
+    private String fixedSalt;
 
     private List<TrustManager> trustManagers;
 
@@ -105,6 +106,7 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
         }
         setRequestedJceProviderName(builder.getRequestedJceProviderName());
         setEncryptionAlgorithm(builder.getEncryptionAlgorithm());
+        setFixedSalt(builder.getFixedSalt());
         digestAlgorithm = builder.getDigestAlgorithm();
         trustManagers = builder.getTrustManagers();
     }
@@ -453,6 +455,14 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
         return keyStorePath;
     }
 
+    public void setFixedSalt(String fixedSalt) {
+        this.fixedSalt = fixedSalt;
+    }
+
+    private String getFixedSalt() {
+        return fixedSalt;
+    }
+
     private SecretKey getSecretKeyByAlias(String alias) throws EncryptionException {
         if (alias == null || alias.isEmpty()) {
             throw new EncryptionException("Key alias must be specified and cannot be blank.");
@@ -513,7 +523,14 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
             throws EncryptionException {
 
         char[] clearChars = getClearChars(protectedData);
-        byte[] salt = generatePbkdSalt();
+        byte[] salt;
+
+        if (getFixedSalt() != null) {
+            salt = getFixedSalt().getBytes(); // uses one fixed salt for all hashes
+        } else {
+            salt = generatePbkdSalt(); // generates fresh salt every time called
+        }
+
         int iterations = getPbkdIterations();
 
         SecretKeyFactory secretKeyFactory;
