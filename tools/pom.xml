@@ -12,7 +12,7 @@
     <parent>
         <artifactId>prism-parent</artifactId>
         <groupId>com.evolveum.prism</groupId>
-        <version>4.4-SNAPSHOT</version>
+        <version>4.4-M3</version>
     </parent>
 
     <groupId>com.evolveum.prism.tools</groupId>
