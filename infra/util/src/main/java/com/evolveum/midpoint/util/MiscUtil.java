@@ -1043,6 +1043,10 @@ public class MiscUtil {
         return collection.get(ThreadLocalRandom.current().nextInt(collection.size()));
     }
 
+    public static Long toLong(Integer value) {
+        return value != null ? (long) value : null;
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
@@ -1169,5 +1173,10 @@ public class MiscUtil {
             }
         }
         return true;
+    }
+
+    /** Crude attempt at replacing all illegal chars with underscores. Maybe too strict. */
+    public static String fixFileName(String originalName) {
+        return originalName.replaceAll("[^a-zA-Z0-9.\\-]", "_");
     }
 }
