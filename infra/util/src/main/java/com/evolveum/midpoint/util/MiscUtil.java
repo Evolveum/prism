@@ -1179,4 +1179,25 @@ public class MiscUtil {
     public static String fixFileName(String originalName) {
         return originalName.replaceAll("[^a-zA-Z0-9.\\-]", "_");
     }
+
+    /**
+     * Replacing colons in file name on Windows.
+     *
+     * This is a workaround for a strange problem in Apache file utils: Colons are no problem for Windows,
+     * but Apache file utils complain for them when running on Windows.
+     *
+     * Until this problem is fixed, this method should be used.
+     */
+    public static String replaceColonsInFileNameOnWindows(String path) {
+        if (onWindows()) {
+            return path.replaceAll(":", "_");
+        } else {
+            return path;
+        }
+    }
+
+    /** Are we running on Windows? (Rough estimate.) */
+    public static boolean onWindows() {
+        return File.separatorChar == '\\';
+    }
 }
