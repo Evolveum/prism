@@ -51,7 +51,7 @@ public class JaxbTypeConverter {
     }
 
     private static PolyString fromPolyStringType(PolyStringType polyStringType) {
-        if (polyStringType == null || polyStringType.getOrig() == null) {
+        if (polyStringType == null) {
             return null;
         }
         PolyString polyString;
