@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -310,9 +310,7 @@ public class DOMUtil {
         }
 
         // indent
-        for (int i = 0; i < level; i++) {
-            sb.append("  ");
-        }
+        sb.append("  ".repeat(Math.max(0, level)));
         if (node == null) {
             sb.append("null\n");
         } else {
@@ -411,7 +409,7 @@ public class DOMUtil {
         NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node childNode = childNodes.item(i);
-            if (QNameUtil.compareQName(elementName, childNode)) {
+            if (QNameUtil.matches(elementName, childNode)) {
                 elements.add((Element) childNode);
             }
         }
@@ -762,7 +760,7 @@ public class DOMUtil {
     public static Map<String, String> getNamespaceDeclarationsNonNull(Element element) {
         Map<String, String> mapWithNullKeys = getNamespaceDeclarations(element);
         String defaultNs = mapWithNullKeys.get(null);
-        if(defaultNs != null) {
+        if (defaultNs != null) {
             mapWithNullKeys.remove(null);
             mapWithNullKeys.put("", defaultNs);
         }
@@ -772,10 +770,10 @@ public class DOMUtil {
     public static void setNamespaceDeclarations(Element element, Map<String, String> rootNamespaceDeclarations) {
         if (rootNamespaceDeclarations != null) {
             for (Entry<String, String> entry : rootNamespaceDeclarations.entrySet()) {
-                if(StringUtils.isEmpty(entry.getKey())) {
+                if (StringUtils.isEmpty(entry.getKey())) {
                     // Default namespace, do not redeclare if not necessary.
                     String defaultNamespace = element.lookupNamespaceURI(null);
-                    if(Objects.equals(entry.getValue(), defaultNamespace)) {
+                    if (Objects.equals(entry.getValue(), defaultNamespace)) {
                         continue;
                     }
                 }
@@ -811,13 +809,12 @@ public class DOMUtil {
     public static Map<String, String> allNamespaceDeclarations(Node node) {
         Map<String, String> retval = getAllVisibleNamespaceDeclarations(node);
         String defaultNs = retval.remove(null);
-        if(defaultNs != null) {
+        if (defaultNs != null) {
             retval.put("", defaultNs);
         }
 
         return retval;
     }
-
 
     // returns owner node - works also for attributes
     private static Node getParentNode(Node node) {
@@ -983,8 +980,8 @@ public class DOMUtil {
 
     public static Optional<Element> getElement(Element root, QName... path) {
         Element current = root;
-        for(QName step : path) {
-            if(current == null) {
+        for (QName step : path) {
+            if (current == null) {
                 break;
             }
             current = getChildElement(current, step);

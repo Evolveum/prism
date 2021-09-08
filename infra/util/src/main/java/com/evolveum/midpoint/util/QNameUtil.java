@@ -6,15 +6,13 @@
  */
 package com.evolveum.midpoint.util;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +20,6 @@ import org.w3c.dom.Node;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
 
 /**
  * QName &lt;-&gt; URI conversion.
@@ -146,7 +142,7 @@ public class QNameUtil {
         Preconditions.checkState(splitted.hasNext());
         String first = splitted.next();
         final PrefixedName ret;
-        if(splitted.hasNext()) {
+        if (splitted.hasNext()) {
             ret = new PrefixedName(first, splitted.next());
         } else {
             ret = new PrefixedName("", first);
@@ -204,8 +200,9 @@ public class QNameUtil {
         }
     }
 
-    public static boolean compareQName(QName qname, Node node) {
-        return (qname.getNamespaceURI().equals(node.getNamespaceURI()) && qname.getLocalPart().equals(node.getLocalName()));
+    public static boolean matches(QName qname, Node node) {
+        return qname.getNamespaceURI().equals(node.getNamespaceURI())
+                && qname.getLocalPart().equals(node.getLocalName());
     }
 
     /**
@@ -418,7 +415,7 @@ public class QNameUtil {
 
         @Override
         public String toString() {
-            if(prefix.isEmpty()) {
+            if (prefix.isEmpty()) {
                 return localName;
             }
             return prefix + ":" + localName;
