@@ -6,13 +6,15 @@
  */
 package com.evolveum.midpoint.util;
 
+import java.util.function.Consumer;
+
 /**
  * Very simple object to hold a single value. This comes handy when a final value is required but there is a
  * need to use immutable value (e.g. int, String). This comes very handy in Java anonymous instances (almost-closures).
  *
  * @author Radovan Semancik
  */
-public class Holder<T> {
+public class Holder<T> implements Consumer<T> {
 
     private T value;
 
@@ -73,4 +75,8 @@ public class Holder<T> {
         return "Holder(" + value + ")";
     }
 
+    @Override
+    public void accept(T t) {
+        this.value = t;
+    }
 }
