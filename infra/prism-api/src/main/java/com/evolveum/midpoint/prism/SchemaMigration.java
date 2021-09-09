@@ -20,11 +20,18 @@ public class SchemaMigration implements Serializable {
     private final String version;
     private final SchemaMigrationOperation operation;
 
+    private final QName replacement;
+
     public SchemaMigration(QName elementQName, String version, SchemaMigrationOperation operation) {
+        this(elementQName, version, operation, null);
+    }
+
+    public SchemaMigration(QName elementQName, String version, SchemaMigrationOperation operation, QName replacement) {
         super();
         this.elementQName = elementQName;
         this.version = version;
         this.operation = operation;
+        this.replacement = replacement;
     }
 
     public QName getElementQName() {
@@ -85,6 +92,10 @@ public class SchemaMigration implements Serializable {
     public String toString() {
         return "SchemaMigration(element=" + elementQName + ", version=" + version + ", operation="
                 + operation + ")";
+    }
+
+    public QName getReplacement() {
+        return replacement;
     }
 
 }

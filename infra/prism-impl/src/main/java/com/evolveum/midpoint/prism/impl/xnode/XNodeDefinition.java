@@ -13,6 +13,8 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
+import com.evolveum.midpoint.prism.SchemaMigration;
+import com.evolveum.midpoint.prism.SchemaMigrationOperation;
 import com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -314,7 +316,19 @@ public abstract class XNodeDefinition {
         }
 
         protected ItemDefinition<?> findDefinition(QName name) {
-            return definition.findLocalItemDefinition(name);
+            ItemDefinition ret = definition.findLocalItemDefinition(name);
+            if (ret != null) {
+                return ret;
+            }
+            // Definition may be renamed, lets look schema migrations;
+            for(SchemaMigration migration : definition.getSchemaMigrations()) {
+                if (migration.getOperation() == SchemaMigrationOperation.MOVED
+                        && QNameUtil.match(name, migration.getElementQName())) {
+                    QName replacement = migration.getReplacement();
+                    return definition.findLocalItemDefinition(name);
+                }
+            }
+            return null;
         }
 
         @Override
