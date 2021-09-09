@@ -315,6 +315,19 @@ public abstract class XNodeDefinition {
             return awareFrom(name, findDefinition(name), true);
         }
 
+        /**
+         * Looks up definition by provided QName
+         *
+         * Searches for container-local item definition by provided QName,
+         * if definition is not present, looks for schema migration for provided QName
+         * and tries to find definition of replacement.
+         *
+         * Migration search is not version aware, and is triggered only
+         * if original definition is removed from schema.
+         *
+         * @param name
+         * @return
+         */
         protected ItemDefinition<?> findDefinition(QName name) {
             ItemDefinition ret = definition.findLocalItemDefinition(name);
             if (ret != null) {
@@ -323,9 +336,10 @@ public abstract class XNodeDefinition {
             // Definition may be renamed, lets look schema migrations;
             for(SchemaMigration migration : definition.getSchemaMigrations()) {
                 if (migration.getOperation() == SchemaMigrationOperation.MOVED
-                        && QNameUtil.match(name, migration.getElementQName())) {
+                        && QNameUtil.match(name, migration.getElementQName())
+                        && migration.getReplacement() != null) {
                     QName replacement = migration.getReplacement();
-                    return definition.findLocalItemDefinition(name);
+                    return definition.findLocalItemDefinition(replacement);
                 }
             }
             return null;
@@ -369,6 +383,7 @@ public abstract class XNodeDefinition {
 
         @Override
         protected ItemDefinition<?> findDefinition(QName name) {
+            // TODO: Add schemaMigrations lookup
             return definition.itemOrSubstitution(name).orElse(null);
         }
     }
