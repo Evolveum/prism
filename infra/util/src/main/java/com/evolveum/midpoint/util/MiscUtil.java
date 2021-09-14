@@ -1047,6 +1047,10 @@ public class MiscUtil {
         return value != null ? (long) value : null;
     }
 
+    public static Integer toInteger(Long value) {
+        return value != null ? value.intValue() : null;
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
