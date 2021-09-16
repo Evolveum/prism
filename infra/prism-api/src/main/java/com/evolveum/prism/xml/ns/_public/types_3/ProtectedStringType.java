@@ -31,6 +31,11 @@ public class ProtectedStringType extends ProtectedDataType<String> implements Cl
         content = new ContentList();
     }
 
+    public static ProtectedStringType fromClearValue(String clearValue) {
+        return new ProtectedStringType()
+                .clearValue(clearValue);
+    }
+
     @Override
     public byte[] getClearBytes() {
         String clearValue = getClearValue();
@@ -46,6 +51,11 @@ public class ProtectedStringType extends ProtectedDataType<String> implements Cl
         if (bytes != null) {
             setClearValue(bytesToString(bytes));
         }
+    }
+
+    @Override
+    public ProtectedStringType clearValue(String clearValue) {
+        return (ProtectedStringType) super.clearValue(clearValue);
     }
 
     @Override
