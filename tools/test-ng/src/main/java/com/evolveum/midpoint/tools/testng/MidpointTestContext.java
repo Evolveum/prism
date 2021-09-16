@@ -23,7 +23,7 @@ public interface MidpointTestContext {
     }
 
     /**
-     * Returns short test name - currently the same like {@link #getTestMethodName()}.
+     * Returns short test name - currently the same as {@link #getTestMethodName()}.
      */
     default String getTestNameShort() {
         return getTestMethodName();
