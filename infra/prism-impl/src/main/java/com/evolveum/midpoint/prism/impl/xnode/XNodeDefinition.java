@@ -334,6 +334,9 @@ public abstract class XNodeDefinition {
                 return ret;
             }
             // Definition may be renamed, lets look schema migrations;
+            if ( definition.getSchemaMigrations() == null) {
+                return null;
+            }
             for(SchemaMigration migration : definition.getSchemaMigrations()) {
                 if (migration.getOperation() == SchemaMigrationOperation.MOVED
                         && QNameUtil.match(name, migration.getElementQName())
