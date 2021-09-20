@@ -53,6 +53,7 @@ class DomToSchemaPostProcessor {
 
     private static final Trace LOGGER = TraceManager.getTrace(DomToSchemaPostProcessor.class);
 
+
     private final XSSchemaSet xsSchemaSet;
     private final PrismContext prismContext;
     private MutablePrismSchema schema;
@@ -1148,8 +1149,12 @@ class DomToSchemaPostProcessor {
         if (operationElement == null) {
             throw new SchemaException("Missing schemaMigration operation in "+def);
         }
+
+        Element replacementElement = DOMUtil.getChildElement(schemaMigrationElement, A_SCHEMA_MIGRATION_REPLACEMENT);
+        QName replacementName = replacementElement != null ? DOMUtil.getQNameValue(replacementElement) : null;
+
         SchemaMigrationOperation op = SchemaMigrationOperation.parse(org.apache.commons.lang3.StringUtils.trim(operationElement.getTextContent()));
-        return new SchemaMigration(elementName, org.apache.commons.lang3.StringUtils.trim(versionElement.getTextContent()), op);
+        return new SchemaMigration(elementName, org.apache.commons.lang3.StringUtils.trim(versionElement.getTextContent()), op, replacementName);
     }
 
     private void parseDiagrams(MutableDefinition def, XSAnnotation annotation) throws SchemaException {
