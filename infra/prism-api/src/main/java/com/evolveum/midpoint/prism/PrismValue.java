@@ -141,6 +141,7 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
      */
     boolean representsSameValue(PrismValue other, boolean lax);
 
+    /** Currently doing nothing. */
     void normalize();
 
     /**

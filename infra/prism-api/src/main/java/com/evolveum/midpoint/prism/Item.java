@@ -532,6 +532,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
         return clonedValues;
     }
 
+    /** Currently doing nothing. */
     void normalize();
 
     /**
