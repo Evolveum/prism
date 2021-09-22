@@ -60,6 +60,11 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     private static final Trace LOGGER = TraceManager.getTrace(PrismPropertyImpl.class);
 
     private static final int MAX_SINGLELINE_LEN = 40;
+    private static final int INDEX_ENABLE_TRESHOLD = 50;
+
+    // Start with indexing enabled
+    private boolean indexAvailable = true;
+
 
     private transient HashSet<PrismPropertyValue<T>> valueIndex = null;
 
@@ -223,7 +228,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     public void addValue(PrismPropertyValue<T> pValueToAdd, boolean checkUniqueness) {
         checkMutable();
         ((PrismPropertyValueImpl<T>) pValueToAdd).checkValue();
-        enableOrDisableIndex(pValueToAdd);
+        enableOrDisableIndex(pValueToAdd, true);
         if (checkUniqueness && shouldIterateList(pValueToAdd)) {
             Iterator<PrismPropertyValue<T>> iterator = getValues().iterator();
             while (iterator.hasNext()) {
@@ -242,7 +247,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     protected boolean addInternalExecution(@NotNull PrismPropertyValue<T> newValue) {
-        addToIndex(newValue);
+        addToIndex(newValue, true);
         return super.addInternalExecution(newValue);
     }
 
@@ -613,20 +618,34 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     /**
      * If added value is raw or expression, value hash code index will be disabled.
      *
+     * Index is only enabled when:
+     *   - property never contained any raw value or expression
+     *   - property has more than {@link #INDEX_ENABLE_TRESHOLD} items
+     *
+     * Index is disabled when:
+     *   - raw value is inserted
+     *   -
+     *
+     * @param createIndexIfNeccessary
+     *
      */
-    private void enableOrDisableIndex(PrismPropertyValue<T> valueToAdd) {
+    private void enableOrDisableIndex(PrismPropertyValue<T> valueToAdd, boolean createIndexIfNeccessary) {
         if (valueToAdd.isRaw() || valueToAdd.getExpression() != null) {
             // Index is not usable anymore, since value may change its hashCode during
             // lifetime
+            this.indexAvailable = false;
             this.valueIndex = null;
             return;
         }
         if (isSingleValueByDefinition()) {
             return;
         }
-        if (isEmpty()) {
-            // Lazily initialize index on first value
+        if (valueIndex == null && indexAvailable && createIndexIfNeccessary && INDEX_ENABLE_TRESHOLD <= size()) {
+            // Lazily initialize index on N-th value
             this.valueIndex = new HashSet<>();
+            for (PrismPropertyValue<T> value : getValues()) {
+                addToIndex(value, false);
+            }
         }
     }
 
@@ -649,8 +668,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         removeFromIndex(propertyValue);
     }
 
-    private void addToIndex(PrismPropertyValue<T> value) {
-        enableOrDisableIndex(value);
+    private void addToIndex(PrismPropertyValue<T> value, boolean createIndex) {
+        enableOrDisableIndex(value, createIndex);
         if (this.valueIndex != null) {
             valueIndex.add(value);
         }
@@ -663,20 +682,27 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     void valueChangeEnd(PrismPropertyValue<T> value) {
-        addToIndex(value);
+        addToIndex(value, true);
     }
 
     void valueChangeFailed(PrismPropertyValue<T> value) {
         // PPV.setValue failed (value is set to something incorrect
         // index is unusable from now
+        this.indexAvailable = false;
         this.valueIndex = null;
     }
 
     @Override
     public void addForced(@NotNull PrismPropertyValue<T> newValue) {
-        enableOrDisableIndex(newValue);
+        enableOrDisableIndex(newValue, true);
         super.addForced(newValue);
-        addToIndex(newValue);
+        addToIndex(newValue, false);
+    }
+
+    @Override
+    protected void valueRemoved(PrismPropertyValue<T> currentValue) {
+        super.valueRemoved(currentValue);
+        removeFromIndex(currentValue);
     }
 
     @Override

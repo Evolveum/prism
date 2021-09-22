@@ -68,6 +68,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     protected ItemName elementName;
     protected PrismContainerValue<?> parent;
     protected D definition;
+    // FIXME: THis should be Collection, not list, since list implementations does not allow hashing
     @NotNull protected final List<V> values = new ArrayList<>();
     private transient Map<String,Object> userData = new HashMap<>();
 
@@ -398,6 +399,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
                         exactEquivalentFound = true;
                     } else {
                         iterator.remove();
+                        valueRemoved(currentValue);
                         currentValue.setParent(null);
                         somethingRemoved = true;
                     }
@@ -418,6 +420,11 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
             newValue.applyDefinition(definition, false);
         }
         return addInternalExecution(newValue);
+    }
+
+    protected void valueRemoved(V currentValue) {
+        // NOOP
+
     }
 
     protected boolean addInternalExecution(@NotNull V newValue) {
@@ -508,6 +515,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
             V val = iterator.next();
             if (val.representsSameValue(value, false) || val.equals(value, strategy)) {
                 iterator.remove();
+                valueRemoved(val);
                 val.setParent(null);
                 changed = true;
             }
@@ -518,6 +526,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     public V remove(int index) {
         checkMutable();
         V removed = values.remove(index);
+        valueRemoved(removed);
         removed.setParent(null);
         return removed;
     }
