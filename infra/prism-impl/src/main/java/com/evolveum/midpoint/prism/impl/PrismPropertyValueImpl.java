@@ -10,6 +10,8 @@ package com.evolveum.midpoint.prism.impl;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
@@ -96,9 +98,23 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     @Override
     public void setValue(T value) {
         checkMutable();
-        this.value = value;
-        this.rawElement = null;
-        checkValue();
+        try {
+            notifyParent(PrismPropertyImpl::valueChangeStart);
+            this.value = value;
+            this.rawElement = null;
+            checkValue();
+            notifyParent(PrismPropertyImpl::valueChangeEnd);
+        } catch (Exception e) {
+            notifyParent(PrismPropertyImpl::valueChangeFailed);
+            throw e;
+        }
+    }
+
+    private void notifyParent(BiConsumer<PrismPropertyImpl<T>, PrismPropertyValue<T>> consumer) {
+        Itemable parent = this.getParent();
+        if (parent instanceof PrismPropertyImpl) {
+            consumer.accept(((PrismPropertyImpl<T>) parent), this);
+        }
     }
 
     @Override
@@ -175,8 +191,10 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     public void applyDefinition(ItemDefinition definition) throws SchemaException {
         PrismPropertyDefinition propertyDefinition = (PrismPropertyDefinition) definition;
         if (propertyDefinition != null && !propertyDefinition.isAnyType() && rawElement != null) {
-            value = (T) parseRawElementToNewRealValue(this, propertyDefinition);
-            if (value == null) {
+            T maybeValue = (T) parseRawElementToNewRealValue(this, propertyDefinition);
+            if (maybeValue != null) {
+                setValue(maybeValue);
+            } else {
                 // Be careful here. Expression element can be legal sub-element of complex properties.
                 // Therefore parse expression only if there is no legal value.
                 expression = PrismUtilInternal.parseExpression(rawElement, getPrismContext());
