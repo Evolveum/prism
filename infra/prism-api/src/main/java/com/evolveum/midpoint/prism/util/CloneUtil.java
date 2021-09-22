@@ -17,8 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.Definition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -26,14 +25,13 @@ import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import org.apache.commons.lang.SerializationUtils;
 
-import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;
 
 import javax.xml.datatype.Duration;
@@ -206,5 +204,18 @@ public class CloneUtil {
             PERFORMANCE_ADVISOR.info("Error when cloning {}, will try serialization instead.", orig.getClass(), e);
             return null;
         }
+    }
+
+    @Contract("null -> null; !null -> !null")
+    public static <C extends Containerable> @Nullable C cloneIfImmutable(@Nullable C value) {
+        if (value == null) {
+            return null;
+        }
+        //noinspection unchecked
+        PrismContainerValue<C> pcv = value.asPrismContainerValue();
+        if (!pcv.isImmutable()) {
+            return value;
+        }
+        return pcv.clone().asContainerable();
     }
 }

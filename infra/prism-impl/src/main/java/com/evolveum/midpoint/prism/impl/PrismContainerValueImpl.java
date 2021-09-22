@@ -1313,10 +1313,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public void normalize() {
-        checkMutable();
-        for (Item<?, ?> item : items.values()) {
-            item.normalize();
-        }
+//        checkMutable();
+//        for (Item<?, ?> item : items.values()) {
+//            item.normalize();
+//        }
     }
 
     @Override

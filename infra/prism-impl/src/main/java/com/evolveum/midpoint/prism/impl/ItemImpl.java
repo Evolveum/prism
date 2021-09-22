@@ -547,10 +547,10 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
 
     @Override
     public void normalize() {
-        checkMutable();
-        for (V value : values) {
-            value.normalize();
-        }
+//        checkMutable();
+//        for (V value : values) {
+//            value.normalize();
+//        }
     }
 
     /**
