@@ -645,10 +645,12 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
             // add/delete delta to a replace delta.
             delta = fixupDelta(delta, other);
         }
-        if (delta != null && !delta.isEmpty()) {
-            ((Collection)deltas).add(delta);
+        if (ItemDelta.isEmpty(delta)) {
+            return false;
+        } else {
+            ((Collection) deltas).add(delta);
+            return true;
         }
-        return !delta.isEmpty();
     }
 
     protected ItemDelta<V,D> fixupDelta(ItemDelta<V, D> delta, Item<V, D> other) {

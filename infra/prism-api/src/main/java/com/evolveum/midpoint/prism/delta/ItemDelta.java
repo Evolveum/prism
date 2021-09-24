@@ -172,8 +172,13 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition>
         return itemDelta == null || itemDelta.isEmpty();
     }
 
-    // TODO merge with isEmpty
-    boolean isInFactEmpty();
+    /**
+     * The original semantics of {@link #isEmpty()} method: returns true
+     * if all of values to add, delete, replace are null.
+     *
+     * TODO is this really needed?
+     */
+    boolean isLiterallyEmpty();
 
     boolean addsAnyValue();
 

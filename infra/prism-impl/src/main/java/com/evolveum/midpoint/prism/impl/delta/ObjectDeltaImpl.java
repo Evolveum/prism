@@ -474,10 +474,9 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             return false;
         }
         if (getChangeType() == ChangeType.ADD) {
-            return objectToAdd == null || objectToAdd.isEmpty();
-        }
-        if (modifications.isEmpty()) {
-            return true;
+            // Even if the object to add is empty, the delta as such is NOT empty!
+            // (If the object to add is null, the delta is invalid.)
+            return objectToAdd == null;
         }
         for (ItemDelta<?, ?> mod : modifications) {
             if (!mod.isEmpty()) {
@@ -490,7 +489,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     @Override
     public void normalize() {
         checkMutable();
-        if (objectToAdd != null) {
+        if (objectToAdd != null && !objectToAdd.isImmutable()) {
             objectToAdd.normalize();
         }
         Iterator<? extends ItemDelta> iterator = modifications.iterator();
@@ -515,7 +514,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         for (ItemDelta<?, ?> modification : modifications) {
             ItemDelta<?, ?> narrowedModification = modification.narrow(existingObject, plusStrategy.prismValueComparator(),
                     minusStrategy.prismValueComparator(), assumeMissingItems);
-            if (narrowedModification != null && !narrowedModification.isEmpty()) {
+            if (!ItemDelta.isEmpty(narrowedModification)) {
                 narrowedDelta.addModification(narrowedModification);
             }
         }
@@ -865,7 +864,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             if (getObjectToAdd() != null) {
                 getObjectToAdd().checkConsistence(requireDefinition, prohibitRaw, scope);
             } else {
-                throw new IllegalStateException("User primary delta is ADD, but there is not object to add in " + this);
+                throw new IllegalStateException("Delta is ADD, but there is not object to add in " + this);
             }
         } else if (getChangeType() == ChangeType.MODIFY) {
             if (scope.isThorough()) {
@@ -1326,7 +1325,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
                         wasPresent = wasPresent || itemDelta.removeValueToDelete(value);
                     }
                 }
-                if (!dryRun && itemDelta.isInFactEmpty()) {
+                if (!dryRun && itemDelta.isEmpty()) {
                     itemDeltaIterator.remove();
                 }
             }

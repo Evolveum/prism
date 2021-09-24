@@ -732,13 +732,12 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
     @Override
     public boolean isEmpty() {
-        return valuesToAdd == null && valuesToDelete == null && valuesToReplace == null;
+        return CollectionUtils.isEmpty(valuesToAdd) && CollectionUtils.isEmpty(valuesToDelete) && valuesToReplace == null;
     }
 
-    // TODO merge with isEmpty
     @Override
-    public boolean isInFactEmpty() {
-        return CollectionUtils.isEmpty(valuesToAdd) && CollectionUtils.isEmpty(valuesToDelete) && valuesToReplace == null;
+    public boolean isLiterallyEmpty() {
+        return valuesToAdd == null && valuesToDelete == null && valuesToReplace == null;
     }
 
     @Override
@@ -961,7 +960,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             @NotNull ParameterizedEquivalenceStrategy strategy, boolean assumeMissingItems) {
         Comparator<V> comparator = strategy.prismValueComparator();
         ItemDeltaImpl<V, D> narrowed = (ItemDeltaImpl<V, D>) narrow(object, comparator, comparator, assumeMissingItems);
-        return narrowed == null || narrowed.isEmpty();
+        return ItemDelta.isEmpty(narrowed);
     }
 
     @Override

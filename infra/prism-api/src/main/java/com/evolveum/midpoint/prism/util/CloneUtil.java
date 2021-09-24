@@ -132,6 +132,14 @@ public class CloneUtil {
         }
     }
 
+    public static <T extends Cloneable> T cloneCloneable(T cloneable) {
+        if (cloneable != null) {
+            return javaLangClone(cloneable);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * @return List that can be freely used.
      */
@@ -141,10 +149,14 @@ public class CloneUtil {
             return null;
         }
         List<T> clonedCollection = new ArrayList<>(collection.size());
-        for (T element : collection) {
-            clonedCollection.add(clone(element));
-        }
+        cloneMembersToCollection(clonedCollection, collection);
         return clonedCollection;
+    }
+
+    public static <T> void cloneMembersToCollection(Collection<T> target, Collection<T> source) {
+        for (T element : source) {
+            target.add(clone(element));
+        }
     }
 
     /**

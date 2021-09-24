@@ -38,7 +38,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * @see PropertyDelta
  */
 public interface ObjectDelta<O extends Objectable>
-        extends DebugDumpable, PrismContextSensitive, Visitable, PathVisitable, Serializable, Freezable {
+        extends DebugDumpable, PrismContextSensitive, Visitable, PathVisitable, Serializable, Freezable, Cloneable {
 
     void accept(Visitor visitor, boolean includeOldValues);
 

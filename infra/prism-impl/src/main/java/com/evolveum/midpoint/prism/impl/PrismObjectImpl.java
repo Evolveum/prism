@@ -319,7 +319,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         for (ItemDelta<?, ?> modification: modifications) {
             ItemDelta<?, ?> narrowedModification = modification.narrow(this, plusStrategy.prismValueComparator(),
                     minusStrategy.prismValueComparator(), assumeMissingItems);
-            if (narrowedModification != null && !narrowedModification.isEmpty()) {
+            if (!ItemDelta.isEmpty(narrowedModification)) {
                 narrowedModifications.add(narrowedModification);
             }
         }
