@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
@@ -266,9 +267,9 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
         return id1 != null && id1.equals(id2);
     }
 
-    void assertDefinitions(String sourceDescription) throws SchemaException;
+    void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
-    void assertDefinitions(boolean tolerateRaw, String sourceDescription) throws SchemaException;
+    void assertDefinitions(boolean tolerateRaw, Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
     @Override
     PrismContainerValue<C> clone();

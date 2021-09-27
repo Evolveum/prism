@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
@@ -31,6 +32,7 @@ import com.evolveum.midpoint.prism.ItemDefinitionTransformer.TransformableValue;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
+import com.google.common.base.Strings;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +42,6 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.Checks;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.Holder;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -792,20 +793,25 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
 
     @Override
     public void assertDefinitions() throws SchemaException {
-        assertDefinitions("");
+        assertDefinitions(() -> "");
     }
 
     @Override
-    public void assertDefinitions(String sourceDescription) throws SchemaException {
-        assertDefinitions(false, sourceDescription);
+    public void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        assertDefinitions(false, sourceDescriptionSupplier);
     }
 
     @Override
-    public void assertDefinitions(boolean tolarateRawValues, String sourceDescription) throws SchemaException {
-        if (tolarateRawValues && isRaw()) {
+    public void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        if (tolerateRawValues && isRaw()) {
             return;
         }
-        Checks.checkSchemaNotNull(definition, "No definition in %s in %s", this, sourceDescription);
+        // Must be inlined because of the use of source description supplier
+        if (definition == null) {
+            throw new SchemaException(
+                    Strings.lenientFormat("No definition in %s in %s",
+                            this, sourceDescriptionSupplier.get()));
+        }
     }
 
     @Override

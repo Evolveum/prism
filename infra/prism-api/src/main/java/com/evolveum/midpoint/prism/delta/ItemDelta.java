@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -338,9 +339,9 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition>
 
     PrismValueDeltaSetTriple<V> toDeltaSetTriple(Item<V, D> itemOld) throws SchemaException;
 
-    void assertDefinitions(String sourceDescription) throws SchemaException;
+    void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
-    void assertDefinitions(boolean tolarateRawValues, String sourceDescription) throws SchemaException;
+    void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
     boolean isRaw();
 

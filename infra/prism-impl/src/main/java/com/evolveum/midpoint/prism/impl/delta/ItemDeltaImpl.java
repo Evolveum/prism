@@ -18,6 +18,7 @@ import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -1805,32 +1806,34 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    public void assertDefinitions(String sourceDescription) throws SchemaException {
-        assertDefinitions(false, sourceDescription);
+    public void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        assertDefinitions(false, sourceDescriptionSupplier);
     }
 
     @Override
-    public void assertDefinitions(boolean tolarateRawValues, String sourceDescription) throws SchemaException {
-        if (tolarateRawValues && isRaw()) {
+    public void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        if (tolerateRawValues && isRaw()) {
             return;
         }
         if (definition == null) {
-            throw new SchemaException("No definition in " + this + " in " + sourceDescription);
+            throw new SchemaException("No definition in " + this + " in " + sourceDescriptionSupplier.get());
         }
-        assertDefinitions(tolarateRawValues, valuesToAdd, "values to add in " + sourceDescription);
-        assertDefinitions(tolarateRawValues, valuesToReplace, "values to replace in " + sourceDescription);
-        assertDefinitions(tolarateRawValues, valuesToDelete, "values to delete in " + sourceDescription);
+        assertDefinitions(tolerateRawValues, valuesToAdd, () -> "values to add in " + sourceDescriptionSupplier.get());
+        assertDefinitions(tolerateRawValues, valuesToReplace, () -> "values to replace in " + sourceDescriptionSupplier.get());
+        assertDefinitions(tolerateRawValues, valuesToDelete, () -> "values to delete in " + sourceDescriptionSupplier.get());
     }
 
-    private void assertDefinitions(boolean tolarateRawValues, Collection<V> values, String sourceDescription) throws SchemaException {
+    private void assertDefinitions(boolean tolerateRawValues, Collection<V> values,
+        Supplier<String> sourceDescriptionSupplier) throws SchemaException {
         if (values == null) {
             return;
         }
         for (V val : values) {
             if (val instanceof PrismContainerValue<?>) {
                 PrismContainerValue<?> cval = (PrismContainerValue<?>) val;
+                Supplier<String> definitionSupplier = () -> cval + " in " + sourceDescriptionSupplier.get();
                 for (Item<?, ?> item : cval.getItems()) {
-                    item.assertDefinitions(tolarateRawValues, cval.toString() + " in " + sourceDescription);
+                    item.assertDefinitions(tolerateRawValues, definitionSupplier);
                 }
             }
         }

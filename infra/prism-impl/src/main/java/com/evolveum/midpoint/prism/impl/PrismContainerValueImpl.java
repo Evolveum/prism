@@ -12,6 +12,7 @@ import static java.util.Collections.singleton;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
@@ -44,8 +45,6 @@ import com.evolveum.midpoint.util.exception.SystemException;
  * @author semancik
  */
 public class PrismContainerValueImpl<C extends Containerable> extends PrismValueImpl implements PrismContainerValue<C> {
-
-
 
     public static final RuntimeException DIFFERENT_ITEMS_EXCEPTION = new ItemDifferentException();
     private static final boolean EARLY_EXIT = true;
@@ -1343,14 +1342,16 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public void assertDefinitions(String sourceDescription) throws SchemaException {
-        assertDefinitions(false, sourceDescription);
+    public void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        assertDefinitions(false, sourceDescriptionSupplier);
     }
 
     @Override
-    public void assertDefinitions(boolean tolerateRaw, String sourceDescription) throws SchemaException {
+    public void assertDefinitions(boolean tolerateRaw, Supplier<String> sourceDescriptionSupplier)
+            throws SchemaException {
+        Supplier<String> itemSourceDescriptionSupplier = () -> "value(" + getId() + ") in " + sourceDescriptionSupplier.get();
         for (Item<?, ?> item : getItems()) {
-            item.assertDefinitions(tolerateRaw, "value(" + getId() + ") in " + sourceDescription);
+            item.assertDefinitions(tolerateRaw, itemSourceDescriptionSupplier);
         }
     }
 

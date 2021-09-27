@@ -521,7 +521,7 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
 
     private void assertUserWill(PrismObject<UserType> user) throws SchemaException {
         user.checkConsistence();
-        user.assertDefinitions("test");
+        user.assertDefinitions();
         assertUserWillExtension(user);
         assertVisitor(user, 56);
         PrismProperty<Object> passwordProperty = user.findProperty(UserType.F_PASSWORD);
@@ -625,7 +625,7 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
 
     private void assertUserElisabeth(PrismObject<UserType> user) throws SchemaException {
         user.checkConsistence();
-        user.assertDefinitions("test");
+        user.assertDefinitions();
         assertUserElisabethExtension(user);
     }
 

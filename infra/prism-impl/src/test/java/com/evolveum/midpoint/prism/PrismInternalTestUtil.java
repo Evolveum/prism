@@ -308,7 +308,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
 
     public static void assertUserJack(PrismObject<UserType> user, boolean expectRawInConstructions, boolean expectFullPolyName, boolean withIncomplete) throws SchemaException {
         user.checkConsistence();
-        user.assertDefinitions("test");
+        user.assertDefinitions();
         assertUserJackContent(user, expectRawInConstructions, expectFullPolyName, withIncomplete);
         assertUserJackExtension(user, withIncomplete);
         assertVisitor(user, 71);

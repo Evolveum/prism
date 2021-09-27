@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -257,14 +258,14 @@ public interface ObjectDelta<O extends Objectable>
 
     void assertDefinitions() throws SchemaException;
 
-    void assertDefinitions(String sourceDescription) throws SchemaException;
+    void assertDefinitions(Supplier<String> sourceDescription) throws SchemaException;
 
     void assertDefinitions(boolean tolerateRawElements) throws SchemaException;
 
     /**
      * Assert that all the items has appropriate definition.
      */
-    void assertDefinitions(boolean tolerateRawElements, String sourceDescription) throws SchemaException;
+    void assertDefinitions(boolean tolerateRawElements, Supplier<String> sourceDescription) throws SchemaException;
 
     void revive(PrismContext prismContext) throws SchemaException;
 

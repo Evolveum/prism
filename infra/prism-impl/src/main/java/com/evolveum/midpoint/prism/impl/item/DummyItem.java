@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.item;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -131,8 +132,9 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         delegate().checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
     }
 
-    public final void assertDefinitions(boolean tolarateRaw, String sourceDescription) throws SchemaException {
-        delegate().assertDefinitions(tolarateRaw, sourceDescription);
+    public final void assertDefinitions(boolean tolerateRaw, Supplier<String> sourceDescriptionSupplier)
+            throws SchemaException {
+        delegate().assertDefinitions(tolerateRaw, sourceDescriptionSupplier);
     }
 
     public final boolean add(@NotNull V newValue, @NotNull EquivalenceStrategy equivalenceStrategy)
@@ -269,8 +271,8 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         delegate().assertDefinitions();
     }
 
-    public final void assertDefinitions(String sourceDescription) throws SchemaException {
-        delegate().assertDefinitions(sourceDescription);
+    public final void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        delegate().assertDefinitions(sourceDescriptionSupplier);
     }
 
     public final boolean isImmutable() {

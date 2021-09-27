@@ -242,7 +242,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
 
     private void assertResourceRum(PrismObject<ResourceType> resource) throws SchemaException {
         resource.checkConsistence();
-        resource.assertDefinitions("test");
+        resource.assertDefinitions();
 
         assertEquals("Wrong oid", RESOURCE_RUM_OID, resource.getOid());
         PrismAsserts.assertObjectDefinition(resource.getDefinition(), RESOURCE_QNAME, RESOURCE_TYPE_QNAME, ResourceType.class);

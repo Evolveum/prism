@@ -11,6 +11,7 @@ import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
@@ -902,30 +903,30 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public void assertDefinitions() throws SchemaException {
-        assertDefinitions("");
+        assertDefinitions(() -> "");
     }
 
     @Override
-    public void assertDefinitions(String sourceDescription) throws SchemaException {
+    public void assertDefinitions(Supplier<String> sourceDescription) throws SchemaException {
         assertDefinitions(false, sourceDescription);
     }
 
     @Override
     public void assertDefinitions(boolean tolerateRawElements) throws SchemaException {
-        assertDefinitions(tolerateRawElements, "");
+        assertDefinitions(tolerateRawElements, () -> "");
     }
 
     /**
      * Assert that all the items has appropriate definition.
      */
     @Override
-    public void assertDefinitions(boolean tolerateRawElements, String sourceDescription) throws SchemaException {
+    public void assertDefinitions(boolean tolerateRawElements, Supplier<String> sourceDescriptionSupplier) throws SchemaException {
         if (changeType == ChangeType.ADD) {
-            objectToAdd.assertDefinitions("add delta in " + sourceDescription);
+            objectToAdd.assertDefinitions(() -> "add delta in " + sourceDescriptionSupplier.get());
         }
         if (changeType == ChangeType.MODIFY) {
             for (ItemDelta<?, ?> mod : modifications) {
-                mod.assertDefinitions(tolerateRawElements, "modify delta for " + getOid() + " in " + sourceDescription);
+                mod.assertDefinitions(tolerateRawElements, () -> "modify delta for " + getOid() + " in " + sourceDescriptionSupplier.get());
             }
         }
     }

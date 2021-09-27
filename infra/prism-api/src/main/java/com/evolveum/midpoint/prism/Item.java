@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -652,9 +653,9 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
 
     void assertDefinitions() throws SchemaException;
 
-    void assertDefinitions(String sourceDescription) throws SchemaException;
+    void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
-    void assertDefinitions(boolean tolerateRawValues, String sourceDescription) throws SchemaException;
+    void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException;
 
     /**
      * Returns true is all the values are raw.

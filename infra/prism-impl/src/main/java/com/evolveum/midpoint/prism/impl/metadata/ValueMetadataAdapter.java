@@ -9,7 +9,7 @@ package com.evolveum.midpoint.prism.impl.metadata;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
@@ -740,13 +740,13 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public void assertDefinitions(String sourceDescription) throws SchemaException {
-        delegate.assertDefinitions(sourceDescription);
+    public void assertDefinitions(Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        delegate.assertDefinitions(sourceDescriptionSupplier);
     }
 
     @Override
-    public void assertDefinitions(boolean tolerateRawValues, String sourceDescription) throws SchemaException {
-        delegate.assertDefinitions(tolerateRawValues, sourceDescription);
+    public void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        delegate.assertDefinitions(tolerateRawValues, sourceDescriptionSupplier);
     }
 
     @Override

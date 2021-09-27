@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -712,10 +713,11 @@ public class PrismContainerImpl<C extends Containerable> extends ItemImpl<PrismC
     }
 
     @Override
-    public void assertDefinitions(boolean tolerateRaw, String sourceDescription) throws SchemaException {
-        super.assertDefinitions(tolerateRaw, sourceDescription);
+    public void assertDefinitions(boolean tolerateRawValues, Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+        super.assertDefinitions(tolerateRawValues, sourceDescriptionSupplier);
+        Supplier<String> valueSourceDescriptionSupplier = () -> this + " in " + sourceDescriptionSupplier.get();
         for (PrismContainerValue<C> val: getValues()) {
-            val.assertDefinitions(tolerateRaw, this.toString()+" in "+sourceDescription);
+            val.assertDefinitions(tolerateRawValues, valueSourceDescriptionSupplier);
         }
     }
 
