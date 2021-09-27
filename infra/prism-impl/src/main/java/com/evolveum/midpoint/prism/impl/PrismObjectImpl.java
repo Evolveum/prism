@@ -17,6 +17,7 @@ import com.evolveum.midpoint.prism.impl.delta.ObjectDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -260,17 +261,21 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public PrismObjectImpl<O> cloneComplex(CloneStrategy strategy) {
-        if (getPrismContext().getMonitor() != null) {
-            getPrismContext().getMonitor().beforeObjectClone(this);
+        PrismMonitor monitor = getPrismContext().getMonitor();
+        if (monitor != null) {
+            monitor.beforeObjectClone(this);
         }
 
-        PrismObjectImpl<O> clone = new PrismObjectImpl<>(getElementName(), getDefinition(), getPrismContext());
-        copyValues(strategy, clone);
-
-        if (getPrismContext().getMonitor() != null) {
-            getPrismContext().getMonitor().afterObjectClone(this, clone);
+        PrismObjectImpl<O> clone = null;
+        try {
+            clone = new PrismObjectImpl<>(getElementName(), getDefinition(), getPrismContext());
+            copyValues(strategy, clone);
+            return clone;
+        } finally {
+            if (monitor != null) {
+                monitor.afterObjectClone(this, clone);
+            }
         }
-        return clone;
     }
 
     protected void copyValues(CloneStrategy strategy, PrismObjectImpl<O> clone) {

@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism.util;
 
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.util.annotation.Experimental;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Interface to plug in a monitoring code to prism. Implementation of this
@@ -21,8 +24,21 @@ public interface PrismMonitor {
 
     <O extends Objectable> void recordPrismObjectCompareCount(PrismObject<O> thisObject, Object thatObject);
 
-    <O extends Objectable> void beforeObjectClone(PrismObject<O> orig);
+    <O extends Objectable> void beforeObjectClone(@NotNull PrismObject<O> orig);
 
-    <O extends Objectable> void afterObjectClone(PrismObject<O> orig, PrismObject<O> clone);
+    <O extends Objectable> void afterObjectClone(@NotNull PrismObject<O> orig, @Nullable PrismObject<O> clone);
 
+    /** Beware! This may not cover all object serializations. Hopefully at least the majority. */
+    @Experimental
+    void beforeObjectSerialization(@NotNull PrismObject<?> item);
+
+    @Experimental
+    void afterObjectSerialization(@NotNull PrismObject<?> item);
+
+    /** Beware! This may not cover all object parsing operations. Hopefully at least the majority. */
+    @Experimental
+    void beforeObjectParsing();
+
+    @Experimental
+    void afterObjectParsing(@Nullable PrismObject<?> object);
 }

@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.SerializerTarget;
+import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
@@ -91,9 +92,19 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
     @NotNull
     @Override
     public T serialize(@NotNull Item<?, ?> item) throws SchemaException {
-        RootXNodeImpl xroot = getMarshaller().marshalItemAsRoot(item, itemName, itemDefinition, context, itemsToSkip);
-        checkPostconditions(xroot);            // TODO find better way
-        return target.write(xroot, context);
+        PrismMonitor monitor = PrismContext.get().getMonitor();
+        if (monitor != null && item instanceof PrismObject) {
+            monitor.beforeObjectSerialization((PrismObject<?>) item);
+        }
+        try {
+            RootXNodeImpl xroot = getMarshaller().marshalItemAsRoot(item, itemName, itemDefinition, context, itemsToSkip);
+            checkPostconditions(xroot); // TODO find better way
+            return target.write(xroot, context);
+        } finally {
+            if (monitor != null && item instanceof PrismObject) {
+                monitor.afterObjectSerialization((PrismObject<?>) item);
+            }
+        }
     }
 
     @NotNull
@@ -119,7 +130,7 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
 //            throw new IllegalArgumentException("Item name nor definition is not known for " + value);
 //        }
         RootXNodeImpl xroot = getMarshaller().marshalPrismValueAsRoot(value, nameToUse, itemDefinition, context, itemsToSkip);
-        checkPostconditions(xroot);                // TODO find better way
+        checkPostconditions(xroot); // TODO find better way
         return target.write(xroot, context);
     }
 

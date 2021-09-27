@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
+import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -134,8 +135,21 @@ abstract class PrismParserImpl implements PrismParser {
 
     @NotNull
     <O extends Objectable> PrismObject<O> doParse() throws SchemaException, IOException {
-        RootXNodeImpl xnode = getLexicalProcessor().read(source, context);
-        return prismContext.getPrismUnmarshaller().parseObject(xnode, itemDefinition, itemName, typeName, typeClass, context);
+        PrismMonitor monitor = prismContext.getMonitor();
+        if (monitor != null) {
+            monitor.beforeObjectParsing();
+        }
+        PrismObject<O> object = null;
+        try {
+            RootXNodeImpl xnode = getLexicalProcessor().read(source, context);
+            object = prismContext.getPrismUnmarshaller().parseObject(
+                    xnode, itemDefinition, itemName, typeName, typeClass, context);
+            return object;
+        } finally {
+            if (monitor != null) {
+                monitor.afterObjectParsing(object);
+            }
+        }
     }
 
     <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> doParseItem() throws IOException, SchemaException {
