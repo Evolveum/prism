@@ -6,17 +6,6 @@
  */
 package com.evolveum.midpoint.util;
 
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
-import com.google.common.collect.Multimap;
-import org.reflections.Reflections;
-import org.reflections.Store;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
-import org.reflections.util.Utils;
-
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,6 +17,17 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import org.reflections.Reflections;
+import org.reflections.Store;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
+import org.reflections.util.Utils;
+
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
  * @author Peter Prochazka
@@ -55,7 +55,13 @@ public class ClassPathUtil {
     public static void searchClasses(String packageName, Consumer<Class<?>> consumer) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.setScanners(new SubTypesScanner(false));
-        builder.setUrls(ClasspathHelper.forPackage(packageName, LOGGER.getClass().getClassLoader()));
+        Collection<URL> urls = ClasspathHelper.forPackage(packageName, LOGGER.getClass().getClassLoader());
+        if (urls == null || urls.isEmpty()) {
+            LOGGER.warn("Empty URLs for package name {}, skipping the scan", packageName);
+            return;
+        }
+
+        builder.setUrls(urls);
         builder.setInputsFilter(new FilterBuilder().includePackage(packageName));
 
         Reflections reflections = new Reflections(builder);
