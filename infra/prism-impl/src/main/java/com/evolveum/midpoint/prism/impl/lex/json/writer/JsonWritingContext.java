@@ -40,7 +40,9 @@ class JsonWritingContext extends WritingContext<JsonGenerator> {
         try {
             JsonFactory factory = new JsonFactory();
             JsonGenerator generator = factory.createGenerator(out);
-            generator.setPrettyPrinter(new DefaultPrettyPrinter());
+            if (!SerializationContext.isSkipWhitespaces(prismSerializationContext)) {
+                generator.setPrettyPrinter(new DefaultPrettyPrinter());
+            }
             generator.setCodec(configureMapperForSerialization());
             return generator;
         } catch (IOException ex) {

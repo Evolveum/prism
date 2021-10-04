@@ -68,6 +68,8 @@ public class SerializationOptions implements Cloneable {
 //    private NameQualificationStrategy itemPathQualificationStrategy;
 //    private NameQualificationStrategy genericQualificationStrategy;
 
+    private boolean skipWhitespaces = false;
+
     public boolean isSerializeReferenceNames() {
         return serializeReferenceNames;
     }
@@ -224,6 +226,19 @@ public class SerializationOptions implements Cloneable {
         return skipTransient;
     }
 
+    public boolean isSkipWhitespaces() {
+        return skipWhitespaces;
+    }
+
+    public void setSkipWhitespaces(boolean skipWhitespaces) {
+        this.skipWhitespaces = skipWhitespaces;
+    }
+
+    public SerializationOptions skipWhitespaces(boolean value) {
+        setSkipWhitespaces(value);
+        return this;
+    }
+
     public static SerializationOptions createQualifiedNames() {
         SerializationOptions opts = new SerializationOptions();
         opts.itemNameQualificationStrategy = ItemNameQualificationStrategy.ALWAYS_USE_FULL_URI;
@@ -281,5 +296,12 @@ public class SerializationOptions implements Cloneable {
     public @NotNull SerializationOptions skipContainerIds(boolean skipIds) {
         this.skipContainerIds = skipIds;
         return this;
+    }
+
+    public static boolean isSkipWhitespaces(SerializationOptions options) {
+        if (options != null) {
+            return options.isSkipWhitespaces();
+        }
+        return false;
     }
 }

@@ -49,6 +49,10 @@ public class SerializationContext implements Cloneable {
         return ctx != null && SerializationOptions.isSkipContainerIds(ctx.getOptions());
     }
 
+    public static boolean isSkipWhitespaces(SerializationContext ctx) {
+        return ctx != null && SerializationOptions.isSkipWhitespaces(ctx.getOptions());
+    }
+
     public static SerializationContext forOptions(SerializationOptions options) {
         return new SerializationContext(options);
     }
@@ -66,4 +70,5 @@ public class SerializationContext implements Cloneable {
         }
         return clone;
     }
+
 }
