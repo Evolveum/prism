@@ -278,7 +278,10 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 // TODO make sure it will be correct with respect to other items as well!
                 if (getterResultValue instanceof JAXBElement && ((JAXBElement<?>) getterResultValue).getName() != null) {
                     elementName = ((JAXBElement<?>) getterResultValue).getName();
-                    // We should update propDef with substitution if possible
+                    // propDef is replaced with substitution if found (this prevents emiting superfluous type
+                    if (ctd != null) {
+                        propDef = ctd.substitution(elementName).orElse(propDef);
+                    }
                 }
 
                 ListXNodeImpl xlist = new ListXNodeImpl();
