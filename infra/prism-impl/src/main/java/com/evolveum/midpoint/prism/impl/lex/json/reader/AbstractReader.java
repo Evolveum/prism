@@ -44,6 +44,18 @@ public abstract class AbstractReader {
 
     private final PrismNamespaceContext namespaceContext;
 
+    public static final ObjectMapper OBJECT_MAPPER;
+
+    static {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule sm = new SimpleModule();
+        sm.addDeserializer(QName.class, new QNameDeserializer());
+        sm.addDeserializer(PolyString.class, new PolyStringDeserializer());
+
+        mapper.registerModule(sm);
+        OBJECT_MAPPER = mapper;
+    }
+
     AbstractReader(@NotNull SchemaRegistry schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
         // Parsing legacy namespace-less JSON with default namespace declared

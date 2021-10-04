@@ -14,6 +14,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.midpoint.prism.impl.lex.json.reader.AbstractReader;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
@@ -24,7 +25,6 @@ import com.evolveum.midpoint.prism.xnode.ValueParser;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ValueNode;
 
@@ -41,12 +41,10 @@ public class JsonValueParser<T> implements ValueParser<T> , Serializable {
 
     private static final long serialVersionUID = -5646889977104413611L;
 
-    @NotNull private final ObjectMapper mapper;
     private final ValueNode node;
     private final PrismNamespaceContext context;
 
     public JsonValueParser(@NotNull JsonParser parser, ValueNode node, PrismNamespaceContext context) {
-        this.mapper = (ObjectMapper) parser.getCodec();
         this.node = node;
         this.context = context;
     }
@@ -69,7 +67,7 @@ public class JsonValueParser<T> implements ValueParser<T> , Serializable {
             return (T) XmlTypeConverter.createXMLGregorianCalendar(getStringValue());
         }
 
-        ObjectReader r = mapper.readerFor(clazz);
+        ObjectReader r = AbstractReader.OBJECT_MAPPER.readerFor(clazz);
 
         try {
             return r.readValue(node);
@@ -118,7 +116,7 @@ public class JsonValueParser<T> implements ValueParser<T> , Serializable {
     }
 
     public Element asDomElement() throws IOException {
-        ObjectReader r = mapper.readerFor(Document.class);
+        ObjectReader r = AbstractReader.OBJECT_MAPPER.readerFor(Document.class);
         return ((Document) r.readValue(node)).getDocumentElement();
     }
 }
