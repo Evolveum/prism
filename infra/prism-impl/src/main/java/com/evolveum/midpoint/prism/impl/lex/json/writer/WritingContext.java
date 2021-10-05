@@ -29,10 +29,10 @@ abstract class WritingContext<G extends JsonGenerator> implements AutoCloseable 
     @NotNull final SerializationContext prismSerializationContext;
 
     WritingContext(@Nullable SerializationContext prismSerializationContext) {
-        this.generator = createJacksonGenerator(out);
         this.prismSerializationContext = prismSerializationContext != null ?
                 prismSerializationContext :
                 new SerializationContext(null);
+        this.generator = createJacksonGenerator(out);
     }
 
     abstract G createJacksonGenerator(StringWriter out);
