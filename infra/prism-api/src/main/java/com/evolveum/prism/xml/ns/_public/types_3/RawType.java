@@ -222,8 +222,14 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         return item;
     }
 
+    /**
+     * This method always returns a mutable XNode. For example, the serializer sometimes needs to set
+     * type QName on the returned XNode. (The cloning might be an overkill, harming the performance.
+     * This will be resolved later, if needed.)
+     */
     public synchronized XNode serializeToXNode() throws SchemaException {
-        return current().toXNode();
+        XNode xNode = current().toXNode();
+        return xNode.isImmutable() ? xNode.clone() : xNode;
     }
     //endregion
 
