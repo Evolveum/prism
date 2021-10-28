@@ -207,7 +207,7 @@ public class ListXNodeImpl extends XNodeImpl implements List<XNodeImpl>, ListXNo
 
     @Override
     public List<? extends XNode> asList() {
-        return immutable ? Collections.unmodifiableList(this) : this;
+        return isImmutable() ? Collections.unmodifiableList(this) : this;
     }
 
     @Override

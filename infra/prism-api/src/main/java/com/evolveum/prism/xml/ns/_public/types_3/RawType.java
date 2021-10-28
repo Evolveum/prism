@@ -41,13 +41,19 @@ import java.util.function.Supplier;
  *
  * In midPoint 4.2 it was made roughly thread-safe by including explicit synchronization at appropriate places.
  * See MID-6542.
+ *
  * In midPoint 4.3 following changes were made to address following issues:
- *  (1) we need to support freezing the content (embedded xnode/prism value)
- *  XNodes are freezable, and RawType requires frozen XNode
- *  (2) we should consider avoiding explicit synchronization for performance reasons
- *  Internal structure is State class
- *    - State Parsed (noop for subsequent parsing calls)
- *    - State Raw (parsing results in transition to state Parsed)
+ *
+ * 1. We need to support freezing the content (embedded xnode/prism value)
+ * XNodes are freezable, and RawType requires frozen XNode.
+ *
+ * 2. We should consider avoiding explicit synchronization for performance reasons
+ *
+ * Internal structure is State class
+ *
+ * - State `Parsed` (noop for subsequent parsing calls)
+ * - State `Raw` (parsing results in transition to state Parsed)
+ * - TODO what about `Transient`?
  *
  * Implementation has stable Equals, but hashcode is unstable since it would require
  * significant effort to unify XNode and parsed items hashcode computation.
@@ -71,7 +77,6 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         Validate.notNull(state, "State is not set - perhaps a forgotten call to adopt() somewhere?");
         this.state = state;
     }
-
 
     public RawType(XNode node, @NotNull PrismContext prismContext) {
         this(new Raw(prismContext, node));
@@ -125,7 +130,6 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     public synchronized String extractString(String defaultValue) {
         return current().extractString(() -> defaultValue);
     }
-
 
     @Override
     public void revive(PrismContext prismContext) throws SchemaException {
@@ -270,8 +274,6 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         return new StringBuilder("RawType: ").append(current().toString()).append(")").toString();
     }
 
-
-
     @Override
     public synchronized void shortDump(StringBuilder sb) {
         current().shortDump(sb);
@@ -316,6 +318,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
             ((JaxbVisitable) value).accept(visitor);
         }
     }
+    //endregion
 
     private static abstract class State implements Serializable {
 
@@ -724,5 +727,4 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
             return new RawType(this);
         }
     }
-
 }

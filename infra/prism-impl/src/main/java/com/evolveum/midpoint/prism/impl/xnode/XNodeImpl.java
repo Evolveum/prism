@@ -54,8 +54,6 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
      */
     private boolean explicitTypeDeclaration = false;
 
-    protected boolean immutable = false;
-
     // These are set when parsing a file
     // FIXME: Consider using SourceLocation
 

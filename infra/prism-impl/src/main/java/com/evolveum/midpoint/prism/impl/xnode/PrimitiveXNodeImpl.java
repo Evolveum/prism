@@ -101,7 +101,7 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
         } else {
             //noinspection unchecked
             parsedValue = (X) valueParser.parse(typeName, mode);
-            if (!immutable) {
+            if (isMutable()) {
                 //noinspection unchecked
                 value = (T) parsedValue;
                 valueParser = null;     // Necessary. It marks that the value is parsed. It also frees some memory.
