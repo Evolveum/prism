@@ -324,6 +324,15 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
             ((JaxbVisitable) value).accept(visitor);
         }
     }
+
+    /**
+     * Sets the new raw content, defined by an XNode. The value must be immutable.
+     * Experimental. Use with the greatest care.
+     */
+    @Experimental
+    public void setRawValue(XNode replacement) {
+        this.state = new Raw(PrismContext.get(), replacement);
+    }
     //endregion
 
     private static abstract class State implements Serializable {
