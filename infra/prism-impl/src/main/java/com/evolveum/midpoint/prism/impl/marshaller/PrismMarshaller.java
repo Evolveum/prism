@@ -526,10 +526,8 @@ public class PrismMarshaller {
             RawType rawValue = (RawType) realValue;
             if (rawValue.isParsed()) {
                 return marshalItemValue(rawValue.getAlreadyParsedValue(), definition, typeNameIfNoDefinition, ctx, emptySet());
-            } else if (rawValue.getXnode() != null) {
-                return (XNodeImpl) ((RawType) realValue).getXnode();
             } else {
-                throw new SchemaException("Cannot marshall empty RawType: " + value);
+                return (XNodeImpl) rawValue.serializeToXNode();
             }
         }
         if (realValue instanceof PolyString) {
@@ -590,7 +588,7 @@ public class PrismMarshaller {
     }
 
     @NotNull
-    private <T> XNodeImpl serializePropertyRawValue(PrismPropertyValue<T> value) {
+    private <T> XNodeImpl serializePropertyRawValue(PrismPropertyValue<T> value) throws SchemaException {
         XNodeImpl rawElement = (XNodeImpl) value.getRawElement();
         if (rawElement != null) {
             return rawElement;
@@ -598,9 +596,9 @@ public class PrismMarshaller {
         T realValue = value.getValue();
         if (realValue != null) {
             if (realValue instanceof RawType) {
-                XNode xnode = ((RawType) realValue).getXnode();
-                if (xnode != null) {
-                    return (XNodeImpl) xnode;
+                RawType raw = (RawType) realValue;
+                if (!raw.isParsed()) {
+                    return (XNodeImpl) raw.serializeToXNode();
                 }
             }
             return createPrimitiveXNode(realValue, null);
