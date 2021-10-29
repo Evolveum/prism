@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.util;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -46,6 +47,14 @@ public class ClassPathUtil {
         Set<Class<?>> classes = new HashSet<>();
         searchClasses(packageName, c -> classes.add(c));
         return classes;
+    }
+
+    public static Set<Class<?>> scanClasses(Class<? extends Annotation> annotationClass) {
+        Reflections reflections = new Reflections(
+                new ConfigurationBuilder()
+                        .setUrls(ClasspathHelper.forJavaClassPath())
+        );
+        return reflections.getTypesAnnotatedWith(annotationClass);
     }
 
     /**
