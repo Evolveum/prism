@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2010-2017 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.util;
+
+import static org.reflections.scanners.Scanners.SubTypes;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -21,19 +23,21 @@ import java.util.jar.JarFile;
 
 import org.reflections.Reflections;
 import org.reflections.Store;
-import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
-import org.reflections.util.Utils;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
- * @author Peter Prochazka
- * @author Radovan Semancik
- * @author Viliam Repan (lazyman)
+ * Various class path, class loading and class scanning utilities.
+ *
+ * Impl info (valid for 4.4):
+ * Currently, this uses org.reflections + javassist dependency, total around 1M.
+ * Question is whether other options already on the classpath (Spring?) are not available,
+ * and if, how well they perform.
  */
 public class ClassPathUtil {
 
@@ -63,7 +67,8 @@ public class ClassPathUtil {
      */
     public static void searchClasses(String packageName, Consumer<Class<?>> consumer) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.setScanners(new SubTypesScanner(false));
+        // That filterResult works like excludeObjectClass = false in previous Reflections version.
+        builder.setScanners(Scanners.SubTypes.filterResultsBy(s -> true));
         Collection<URL> urls = ClasspathHelper.forPackage(packageName, LOGGER.getClass().getClassLoader());
         if (urls == null || urls.isEmpty()) {
             LOGGER.warn("Empty URLs for package name {}, skipping the scan", packageName);
@@ -77,19 +82,18 @@ public class ClassPathUtil {
         Store store = reflections.getStore();
         Set<String> types = new HashSet<>();
 
-        for (String key : store.keys(Utils.index(SubTypesScanner.class))) {
-            Collection<String> col = store.get(Utils.index(SubTypesScanner.class), key);
-            if (col == null) {
+        for (Set<String> classNames : store.get(SubTypes.name()).values()) {
+            if (classNames == null) {
                 continue;
             }
 
-            for (String c : col) {
-                String simpleName = c.replaceFirst(packageName + "\\.", "");
+            for (String className : classNames) {
+                String simpleName = className.replaceFirst(packageName + "\\.", "");
                 if (simpleName.contains(".")) {
                     continue;
                 }
 
-                types.add(c);
+                types.add(className);
             }
         }
 
