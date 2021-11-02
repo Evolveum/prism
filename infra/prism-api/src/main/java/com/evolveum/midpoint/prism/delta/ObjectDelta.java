@@ -151,7 +151,7 @@ public interface ObjectDelta<O extends Objectable>
     /**
      * Returns all item deltas at or below a specified path.
      */
-    Collection<? extends ItemDelta<?, ?>> findItemDeltasSubPath(ItemPath itemPath);
+    @NotNull Collection<? extends ItemDelta<?, ?>> findItemDeltasSubPath(ItemPath itemPath);
 
     void removeModification(ItemDelta<?, ?> itemDelta);
 

@@ -63,8 +63,8 @@ public class ItemDeltaCollectionsUtil {
         return findItemDelta(deltas, propertyPath, ContainerDelta.class, false);
     }
 
-    public static Collection<? extends ItemDelta<?,?>> findItemDeltasSubPath(Collection<? extends ItemDelta<?, ?>> deltas,
-            ItemPath itemPath) {
+    public static @NotNull Collection<? extends ItemDelta<?,?>> findItemDeltasSubPath(
+            Collection<? extends ItemDelta<?, ?>> deltas, ItemPath itemPath) {
         Collection<ItemDelta<?,?>> foundDeltas = new ArrayList<>();
         if (deltas == null) {
             return foundDeltas;

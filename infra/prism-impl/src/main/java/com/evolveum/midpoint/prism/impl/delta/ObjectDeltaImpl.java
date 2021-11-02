@@ -438,7 +438,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
      * Returns all item deltas at or below a specified path.
      */
     @Override
-    public Collection<? extends ItemDelta<?, ?>> findItemDeltasSubPath(ItemPath itemPath) {
+    public @NotNull Collection<? extends ItemDelta<?, ?>> findItemDeltasSubPath(ItemPath itemPath) {
         return ItemDeltaCollectionsUtil.findItemDeltasSubPath(modifications, itemPath);
     }
 
