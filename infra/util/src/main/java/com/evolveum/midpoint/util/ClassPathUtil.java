@@ -55,9 +55,7 @@ public class ClassPathUtil {
 
     public static Set<Class<?>> scanClasses(Class<? extends Annotation> annotationClass) {
         Reflections reflections = new Reflections(
-                new ConfigurationBuilder()
-                        .setUrls(ClasspathHelper.forJavaClassPath())
-        );
+                new ConfigurationBuilder().setUrls(ClasspathHelper.forClass(annotationClass)));
         return reflections.getTypesAnnotatedWith(annotationClass);
     }
 
