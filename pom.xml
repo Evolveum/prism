@@ -11,60 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--
-    Notes:
-    - See https://maven.apache.org/developers/conventions/code.html for recommended element order.
-    - Most information is inherited from this parent, no need to repeat license, organization, etc.
-    - Some JAR modules are pure-test, no main sources - deploy/install is skipped for these, otherwise it fails with:
-    "The packaging for this project did not assign a file to the build artifact"
-    - Some modules have explicit maven.test.skip=true to disable test plugins coming from parents.
-    - Maven's failsafe plugin is declared in build/plugin only in modules that need it.
-    This by default uses testng-integration.xml suite file, but see property integrationTestSuite
-    for other possibilities (mostly to make build faster by running only most important int-tests).
-    - Test JARs of some modules are created, installed/deployed and used downstream (search for test-jar).
-
-    VARIOUS MVN COMMANDS (with rough times on average notebook)
-    Note: Javadoc takes long time but it's only part of the "dist" profile (active by default).
-    Hence, " -Dmaven.javadoc.skip" is not necessary with "-P -dist".
-
-    Quick developer's run without any tests, skipping distribution (~6m):
-    mvn clean install -P -dist -DskipTests
-
-    "Quick" build with unit tests only and checkstyle (~30m):
-    mvn clean install -P -dist -DskipITs
-
-    "Quick" build with smaller/faster set of integration test (~1h20m):
-    mvn clean install -P -dist -DintegrationTestSuite=fast
-
-    Default build - creates distribution package, runs all tests except "extra" tests ():
-    mvn clean install
-
-    Extra test run with custom JVM args (we have 16g on CI server, but it works without args too),
-    runs just under 900 tests, skips distribution and any common unit/IT tests (~1h50m):
-    mvn clean install -P extratest,-dist -Dsurefire.args="-Xmx8g" -Dfailsafe.args="-Xmx8g -Duser.language=en"
-    (Skipping of default tests is managed by "extratest" profile.)
-
-    Extra test run for a single module, -D property matches the module in -pl:
-    mvn clean install -DskipConnTests=false -pl testing/conntest
-
-    Running a single IT test class in one module from the "extra" set with output to stdout:
-    mvn integration-test -DskipConnTests=false -DredirectTestOutputToFile=false -pl testing/conntest -Dit.test=TestAdLdapChimera
-    Note usage of "it.test" property (for failsafe), not just "test" (for surefire).
-
-    Full build with extra tests for a single module, "-DskipTests" suppresses other default tests:
-    mvn clean install -P -dist -DskipTests -DskipStoryTests=false
-    See "extratest" profile in testing/pom.xml for all individual properties enabling extra tests.
-
-    Running a single IT test class from story tests with remote debugger:
-    mvn integration-test -DskipStoryTests=false -DredirectTestOutputToFile=false \
-      -Dmaven.failsafe.debug="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
-      -pl testing/story -Dit.test=TestSystemPerformance
-    Note the "maven.failsafe.debug", it is possible to use "maven.surefire.debug" (with -Dtest) too.
-    Change to "suspend=y" for the test to wait for the debugger (e.g. debugging the startup).
-    See: https://maven.apache.org/surefire/maven-surefire-plugin/examples/debugging.html
-    and https://maven.apache.org/surefire/maven-failsafe-plugin/examples/debugging.html
-
-    Running unit+IT tests of a selected module (-pl) with output to stdout:
-    mvn clean install -DredirectTestOutputToFile=false -pl model/model-intest
+    See https://maven.apache.org/developers/conventions/code.html for recommended element order.
     -->
 
     <parent>
@@ -181,6 +128,7 @@
         <derby.version>10.15.2.0</derby.version>
         <surefire.version>3.0.0-M5</surefire.version>
         <reflections.version>0.10.2</reflections.version>
+        <classgraph.version>4.8.129</classgraph.version>
         <guava.version>30.1.1-jre</guava.version>
         <failsafe.version>3.0.0-M5</failsafe.version>
         <jetty.version>11.0.4</jetty.version>
@@ -195,15 +143,9 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.reflections</groupId>
-                <artifactId>reflections</artifactId>
-                <version>${reflections.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.guava</groupId>
-                        <artifactId>guava</artifactId>
-                    </exclusion>
-                </exclusions>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>${classgraph.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>

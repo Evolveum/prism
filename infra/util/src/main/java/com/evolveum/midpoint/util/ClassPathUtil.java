@@ -6,27 +6,18 @@
  */
 package com.evolveum.midpoint.util;
 
-import static org.reflections.scanners.Scanners.SubTypes;
-
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.reflections.Reflections;
-import org.reflections.Store;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -34,10 +25,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 /**
  * Various class path, class loading and class scanning utilities.
  *
- * Impl info (valid for 4.4):
- * Currently, this uses org.reflections + javassist dependency, total around 1M.
- * Question is whether other options already on the classpath (Spring?) are not available,
- * and if, how well they perform.
+ * For more info about class-path scanning: https://github.com/classgraph/classgraph
  */
 public class ClassPathUtil {
 
@@ -53,56 +41,27 @@ public class ClassPathUtil {
         return classes;
     }
 
-    public static Set<Class<?>> scanClasses(Class<? extends Annotation> annotationClass) {
-        Reflections reflections = new Reflections(
-                new ConfigurationBuilder().setUrls(ClasspathHelper.forClass(annotationClass)));
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(annotationClass);
-        LOGGER.debug("Found {} classes with annotation {}", classes.size(), annotationClass.getName());
-        return classes;
+    public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass) {
+        try (ScanResult scanResult = new ClassGraph()
+                .enableClassInfo()
+                .enableAnnotationInfo()
+                .scan()) {
+            List<Class<?>> classes = scanResult
+                    .getClassesWithAnnotation(annotationClass)
+                    .loadClasses();
+            LOGGER.debug("Found {} classes with annotation {}", classes.size(), annotationClass.getName());
+            return classes;
+        }
     }
 
-    /**
-     * This is not entirely reliable method.
-     * Maybe it would be better to rely on Spring ClassPathScanningCandidateComponentProvider
-     */
     public static void searchClasses(String packageName, Consumer<Class<?>> consumer) {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        // That filterResult works like excludeObjectClass = false in previous Reflections version.
-        builder.setScanners(Scanners.SubTypes.filterResultsBy(s -> true));
-        Collection<URL> urls = ClasspathHelper.forPackage(packageName, LOGGER.getClass().getClassLoader());
-        if (urls == null || urls.isEmpty()) {
-            LOGGER.warn("Empty URLs for package name {}, skipping the scan", packageName);
-            return;
-        }
-
-        builder.setUrls(urls);
-        builder.setInputsFilter(new FilterBuilder().includePackage(packageName));
-
-        Reflections reflections = new Reflections(builder);
-        Store store = reflections.getStore();
-        Set<String> types = new HashSet<>();
-
-        for (Set<String> classNames : store.get(SubTypes.name()).values()) {
-            if (classNames == null) {
-                continue;
-            }
-
-            for (String className : classNames) {
-                String simpleName = className.replaceFirst(packageName + "\\.", "");
-                if (simpleName.contains(".")) {
-                    continue;
-                }
-
-                types.add(className);
-            }
-        }
-
-        for (String type : types) {
-            try {
-                Class<?> clazz = Class.forName(type);
-                consumer.accept(clazz);
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("Error during loading class {}. ", type);
+        try (ScanResult scan = new ClassGraph()
+                .acceptPackages(packageName)
+                .scan()) {
+            List<Class<?>> classes = scan.getAllClasses().loadClasses();
+            LOGGER.debug("Found {} classes in package {}", classes.size(), packageName);
+            for (Class<?> aClass : classes) {
+                consumer.accept(aClass);
             }
         }
     }
