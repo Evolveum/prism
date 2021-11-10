@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.delta.builder;
 
 import java.util.Collection;
@@ -14,6 +13,10 @@ import com.evolveum.midpoint.prism.delta.PlusMinusZero;
 
 /**
  * Note: When dealing with PolyStrings, the real values should be of PolyString, not of PolyStringType type.
+ *
+ * When combining `add` and `delete` operations on a single item, prefer using `delete` first.
+ * While not critical, it indicates how things are processed which matters if the same value
+ * is used in both `add` and `delete` - it is added in the end.
  */
 public interface S_ValuesEntry {
 
