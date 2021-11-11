@@ -1501,14 +1501,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (parent != null && parent.getDefinition() != null) {
             multivalue = parent.getDefinition().isMultiValue();
         }
-        Long id = getId();
-        if (multivalue || id != null || DebugUtil.isDetailedDebugDump()) {
-            if (!wasIndent) {
-                DebugUtil.indentDebugDump(sb, indent);
-                wasIndent = true;
-            }
-            debugDumpIdentifiers(sb);
-        }
+        wasIndent = dumpIdentifiers(sb, indent, wasIndent, multivalue);
         appendOriginDump(sb);
         Collection<Item<?, ?>> items = getItems();
         if (items.isEmpty()) {
@@ -1531,6 +1524,27 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             }
         }
         return sb.toString();
+    }
+
+    // TODO fix this mess
+    private boolean dumpIdentifiers(StringBuilder sb, int indent, boolean wasIndent, boolean multivalue) {
+        if (this instanceof PrismObjectValue) {
+            if (!wasIndent) {
+                DebugUtil.indentDebugDump(sb, indent);
+                wasIndent = true;
+            }
+            debugDumpIdentifiers(sb);
+        } else {
+            Long id = getId();
+            if (multivalue || id != null || DebugUtil.isDetailedDebugDump()) {
+                if (!wasIndent) {
+                    DebugUtil.indentDebugDump(sb, indent);
+                    wasIndent = true;
+                }
+                debugDumpIdentifiers(sb);
+            }
+        }
+        return wasIndent;
     }
 
     protected void debugDumpIdentifiers(StringBuilder sb) {
