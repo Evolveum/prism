@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -59,6 +60,7 @@ public interface QueryConverter {
 
     // 2b. Serializing queries
 
+    @Contract("null -> null; !null -> !null")
     QueryType createQueryType(ObjectQuery query) throws SchemaException;
 
 }

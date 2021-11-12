@@ -32,6 +32,7 @@ import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -1026,6 +1027,7 @@ public class QueryConverterImpl implements QueryConverter {
 
     }
 
+    @Contract("null -> null; !null -> !null")
     @Override
     public QueryType createQueryType(ObjectQuery query) throws SchemaException {
         if (query == null) {
