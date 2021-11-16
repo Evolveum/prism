@@ -27,15 +27,13 @@ public interface Action<E extends Exception> extends Dependency<Void> {
     /**
      * Returns true if action can be applied.
      *
-     * Return false if action application of action failed with exception, which is non-retriable.
-     *
-     * @return
+     * Return false if action application of action failed with exception, which is non-retryable.
      */
     boolean canApply();
 
     /**
      *
-     * @param e Exception which occured during call of {@link #apply()}
+     * @param e Exception which occurred during call of {@link #apply()}
      * @throws E If action specific exception if failed critically and all computation should be stopped.
      */
     void fail(Exception e) throws E;

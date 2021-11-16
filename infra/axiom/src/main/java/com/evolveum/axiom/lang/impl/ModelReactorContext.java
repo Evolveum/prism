@@ -114,7 +114,7 @@ public class ModelReactorContext extends
 
     Map<AxiomName, AxiomValueFactory<?>> typeFactories = new HashMap<>();
     List<AxiomValueContext<?>> roots = new ArrayList<>();
-    private Collection<LazyValue<?>> lazies = new ArrayList<>();
+    private final Collection<LazyValue<?>> lazies = new ArrayList<>();
 
     public ModelReactorContext(AxiomSchemaContext boostrapContext) {
         this.boostrapContext = boostrapContext;
@@ -128,7 +128,7 @@ public class ModelReactorContext extends
 
     @Override
     protected void failOutstanding(Collection<ValueActionImpl<?>> outstanding) throws AxiomSemanticException {
-        StringBuilder messages = new StringBuilder("Can not complete models, following errors occured:\n");
+        StringBuilder messages = new StringBuilder("Can not complete models, following errors occurred:\n");
         for (ValueActionImpl<?> rule : outstanding) {
             Exception exception = rule.errorMessage();
             messages.append("Rule: ").append(rule.name()).append("\n");
