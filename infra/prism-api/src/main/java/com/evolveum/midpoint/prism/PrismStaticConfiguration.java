@@ -9,15 +9,15 @@ package com.evolveum.midpoint.prism;
 public class PrismStaticConfiguration {
 
     private static boolean serializationProxiesEnabled = false;
-    private static int propertyIndexTreshold = 50;
+    private static int propertyIndexThreshold = 50;
     private static boolean propertyIndexEnabled = false;
 
     public static boolean javaSerializationProxiesEnabled() {
         return serializationProxiesEnabled;
     }
 
-    public static int indexEnableTreshold() {
-        return propertyIndexEnabled ? propertyIndexTreshold :  Integer.MAX_VALUE;
+    public static int indexEnableThreshold() {
+        return propertyIndexEnabled ? propertyIndexThreshold :  Integer.MAX_VALUE;
     }
 
     public static void setJavaSerializationProxiesEnabled(boolean value) {
@@ -28,11 +28,11 @@ public class PrismStaticConfiguration {
         propertyIndexEnabled  = value;
     }
 
-    public static void setPropertyIndexTreshold(int value) {
+    public static void setPropertyIndexThreshold(int value) {
         if (value < 0) {
             value = 0;
         }
-        propertyIndexTreshold  = value;
+        propertyIndexThreshold  = value;
     }
 
 }
