@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismStaticConfiguration;
 import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -30,9 +31,19 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
     protected Class<?> compileTimeClass;
     @NotNull final Set<TypeDefinition> staticSubTypes = new HashSet<>();
     protected Integer instantiationOrder;
+    protected final transient  SerializationProxy serializationProxy;
 
     TypeDefinitionImpl(QName typeName, PrismContext prismContext) {
+        this(typeName, prismContext, false);
+    }
+
+    public TypeDefinitionImpl(QName typeName, PrismContext prismContext, boolean schemaRegistryProvided) {
         super(typeName, prismContext);
+        this.serializationProxy = schemaRegistryProvided ? SerializationProxy.forTypeDef(typeName) : null;
+    }
+
+    protected static boolean useSerializationProxy(boolean localeEnabled) {
+        return PrismStaticConfiguration.javaSerializationProxiesEnabled() && localeEnabled;
     }
 
     @Override
@@ -128,5 +139,9 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
             other = schemaRegistry.findTypeDefinitionByType(other.getSuperType());
         }
         return false;
+    }
+
+    protected Object writeReplace() {
+        return useSerializationProxy(serializationProxy != null) ? serializationProxy : this;
     }
 }

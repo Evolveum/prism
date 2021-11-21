@@ -64,6 +64,8 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
 
     private boolean indexOnly = false;
 
+    private final transient SerializationProxy serializationProxy;
+
     // TODO: annotations
 
     /**
@@ -74,8 +76,17 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
      * @param typeName type name (XSD complex or simple type)
      */
     ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, @NotNull PrismContext prismContext) {
+        this(itemName, typeName, prismContext, null);
+    }
+
+    ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, @NotNull PrismContext prismContext, QName definedInType) {
         super(typeName, prismContext);
-        this.itemName = ItemName.fromQName(itemName);     // todo
+        this.itemName = ItemName.fromQName(itemName);
+        this.serializationProxy = definedInType != null ? SerializationProxy.forItemDef(definedInType, this.itemName) : null;
+    }
+
+    protected static boolean useSerializationProxy(boolean localEnabled) {
+        return PrismStaticConfiguration.javaSerializationProxiesEnabled() && localEnabled;
     }
 
     /**
@@ -501,5 +512,9 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     @Override
     public void replaceName(ItemName newName) {
         itemName = newName;
+    }
+
+    protected Object writeReplace() {
+        return useSerializationProxy(serializationProxy != null) ? serializationProxy : this;
     }
 }

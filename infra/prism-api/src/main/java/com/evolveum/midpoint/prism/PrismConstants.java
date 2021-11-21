@@ -161,4 +161,6 @@ public class PrismConstants {
      */
     @Experimental
     public static final QName VALUE_METADATA_CONTAINER_NAME = new QName(NS_METADATA, "valueMetadata");
+
+    public static final QName VIRTUAL_SCHEMA_ROOT = new QName(NS_TYPES, "virtualSchemaRoot");
 }

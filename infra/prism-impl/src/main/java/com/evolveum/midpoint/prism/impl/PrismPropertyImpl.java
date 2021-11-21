@@ -640,7 +640,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         if (isSingleValueByDefinition()) {
             return;
         }
-        if (valueIndex == null && indexAvailable && createIndexIfNeccessary && INDEX_ENABLE_TRESHOLD <= size()) {
+        if (valueIndex == null && indexAvailable && createIndexIfNeccessary && PrismStaticConfiguration.indexEnableTreshold() <= size()) {
             // Lazily initialize index on N-th value
             this.valueIndex = new HashSet<>();
             for (PrismPropertyValue<T> value : getValues()) {
