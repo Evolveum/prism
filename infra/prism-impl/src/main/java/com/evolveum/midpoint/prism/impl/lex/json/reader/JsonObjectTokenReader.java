@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2020 Evolveum and contributors
+ * Copyright (C) 2020-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.lex.json.reader;
 
 import static com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems.*;
@@ -16,24 +15,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.impl.xnode.*;
-import com.evolveum.midpoint.prism.xnode.MapXNode;
-
-import com.evolveum.midpoint.prism.xnode.MetadataAware;
-
-import com.evolveum.midpoint.prism.xnode.XNode;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems;
+import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
+import com.evolveum.midpoint.prism.xnode.MapXNode;
+import com.evolveum.midpoint.prism.xnode.MetadataAware;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -103,7 +98,7 @@ class JsonObjectTokenReader {
             .put(PROP_INCOMPLETE_QNAME, JsonObjectTokenReader::processIncompleteDeclaration)
 
             .put(PROP_TYPE_QNAME, JsonObjectTokenReader::processTypeDeclaration)
-            .put(PROP_VALUE_QNAME,namespaceSensitive(JsonObjectTokenReader::processWrappedValue))
+            .put(PROP_VALUE_QNAME, namespaceSensitive(JsonObjectTokenReader::processWrappedValue))
 
             .put(PROP_METADATA_QNAME, namespaceSensitive(JsonObjectTokenReader::processMetadataValue))
             .put(PROP_ELEMENT_QNAME, namespaceSensitive(JsonObjectTokenReader::processElementNameDeclaration))
@@ -172,7 +167,6 @@ class JsonObjectTokenReader {
         return definition.unaware().resolve(name, namespaceContext()).getName();
     }
 
-
     private void processFieldValue(XNodeDefinition name) throws IOException, SchemaException {
         assert name != null;
         XNodeImpl value = readValue(name);
@@ -181,22 +175,22 @@ class JsonObjectTokenReader {
     }
 
     private XNodeImpl readValue(XNodeDefinition fieldDef) throws IOException, SchemaException {
-        return new JsonOtherTokenReader(ctx,namespaceContext().inherited(), fieldDef, definition).readValue();
+        return new JsonOtherTokenReader(ctx, namespaceContext().inherited(), fieldDef, definition).readValue();
     }
 
     private PrismNamespaceContext namespaceContext() {
-        if(map != null) {
+        if (map != null) {
             return map.namespaceContext();
         }
         return parentContext.inherited();
     }
 
     private void processContextDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        if(value instanceof MapXNode) {
+        if (value instanceof MapXNode) {
             Builder<String, String> nsCtx = ImmutableMap.<String, String>builder();
-            for(Entry<QName, ? extends XNode> entry : ((MapXNode) value).toMap().entrySet()) {
+            for (Entry<QName, ? extends XNode> entry : ((MapXNode) value).toMap().entrySet()) {
                 String key = entry.getKey().getLocalPart();
-                String ns = getCurrentFieldStringValue(entry.getKey(),entry.getValue());
+                String ns = getCurrentFieldStringValue(entry.getKey(), entry.getValue());
                 nsCtx.put(key, ns);
             }
             this.map = new MapXNodeImpl(parentContext.childContext(nsCtx.build()));
@@ -218,7 +212,7 @@ class JsonObjectTokenReader {
         } else if (currentFieldValue instanceof PrimitiveXNodeImpl) {
             //noinspection unchecked
             Boolean realValue = ((PrimitiveXNodeImpl<Boolean>) currentFieldValue)
-                .getParsedValue(DOMUtil.XSD_BOOLEAN, Boolean.class, getEvaluationMode());
+                    .getParsedValue(DOMUtil.XSD_BOOLEAN, Boolean.class, getEvaluationMode());
             incomplete = Boolean.TRUE.equals(realValue);
         } else {
             warnOrThrow("@incomplete marker found with incompatible value: " + currentFieldValue);
@@ -260,7 +254,7 @@ class JsonObjectTokenReader {
     }
 
     private void processId(QName name, XNodeImpl value) {
-        if(value instanceof PrimitiveXNodeImpl<?>) {
+        if (value instanceof PrimitiveXNodeImpl<?>) {
             ((PrimitiveXNodeImpl) value).setAttribute(true);
         }
         containerId = value;
@@ -270,24 +264,18 @@ class JsonObjectTokenReader {
         definition = definition.moreSpecific(maybeDefinition);
     }
 
-    /**
-     *
-     * @param name
-     * @param value
-     * @throws SchemaException
-     */
     private void processTypeDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (typeName != null) {
             warnOrThrow("Value type defined more than once");
         }
         String stringValue = getCurrentFieldStringValue(name, value);
-        // TODO: Compat: WE tread default prefixes as empty namespace, not default namespace
+        // TODO: Compat: We treat default prefixes as empty namespace, not default namespace
         typeName = XNodeDefinition.resolveQName(stringValue, namespaceContext());
         definition = definition.withType(typeName);
     }
 
     private void processNamespaceDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        if(namespaceSensitiveStarted) {
+        if (namespaceSensitiveStarted) {
             warnOrThrow("Namespace declared after other fields: " + ctx.getPositionSuffix());
         }
         if (map != null) {
@@ -308,7 +296,7 @@ class JsonObjectTokenReader {
         XNodeImpl ret;
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
             warnOrThrow("More than one of '" + PROP_VALUE + "', '" + PROP_INCOMPLETE
-                + "' and regular content present");
+                    + "' and regular content present");
             ret = map;
         } else {
             if (haveIncomplete > 0) {
@@ -327,7 +315,7 @@ class JsonObjectTokenReader {
     }
 
     private void addIdTo(XNodeImpl ret) {
-        if(containerId != null && ret instanceof MapXNodeImpl) {
+        if (containerId != null && ret instanceof MapXNodeImpl) {
             ((MapXNodeImpl) ret).put(XNodeImpl.KEY_CONTAINER_ID, containerId);
         }
     }
@@ -347,8 +335,8 @@ class JsonObjectTokenReader {
             if (wrappedValue != null && wrappedValue.getElementName() != null) {
                 if (!wrappedValue.getElementName().equals(elementName)) {
                     warnOrThrow("Conflicting element names for '" + JsonInfraItems.PROP_VALUE
-                        + "' (" + wrappedValue.getElementName()
-                        + ") and regular content (" + elementName + "; ) present");
+                            + "' (" + wrappedValue.getElementName()
+                            + ") and regular content (" + elementName + "; ) present");
                 }
             }
             rv.setElementName(elementName);
@@ -360,7 +348,7 @@ class JsonObjectTokenReader {
         if (typeName != null) {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
                 warnOrThrow("Conflicting type names for '" + JsonInfraItems.PROP_VALUE
-                    + "' (" + wrappedValue.getTypeQName() + ") and regular content (" + typeName + ") present");
+                        + "' (" + wrappedValue.getTypeQName() + ") and regular content (" + typeName + ") present");
             }
             rv.setTypeQName(typeName);
             rv.setExplicitTypeDeclaration(true);
@@ -392,19 +380,16 @@ class JsonObjectTokenReader {
         };
     }
 
-
     private void startNamespaceSensitive() {
         namespaceSensitiveStarted = true;
-        if(map == null) {
+        if (map == null) {
             map = new MapXNodeImpl(parentContext);
         }
     }
-
 
     @FunctionalInterface
     private interface ItemProcessor {
 
         void apply(JsonObjectTokenReader reader, QName itemName, XNodeImpl value) throws SchemaException;
     }
-
 }
