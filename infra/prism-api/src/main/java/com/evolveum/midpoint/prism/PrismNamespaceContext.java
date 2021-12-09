@@ -1,32 +1,22 @@
 /*
- * Copyright (c) 2020 Evolveum and contributors
+ * Copyright (C) 2020-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Random;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class PrismNamespaceContext implements Serializable {
 
@@ -34,14 +24,13 @@ public abstract class PrismNamespaceContext implements Serializable {
     public static final String DEFAULT_PREFIX = "";
     public static final PrefixPreference DEFAULT_PREFERENCE = PrefixPreference.LOCAL_FIRST;
 
-
     public static final PrismNamespaceContext PRISM_API = from(ImmutableMap.<String, String>builder()
             .put(PrismConstants.PREFIX_NS_TYPES, PrismConstants.NS_TYPES)
             .put(PrismConstants.PREFIX_NS_QUERY, PrismConstants.NS_QUERY)
             .build());
 
     public static PrismNamespaceContext from(Map<String, String> prefixToNs) {
-        if(prefixToNs.isEmpty()) {
+        if (prefixToNs.isEmpty()) {
             return EMPTY;
         }
         return new Impl(null, prefixToNs);
@@ -53,6 +42,7 @@ public abstract class PrismNamespaceContext implements Serializable {
 
     /**
      * Returns parent namespace context
+     *
      * @return parent namespace context
      */
     public abstract Optional<PrismNamespaceContext> parent();
@@ -91,7 +81,6 @@ public abstract class PrismNamespaceContext implements Serializable {
 
     public abstract boolean isEmpty();
 
-
     public abstract boolean isDefaultNamespaceOnly();
 
     /**
@@ -99,7 +88,6 @@ public abstract class PrismNamespaceContext implements Serializable {
      *
      * If prefix is not defined at current context, parent contexts are lookup up for prefix.
      *
-     * @param prefix
      * @return Empty, if no namespace was found, otherwise namespace assigned to supplied prefix.
      */
     public abstract Optional<String> namespaceFor(String prefix);
@@ -159,11 +147,9 @@ public abstract class PrismNamespaceContext implements Serializable {
         private static final long serialVersionUID = 1L;
         private final Impl parent;
         private final Map<String, String> prefixToNs;
-        private transient Multimap<String,String> nsToPrefix;
+        private transient Multimap<String, String> nsToPrefix;
 
         private final PrismNamespaceContext inherited = new Inherited(this);
-
-
 
         public Impl(Impl parent, Map<String, String> local) {
             super();
@@ -203,7 +189,7 @@ public abstract class PrismNamespaceContext implements Serializable {
 
         @Override
         public PrismNamespaceContext childContext(Map<String, String> local) {
-            if(local.isEmpty()) {
+            if (local.isEmpty()) {
                 return inherited;
             }
             return new Impl(this, local);
@@ -211,13 +197,13 @@ public abstract class PrismNamespaceContext implements Serializable {
 
         @Override
         public PrismNamespaceContext optimizedChildContext(Map<String, String> local) {
-            if(local.isEmpty()) {
+            if (local.isEmpty()) {
                 return inherited;
             }
             ImmutableMap.Builder<String, String> optimizedLocal = ImmutableMap.builder();
-            for(Entry<String, String> entry : local.entrySet()) {
+            for (Entry<String, String> entry : local.entrySet()) {
                 Optional<String> ns = namespaceFor(entry.getKey());
-                if(ns.isEmpty() || !entry.getValue().equals(ns.get())) {
+                if (ns.isEmpty() || !entry.getValue().equals(ns.get())) {
                     optimizedLocal.put(entry);
                 }
             }
@@ -226,11 +212,11 @@ public abstract class PrismNamespaceContext implements Serializable {
 
         @Override
         public Optional<String> namespaceFor(String prefix) {
-            if(prefix == null) {
+            if (prefix == null) {
                 prefix = DEFAULT_PREFIX;
             }
             String value = localPrefixes().get(prefix);
-            if(value == null && parent != null) {
+            if (value == null && parent != null) {
                 return parent.namespaceFor(prefix);
             }
             return Optional.ofNullable(value);
@@ -243,14 +229,13 @@ public abstract class PrismNamespaceContext implements Serializable {
             Preconditions.checkNotNull(preference, "PrefixPreference must not be null");
 
             Collection<String> candidates = preference.apply(this, ns);
-            if(candidates.isEmpty()) {
+            if (candidates.isEmpty()) {
                 return Optional.empty();
             }
             return Optional.of(candidates.iterator().next());
         }
 
         /**
-         *
          * Returns all usable prefixes from parent node
          *
          * We need to return all prefixes instead of first one, since they can be overriden
@@ -262,18 +247,18 @@ public abstract class PrismNamespaceContext implements Serializable {
          * @see PrismNamespaceContext.PrefixPreference
          */
         protected List<String> parentPrefixesFor(String ns, PrefixPreference preference) {
-            if(parent == null) {
+            if (parent == null) {
                 // We explicitly return mutable list, so it can be modified by caller
                 return new ArrayList<>();
             }
             List<String> result = preference.apply(parent, ns);
             // Now we remove conflicts
             Iterator<String> it = result.iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 String prefix = it.next();
                 String overrideNs = prefixToNs.get(prefix);
 
-                if(overrideNs != null && !ns.equals(overrideNs)) {
+                if (overrideNs != null && !ns.equals(overrideNs)) {
                     // namespace for prefix is different, we can not use it
                     it.remove();
                 }
@@ -285,7 +270,7 @@ public abstract class PrismNamespaceContext implements Serializable {
         public Map<String, String> allPrefixes() {
             Map<String, String> prefixes = new HashMap<>();
             Impl current = this;
-            while(current != null) {
+            while (current != null) {
                 for (Entry<String, String> mapping : current.localPrefixes().entrySet()) {
                     prefixes.putIfAbsent(mapping.getKey(), mapping.getValue());
                 }
@@ -302,14 +287,14 @@ public abstract class PrismNamespaceContext implements Serializable {
 
         @Override
         public PrismNamespaceContext rebasedOn(PrismNamespaceContext current) {
-            if(isParent(current)) {
+            if (isParent(current)) {
                 // We do not need to rebase to self
                 return this;
             }
-            ImmutableMap.Builder<String,String> prefixesToRebase = ImmutableMap.builder();
-            for(Entry<String, String> prefix : allPrefixes().entrySet()) {
+            ImmutableMap.Builder<String, String> prefixesToRebase = ImmutableMap.builder();
+            for (Entry<String, String> prefix : allPrefixes().entrySet()) {
                 Optional<String> other = current.namespaceFor(prefix.getKey());
-                if(other.isEmpty() || !other.get().equals(prefix.getValue()) ) {
+                if (other.isEmpty() || !other.get().equals(prefix.getValue())) {
                     prefixesToRebase.put(prefix);
                 }
             }
@@ -317,23 +302,23 @@ public abstract class PrismNamespaceContext implements Serializable {
         }
 
         private boolean isParent(PrismNamespaceContext current) {
-            if(parent == current) {
+            if (parent == current) {
                 return true;
             }
-            if(current instanceof Inherited) {
+            if (current instanceof Inherited) {
                 return parent == ((Inherited) current).parent;
             }
             return false;
         }
 
         private Multimap<String, String> nsToPrefix() {
-            if(nsToPrefix != null) {
+            if (nsToPrefix != null) {
                 return nsToPrefix;
             }
             // race is not problem since source is immutable
             // and result is same.
             ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
-            for(Entry<String, String> e : prefixToNs.entrySet()) {
+            for (Entry<String, String> e : prefixToNs.entrySet()) {
                 builder.put(e.getValue(), e.getKey());
             }
             this.nsToPrefix = builder.build();
@@ -520,7 +505,6 @@ public abstract class PrismNamespaceContext implements Serializable {
          * Returns first found topmost (closest to namespace root) prefix
          */
         GLOBAL_FIRST {
-
             @Override
             List<String> apply(Impl context, String namespace) {
                 final List<String> result = context.parentPrefixesFor(namespace, this);
@@ -536,8 +520,8 @@ public abstract class PrismNamespaceContext implements Serializable {
             List<String> apply(Impl context, String namespace) {
                 final List<String> result = context.parentPrefixesFor(namespace, this);
                 Collection<String> local = context.nsToPrefix().get(namespace);
-                for(String prefix : local) {
-                    if(!DEFAULT_PREFIX.equals(prefix)) {
+                for (String prefix : local) {
+                    if (!DEFAULT_PREFIX.equals(prefix)) {
                         result.add(prefix);
                     }
                 }
@@ -547,11 +531,18 @@ public abstract class PrismNamespaceContext implements Serializable {
         LOCAL_FIRST {
             @Override
             List<String> apply(Impl context, String namespace) {
-                Collection<String> candidates = context.nsToPrefix().get(namespace);
-                if(!candidates.isEmpty()) {
-                    return new ArrayList<>(candidates);
+                Collection<String> localCandidates = context.nsToPrefix().get(namespace);
+                List<String> ret = new ArrayList<>(localCandidates);
+
+                List<String> parentCandidates = context.parentPrefixesFor(namespace, this);
+                for (String parentPrefix : parentCandidates) {
+                    String localNamespace = context.localPrefixes().get(parentPrefix);
+                    if (localNamespace == null || namespace.equals(localNamespace)) {
+                        ret.add(parentPrefix);
+                    }
                 }
-                return context.parentPrefixesFor(namespace, this);
+
+                return ret;
             }
         };
 
@@ -581,7 +572,7 @@ public abstract class PrismNamespaceContext implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder(this.getClass().getSimpleName()).append(allPrefixes().toString()).toString();
+        return this.getClass().getSimpleName() + allPrefixes().toString();
     }
 
     public static class Builder {
@@ -606,7 +597,6 @@ public abstract class PrismNamespaceContext implements Serializable {
                 return this;
             }
 
-
             String previous = prefixToNamespace.putIfAbsent(prefix, namespace);
             Preconditions.checkArgument(previous == null || namespace.equals(previous), "Prefix %s is already declared as '%s', trying to redeclare it as '%s'", prefix, previous, namespace);
             namespaceToPrefix.put(namespace, prefix);
@@ -622,7 +612,7 @@ public abstract class PrismNamespaceContext implements Serializable {
         }
 
         public Optional<String> namespaceFor(String prefix) {
-            if(prefix == null) {
+            if (prefix == null) {
                 prefix = DEFAULT_PREFIX;
             }
             String local = prefixToNamespace.get(prefix);
@@ -673,7 +663,6 @@ public abstract class PrismNamespaceContext implements Serializable {
             addPrefix(assigned, namespaceURI);
             return assigned;
         }
-
 
         private @NotNull String randomPrefix(@Nullable String base) {
             return base + new Random().nextInt(999);
