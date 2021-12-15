@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.AbstractPrismTest;
 import com.evolveum.midpoint.prism.Containerable;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismInternalTestUtil;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.foo.ObjectType;
@@ -93,6 +94,18 @@ public class TestQueryConverters extends AbstractPrismTest {
 //        DomAsserts.assertSubElement(filterClauseElement, PrismConstants.Q_VALUE);
 //        Element valueElement = DOMUtil.getChildElement(filterClauseElement, PrismConstants.Q_VALUE);
 //        DomAsserts.assertTextContent(valueElement, "jack");
+    }
+
+    @Test
+    void testBrokenExample() throws SchemaException {
+
+        ObjectFilter filter = PrismContext.get().createQueryParser().parseQuery(UserType.class,
+                "familyName = \"Doe\" and (givenName = \"John\" or givenName= \"Bill\")");
+        display("FILTER: " + filter);
+
+        filter = PrismContext.get().createQueryParser().parseQuery(UserType.class, "extension/artMovement = \"asdf\"");
+        display("FILTER: " + filter);
+
     }
 
     @Test
