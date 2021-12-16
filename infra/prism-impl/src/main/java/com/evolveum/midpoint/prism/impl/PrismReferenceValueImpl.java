@@ -680,7 +680,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @SuppressWarnings("unchecked")
-    @Nullable
+    @NotNull
     @Override
     public Referencable getRealValue() {
         return asReferencable();
@@ -691,7 +691,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         super.revive(prismContext);
         if (object != null) {
             object.revive(prismContext);

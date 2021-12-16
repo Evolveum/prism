@@ -49,4 +49,6 @@ public interface MutableItemDefinition<I extends Item> extends ItemDefinition<I>
     void setSubstitutionHead(QName value);
 
     void setIndexOnly(boolean value);
+
+    void setInherited(boolean value);
 }

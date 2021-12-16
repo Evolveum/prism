@@ -82,9 +82,10 @@ public class SchemaProcessorUtil {
 
     /**
      * Parses "marker" boolean annotation. This means:
-     * no element: false
-     * empty element: true
-     * non-empty element: parse element content as boolean
+     *
+     * - no element: null
+     * - empty element: true
+     * - non-empty element: parse element content as boolean
      */
     public static Boolean getAnnotationBooleanMarker(XSAnnotation annotation, QName qname) throws SchemaException {
         Element element = getAnnotationElement(annotation, qname);
@@ -116,6 +117,11 @@ public class SchemaProcessorUtil {
 
     public static Integer getAnnotationInteger(XSAnnotation annotation, QName qname) throws SchemaException {
         return getAnnotationConverted(annotation, qname, Integer.class);
+    }
+
+    public static String getAnnotationString(XSAnnotation annotation, QName qname) throws SchemaException {
+        Element element = getAnnotationElement(annotation, qname);
+        return element != null ? element.getTextContent() : null;
     }
 
     public static String dumpAnnotation(XSAnnotation annotation) {

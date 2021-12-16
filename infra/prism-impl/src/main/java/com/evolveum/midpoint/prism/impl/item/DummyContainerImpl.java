@@ -8,23 +8,13 @@ package com.evolveum.midpoint.prism.impl.item;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
+
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.CloneStrategy;
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PartiallyResolvedItem;
-import com.evolveum.midpoint.prism.PrismContainer;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismProperty;
-import com.evolveum.midpoint.prism.PrismReference;
-import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
@@ -231,7 +221,7 @@ public class DummyContainerImpl<C extends Containerable> extends DummyItem<Prism
         delegate().removeReference(path);
     }
 
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> void removeItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> void removeItem(
             ItemPath path, Class<I> itemType) {
         delegate().removeItem(path, itemType);
     }
@@ -262,9 +252,8 @@ public class DummyContainerImpl<C extends Containerable> extends DummyItem<Prism
         return new DummyContainerImpl<>(delegate().createImmutableClone(), getPath());
     }
 
-    public PrismContainerDefinition<C> deepCloneDefinition(boolean ultraDeep,
-            Consumer<ItemDefinition> postCloneAction) {
-        return delegate().deepCloneDefinition(ultraDeep, postCloneAction);
+    public PrismContainerDefinition<C> deepCloneDefinition(@NotNull DeepCloneOperation operation) {
+        return delegate().deepCloneDefinition(operation);
     }
 
     public boolean equivalent(Object obj) {

@@ -27,27 +27,27 @@ public class DefinitionFactoryImpl implements DefinitionFactory {
 
     @Override
     public ComplexTypeDefinitionImpl createComplexTypeDefinition(QName name) {
-        return new ComplexTypeDefinitionImpl(name, prismContext);
+        return new ComplexTypeDefinitionImpl(name);
     }
 
     @Override
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName) {
-        return new PrismPropertyDefinitionImpl<>(name, typeName, prismContext);
+        return new PrismPropertyDefinitionImpl<>(name, typeName);
     }
 
     @Override
     public MutablePrismReferenceDefinition createReferenceDefinition(QName name, QName typeName) {
-        return new PrismReferenceDefinitionImpl(name, typeName, prismContext);
+        return new PrismReferenceDefinitionImpl(name, typeName);
     }
 
     @Override
     public @NotNull MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition ctd) {
-        return new PrismContainerDefinitionImpl<>(name, ctd, prismContext);
+        return new PrismContainerDefinitionImpl<>(name, ctd);
     }
 
     @Override
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName,
             Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        return new PrismPropertyDefinitionImpl<>(name, typeName, prismContext, allowedValues, defaultValue);
+        return new PrismPropertyDefinitionImpl<>(name, typeName, allowedValues, defaultValue);
     }
 }

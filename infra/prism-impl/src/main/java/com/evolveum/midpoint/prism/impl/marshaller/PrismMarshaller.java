@@ -439,7 +439,7 @@ public class PrismMarshaller {
     private XNodeImpl serializeReferenceValue(PrismReferenceValue value, PrismReferenceDefinition definition, SerializationContext ctx) throws SchemaException {
         MapXNodeImpl xmap = new MapXNodeImpl();
         boolean containsOid;
-        String namespace = definition != null ? definition.getNamespace() : null;           // namespace for filter and description
+        String namespace = definition != null ? definition.getItemName().getNamespaceURI() : null;           // namespace for filter and description
         if (StringUtils.isNotBlank(value.getOid())) {
             containsOid = true;
             xmap.put(XNodeImpl.KEY_REFERENCE_OID, createPrimitiveXNodeStringAttr(value.getOid()));

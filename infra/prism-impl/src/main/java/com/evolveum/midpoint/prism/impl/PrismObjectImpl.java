@@ -193,12 +193,12 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public <I extends Item> I findExtensionItem(String elementLocalName) {
+    public <I extends Item<?, ?>> I findExtensionItem(String elementLocalName) {
         return findExtensionItem(new QName(null, elementLocalName));
     }
 
     @Override
-    public <I extends Item> I findExtensionItem(@NotNull QName elementName) {
+    public <I extends Item<?, ?>> I findExtensionItem(@NotNull QName elementName) {
         PrismContainer<?> extension = getExtension();
         if (extension == null) {
             return null;
@@ -208,7 +208,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public <I extends Item> void addExtensionItem(I item) throws SchemaException {
+    public <I extends Item<?, ?>> void addExtensionItem(I item) throws SchemaException {
         PrismContainer<?> extension = getExtension();
         if (extension == null) {
             extension = createExtension();
@@ -238,7 +238,8 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> void removeItem(ItemPath path, Class<I> itemType) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>>
+    void removeItem(ItemPath path, Class<I> itemType) {
         // Objects are only a single-valued containers. The path of the object itself is "empty".
         // Fix this special behavior here.
         ((PrismObjectValueImpl<O>) getValue()).removeItem(path, itemType);
@@ -283,8 +284,8 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public PrismObjectDefinition<O> deepCloneDefinition(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
-        return (PrismObjectDefinition<O>) super.deepCloneDefinition(ultraDeep, postCloneAction);
+    public PrismObjectDefinition<O> deepCloneDefinition(@NotNull DeepCloneOperation operation) {
+        return (PrismObjectDefinition<O>) super.deepCloneDefinition(operation);
     }
 
     @Override
@@ -489,7 +490,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public void performFreeze() {
-        if (!this.immutable && values.isEmpty()) {
+        if (!isImmutable() && values.isEmpty()) {
             createNewValue();
         }
         super.performFreeze();

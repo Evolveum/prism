@@ -76,7 +76,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
                     Object val = ((JAXBElement) element).getValue();
                     if (val.getClass().isPrimitive()){
                         QName typeName = XsdTypeMapper.toXsdType(val.getClass());
-                        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(elementQName, typeName, prismContext);
+                        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(elementQName, typeName);
 //                        propDef.setMaxOccurs(maxOccurs);
                         propDef.setDynamic(true);
                         return propDef;
@@ -127,7 +127,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
         if (typeName == null) {
             return null;
         }
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(elementName, typeName, prismContext);
+        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(elementName, typeName);
         propDef.setMaxOccurs(maxOccurs);
         propDef.setDynamic(true);
         return propDef;

@@ -132,7 +132,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         Validate.notNull(prismContext);
         current().revive(prismContext);
     }
@@ -372,7 +372,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         protected abstract Parsed<?> asParsed();
 
-        protected void revive(PrismContext prismContext) throws SchemaException {
+        protected void revive(PrismContext prismContext) {
             // NOOP
         }
 
@@ -516,7 +516,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         }
 
         @Override
-        protected void revive(PrismContext prismContext) throws SchemaException {
+        protected void revive(PrismContext prismContext) {
             value.revive(prismContext);
         }
 
@@ -690,7 +690,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         }
 
         @Override
-        protected void revive(PrismContext prismContext) throws SchemaException {
+        protected void revive(PrismContext prismContext) {
             super.revive(prismContext);
         }
 

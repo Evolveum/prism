@@ -134,7 +134,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     }
 
     private MutableComplexTypeDefinition extensionFor(MutableComplexTypeDefinition target, String namespace) {
-        PrismContainerDefinition<Containerable> extContainer = target.findContainerDefinition(PrismConstants.EXTENSION_LOCAL_NAME);
+        PrismContainerDefinition<Containerable> extContainer = target.findContainerDefinition(PrismConstants.EXTENSION_ITEM_NAME);
         return asMutable(extContainer.getComplexTypeDefinition());
     }
 
@@ -156,7 +156,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     private MutableItemDefinition<?> prismifyReference(AxiomItemDefinition value) {
         QName elementName = qName(value.name());
         QName typeName = OBJECT_REFERENCE_TYPE;
-        PrismReferenceDefinitionImpl ret = new PrismReferenceDefinitionImpl(elementName, typeName, getPrismContext());
+        PrismReferenceDefinitionImpl ret = new PrismReferenceDefinitionImpl(elementName, typeName);
 
 
 
@@ -168,7 +168,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     private MutableItemDefinition<?> prismifyContainer(AxiomItemDefinition value) {
         QName elementName = qName(value.name());
         ComplexTypeDefinition complexTypeDefinition = prismifyStructured(value.typeDefinition());
-        PrismContainerDefinitionImpl<?> container = new PrismContainerDefinitionImpl(elementName, complexTypeDefinition, getPrismContext());
+        PrismContainerDefinitionImpl<?> container = new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition);
         return fillDetails(container, value);
     }
 
@@ -198,8 +198,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         QName elementName = qName(value.name());
         QName typeName = prismify(value.typeDefinition());
 
-        PrismPropertyDefinitionImpl<?> property = new PrismPropertyDefinitionImpl<>(
-                elementName, typeName, getPrismContext());
+        PrismPropertyDefinitionImpl<?> property = new PrismPropertyDefinitionImpl<>(elementName, typeName);
         return property;
     }
 
@@ -226,7 +225,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
             return maybe;
         }
 
-        ComplexTypeDefinitionImpl typeDef = new ComplexTypeDefinitionImpl(prismName, getPrismContext());
+        ComplexTypeDefinitionImpl typeDef = new ComplexTypeDefinitionImpl(prismName);
         reuseXjcClassIfExists(typeDef);
         copyItemDefs(typeDef, typeDefinition);
         return typeDef;

@@ -19,9 +19,7 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
@@ -32,41 +30,8 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
     ComplexTypeDefinition delegate();
 
     @Override
-    default <ID extends ItemDefinition> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz,
-            boolean caseInsensitive) {
-        return delegate().findLocalItemDefinition(name, clazz, caseInsensitive);
-    }
-
-
-    @Override
-    default <ID extends ItemDefinition> ID findLocalItemDefinition(@NotNull QName name) {
-        return delegate().findLocalItemDefinition(name);
-    }
-
-
-    @Override
-    default boolean isShared() {
-        return delegate().isShared();
-    }
-
-    @Override
-    default <ID extends ItemDefinition> ID findItemDefinition(@NotNull ItemPath path) {
-        return delegate().findItemDefinition(path);
-    }
-
-    @Override
     default @Nullable QName getExtensionForType() {
         return delegate().getExtensionForType();
-    }
-
-    @Override
-    default PrismReferenceDefinition findReferenceDefinition(@NotNull ItemName name) {
-        return delegate().findReferenceDefinition(name);
-    }
-
-    @Override
-    default <C extends Containerable> PrismContainerDefinition<C> findContainerDefinition(@NotNull String name) {
-        return delegate().findContainerDefinition(name);
     }
 
     @Override
@@ -80,19 +45,13 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
     }
 
     @Override
-    default <ID extends ItemDefinition> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
+    default <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
         return delegate().findItemDefinition(path, clazz);
     }
 
     @Override
-    default <ID extends ItemDefinition> ID findNamedItemDefinition(@NotNull QName firstName, @NotNull ItemPath rest,
-            @NotNull Class<ID> clazz) {
-        return delegate().findNamedItemDefinition(firstName, rest, clazz);
-    }
-
-    @Override
-    default <T> PrismPropertyDefinition<T> findPropertyDefinition(@NotNull ItemPath path) {
-        return delegate().findPropertyDefinition(path);
+    default <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path) {
+        return delegate().findItemDefinition(path);
     }
 
     @Override
@@ -146,11 +105,6 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
     }
 
     @Override
-    default boolean containsItemDefinition(QName itemName) {
-        return delegate().containsItemDefinition(itemName);
-    }
-
-    @Override
     default boolean hasSubstitutions() {
         return delegate().hasSubstitutions();
     }
@@ -166,7 +120,7 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
     }
 
     @Override
-    default @NotNull List<? extends ItemDefinition> getDefinitions() {
+    default @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
         return delegate().getDefinitions();
     }
 

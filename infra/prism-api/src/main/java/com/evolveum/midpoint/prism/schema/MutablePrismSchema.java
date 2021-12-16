@@ -24,15 +24,15 @@ public interface MutablePrismSchema extends PrismSchema {
     // used for connector and resource schemas
     void parseThis(Element element, boolean isRuntime, String shortDescription, PrismContext prismContext) throws SchemaException;
 
-    MutablePrismContainerDefinition createPropertyContainerDefinition(String localTypeName);
+    MutablePrismContainerDefinition<?> createContainerDefinition(String localTypeName);
 
-    MutablePrismContainerDefinition createPropertyContainerDefinition(String localElementName, String localTypeName);
+    MutablePrismContainerDefinition<?> createContainerDefinition(String localElementName, String localTypeName);
 
     ComplexTypeDefinition createComplexTypeDefinition(QName typeName);
 
-    PrismPropertyDefinition createPropertyDefinition(String localName, QName typeName);
+    PrismPropertyDefinition<?> createPropertyDefinition(String localName, QName typeName);
 
-    PrismPropertyDefinition createPropertyDefinition(QName name, QName typeName);
+    PrismPropertyDefinition<?> createPropertyDefinition(QName name, QName typeName);
 
     void addDelayedItemDefinition(DefinitionSupplier o);
 

@@ -37,10 +37,9 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
         MutablePrismObjectDefinition<O> {
     private static final long serialVersionUID = -8298581031956931008L;
 
-    public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext,
-            Class<O> compileTimeClass) {
+    public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<O> compileTimeClass) {
         // Object definition can only be top-level, hence null parent
-        super(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+        super(elementName, complexTypeDefinition, compileTimeClass);
     }
 
     @Override
@@ -62,22 +61,23 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
         return new PrismObjectImpl<>(name, this, getPrismContext());
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @NotNull
     @Override
     public PrismObjectDefinitionImpl<O> clone() {
-        PrismObjectDefinitionImpl<O> clone = new PrismObjectDefinitionImpl<>(itemName, complexTypeDefinition, getPrismContext(), compileTimeClass);
-        copyDefinitionData(clone);
+        PrismObjectDefinitionImpl<O> clone = new PrismObjectDefinitionImpl<>(itemName, complexTypeDefinition, compileTimeClass);
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
     @Override
-    public PrismObjectDefinition<O> deepClone(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
-        return (PrismObjectDefinition<O>) super.deepClone(ultraDeep, postCloneAction);
+    public PrismObjectDefinition<O> deepClone(@NotNull DeepCloneOperation operation) {
+        return (PrismObjectDefinition<O>) super.deepClone(operation);
     }
 
     @Override
     @NotNull
-    public PrismObjectDefinition<O> cloneWithReplacedDefinition(QName itemName, ItemDefinition newDefinition) {
+    public PrismObjectDefinition<O> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
         return (PrismObjectDefinition<O>) super.cloneWithReplacedDefinition(itemName, newDefinition);
     }
 
@@ -85,41 +85,6 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
     public PrismContainerDefinition<?> getExtensionDefinition() {
         return findContainerDefinition(getExtensionQName());
     }
-
-//    public void setExtensionDefinition(ComplexTypeDefinition extensionComplexTypeDefinition) {
-//        QName extensionQName = getExtensionQName();
-//
-//        PrismContainerDefinition<Containerable> oldExtensionDef = findContainerDefinition(extensionQName);
-//
-//        PrismContainerDefinitionImpl<?> newExtensionDef = new PrismContainerDefinitionImpl<>(extensionQName,
-//                extensionComplexTypeDefinition, prismContext);
-//        newExtensionDef.setRuntimeSchema(true);
-//        if (oldExtensionDef != null) {
-//            if (newExtensionDef.getDisplayName() == null) {
-//                newExtensionDef.setDisplayName(oldExtensionDef.getDisplayName());
-//            }
-//            if (newExtensionDef.getDisplayOrder() == null) {
-//                newExtensionDef.setDisplayOrder(oldExtensionDef.getDisplayOrder());
-//            }
-//            if (newExtensionDef.getHelp() == null) {
-//                newExtensionDef.setHelp(oldExtensionDef.getHelp());
-//            }
-//        }
-//
-//        ComplexTypeDefinitionImpl newCtd = (ComplexTypeDefinitionImpl) this.complexTypeDefinition.clone();
-//        newCtd.replaceDefinition(extensionQName, newExtensionDef);
-//        if (newCtd.getDisplayName() == null) {
-//            newCtd.setDisplayName(this.complexTypeDefinition.getDisplayName());
-//        }
-//        if (newCtd.getDisplayOrder() == null) {
-//            newCtd.setDisplayOrder(this.complexTypeDefinition.getDisplayOrder());
-//        }
-//        if (newCtd.getHelp() == null) {
-//            newCtd.setHelp(this.complexTypeDefinition.getHelp());
-//        }
-//
-//        this.complexTypeDefinition = newCtd;
-//    }
 
     @Override
     public PrismObjectValue<O> createValue() {
@@ -131,14 +96,6 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
         String namespace = getItemName().getNamespaceURI();
         return new ItemName(namespace, PrismConstants.EXTENSION_LOCAL_NAME);
     }
-
-//    public <I extends ItemDefinition> I getExtensionItemDefinition(QName elementName) {
-//        PrismContainerDefinition<?> extensionDefinition = getExtensionDefinition();
-//        if (extensionDefinition == null) {
-//            return null;
-//        }
-//        return (I) extensionDefinition.findItemDefinition(elementName);
-//    }
 
     @Override
     public String getDebugDumpClassName() {

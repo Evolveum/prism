@@ -344,23 +344,14 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
         return xprim;
     }
 
-    public void revive(Object bean, final PrismContext prismContext) throws SchemaException {
+    public void revive(Object bean, final PrismContext prismContext) {
         Handler<Object> visitor = o -> {
             if (o instanceof Revivable) {
-                try {
-                    ((Revivable)o).revive(prismContext);
-                } catch (SchemaException e) {
-                    throw new TunnelException(e);
-                }
+                ((Revivable)o).revive(prismContext);
             }
             return true;
         };
-        try {
-            visit(bean, visitor);
-        } catch (TunnelException te) {
-            SchemaException e = (SchemaException) te.getCause();
-            throw e;
-        }
+        visit(bean, visitor);
     }
 
     public void visit(Object bean, Handler<Object> handler) {

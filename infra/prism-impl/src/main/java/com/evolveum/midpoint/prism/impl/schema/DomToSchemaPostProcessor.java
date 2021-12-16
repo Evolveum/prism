@@ -256,8 +256,8 @@ class DomToSchemaPostProcessor {
     }
 
     private void setInstantiationOrder(MutableTypeDefinition typeDefinition, XSAnnotation annotation) throws SchemaException {
-        Integer order = SchemaProcessorUtil.getAnnotationInteger(annotation, A_INSTANTIATION_ORDER);
-        typeDefinition.setInstantiationOrder(order);
+        typeDefinition.setInstantiationOrder(
+                SchemaProcessorUtil.getAnnotationInteger(annotation, A_INSTANTIATION_ORDER));
     }
 
     private void processSimpleTypeDefinitions(XSSchemaSet set) throws SchemaException {
@@ -337,32 +337,32 @@ class DomToSchemaPostProcessor {
             Boolean inherited, XSContentType explicitContent) throws SchemaException {
 
         XSParticle[] particles = group.getChildren();
-        for (XSParticle p : particles) {
-            boolean particleInherited = inherited != null ? inherited : p != explicitContent;
-            XSTerm pterm = p.getTerm();
+        for (XSParticle particle : particles) {
+            boolean particleInherited = inherited != null ? inherited : particle != explicitContent;
+            XSTerm pterm = particle.getTerm();
             if (pterm.isModelGroup()) {
                 addItemDefinitionListFromGroup(pterm.asModelGroup(), ctd, particleInherited, explicitContent);
             }
 
             // xs:element inside complex type
             if (pterm.isElementDecl()) {
-                XSAnnotation annotation = selectAnnotationToUse(p.getAnnotation(), pterm.getAnnotation());
+                XSAnnotation annotation = selectAnnotationToUse(particle.getAnnotation(), pterm.getAnnotation());
 
                 XSElementDecl elementDecl = pterm.asElementDecl();
                 QName elementName = new QName(elementDecl.getTargetNamespace(), elementDecl.getName());
-                QName typeFromAnnotation = getTypeAnnotation(p.getAnnotation());
+                QName typeFromAnnotation = getTypeAnnotation(particle.getAnnotation());
 
                 XSType xsType = elementDecl.getType();
 
                 if (isObjectReference(xsType, annotation)) {
 
-                    processObjectReferenceDefinition(xsType, elementName, annotation, ctd, p,
-                            particleInherited);
+                    processObjectReferenceDefinition(
+                            xsType, elementName, annotation, ctd, particle, particleInherited);
 
                 } else if (isObjectDefinition(xsType)) {
-                    // This is object reference. It also has its *Ref equivalent
-                    // which will get parsed.
-                    // therefore it is safe to ignore
+
+                    // This is object reference. It also has its *Ref equivalent which will get parsed.
+                    // Therefore it is safe to ignore.
 
                 } else if (xsType.getName() == null && typeFromAnnotation == null) {
 
@@ -370,12 +370,12 @@ class DomToSchemaPostProcessor {
                         if (isPropertyContainer(elementDecl)) {
                             XSAnnotation containerAnnotation = xsType.getAnnotation();
                             PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                                    xsType, p, null, containerAnnotation, false);
+                                    xsType, particle, null, containerAnnotation, false);
                             containerDefinition.toMutable().setInherited(particleInherited);
                             ctd.add(containerDefinition);
                         } else {
-                            MutablePrismPropertyDefinition propDef = createPropertyDefinition(xsType, elementName,
-                                    DOMUtil.XSD_ANY, ctd, annotation, p);
+                            MutablePrismPropertyDefinition<?> propDef =
+                                    createPropertyDefinition(xsType, elementName, DOMUtil.XSD_ANY, ctd, annotation, particle);
                             propDef.setInherited(particleInherited);
                             ctd.add(propDef);
                         }
@@ -407,7 +407,7 @@ class DomToSchemaPostProcessor {
                     }
                     XSAnnotation containerAnnotation = complexType.getAnnotation();
                     PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                            xsType, p, complexTypeDefinition, containerAnnotation, false);
+                            xsType, particle, complexTypeDefinition, containerAnnotation, false);
 //                    if (isAny(xsType)) {
 //                        ((PrismContainerDefinitionImpl) containerDefinition).setRuntimeSchema(true);
 //                        ((PrismContainerDefinitionImpl) containerDefinition).setDynamic(true);
@@ -417,12 +417,11 @@ class DomToSchemaPostProcessor {
 
                 } else {
 
-                    // Create a property definition (even if this is a XSD
-                    // complex type)
+                    // Create a property definition (even if this is a XSD complex type)
                     QName typeName = new QName(xsType.getTargetNamespace(), xsType.getName());
 
-                    MutablePrismPropertyDefinition propDef = createPropertyDefinition(xsType, elementName, typeName,
-                            ctd, annotation, p);
+                    MutablePrismPropertyDefinition<?> propDef =
+                            createPropertyDefinition(xsType, elementName, typeName, ctd, annotation, particle);
                     propDef.setInherited(particleInherited);
                     ctd.add(propDef);
                 }
@@ -551,7 +550,7 @@ class DomToSchemaPostProcessor {
                     // {"+xsType.getTargetNamespace()+"}"+xsType.getName());
                 }
                 XSAnnotation annotation = xsElementDecl.getAnnotation();
-                MutableItemDefinition definition;
+                MutableItemDefinition<?> definition;
 
                 if (isPropertyContainer(xsElementDecl) || isObjectDefinition(xsType)) {
                     ComplexTypeDefinition complexTypeDefinition = findComplexTypeDefinition(typeQName);
@@ -575,12 +574,12 @@ class DomToSchemaPostProcessor {
                             annotation, null, null, false);
                 } else {
                     // Create a top-level property definition (even if this is a XSD complex type)
-                    definition = createPropertyDefinition(xsType, elementName, typeQName,
-                            null, annotation, null);
+                    definition = createPropertyDefinition(
+                            xsType, elementName, typeQName, null, annotation, null);
                 }
                 if (definition != null) {
                     QName substitutionHead = getSubstitutionHead(xsElementDecl);
-                    if(substitutionHead != null) {
+                    if (substitutionHead != null) {
                         definition.setSubstitutionHead(substitutionHead);
                         schema.addSubstitution(substitutionHead, definition);
                     }
@@ -844,12 +843,12 @@ class DomToSchemaPostProcessor {
             compileTimeClass = getSchemaRegistry().determineCompileTimeClass(complexTypeDefinition.getTypeName());
         }
         if (isObjectDefinition(xsType)) {
-            pcd = definitionFactory.createObjectDefinition(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+            pcd = definitionFactory.createObjectDefinition(elementName, complexTypeDefinition, compileTimeClass);
             // Multiplicity is fixed to a single-value here
             pcd.setMinOccurs(1);
             pcd.setMaxOccurs(1);
         } else {
-            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, compileTimeClass);
             setMultiplicity(pcd, elementParticle, elementDecl.getAnnotation(), topLevel);
         }
 

@@ -119,7 +119,9 @@ public class PropertyDeltaFactoryImpl implements DeltaFactory.Property {
 
     @SafeVarargs
     @Override
-    public final <T> PropertyDelta<T> createModificationReplaceProperty(ItemPath path, PrismPropertyDefinition propertyDefinition,
+    public final <T> PropertyDelta<T> createModificationReplaceProperty(
+            @NotNull ItemPath path,
+            @NotNull PrismPropertyDefinition propertyDefinition,
             T... propertyValues) {
         return PropertyDeltaImpl.createModificationReplaceProperty(path, propertyDefinition, propertyValues);
     }

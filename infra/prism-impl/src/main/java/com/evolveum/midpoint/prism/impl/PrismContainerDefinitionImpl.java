@@ -23,9 +23,9 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Definition of a property container.
@@ -61,15 +61,17 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     /**
      * The constructors should be used only occasionally (if used at all).
-     * Use the factory methods in the ResourceObjectDefintion instead.
+     * Use the factory methods in the ResourceObjectDefinition instead.
      */
-    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, @NotNull PrismContext prismContext) {
-        this(name, complexTypeDefinition, prismContext, null);
+    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition) {
+        this(name, complexTypeDefinition, null);
     }
 
-    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, @NotNull PrismContext prismContext,
-            Class<C> compileTimeClass) {
-        super(name, determineTypeName(complexTypeDefinition), prismContext);
+    public PrismContainerDefinitionImpl(
+            @NotNull QName name,
+            @Nullable ComplexTypeDefinition complexTypeDefinition,
+            @Nullable Class<C> compileTimeClass) {
+        super(name, determineTypeName(complexTypeDefinition));
         this.complexTypeDefinition = complexTypeDefinition;
         if (complexTypeDefinition == null) {
             isRuntimeSchema = true;
@@ -98,6 +100,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
         if (complexTypeDefinition == null) {
             return null;
         }
+        //noinspection unchecked
         return (Class<C>) complexTypeDefinition.getCompileTimeClass();
     }
 
@@ -143,29 +146,11 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     @Override
-    public <D extends ItemDefinition> D findLocalItemDefinition(@NotNull QName name, @NotNull Class<D> clazz, boolean caseInsensitive) {
-        if (complexTypeDefinition != null) {
-            return complexTypeDefinition.findLocalItemDefinition(name, clazz, caseInsensitive);
-        } else {
-            return null;    // xsd:any and similar dynamic definitions
-        }
-    }
-
-    @Override
-    public String getDefaultNamespace() {
-        return complexTypeDefinition != null ? complexTypeDefinition.getDefaultNamespace() : null;
-    }
-
-    @Override
-    public List<String> getIgnoredNamespaces() {
-        return complexTypeDefinition != null ? complexTypeDefinition.getIgnoredNamespaces() : null;
-    }
-
-    @Override
-    public <ID extends ItemDefinition> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
+    public <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
         for (;;) {
             if (path.isEmpty()) {
                 if (clazz.isAssignableFrom(PrismContainerDefinition.class)) {
+                    //noinspection unchecked
                     return (ID) this;
                 } else {
                     return null;
@@ -181,6 +166,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
                 ComplexTypeDefinition parent = getSchemaRegistry().determineParentDefinition(getComplexTypeDefinition(), rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
+                    //noinspection unchecked
                     return (ID) getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
                 } else {
                     return parent.findItemDefinition(rest, clazz);
@@ -193,21 +179,21 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
         }
     }
 
-    @Override
-    public <ID extends ItemDefinition> ID findNamedItemDefinition(@NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
+    private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
+            @NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
 
-        for (ItemDefinition def : getDefinitions()) {
+        for (ItemDefinition<?> def : getDefinitions()) {
             if (QNameUtil.match(firstName, def.getItemName())) {
-                return (ID) def.findItemDefinition(rest, clazz);
+                return def.findItemDefinition(rest, clazz);
             }
         }
 
         if (complexTypeDefinition != null && complexTypeDefinition.isXsdAnyMarker()) {
             SchemaRegistry schemaRegistry = getSchemaRegistry();
             if (schemaRegistry != null) {
-                ItemDefinition def = schemaRegistry.findItemDefinitionByElementName(firstName);
+                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
                 if (def != null) {
-                    return (ID) def.findItemDefinition(rest, clazz);
+                    return def.findItemDefinition(rest, clazz);
                 }
             }
         }
@@ -216,6 +202,8 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     /**
+     * FIXME this looks like outdated description
+     *
      * Returns set of property definitions.
      * <p>
      * WARNING: This may return definitions from the associated complex type.
@@ -227,7 +215,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * @return set of definitions
      */
     @Override
-    public List<? extends ItemDefinition> getDefinitions() {
+    public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
         if (complexTypeDefinition == null) {
             // e.g. for xsd:any containers
             // FIXME
@@ -242,28 +230,11 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     @Override
-    public boolean isCompletelyDefined() {
-        ComplexTypeDefinition complexTypeDefinition = getComplexTypeDefinition();
-        return complexTypeDefinition != null && !complexTypeDefinition.isXsdAnyMarker();
-    }
-
-
-    /**
-     * Returns set of property definitions.
-     * <p>
-     * The set contains all property definitions of all types that were parsed.
-     * Order of definitions is insignificant.
-     * <p>
-     * The returned set is immutable! All changes may be lost.
-     *
-     * @return set of definitions
-     */
-    @Override
-    public List<PrismPropertyDefinition> getPropertyDefinitions() {
-        List<PrismPropertyDefinition> props = new ArrayList<>();
-        for (ItemDefinition def : complexTypeDefinition.getDefinitions()) {
+    public List<PrismPropertyDefinition<?>> getPropertyDefinitions() {
+        List<PrismPropertyDefinition<?>> props = new ArrayList<>();
+        for (ItemDefinition<?> def : complexTypeDefinition.getDefinitions()) {
             if (def instanceof PrismPropertyDefinition) {
-                props.add((PrismPropertyDefinition) def);
+                props.add((PrismPropertyDefinition<?>) def);
             }
         }
         return props;
@@ -286,7 +257,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     @Override
-    public ContainerDelta<C> createEmptyDelta(ItemPath path) {
+    public @NotNull ContainerDelta<C> createEmptyDelta(ItemPath path) {
         return new ContainerDeltaImpl<>(path, this, getPrismContext());
     }
 
@@ -308,23 +279,23 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @NotNull
     @Override
     public PrismContainerDefinitionImpl<C> clone() {
-        PrismContainerDefinitionImpl<C> clone = new PrismContainerDefinitionImpl<>(itemName, complexTypeDefinition, getPrismContext(), compileTimeClass);
-        copyDefinitionData(clone);
+        PrismContainerDefinitionImpl<C> clone =
+                new PrismContainerDefinitionImpl<>(itemName, complexTypeDefinition, compileTimeClass);
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
-    protected void copyDefinitionData(PrismContainerDefinitionImpl<C> clone) {
-        super.copyDefinitionData(clone);
-        clone.complexTypeDefinition = this.complexTypeDefinition;
-        clone.compileTimeClass = this.compileTimeClass;
+    protected void copyDefinitionDataFrom(PrismContainerDefinition<C> source) {
+        super.copyDefinitionDataFrom(source);
+        // nothing to do here
     }
 
     @Override
-    public ItemDefinition deepClone(Map<QName,ComplexTypeDefinition> ctdMap, Map<QName,ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction) {
+    public ItemDefinition<PrismContainer<C>> deepClone(@NotNull DeepCloneOperation operation) {
         PrismContainerDefinitionImpl<C> clone = clone();
         ComplexTypeDefinition ctd = getComplexTypeDefinition();
         if (ctd != null) {
-            ctd = ctd.deepClone(ctdMap, onThisPath, postCloneAction);
+            ctd = ctd.deepClone(operation);
             clone.setComplexTypeDefinition(ctd);
         }
         return clone;
@@ -332,14 +303,14 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     @NotNull
-    public PrismContainerDefinition<C> cloneWithReplacedDefinition(QName itemName, ItemDefinition newDefinition) {
+    public PrismContainerDefinition<C> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
         PrismContainerDefinitionImpl<C> clone = clone();
         clone.replaceDefinition(itemName, newDefinition);
         return clone;
     }
 
     @Override
-    public void replaceDefinition(QName itemName, ItemDefinition newDefinition) {
+    public void replaceDefinition(QName itemName, ItemDefinition<?> newDefinition) {
         ComplexTypeDefinition originalComplexTypeDefinition = getComplexTypeDefinition();
         ComplexTypeDefinition cloneComplexTypeDefinition = originalComplexTypeDefinition.clone();
         setComplexTypeDefinition(cloneComplexTypeDefinition);
@@ -356,13 +327,13 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * @return created property definition
      */
     @Override
-    public PrismPropertyDefinitionImpl createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
+    public PrismPropertyDefinitionImpl<?> createPropertyDefinition(QName name, QName typeName) {
+        PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(name, typeName);
         addDefinition(propDef);
         return propDef;
     }
 
-    private void addDefinition(ItemDefinition itemDef) {
+    private void addDefinition(ItemDefinition<?> itemDef) {
         checkMutable();
         if (complexTypeDefinition == null) {
             throw new UnsupportedOperationException("Cannot add an item definition because there's no complex type definition");
@@ -387,7 +358,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismPropertyDefinition<?> createPropertyDefinition(QName name, QName typeName,
             int minOccurs, int maxOccurs) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
+        PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(name, typeName);
         propDef.setMinOccurs(minOccurs);
         propDef.setMaxOccurs(maxOccurs);
         addDefinition(propDef);
@@ -397,8 +368,8 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     // Creates reference to other schema
     // TODO: maybe check if the name is in different namespace
     // TODO: maybe create entirely new concept of property reference?
-    public PrismPropertyDefinition createPropertyDefinition(QName name) {
-        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, getPrismContext());
+    public PrismPropertyDefinition<?> createPropertyDefinition(QName name) {
+        PrismPropertyDefinition<?> propDef = new PrismPropertyDefinitionImpl<>(name, null);
         addDefinition(propDef);
         return propDef;
     }
@@ -427,7 +398,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * @param localTypeName XSD type of the property
      * @return created property definition
      */
-    public PrismPropertyDefinition createPropertyDefinition(String localName, String localTypeName) {
+    public PrismPropertyDefinition<?> createPropertyDefinition(String localName, String localTypeName) {
         QName name = new QName(getSchemaNamespace(), localName);
         QName typeName = new QName(getSchemaNamespace(), localTypeName);
         return createPropertyDefinition(name, typeName);
@@ -444,17 +415,17 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * @param maxOccurs     maximal number of occurrences (-1 means unbounded)
      * @return created property definition
      */
-    public PrismPropertyDefinition createPropertyDefinition(String localName, String localTypeName,
+    public PrismPropertyDefinition<?> createPropertyDefinition(String localName, String localTypeName,
             int minOccurs, int maxOccurs) {
         QName name = new QName(getSchemaNamespace(), localName);
         QName typeName = new QName(getSchemaNamespace(), localTypeName);
-        PrismPropertyDefinitionImpl propertyDefinition = createPropertyDefinition(name, typeName);
+        PrismPropertyDefinitionImpl<?> propertyDefinition = createPropertyDefinition(name, typeName);
         propertyDefinition.setMinOccurs(minOccurs);
         propertyDefinition.setMaxOccurs(maxOccurs);
         return propertyDefinition;
     }
 
-    public PrismContainerDefinition createContainerDefinition(QName name, QName typeName) {
+    public PrismContainerDefinition<?> createContainerDefinition(QName name, QName typeName) {
         return createContainerDefinition(name, typeName, 1, 1);
     }
 
@@ -475,7 +446,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition complexTypeDefinition,
             int minOccurs, int maxOccurs) {
-        PrismContainerDefinitionImpl<C> def = new PrismContainerDefinitionImpl<>(name, complexTypeDefinition, getPrismContext());
+        PrismContainerDefinitionImpl<C> def = new PrismContainerDefinitionImpl<>(name, complexTypeDefinition);
         def.setMinOccurs(minOccurs);
         def.setMaxOccurs(maxOccurs);
         addDefinition(def);
@@ -495,7 +466,8 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
             if (!(parent instanceof PrismContainer<?>)) {
                 return false;
             }
-            return canBeDefinitionOf((PrismContainer)parent);
+            //noinspection unchecked
+            return canBeDefinitionOf((PrismContainer<C>)parent);
         } else {
             // TODO: maybe look at the subitems?
             return true;
@@ -529,7 +501,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
         StringBuilder sb = DebugUtil.createIndentedStringBuilder(indent);
-        sb.append(toString());
+        sb.append(this);
         extendDumpHeader(sb);
         if (isRuntimeSchema()) {
             sb.append(" dynamic");

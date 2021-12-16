@@ -31,14 +31,14 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
     protected Class<?> compileTimeClass;
     @NotNull final Set<TypeDefinition> staticSubTypes = new HashSet<>();
     protected Integer instantiationOrder;
-    protected final transient  SerializationProxy serializationProxy;
+    protected final transient SerializationProxy serializationProxy;
 
-    TypeDefinitionImpl(QName typeName, PrismContext prismContext) {
-        this(typeName, prismContext, false);
+    TypeDefinitionImpl(QName typeName) {
+        this(typeName, false);
     }
 
-    public TypeDefinitionImpl(QName typeName, PrismContext prismContext, boolean schemaRegistryProvided) {
-        super(typeName, prismContext);
+    private TypeDefinitionImpl(QName typeName, boolean schemaRegistryProvided) {
+        super(typeName);
         this.serializationProxy = schemaRegistryProvided ? SerializationProxy.forTypeDef(typeName) : null;
     }
 
@@ -86,10 +86,10 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
         this.compileTimeClass = compileTimeClass;
     }
 
-    protected void copyDefinitionData(TypeDefinitionImpl clone) {
-        super.copyDefinitionData(clone);
-        clone.superType = this.superType;
-        clone.compileTimeClass = this.compileTimeClass;
+    protected void copyDefinitionDataFrom(TypeDefinition source) {
+        super.copyDefinitionDataFrom(source);
+        this.superType = source.getSuperType();
+        this.compileTimeClass = source.getCompileTimeClass();
     }
 
     @Override

@@ -128,12 +128,11 @@ public class ItemInfo<ID extends ItemDefinition> {
                     Class<Containerable> containerableClass = (Class<Containerable>) classExplicit;
                     ComplexTypeDefinition ctd = schemaRegistry.findComplexTypeDefinitionByCompileTimeClass(containerableClass);
                     @SuppressWarnings("unchecked")
-                    ID id = (ID) new PrismContainerDefinitionImpl<>(info.itemName, ctd,
-                            schemaRegistry.getPrismContext(), containerableClass);
+                    ID id = (ID) new PrismContainerDefinitionImpl<>(info.itemName, ctd, containerableClass);
                     info.itemDefinition = id;
                 } else {
                     @SuppressWarnings("unchecked")
-                    ID id = (ID) new PrismPropertyDefinitionImpl<>(info.itemName, info.typeName, schemaRegistry.getPrismContext());
+                    ID id = (ID) new PrismPropertyDefinitionImpl<>(info.itemName, info.typeName);
                     info.itemDefinition = id;
                 }
             }

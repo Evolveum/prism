@@ -10,11 +10,11 @@ package com.evolveum.midpoint.prism;
 import javax.xml.namespace.QName;
 
 /**
- * Primarily for enums. (Experimental.)
+ * Defines a simple (non-structured) definition.
  *
- * Currently there are no special methods.
+ * This interface currently serves primarily for enums.
  *
- * @author mederly
+ * TODO document
  */
 public interface SimpleTypeDefinition extends TypeDefinition {
 

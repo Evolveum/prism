@@ -16,7 +16,10 @@ import javax.xml.namespace.QName;
 import java.util.List;
 
 /**
+ * An interface to mutate the definition of a complex type.
  *
+ * TODO document the interface (e.g. what should {@link #add(ItemDefinition)} method do
+ *   in the case of duplicate definitions, etc)
  */
 public interface MutableComplexTypeDefinition extends ComplexTypeDefinition, MutableTypeDefinition {
 
@@ -54,7 +57,12 @@ public interface MutableComplexTypeDefinition extends ComplexTypeDefinition, Mut
 
     void setCompileTimeClass(Class<?> compileTimeClass);
 
-    void replaceDefinition(QName itemName, ItemDefinition newDefinition);
+    /**
+     * Replaces a definition for an item with given name.
+     *
+     * TODO specify the behavior more precisely
+     */
+    void replaceDefinition(@NotNull QName itemName, ItemDefinition<?> newDefinition);
 
     @Experimental
     void addSubstitution(ItemDefinition<?> itemDef, ItemDefinition<?> maybeSubst);

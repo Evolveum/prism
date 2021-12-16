@@ -85,11 +85,11 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
 
     PrismContainerValue<?> getExtensionContainerValue();
 
-    <I extends Item> I findExtensionItem(String elementLocalName);
+    <I extends Item<?, ?>> I findExtensionItem(String elementLocalName);
 
-    <I extends Item> I findExtensionItem(QName elementName);
+    <I extends Item<?, ?>> I findExtensionItem(QName elementName);
 
-    <I extends Item> void addExtensionItem(I item) throws SchemaException;
+    <I extends Item<?, ?>> void addExtensionItem(I item) throws SchemaException;
 
     PrismContainer<?> createExtension() throws SchemaException;
 
@@ -97,7 +97,8 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     void applyDefinition(PrismContainerDefinition<O> definition) throws SchemaException;
 
     @Override
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> void removeItem(ItemPath path, Class<I> itemType);
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>>
+    void removeItem(ItemPath path, Class<I> itemType);
 
     void addReplaceExisting(Item<?, ?> item) throws SchemaException;
 
@@ -107,7 +108,7 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     @Override
     PrismObject<O> cloneComplex(CloneStrategy strategy);
 
-    PrismObjectDefinition<O> deepCloneDefinition(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction);
+    PrismObjectDefinition<O> deepCloneDefinition(@NotNull DeepCloneOperation operation);
 
     @NotNull
     ObjectDelta<O> diff(PrismObject<O> other);

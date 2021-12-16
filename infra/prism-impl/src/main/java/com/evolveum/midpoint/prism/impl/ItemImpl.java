@@ -73,7 +73,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     @NotNull protected final List<V> values = new ArrayList<>();
     private transient Map<String,Object> userData = new HashMap<>();
 
-    protected boolean immutable;
     protected boolean incomplete;
 
     /**
@@ -308,7 +307,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         if (userData == null) {
             userData = new HashMap<>();
         }
-        if (immutable) {
+        if (isImmutable()) {
             return Collections.unmodifiableMap(userData);            // TODO beware, objects in userData themselves are mutable
         } else {
             return userData;
@@ -716,7 +715,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         // Is revive neccessary if prism context is static?
         // it is necessary to do e.g. PolyString recomputation even if PrismContext is set
         if (definition != null) {
@@ -738,7 +737,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         // Also do not copy 'immutable' flag so the clone is free to be modified
     }
 
-    protected void propagateDeepCloneDefinition(boolean ultraDeep, D clonedDefinition, Consumer<ItemDefinition> postCloneAction) {
+    /** TODO description */
+    protected void propagateDeepCloneDefinition(@NotNull DeepCloneOperation operation, D clonedDefinition) {
         // nothing to do by default
     }
 

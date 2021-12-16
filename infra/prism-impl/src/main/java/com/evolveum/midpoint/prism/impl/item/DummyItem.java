@@ -242,7 +242,7 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         delegate().applyDefinition(definition, force);
     }
 
-    public final void revive(PrismContext prismContext) throws SchemaException {
+    public final void revive(PrismContext prismContext) {
         delegate().revive(prismContext);
     }
 

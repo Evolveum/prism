@@ -89,7 +89,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    public PrismContainerValueImpl(OriginType type, Objectable source, PrismContainerable container, Long id, ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext) {
+    public PrismContainerValueImpl(
+            OriginType type,
+            Objectable source,
+            PrismContainerable container,
+            Long id,
+            ComplexTypeDefinition complexTypeDefinition,
+            PrismContext prismContext) {
         super(prismContext, type, source, container);
         this.id = id;
         this.complexTypeDefinition = complexTypeDefinition;
@@ -249,6 +255,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public Class<C> getCompileTimeClass() {
         if (containerable != null) {
+            //noinspection unchecked
             return (Class<C>) containerable.getClass();
         } else {
             return resolveClass(null);
@@ -280,10 +287,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 throw new IllegalStateException("asContainerable was called to produce " + requiredClass
                         + ", but the actual class in PCV is " + actualClass);
             } else {
+                //noinspection unchecked
                 return (Class<C>) actualClass;
             }
         } else {
-            PrismContainerable parent = getParent();
+            PrismContainerable<?> parent = getParent();
             if (parent != null) {
                 Class<?> parentClass = parent.getCompileTimeClass();
                 if (parentClass != null) {
@@ -292,6 +300,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                         // but TODO maybe this is only a workaround and the problem is in the schema itself (?)
                         return requiredClass;
                     } else {
+                        //noinspection unchecked
                         return (Class<C>) parentClass;
                     }
                 }
@@ -313,7 +322,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             if (getPrismContext() != null) {
                 containerable = clazz.getConstructor(PrismContext.class).newInstance(getPrismContext());
             } else {
-                containerable = clazz.newInstance();
+                containerable = clazz.getDeclaredConstructor().newInstance();
             }
             containerable.setupContainerValue(this);
             return containerable;
@@ -779,7 +788,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             if (StringUtils.isNotBlank(name.getNamespaceURI())) {
                 newItem = (I) itemDefinition.instantiate(name);
             } else {
-                QName computed = new QName(itemDefinition.getNamespace(), name.getLocalPart());
+                QName computed = new QName(itemDefinition.getItemName().getNamespaceURI(), name.getLocalPart());
                 newItem = (I) itemDefinition.instantiate(computed);
             }
             if (newItem instanceof PrismObject) {
@@ -1288,7 +1297,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         super.revive(prismContext);
         for (Item<?, ?> item : items.values()) {
             item.revive(prismContext);
@@ -1386,22 +1395,28 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    void deepCloneDefinition(boolean ultraDeep, PrismContainerDefinition<C> clonedContainerDef, Consumer<ItemDefinition> postCloneAction) {
+    void deepCloneDefinition(DeepCloneOperation operation, PrismContainerDefinition<C> clonedContainerDef) {
         // special treatment of CTD (we must not simply overwrite it with clonedPCD.CTD!)
         PrismContainerable<?> parent = getParent();
         if (parent != null && complexTypeDefinition != null) {
             if (complexTypeDefinition == parent.getComplexTypeDefinition()) {
-                replaceComplexTypeDefinition(clonedContainerDef.getComplexTypeDefinition());
+                replaceComplexTypeDefinition(
+                        clonedContainerDef.getComplexTypeDefinition());
             } else {
-                replaceComplexTypeDefinition(complexTypeDefinition.deepClone(ultraDeep ? null : new HashMap<>(), new HashMap<>(), postCloneAction));        // OK?
+                replaceComplexTypeDefinition(
+                        complexTypeDefinition.deepClone(operation));
             }
         }
         for (Item<?, ?> item : items.values()) {
-            deepCloneDefinitionItem(item, ultraDeep, clonedContainerDef, postCloneAction);
+            deepCloneDefinitionItem(operation, item, clonedContainerDef);
         }
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> void deepCloneDefinitionItem(I item, boolean ultraDeep, PrismContainerDefinition<C> clonedContainerDef, Consumer<ItemDefinition> postCloneAction) {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>>
+    void deepCloneDefinitionItem(
+            DeepCloneOperation operation,
+            I item,
+            PrismContainerDefinition<C> clonedContainerDef) {
         PrismContainerDefinition<C> oldContainerDef = getDefinition();
         ItemName itemName = item.getElementName();
         ID oldItemDefFromContainer = oldContainerDef.findLocalItemDefinition(itemName);
@@ -1411,11 +1426,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             clonedItemDef = clonedContainerDef.findItemDefinition(itemName);
         } else {
             //noinspection unchecked
-            clonedItemDef = (ID) oldItemDef.deepClone(ultraDeep, postCloneAction);
+            clonedItemDef = (ID) oldItemDef.deepClone(operation);
         }
+        // propagate to items in values
         //noinspection unchecked
-        ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(ultraDeep, clonedItemDef, postCloneAction);        // propagate to items in values
-        item.setDefinition(clonedItemDef);                                    // sets CTD in values only if null!
+        ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(operation, clonedItemDef);
+        item.setDefinition(clonedItemDef); // sets CTD in values only if null!
     }
 
     @Override
@@ -1466,7 +1482,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         // Do not include id. containers with non-null id and null id may still be considered equivalent
         // We also need to make sure that container valus that contain only metadata will produce zero hashcode
         // so it will not ruin hashcodes of parent containers
-        int itemsHash = 0;
+        int itemsHash;
         itemsHash = MiscUtil.unorderedCollectionHashcode(items.values(), item -> !item.isOperational());
         if (itemsHash != 0) {
             result = prime * result + itemsHash;
@@ -1598,8 +1614,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return null;
             }
         }
-        ComplexTypeDefinition def = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(containerable.getClass());
-        return def;        // may be null at this place
+        return getPrismContext().getSchemaRegistry()
+                .findComplexTypeDefinitionByCompileTimeClass(containerable.getClass()); // may be null at this place
     }
 
     public static <T extends Containerable> List<PrismContainerValue<T>> toPcvList(List<T> beans) {
@@ -1621,7 +1637,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
 
         // And now let's freeze it; from the bottom up.
-        for (Item item : items.values()) {
+        for (Item<?, ?> item : items.values()) {
             item.freeze();
         }
         super.performFreeze();
@@ -1652,8 +1668,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         PrismContext prismContext = getPrismContext();
         Validate.notNull(prismContext, "Prism context is null");
 
-        PrismContainerDefinitionImpl<C> definition = new PrismContainerDefinitionImpl<>(itemName,
-                getComplexTypeDefinition(), prismContext);
+        PrismContainerDefinitionImpl<C> definition = new PrismContainerDefinitionImpl<>(itemName, getComplexTypeDefinition());
         definition.setMaxOccurs(1);
 
         PrismContainer<C> pc = definition.instantiate();
@@ -1685,7 +1700,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     public static <C extends Containerable> List<PrismContainerValue<C>> asPrismContainerValues(List<C> containerables) {
-        return containerables.stream().map(c -> (PrismContainerValue<C>) c.asPrismContainerValue()).collect(Collectors.toList());
+        //noinspection unchecked
+        return containerables.stream()
+                .map(c -> (PrismContainerValue<C>) c.asPrismContainerValue())
+                .collect(Collectors.toList());
     }
 
     public static <C extends Containerable> List<C> asContainerables(List<PrismContainerValue<C>> pcvs) {
@@ -1807,7 +1825,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public void removeItems(List<? extends ItemPath> itemsToRemove) {
         for (ItemPath itemToRemove : itemsToRemove) {
-            Item item = findItem(itemToRemove);        // reduce to "removeItem" after fixing that method implementation
+            Item<?, ?> item = findItem(itemToRemove); // reduce to "removeItem" after fixing that method implementation
             if (item != null) {
                 removeItem(item.getPath(), Item.class);
             }
@@ -1818,11 +1836,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     public void removeOperationalItems() {
         accept(visitable -> {
             if (visitable instanceof Item) {
-                Item item = ((Item) visitable);
+                Item<?, ?> item = ((Item<?, ?>) visitable);
                 if (item.getDefinition() != null && item.getDefinition().isOperational()) {
-                    PrismValue parent = item.getParent();
-                    if (parent != null) {    // should be the case
-                        ((PrismContainerValue) parent).remove(item);
+                    PrismContainerValue<?> parent = item.getParent();
+                    if (parent != null) { // should be the case
+                        parent.remove(item);
                     }
                 }
             }

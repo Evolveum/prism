@@ -16,16 +16,15 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 
 /**
- * @author mederly
+ * TODO document
  */
 public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements SimpleTypeDefinition, MutableTypeDefinition {
 
-    private QName baseTypeName;
-    private DerivationMethod derivationMethod;        // usually RESTRICTION
+    private final QName baseTypeName;
+    private final DerivationMethod derivationMethod; // usually RESTRICTION
 
-    public SimpleTypeDefinitionImpl(QName typeName, QName baseTypeName, DerivationMethod derivationMethod,
-            PrismContext prismContext) {
-        super(typeName, prismContext);
+    public SimpleTypeDefinitionImpl(QName typeName, QName baseTypeName, DerivationMethod derivationMethod) {
+        super(typeName);
         this.baseTypeName = baseTypeName;
         this.derivationMethod = derivationMethod;
     }
@@ -57,8 +56,8 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
     @NotNull
     @Override
     public SimpleTypeDefinitionImpl clone() {
-        SimpleTypeDefinitionImpl clone = new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod, getPrismContext());
-        super.copyDefinitionData(clone);
+        SimpleTypeDefinitionImpl clone = new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod);
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 

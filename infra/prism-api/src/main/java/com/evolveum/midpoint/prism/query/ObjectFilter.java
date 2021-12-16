@@ -30,7 +30,7 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
     void accept(Visitor visitor);
 
     @Override
-    void revive(PrismContext prismContext) throws SchemaException;
+    void revive(PrismContext prismContext);
 
     void checkConsistence(boolean requireDefinitions);
 

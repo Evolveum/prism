@@ -48,8 +48,8 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
 
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
-    public PrismReferenceDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext) {
-        super(elementName, typeName, prismContext);
+    public PrismReferenceDefinitionImpl(QName elementName, QName typeName) {
+        super(elementName, typeName);
         structuredType = Lazy.from(() ->
             Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
@@ -96,25 +96,21 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     @Override
-    public boolean isValidFor(QName elementQName, Class<? extends ItemDefinition> clazz) {
-        return isValidFor(elementQName, clazz, false);
-    }
-
-    @Override
-    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition> clazz, boolean caseInsensitive) {
+    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition<?>> clazz, boolean caseInsensitive) {
         return clazz.isAssignableFrom(this.getClass()) &&
                 (QNameUtil.match(elementQName, getItemName(), caseInsensitive) ||
                         QNameUtil.match(elementQName, getCompositeObjectElementName(), caseInsensitive));
     }
 
     @Override
-    public <T extends ItemDefinition> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
+    public <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
         if (!path.startsWithObjectReference()) {
             return super.findItemDefinition(path, clazz);
         } else {
             ItemPath rest = path.rest();
-            PrismObjectDefinition referencedObjectDefinition = getSchemaRegistry().determineReferencedObjectDefinition(targetTypeName, rest);
-            return (T) ((ItemDefinition) referencedObjectDefinition).findItemDefinition(rest, clazz);
+            PrismObjectDefinition<?> referencedObjectDefinition =
+                    getSchemaRegistry().determineReferencedObjectDefinition(targetTypeName, rest);
+            return ((ItemDefinition<?>) referencedObjectDefinition).findItemDefinition(rest, clazz);
         }
     }
 
@@ -132,7 +128,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     @Override
-    public ItemDelta createEmptyDelta(ItemPath path) {
+    public @NotNull ItemDelta createEmptyDelta(ItemPath path) {
         return new ReferenceDeltaImpl(path, this, getPrismContext());
     }
 
@@ -169,16 +165,16 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     @NotNull
     @Override
     public PrismReferenceDefinition clone() {
-        PrismReferenceDefinitionImpl clone = new PrismReferenceDefinitionImpl(getItemName(), getTypeName(), getPrismContext());
-        copyDefinitionData(clone);
+        PrismReferenceDefinitionImpl clone = new PrismReferenceDefinitionImpl(getItemName(), getTypeName());
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
-    protected void copyDefinitionData(PrismReferenceDefinitionImpl clone) {
-        super.copyDefinitionData(clone);
-        clone.targetTypeName = this.targetTypeName;
-        clone.compositeObjectElementName = this.compositeObjectElementName;
-        clone.isComposite = this.isComposite;
+    protected void copyDefinitionDataFrom(PrismReferenceDefinition source) {
+        super.copyDefinitionDataFrom(source);
+        targetTypeName = source.getTargetTypeName();
+        compositeObjectElementName = source.getCompositeObjectElementName();
+        isComposite = source.isComposite();
     }
 
     /**

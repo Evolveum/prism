@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.namespace.QName;
 
@@ -68,14 +65,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     protected String plannedRemoval;
     protected boolean experimental = false;
     protected boolean elaborate = false;
-    private Map<QName,Object> annotations;
+    private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
-
-    /**
-     * whether an item is inherited from a supertype (experimental feature)
-     */
-    protected boolean inherited = false;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -90,8 +82,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
      */
     protected boolean emphasized = false;
 
-
-    DefinitionImpl(@NotNull QName typeName, @NotNull PrismContext prismContext) {
+    DefinitionImpl(@NotNull QName typeName) {
         this.typeName = typeName;
     }
 
@@ -183,10 +174,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setElaborate(boolean elaborate) {
         checkMutable();
         this.elaborate = elaborate;
-    }
-
-    public void setInherited(boolean inherited) {
-        this.inherited = inherited;
     }
 
     @Override
@@ -288,8 +275,15 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         if (annotations == null) {
             return null;
         } else {
+            //noinspection unchecked
             return (A) annotations.get(qname);
         }
+    }
+
+    @Override
+    public Map<QName, Object> getAnnotations() {
+        return annotations != null ?
+                Collections.unmodifiableMap(annotations) : null;
     }
 
     @Override
@@ -337,24 +331,27 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @Override
     public abstract void revive(PrismContext prismContext);
 
-    protected void copyDefinitionData(DefinitionImpl clone) {
-        clone.processing = this.processing;
-        clone.typeName = this.typeName;
-        clone.displayName = this.displayName;
-        clone.displayOrder = this.displayOrder;
-        clone.help = this.help;
-        clone.inherited = this.inherited;
-        clone.documentation = this.documentation;
-        clone.isAbstract = this.isAbstract;
-        clone.deprecated = this.deprecated;
-        clone.isRuntimeSchema = this.isRuntimeSchema;
-        clone.emphasized = this.emphasized;
-        clone.experimental = this.experimental;
-        clone.elaborate = this.elaborate;
-        if (this.annotations != null) {
-            clone.annotations = new HashMap<>(this.annotations);
+    protected void copyDefinitionDataFrom(Definition source) {
+        this.processing = source.getProcessing();
+        this.typeName = source.getTypeName();
+        this.displayName = source.getDisplayName();
+        this.displayOrder = source.getDisplayOrder();
+        this.help = source.getHelp();
+        this.documentation = source.getDocumentation();
+        this.isAbstract = source.isAbstract();
+        this.deprecated = source.isDeprecated();
+        this.isRuntimeSchema = source.isRuntimeSchema();
+        this.emphasized = source.isEmphasized();
+        this.experimental = source.isExperimental();
+        this.elaborate = source.isElaborate();
+        Map<QName, Object> annotations = source.getAnnotations();
+        if (annotations != null) {
+            this.annotations.putAll(annotations);
         }
-        clone.schemaMigrations = this.schemaMigrations;
+        List<SchemaMigration> migrations = source.getSchemaMigrations();
+        if (migrations != null) {
+            this.schemaMigrations = new ArrayList<>(migrations);
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -367,7 +364,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return result;
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({ "ConstantConditions", "RedundantIfStatement" })
     @Override
     public boolean equals(Object obj) {
         if (this == obj)  return true;
@@ -391,7 +388,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = DebugUtil.createIndentedStringBuilder(indent);
-        sb.append(toString());
+        sb.append(this);
         extendDumpHeader(sb);
         return sb.toString();
     }
@@ -415,7 +412,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull
     @Override
     public abstract Definition clone();
-
 
     protected void checkMutableOnExposing() {
         if (!isMutable()) {

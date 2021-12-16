@@ -16,15 +16,15 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
+import static com.evolveum.midpoint.prism.DeepCloneOperation.notUltraDeep;
+
 /**
- * TODO
+ * Direct implementation of {@link ComplexTypeDefinition}.
  *
  * @author Radovan Semancik
- *
  */
 public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements MutableComplexTypeDefinition {
 
@@ -32,30 +32,58 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     private static final long serialVersionUID = -9142629126376258513L;
 
-    // FIXME: This should be probably Map
-    @NotNull private final List<ItemDefinition> itemDefinitions = new ArrayList<>();
+    /**
+     * Collection of constituents of this complex type.
+     *
+     * These are directly applicable when this CTD is instantiated into PrismContainer.
+     *
+     * TODO Define their meaning if this CTD is instantiated as PrismProperty.
+     *
+     * FIXME: This should be probably Map
+     */
+    @NotNull private final List<ItemDefinition<?>> itemDefinitions = new ArrayList<>();
+
+    /** @see ComplexTypeDefinition#isReferenceMarker() */
     private boolean referenceMarker;
+
+    /** @see ComplexTypeDefinition#isContainerMarker() */
     private boolean containerMarker;
+
+    /** @see ComplexTypeDefinition#isObjectMarker() */
     private boolean objectMarker;
+
+    /** @see ComplexTypeDefinition#isXsdAnyMarker() */
     private boolean xsdAnyMarker;
+
+    /** @see ComplexTypeDefinition#isListMarker() */
     private boolean listMarker;
+
+    /** @see ComplexTypeDefinition#getExtensionForType() */
     private QName extensionForType;
 
+    /** @see ComplexTypeDefinition#getDefaultNamespace() */
     private String defaultNamespace;
+
+    /** @see ComplexTypeDefinition#getIgnoredNamespaces() */
     @NotNull private List<String> ignoredNamespaces = new ArrayList<>();
 
-    // ugly hack, just to see the performance effect
+    /**
+     * Cache for {@link #findLocalItemDefinition(QName)} queries.
+     *
+     * BEWARE! Ugly hack, just to see the performance effect.
+     *
+     * TODO Consider whether we should keep this feature.
+     */
     @NotNull private final TransientCache<QName, Object> cachedLocalDefinitionQueries = new TransientCache<>();
+
+    /** Special value corresponding that no definition was found - used in {@link #cachedLocalDefinitionQueries}. */
     private static final Object NO_DEFINITION = new Object();
 
-    // temporary/experimental - to avoid trimming "standard" definitions
-    // we reset this flag when cloning
-    protected boolean shared = true;
+    /** TODO */
+    private final @NotNull Map<QName, ItemDefinition<?>> substitutions = new HashMap<>();
 
-    private final @NotNull Map<QName, ItemDefinition<?>> substitutions = new HashMap<QName, ItemDefinition<?>>();
-
-    public ComplexTypeDefinitionImpl(@NotNull QName typeName, @NotNull PrismContext prismContext) {
-        super(typeName, prismContext);
+    public ComplexTypeDefinitionImpl(@NotNull QName typeName) {
+        super(typeName);
     }
 
     //region Trivia
@@ -71,9 +99,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
      *
      * @return set of definitions
      */
-    @NotNull
     @Override
-    public List<? extends ItemDefinition> getDefinitions() {
+    public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
         return Collections.unmodifiableList(itemDefinitions);
     }
 
@@ -86,11 +113,6 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     private void invalidateCaches() {
         cachedLocalDefinitionQueries.invalidate();
-    }
-
-    @Override
-    public boolean isShared() {
-        return shared;
     }
 
     @Override
@@ -186,8 +208,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     //region Creating definitions
     @Override
-    public PrismPropertyDefinitionImpl createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(name, typeName, getPrismContext());
+    public PrismPropertyDefinitionImpl<?> createPropertyDefinition(QName name, QName typeName) {
+        PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(name, typeName);
         add(propDef);
         return propDef;
     }
@@ -195,29 +217,30 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     // Creates reference to other schema
     // TODO: maybe check if the name is in different namespace
     // TODO: maybe create entirely new concept of property reference?
-    public PrismPropertyDefinition createPropertyDefinition(QName name) {
-        PrismPropertyDefinition propDef = new PrismPropertyDefinitionImpl(name, null, getPrismContext());
+    public PrismPropertyDefinition<?> createPropertyDefinition(QName name) {
+        PrismPropertyDefinition<?> propDef = new PrismPropertyDefinitionImpl<>(name, null);
         add(propDef);
         return propDef;
     }
 
     @Override
-    public PrismPropertyDefinitionImpl createPropertyDefinition(String localName, QName typeName) {
-        QName name = new QName(getSchemaNamespace(), localName);
-        return createPropertyDefinition(name, typeName);
+    public PrismPropertyDefinitionImpl<?> createPropertyDefinition(String localName, QName typeName) {
+        return createPropertyDefinition(
+                new QName(getSchemaNamespace(), localName),
+                typeName);
     }
 
-    public PrismPropertyDefinition createPropertyDefinition(String localName, String localTypeName) {
-        QName name = new QName(getSchemaNamespace(), localName);
-        QName typeName = new QName(getSchemaNamespace(), localTypeName);
-        return createPropertyDefinition(name, typeName);
+    public PrismPropertyDefinition<?> createPropertyDefinition(String localName, String localTypeName) {
+        return createPropertyDefinition(
+                new QName(getSchemaNamespace(), localName),
+                new QName(getSchemaNamespace(), localTypeName));
     }
     //endregion
 
     //region Finding definitions
 
     @Override
-    public <ID extends ItemDefinition> ID findLocalItemDefinition(@NotNull QName name) {
+    public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name) {
         Object cached = cachedLocalDefinitionQueries.get(name);
         if (cached == NO_DEFINITION) {
             return null;
@@ -232,20 +255,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         }
     }
 
-    // TODO deduplicate w.r.t. findNamedItemDefinition
-    //  but beware, consider only local definitions!
     @Override
-    public <T extends ItemDefinition> T findLocalItemDefinition(@NotNull QName name, @NotNull Class<T> clazz, boolean caseInsensitive) {
-        for (ItemDefinition def : getDefinitions()) {
-            if (def.isValidFor(name, clazz, caseInsensitive)) {
-                return (T) def;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public <ID extends ItemDefinition> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
+    public <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
         for (;;) {
             if (path.isEmpty()) {
                 throw new IllegalArgumentException("Cannot resolve empty path on complex type definition "+this);
@@ -261,6 +272,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 ComplexTypeDefinition parent = getSchemaRegistry().determineParentDefinition(this, rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
+                    //noinspection unchecked
                     return (ID) getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
                 } else {
                     return parent.findItemDefinition(rest, clazz);
@@ -274,9 +286,9 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 PrismPropertyDefinitionImpl<?> oidDefinition;
                 // experimental
                 if (objectMarker) {
-                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_STRING, getPrismContext());
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_STRING);
                 } else if (containerMarker) {
-                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_INTEGER, getPrismContext());
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_INTEGER);
                 } else {
                     throw new IllegalStateException("No identifier for complex type " + this);
                 }
@@ -289,16 +301,17 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         }
     }
 
-    // path starts with NamedItemPathSegment
-    @Override
-    public <ID extends ItemDefinition> ID findNamedItemDefinition(@NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
+    private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
+            @NotNull QName firstName,
+            @NotNull ItemPath rest,
+            @NotNull Class<ID> clazz) {
         ID found = null;
-        for (ItemDefinition def : getDefinitions()) {
+        for (ItemDefinition<?> def : getDefinitions()) {
             if (def.isValidFor(firstName, clazz, false)) {
                 if (found != null) {
                     throw new IllegalStateException("More definitions found for " + firstName + "/" + rest + " in " + this);
                 }
-                found = (ID) def.findItemDefinition(rest, clazz);
+                found = def.findItemDefinition(rest, clazz);
                 if (QNameUtil.hasNamespace(firstName)) {
                     return found;            // if qualified then there's no risk of matching more entries
                 }
@@ -310,9 +323,9 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         if (isXsdAnyMarker()) {
             SchemaRegistry schemaRegistry = getSchemaRegistry();
             if (schemaRegistry != null) {
-                ItemDefinition def = schemaRegistry.findItemDefinitionByElementName(firstName);
+                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
                 if (def != null) {
-                    return (ID) def.findItemDefinition(rest, clazz);
+                    return def.findItemDefinition(rest, clazz);
                 }
             }
         }
@@ -325,8 +338,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
      */
     @Override
     public void merge(ComplexTypeDefinition otherComplexTypeDef) {
-        for (ItemDefinition otherItemDef: otherComplexTypeDef.getDefinitions()) {
-            ItemDefinition existingItemDef = findItemDefinition(otherItemDef.getItemName());
+        for (ItemDefinition<?> otherItemDef: otherComplexTypeDef.getDefinitions()) {
+            ItemDefinition<?> existingItemDef = findItemDefinition(otherItemDef.getItemName());
             if (existingItemDef != null) {
                 LOGGER.warn("Overwriting existing definition {} by {} (in {})", existingItemDef, otherItemDef, this);
                 replaceDefinition(otherItemDef.getItemName(), otherItemDef.clone());
@@ -338,7 +351,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @Override
     public void revive(PrismContext prismContext) {
-        for (ItemDefinition def: itemDefinitions) {
+        for (ItemDefinition<?> def: itemDefinitions) {
             def.revive(prismContext);
         }
     }
@@ -363,70 +376,55 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @NotNull
     @Override
     public ComplexTypeDefinitionImpl clone() {
-        ComplexTypeDefinitionImpl clone = new ComplexTypeDefinitionImpl(this.typeName, getPrismContext());
-        copyDefinitionData(clone);
-        clone.shared = false;
+        ComplexTypeDefinitionImpl clone = new ComplexTypeDefinitionImpl(this.typeName);
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
     public ComplexTypeDefinition deepClone() {
-        return deepClone(new HashMap<>(), new HashMap<>(), null);
+        return deepClone(
+                notUltraDeep());
     }
 
     @NotNull
     @Override
-    public ComplexTypeDefinition deepClone(Map<QName, ComplexTypeDefinition> ctdMap, Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction) {
-        if (ctdMap != null) {
-            ComplexTypeDefinition clone = ctdMap.get(this.getTypeName());
-            if (clone != null) {
-                return clone; // already cloned
+    public ComplexTypeDefinition deepClone(DeepCloneOperation operation) {
+        return operation.execute(this,
+                this::clone,
+                clone -> {
+                    ((ComplexTypeDefinitionImpl) clone).itemDefinitions.clear();
+                    for (ItemDefinition<?> itemDef : itemDefinitions) {
+                        ItemDefinition<?> itemClone = itemDef.deepClone(operation);
+                        ((ComplexTypeDefinitionImpl) clone).itemDefinitions.add(itemClone);
+                        operation.executePostCloneAction(itemClone);
             }
-        }
-        ComplexTypeDefinition cloneInParent = onThisPath.get(this.getTypeName());
-        if (cloneInParent != null) {
-            return cloneInParent;
-        }
-        ComplexTypeDefinitionImpl clone = clone(); // shallow
-        if (ctdMap != null) {
-            ctdMap.put(this.getTypeName(), clone);
-        }
-        onThisPath.put(this.getTypeName(), clone);
-        clone.itemDefinitions.clear();
-        for (ItemDefinition itemDef: this.itemDefinitions) {
-            ItemDefinition itemClone = itemDef.deepClone(ctdMap, onThisPath, postCloneAction);
-            clone.itemDefinitions.add(itemClone);
-            if (postCloneAction != null) {
-                postCloneAction.accept(itemClone);
-            }
-        }
-        onThisPath.remove(this.getTypeName());
-        return clone;
+        });
     }
 
-    protected void copyDefinitionData(ComplexTypeDefinitionImpl clone) {
-        super.copyDefinitionData(clone);
-        clone.containerMarker = this.containerMarker;
-        clone.objectMarker = this.objectMarker;
-        clone.xsdAnyMarker = this.xsdAnyMarker;
-        clone.extensionForType = this.extensionForType;
-        clone.defaultNamespace = this.defaultNamespace;
-        clone.ignoredNamespaces = this.ignoredNamespaces;
-        clone.itemDefinitions.addAll(this.itemDefinitions);
+    protected void copyDefinitionDataFrom(ComplexTypeDefinition source) {
+        super.copyDefinitionDataFrom(source);
+        containerMarker = source.isContainerMarker();
+        objectMarker = source.isObjectMarker();
+        xsdAnyMarker = source.isXsdAnyMarker();
+        extensionForType = source.getExtensionForType();
+        defaultNamespace = source.getDefaultNamespace();
+        ignoredNamespaces = new ArrayList<>(source.getIgnoredNamespaces());
+        itemDefinitions.addAll(source.getDefinitions());
     }
 
     @Override
-    public void replaceDefinition(QName itemName, ItemDefinition newDefinition) {
+    public void replaceDefinition(@NotNull QName itemName, ItemDefinition<?> newDefinition) {
         checkMutable();
         invalidateCaches();
         for (int i=0; i<itemDefinitions.size(); i++) {
-            ItemDefinition itemDef = itemDefinitions.get(i);
+            ItemDefinition<?> itemDef = itemDefinitions.get(i);
             if (itemDef.getItemName().equals(itemName)) {
                 if (!itemDef.getClass().isAssignableFrom(newDefinition.getClass())) {
                     throw new IllegalArgumentException("The provided definition of class "+newDefinition.getClass().getName()+" does not match existing definition of class "+itemDef.getClass().getName());
                 }
                 if (!itemDef.getItemName().equals(newDefinition.getItemName())) {
                     newDefinition = newDefinition.clone();
-                    ((ItemDefinitionImpl) newDefinition).setItemName(itemName);
+                    ((ItemDefinitionImpl<?>) newDefinition).setItemName(itemName);
                 }
                 // Make sure this is set, not add. set will keep correct ordering
                 itemDefinitions.set(i, newDefinition);
@@ -442,12 +440,14 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         int result = super.hashCode();
         result = prime * result + (containerMarker ? 1231 : 1237);
         result = prime * result + ((extensionForType == null) ? 0 : extensionForType.hashCode());
+        //noinspection ConstantConditions [seems to be null during readObject i.e. while deserializing]
         result = prime * result + ((itemDefinitions == null) ? 0 : itemDefinitions.hashCode());
         result = prime * result + (objectMarker ? 1231 : 1237);
         result = prime * result + (xsdAnyMarker ? 1231 : 1237);
         return result;
     }
 
+    @SuppressWarnings("RedundantIfStatement")
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -491,7 +491,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
         StringBuilder sb = DebugUtil.createIndentedStringBuilder(indent);
-        sb.append(toString());
+        sb.append(this);
         if (extensionForType != null) {
             sb.append(",ext:");
             sb.append(PrettyPrinter.prettyPrint(extensionForType));
@@ -519,7 +519,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             sb.append(" (already shown)");
         } else {
             seen.put(this, null);
-            for (ItemDefinition def : getDefinitions()) {
+            for (ItemDefinition<?> def : getDefinitions()) {
                 sb.append("\n");
                 sb.append(def.debugDump(indent + 1));
                 extendItemDumpDefinition(sb, def);
@@ -548,11 +548,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public void trimTo(@NotNull Collection<ItemPath> paths) {
         checkMutable();
-        if (shared) {
-            // TODO shared mutable definition that is in use??
-            throw new IllegalStateException("Couldn't trim shared definition: " + this);
-        }
-        for (Iterator<ItemDefinition> iterator = itemDefinitions.iterator(); iterator.hasNext(); ) {
+        for (Iterator<ItemDefinition<?>> iterator = itemDefinitions.iterator(); iterator.hasNext(); ) {
             ItemDefinition<?> itemDef = iterator.next();
             ItemPath itemPath = itemDef.getItemName();
             if (!ItemPathCollectionsUtil.containsSuperpathOrEquivalent(paths, itemPath)) {

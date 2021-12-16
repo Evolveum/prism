@@ -18,6 +18,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.namespace.QName;
 import java.util.Collection;
 
+/**
+ * Definition of a type (as opposed to definition of an item).
+ *
+ * @see ItemDefinition
+ */
 public interface TypeDefinition extends Definition {
 
     /**

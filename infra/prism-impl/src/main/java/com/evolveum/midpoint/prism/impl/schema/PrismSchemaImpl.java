@@ -34,6 +34,9 @@ import org.xml.sax.EntityResolver;
 import javax.xml.namespace.QName;
 import java.util.*;
 
+import static com.evolveum.midpoint.util.MiscUtil.argCheck;
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
+
 /**
  *
  * @author Radovan Semancik
@@ -47,25 +50,50 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
 
     // These maps contain the same objects as are in definitions collection.
 
-    @NotNull private final Map<QName, ItemDefinition<?>> itemDefinitionMap = new HashMap<>();            // key is the item name (qualified or unqualified)
-    @NotNull private final MultiValuedMap<QName, ItemDefinition<?>> itemDefinitionByTypeMap = new ArrayListValuedHashMap<>();        // key is the type name (always qualified)
-    @NotNull private final Map<QName, TypeDefinition> typeDefinitionMap = new HashMap<>();                // key is the type name (always qualified)
+    /**
+     * Global item definitions contained in this schema, stored in a map for faster access.
+     *
+     * The key is the item name (qualified or unqualified).
+     */
+    @NotNull private final Map<QName, ItemDefinition<?>> itemDefinitionMap = new HashMap<>();
+
+    /**
+     * Global item definitions contained in this schema, stored in a map for faster access.
+     *
+     * The key is the type name (always qualified).
+     */
+    @NotNull private final MultiValuedMap<QName, ItemDefinition<?>> itemDefinitionByTypeMap = new ArrayListValuedHashMap<>();
+
+    /**
+     * Type definitions contained in this schema, stored in a map for faster access.
+     *
+     * The key is the type name (always qualified).
+     */
+    @NotNull private final Map<QName, TypeDefinition> typeDefinitionMap = new HashMap<>();
+
+    /**
+     * Namespace for items defined in this schema.
+     */
     @NotNull protected final String namespace;
+
     protected PrismContext prismContext;
 
-    // Item definitions that couldn't be created when parsing the schema because of unresolvable CTD.
-    // (Caused by the fact that the type resides in another schema.)
-    // These definitions are to be resolved after parsing the set of schemas.
+    /**
+     * Item definitions that couldn't be created when parsing the schema because of unresolvable CTD.
+     * (Caused by the fact that the type resides in another schema.)
+     * These definitions are to be resolved after parsing the set of schemas.
+     */
     @NotNull private final List<DefinitionSupplier> delayedItemDefinitions = new ArrayList<>();
 
+    /**
+     * TODO
+     */
     private final Multimap<QName, ItemDefinition<?>> substitutions = HashMultimap.create();
 
-    public PrismSchemaImpl(@NotNull String namespace, PrismContext prismContext) {
-        if (StringUtils.isEmpty(namespace)) {
-            throw new IllegalArgumentException("Namespace can't be null or empty.");
-        }
+    public PrismSchemaImpl(@NotNull String namespace) {
+        argCheck(StringUtils.isNotEmpty(namespace),  "Namespace can't be null or empty.");
         this.namespace = namespace;
-        this.prismContext = prismContext;
+        this.prismContext = PrismContext.get();
     }
 
     //region Trivia
@@ -160,10 +188,11 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     //endregion
 
     //region XSD parsing and serialization
+
     // TODO: cleanup this chaos
-    // used for report, connector, resource schemas
+    // Currently used for connector schema (at least in production code)
     public static PrismSchema parse(Element element, boolean isRuntime, String shortDescription, PrismContext prismContext) throws SchemaException {
-        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element), prismContext);
+        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
         return parse(element, ((PrismContextImpl) prismContext).getEntityResolver(), schema, isRuntime, shortDescription,
                 false, prismContext);
     }
@@ -171,7 +200,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     // used for parsing prism schemas; only in exceptional cases
     public static PrismSchema parse(Element element, EntityResolver resolver, boolean isRuntime, String shortDescription,
             boolean allowDelayedItemDefinitions, PrismContext prismContext) throws SchemaException {
-        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element), prismContext);
+        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
         return parse(element, resolver, schema, isRuntime, shortDescription, allowDelayedItemDefinitions, prismContext);
     }
 
@@ -220,33 +249,33 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      * @return new property container definition
      */
     @Override
-    public PrismContainerDefinitionImpl createPropertyContainerDefinition(String localTypeName) {
+    public MutablePrismContainerDefinition<?> createContainerDefinition(String localTypeName) {
         QName typeName = new QName(getNamespace(), localTypeName);
         QName name = new QName(getNamespace(), toElementName(localTypeName));
-        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName, prismContext);
-        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef, prismContext);
+        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName);
+        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef);
         add(cTypeDef);
         add(def);
         return def;
     }
 
     @Override
-    public PrismContainerDefinitionImpl createPropertyContainerDefinition(String localElementName, String localTypeName) {
+    public MutablePrismContainerDefinition<?> createContainerDefinition(String localItemName, String localTypeName) {
         QName typeName = new QName(getNamespace(), localTypeName);
-        QName name = new QName(getNamespace(), localElementName);
+        QName name = new QName(getNamespace(), localItemName);
         ComplexTypeDefinition cTypeDef = findComplexTypeDefinitionByType(typeName);
         if (cTypeDef == null) {
-            cTypeDef = new ComplexTypeDefinitionImpl(typeName, prismContext);
+            cTypeDef = new ComplexTypeDefinitionImpl(typeName);
             add(cTypeDef);
         }
-        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef, prismContext);
+        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef);
         add(def);
         return def;
     }
 
     @Override
     public ComplexTypeDefinition createComplexTypeDefinition(QName typeName) {
-        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName, prismContext);
+        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName);
         add(cTypeDef);
         return cTypeDef;
     }
@@ -263,7 +292,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      * @return new property definition
      */
     @Override
-    public PrismPropertyDefinition createPropertyDefinition(String localName, QName typeName) {
+    public PrismPropertyDefinition<?> createPropertyDefinition(String localName, QName typeName) {
         QName name = new QName(getNamespace(), localName);
         return createPropertyDefinition(name, typeName);
     }
@@ -297,8 +326,8 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      * @return new property definition
      */
     @Override
-    public PrismPropertyDefinition createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinition<?> def = new PrismPropertyDefinitionImpl<>(name, typeName, prismContext);
+    public PrismPropertyDefinition<?> createPropertyDefinition(QName name, QName typeName) {
+        PrismPropertyDefinition<?> def = new PrismPropertyDefinitionImpl<>(name, typeName);
         add(def);
         return def;
     }
@@ -488,5 +517,27 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @Override
     public void performFreeze() {
         definitions.forEach(Freezable::freeze);
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    public PrismSchemaImpl clone() {
+        PrismSchemaImpl clone = new PrismSchemaImpl(namespace);
+        copyContent(clone);
+        return clone;
+    }
+
+    protected void copyContent(PrismSchemaImpl target) {
+        assertNoDelayedDefinitionsOnClone();
+        for (Definition definition : definitions) {
+            target.add(definition.clone());
+        }
+        // TODO ok?
+        substitutions.forEach(
+                (name, definition) -> target.addSubstitution(name, definition.clone()));
+    }
+
+    protected void assertNoDelayedDefinitionsOnClone() {
+        stateCheck(delayedItemDefinitions.isEmpty(),
+                "Cannot clone schema with delayed definitions: %s (%s)", delayedItemDefinitions.size(), this);
     }
 }

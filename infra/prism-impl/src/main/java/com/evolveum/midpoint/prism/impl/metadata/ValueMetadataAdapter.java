@@ -313,8 +313,8 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> void removeItem(
-            ItemPath path, Class<I> itemType) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>>
+    void removeItem(ItemPath path, Class<I> itemType) {
         delegate.removeItem(path, itemType);
     }
 
@@ -354,9 +354,8 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public PrismContainerDefinition<Containerable> deepCloneDefinition(boolean ultraDeep,
-            Consumer<ItemDefinition> postCloneAction) {
-        return delegate.deepCloneDefinition(ultraDeep, postCloneAction);
+    public PrismContainerDefinition<Containerable> deepCloneDefinition(@NotNull DeepCloneOperation operation) {
+        return delegate.deepCloneDefinition(operation);
     }
 
     @Override
@@ -821,7 +820,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         delegate.revive(prismContext);
     }
 

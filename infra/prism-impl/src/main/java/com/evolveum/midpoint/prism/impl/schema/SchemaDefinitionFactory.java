@@ -32,7 +32,7 @@ public class SchemaDefinitionFactory {
             PrismContext prismContext, XSAnnotation annotation) throws SchemaException {
 
         QName typeName = new QName(complexType.getTargetNamespace(),complexType.getName());
-        return new ComplexTypeDefinitionImpl(typeName, prismContext);
+        return new ComplexTypeDefinitionImpl(typeName);
     }
 
     public SimpleTypeDefinition createSimpleTypeDefinition(XSSimpleType simpleType,
@@ -46,34 +46,36 @@ public class SchemaDefinitionFactory {
             case XSSimpleType.EXTENSION: derivationMethod = EXTENSION; break;
             case XSSimpleType.RESTRICTION: derivationMethod = RESTRICTION; break;
             case XSSimpleType.SUBSTITUTION: derivationMethod = SUBSTITUTION; break;
-            default: derivationMethod = null;        // TODO are combinations allowed? e.g. EXTENSION+SUBSTITUTION?
+            default: derivationMethod = null; // TODO are combinations allowed? e.g. EXTENSION+SUBSTITUTION?
         }
-        return new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod, prismContext);
+        return new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod);
     }
 
     public <T> PrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
-        return new PrismPropertyDefinitionImpl<>(elementName, typeName, prismContext);
+        return new PrismPropertyDefinitionImpl<>(elementName, typeName);
     }
 
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) throws SchemaException {
-        return new PrismPropertyDefinitionImpl<>(elementName, typeName, prismContext, allowedValues, defaultValue);
+        return new PrismPropertyDefinitionImpl<>(elementName, typeName, allowedValues, defaultValue);
     }
 
     public PrismReferenceDefinition createReferenceDefinition(QName primaryElementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
-        return new PrismReferenceDefinitionImpl(primaryElementName, typeName, prismContext);
+        return new PrismReferenceDefinitionImpl(primaryElementName, typeName);
     }
 
-    public <C extends Containerable> PrismContainerDefinitionImpl<C> createContainerDefinition(QName elementName,
-            ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext, Class<C> compileTimeClass) throws SchemaException {
-        return new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+    public <C extends Containerable> PrismContainerDefinitionImpl<C> createContainerDefinition(
+            QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<C> compileTimeClass)
+            throws SchemaException {
+        return new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition, compileTimeClass);
     }
 
-    public <T extends Objectable> PrismObjectDefinitionImpl<T> createObjectDefinition(QName elementName,
-            ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext, Class<T> compileTimeClass) throws SchemaException {
-        return new PrismObjectDefinitionImpl<>(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+    public <T extends Objectable> PrismObjectDefinitionImpl<T> createObjectDefinition(
+            QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<T> compileTimeClass)
+            throws SchemaException {
+        return new PrismObjectDefinitionImpl<>(elementName, complexTypeDefinition, compileTimeClass);
     }
 
     /**
@@ -106,7 +108,8 @@ public class SchemaDefinitionFactory {
     /**
      * Add extra annotations to a property DOM model. Used when serializing schema to DOM.
      */
-    public void addExtraPropertyAnnotations(PrismPropertyDefinition definition, Element appinfo, SchemaToDomProcessor schemaToDomProcessor) {
+    public void addExtraPropertyAnnotations(
+            PrismPropertyDefinition<?> definition, Element appinfo, SchemaToDomProcessor schemaToDomProcessor) {
         // Nothing to do by default
     }
 

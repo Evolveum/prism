@@ -13,6 +13,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMResult;
@@ -174,7 +175,7 @@ public class TestExtraSchema extends AbstractPrismTest {
 
         // Make sure that the ordering is OK. If it is not then a serialization will produce XML that
         // does not comply to schema
-        List<? extends ItemDefinition> definitions = userDef.getDefinitions();
+        List<? extends ItemDefinition<?>> definitions = userDef.getDefinitions();
         assertDefinitionOrder(definitions, USER_NAME_QNAME, 0);
         assertDefinitionOrder(definitions, USER_DESCRIPTION_QNAME, 1);
         assertDefinitionOrder(definitions, USER_EXTENSION_QNAME, 2);

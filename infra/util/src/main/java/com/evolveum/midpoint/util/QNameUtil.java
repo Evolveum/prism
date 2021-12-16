@@ -93,7 +93,6 @@ public class QNameUtil {
         return hasNamespace(name)
                 ? name
                 : new QName(defaultNamespace, name.getLocalPart());
-
     }
 
     /**

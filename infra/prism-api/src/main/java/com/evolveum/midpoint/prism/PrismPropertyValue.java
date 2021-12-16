@@ -70,6 +70,9 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
     @Override
     Class<?> getRealClass();
 
+    /**
+     * Under what circumstances can this method return null (for properties)?
+     */
     @SuppressWarnings("unchecked")
     @Nullable
     @Override

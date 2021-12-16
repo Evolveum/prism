@@ -15,11 +15,11 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 /**
  * EXPERIMENTAL
@@ -34,37 +34,12 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public String getNamespace() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public int getMinOccurs() {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public int getMaxOccurs() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isSingleValue() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isMultiValue() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isMandatory() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isOptional() {
         throw new UnsupportedOperationException();
     }
 
@@ -119,12 +94,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public boolean isValidFor(QName elementQName, Class<? extends ItemDefinition> clazz) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition> clazz,
+    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition<?>> clazz,
             boolean caseInsensitive) {
         throw new UnsupportedOperationException();
     }
@@ -146,19 +116,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public <ID extends ItemDefinition> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz,
-            boolean caseInsensitive) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <T extends ItemDefinition> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <ID extends ItemDefinition> ID findNamedItemDefinition(@NotNull QName firstName, @NotNull ItemPath rest,
-            @NotNull Class<ID> clazz) {
+    public <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
         throw new UnsupportedOperationException();
     }
 
@@ -190,33 +148,19 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
         throw new UnsupportedOperationException();
     }
 
+    @SuppressWarnings("unchecked") // temporary workaround
     @Override
-    public String getDefaultNamespace() {
+    public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<String> getIgnoredNamespaces() {
+    public List<PrismPropertyDefinition<?>> getPropertyDefinitions() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<? extends ItemDefinition> getDefinitions() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isCompletelyDefined() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<PrismPropertyDefinition> getPropertyDefinitions() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public ContainerDelta<Objectable> createEmptyDelta(ItemPath path) {
+    public @NotNull ContainerDelta<Objectable> createEmptyDelta(ItemPath path) {
         throw new UnsupportedOperationException();
     }
 
@@ -227,23 +171,17 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public PrismObjectDefinition<Objectable> deepClone(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
+    public PrismObjectDefinition<Objectable> deepClone(@NotNull DeepCloneOperation operation) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public ItemDefinition<PrismContainer<Objectable>> deepClone(Map<QName, ComplexTypeDefinition> ctdMap,
-            Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction) {
+    public @NotNull PrismObjectDefinition<Objectable> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public @NotNull PrismObjectDefinition<Objectable> cloneWithReplacedDefinition(QName itemName, ItemDefinition newDefinition) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void replaceDefinition(QName itemName, ItemDefinition newDefinition) {
+    public void replaceDefinition(QName itemName, ItemDefinition<?> newDefinition) {
     }
 
     @Override
@@ -363,7 +301,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public Class getTypeClassIfKnown() {
+    public Class<?> getTypeClassIfKnown() {
         throw new UnsupportedOperationException();
     }
 
@@ -379,6 +317,11 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
 
     @Override
     public <A> void setAnnotation(QName qname, A value) {
+    }
+
+    @Override
+    public @Nullable Map<QName, Object> getAnnotations() {
+        return null;
     }
 
     @Override

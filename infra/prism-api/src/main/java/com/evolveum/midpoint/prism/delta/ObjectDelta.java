@@ -220,6 +220,7 @@ public interface ObjectDelta<O extends Objectable>
     <C extends Containerable> ContainerDelta<C> createContainerModification(ItemPath path,
             PrismContainerDefinition<C> containerDefinition);
 
+    @SuppressWarnings("unchecked")
     <X> PropertyDelta<X> addModificationReplaceProperty(ItemPath propertyPath, X... propertyValues);
 
     <X> void addModificationAddProperty(ItemPath propertyPath, X... propertyValues);

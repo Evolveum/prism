@@ -230,4 +230,49 @@ public class CloneUtil {
         }
         return pcv.clone().asContainerable();
     }
+
+    /**
+     * Provides an immutable version of the input:
+     *
+     * - If the input is immutable, returns it as is.
+     * - If the input is mutable, creates an immutable clone.
+     */
+    @Contract("null -> null; !null -> !null")
+    public static <CF extends Cloneable & Freezable> CF toImmutable(@Nullable CF input) {
+        if (input == null) {
+            return null;
+        }
+        if (input.isImmutable()) {
+            return input;
+        } else {
+            CF clone = CloneUtil.clone(input);
+            clone.freeze();
+            return clone;
+        }
+    }
+
+    /**
+     * Provides an immutable version of the input:
+     *
+     * - If the input is immutable, returns it as is.
+     * - If the input is mutable, creates an immutable clone.
+     *
+     * This method is needed (in addition to {@link #toImmutable(Cloneable)}) because {@link Containerable}
+     * is not {@link Freezable}.
+     */
+    @Contract("null -> null; !null -> !null")
+    public static <C extends Containerable> C toImmutableContainerable(@Nullable C input) {
+        if (input == null) {
+            return null;
+        }
+        //noinspection unchecked
+        PrismContainerValue<C> pcv = input.asPrismContainerValue();
+        if (pcv.isImmutable()) {
+            return input;
+        } else {
+            PrismContainerValue<C> pcvClone = pcv.clone();
+            pcvClone.freeze();
+            return pcvClone.asContainerable();
+        }
+    }
 }

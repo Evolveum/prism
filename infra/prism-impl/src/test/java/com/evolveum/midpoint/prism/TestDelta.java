@@ -542,8 +542,8 @@ public class TestDelta extends AbstractPrismTest {
     @Test
     public void testSummarize06() throws Exception {
         given();
-        PrismReferenceDefinition referenceDefinition = new PrismReferenceDefinitionImpl(UserType.F_PARENT_ORG_REF,
-                OBJECT_REFERENCE_TYPE_QNAME, PrismTestUtil.getPrismContext());
+        PrismReferenceDefinition referenceDefinition =
+                new PrismReferenceDefinitionImpl(UserType.F_PARENT_ORG_REF, OBJECT_REFERENCE_TYPE_QNAME);
 
         ReferenceDelta delta1 = new ReferenceDeltaImpl(referenceDefinition, PrismTestUtil.getPrismContext());
         delta1.addValueToAdd(new PrismReferenceValueImpl("oid1"));

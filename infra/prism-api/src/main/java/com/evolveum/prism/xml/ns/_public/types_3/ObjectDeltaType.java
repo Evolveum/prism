@@ -23,6 +23,8 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.PrismObject;
+
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
@@ -325,8 +327,10 @@ public class ObjectDeltaType implements Serializable, JaxbVisitable {
         clone.setOid(getOid());
         clone.setChangeType(getChangeType());
         clone.setObjectType(getObjectType());
-        if (getObjectToAdd() != null) {
-            clone.setObjectToAdd(getObjectToAdd());
+        ObjectType objectToAdd = getObjectToAdd();
+        if (objectToAdd != null) {
+            PrismObject<?> objectToAddCloned = objectToAdd.asPrismObject().clone();
+            clone.setObjectToAdd((ObjectType) objectToAddCloned.asObjectable());
         }
         for (ItemDeltaType mod : getItemDelta()) {
             clone.getItemDelta().add(mod.clone());

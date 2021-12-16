@@ -19,7 +19,7 @@ public class Lazy<T> extends AbstractLazy<T> implements java.util.function.Suppl
     }
 
     public static <T> Lazy<T> instant(T value) {
-        if(value == null) {
+        if (value == null) {
             return nullValue();
         }
         return new Lazy<>(value);

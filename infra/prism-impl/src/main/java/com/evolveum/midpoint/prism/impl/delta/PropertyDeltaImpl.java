@@ -269,7 +269,9 @@ public class PropertyDeltaImpl<T> extends ItemDeltaImpl<PrismPropertyValue<T>, P
         return propertyDelta;
     }
 
-    public static <T> PropertyDelta<T> createModificationReplaceProperty(ItemPath path, PrismPropertyDefinition propertyDefinition,
+    public static <T> PropertyDelta<T> createModificationReplaceProperty(
+            @NotNull ItemPath path,
+            @NotNull PrismPropertyDefinition propertyDefinition,
             T... propertyValues) {
         PropertyDelta<T> propertyDelta = new PropertyDeltaImpl<T>(path, propertyDefinition, propertyDefinition.getPrismContext());             // hoping the prismContext is there
         Collection<PrismPropertyValue<T>> pValues = new ArrayList<>(propertyValues.length);

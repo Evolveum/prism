@@ -67,6 +67,7 @@ public class MiscUtil {
         }
     }
 
+    @SafeVarargs
     @NotNull
     public static <T> Collection<T> union(Collection<T>... sets) {
         Set<T> resultSet = new HashSet<>();
@@ -78,6 +79,7 @@ public class MiscUtil {
         return resultSet;
     }
 
+    @SafeVarargs
     public static <T> Collection<? extends T> unionExtends(Collection<? extends T>... sets) {
         Set<T> resultSet = new HashSet<>();
         for (Collection<? extends T> set : sets) {
@@ -1203,5 +1205,27 @@ public class MiscUtil {
     /** Are we running on Windows? (Rough estimate.) */
     public static boolean onWindows() {
         return File.separatorChar == '\\';
+    }
+
+    /**
+     * Returns a concatenation of two collections. (No trying to remove multiplicities.)
+     * Optimizing the operation if one of collections is empty.
+     *
+     * The return value should not be used for modifications!
+     */
+    public static @NotNull <T> Collection<? extends T> concat(
+            @NotNull Collection<? extends T> collection1,
+            @NotNull Collection<? extends T> collection2) {
+        if (collection1.isEmpty()) {
+            return collection2;
+        }
+        if (collection2.isEmpty()) {
+            return collection1;
+        }
+        List<T> concatenation =
+                new ArrayList<>(collection1.size() + collection2.size());
+        concatenation.addAll(collection1);
+        concatenation.addAll(collection2);
+        return concatenation;
     }
 }

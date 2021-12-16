@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author semancik
  *
  */
-public interface Containerable extends Serializable, DebugDumpable {
+public interface Containerable extends Serializable, DebugDumpable, Freezable {
 
     static <T extends Containerable> PrismContainerValue<T> asPrismContainerValue(Containerable containerable) {
         //noinspection unchecked
@@ -65,5 +65,13 @@ public interface Containerable extends Serializable, DebugDumpable {
     @Override
     default String debugDump(int indent) {
         return asPrismContainerValue().debugDump(indent);
+    }
+
+    default boolean isImmutable() {
+        return asPrismContainerValue().isImmutable();
+    }
+
+    default void freeze() {
+        asPrismContainerValue().freeze();
     }
 }

@@ -180,7 +180,8 @@ public interface PrismContainer<C extends Containerable>
 
     void removeReference(ItemPath path);
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> void removeItem(ItemPath path, Class<I> itemType);
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV,ID>>
+    void removeItem(ItemPath path, Class<I> itemType);
 
     // Expects that the "self" path segment is NOT included in the basePath
     // is this method used anywhere?
@@ -224,8 +225,7 @@ public interface PrismContainer<C extends Containerable>
     @Override
     PrismContainer<C> cloneComplex(CloneStrategy strategy);
 
-    @Deprecated
-    PrismContainerDefinition<C> deepCloneDefinition(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction);
+    PrismContainerDefinition<C> deepCloneDefinition(@NotNull DeepCloneOperation operation);
 
     @Override
     void accept(Visitor visitor, ItemPath path, boolean recursive);

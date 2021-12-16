@@ -8,21 +8,16 @@
 package com.evolveum.midpoint.prism.deleg;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismReferenceValue;
-import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -44,11 +39,6 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default String getNamespace() {
-        return delegate().getNamespace();
-    }
-
-    @Override
     default int getMinOccurs() {
         return delegate().getMinOccurs();
     }
@@ -56,16 +46,6 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     @Override
     default int getMaxOccurs() {
         return delegate().getMaxOccurs();
-    }
-
-    @Override
-    default boolean isMandatory() {
-        return delegate().isMandatory();
-    }
-
-    @Override
-    default boolean isOptional() {
-        return delegate().isOptional();
     }
 
     @Override
@@ -119,18 +99,13 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default boolean isValidFor(QName elementQName, Class<? extends ItemDefinition> clazz) {
-        return delegate().isValidFor(elementQName, clazz);
-    }
-
-    @Override
-    default boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition> clazz,
+    default boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition<?>> clazz,
             boolean caseInsensitive) {
         return delegate().isValidFor(elementQName, clazz, caseInsensitive);
     }
 
     @Override
-    default void adoptElementDefinitionFrom(ItemDefinition otherDef) {
+    default void adoptElementDefinitionFrom(ItemDefinition<?> otherDef) {
         delegate().adoptElementDefinitionFrom(otherDef);
     }
 
@@ -145,9 +120,10 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default <T extends ItemDefinition> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
+    default <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
         if (path.isEmpty()) {
             if (clazz.isAssignableFrom(this.getClass())) {
+                //noinspection unchecked
                 return (T) this;
             } else {
                 throw new IllegalArgumentException("Looking for definition of class " + clazz + " but found " + this);
@@ -158,19 +134,13 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default ItemDelta createEmptyDelta(ItemPath path) {
+    default @NotNull ItemDelta<?, ?> createEmptyDelta(ItemPath path) {
         return delegate().createEmptyDelta(path);
     }
 
     @Override
-    default ItemDefinition<I> deepClone(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
-        return delegate().deepClone(ultraDeep, postCloneAction);
-    }
-
-    @Override
-    default ItemDefinition<I> deepClone(Map<QName, ComplexTypeDefinition> ctdMap,
-            Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction) {
-        return delegate().deepClone(ctdMap, onThisPath, postCloneAction);
+    default ItemDefinition<I> deepClone(@NotNull DeepCloneOperation operation) {
+        return delegate().deepClone(operation);
     }
 
     @Override

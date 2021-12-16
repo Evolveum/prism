@@ -21,7 +21,7 @@ public class AxiomBased {
 
     MutableComplexTypeDefinition complexTypeDefinition(PrismContext context, AxiomTypeDefinition source) {
         QName typeName = qName(source.name());
-        ComplexTypeDefinitionImpl target = new ComplexTypeDefinitionImpl(typeName, context);
+        ComplexTypeDefinitionImpl target = new ComplexTypeDefinitionImpl(typeName);
         fillFromAxiom(target, source);
         return target;
     }

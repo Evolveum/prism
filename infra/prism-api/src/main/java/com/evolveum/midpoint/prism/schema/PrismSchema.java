@@ -34,7 +34,9 @@ import javax.xml.namespace.QName;
  * @author semancik
  * @author mederly
  */
-public interface PrismSchema extends DebugDumpable, GlobalDefinitionsStore, DefinitionSearchImplementation, PrismContextSensitive, Freezable {
+public interface PrismSchema
+        extends DebugDumpable, GlobalDefinitionsStore, DefinitionSearchImplementation,
+        PrismContextSensitive, Freezable, Cloneable {
 
     /**
      * Returns schema namespace.
@@ -67,8 +69,9 @@ public interface PrismSchema extends DebugDumpable, GlobalDefinitionsStore, Defi
     <T extends Definition> List<T> getDefinitions(@NotNull Class<T> type);
 
     @NotNull
-    default List<PrismObjectDefinition> getObjectDefinitions() {
-        return getDefinitions(PrismObjectDefinition.class);
+    default List<? extends PrismObjectDefinition<?>> getObjectDefinitions() {
+        //noinspection unchecked,RedundantCast,rawtypes
+        return (List<? extends PrismObjectDefinition<?>>) (List) getDefinitions(PrismObjectDefinition.class);
     }
 
     @NotNull

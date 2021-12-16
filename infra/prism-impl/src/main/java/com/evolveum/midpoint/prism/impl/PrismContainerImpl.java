@@ -623,7 +623,8 @@ public class PrismContainerImpl<C extends Containerable> extends ItemImpl<PrismC
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> void removeItem(ItemPath path, Class<I> itemType) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV,ID>>
+    void removeItem(ItemPath path, Class<I> itemType) {
         Long id = ItemPath.firstToIdOrNull(path);
         PrismContainerValue<C> cval = findValue(id);
         if (cval == null) {
@@ -771,17 +772,17 @@ public class PrismContainerImpl<C extends Containerable> extends ItemImpl<PrismC
     }
 
     @Override
-    public PrismContainerDefinition<C> deepCloneDefinition(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
-        PrismContainerDefinition<C> clonedDef = (PrismContainerDefinition<C>) getDefinition().deepClone(ultraDeep, postCloneAction);
-        propagateDeepCloneDefinition(ultraDeep, clonedDef, postCloneAction);
+    public PrismContainerDefinition<C> deepCloneDefinition(@NotNull DeepCloneOperation operation) {
+        PrismContainerDefinition<C> clonedDef = (PrismContainerDefinition<C>) getDefinition().deepClone(operation);
+        propagateDeepCloneDefinition(operation, clonedDef);
         setDefinition(clonedDef);
         return clonedDef;
     }
 
     @Override
-    protected void propagateDeepCloneDefinition(boolean ultraDeep, PrismContainerDefinition<C> clonedDef, Consumer<ItemDefinition> postCloneAction) {
+    protected void propagateDeepCloneDefinition(@NotNull DeepCloneOperation operation, PrismContainerDefinition<C> clonedDef) {
         for (PrismContainerValue<C> cval: getValues()) {
-            ((PrismContainerValueImpl<C>) cval).deepCloneDefinition(ultraDeep, clonedDef, postCloneAction);
+            ((PrismContainerValueImpl<C>) cval).deepCloneDefinition(operation, clonedDef);
         }
     }
 

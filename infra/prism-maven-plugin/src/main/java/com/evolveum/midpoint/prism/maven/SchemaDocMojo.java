@@ -168,7 +168,7 @@ public class SchemaDocMojo extends AbstractMojo {
         writer.close();
 
         // Object Definitions
-        for (PrismObjectDefinition objectDefinition: schema.getObjectDefinitions()) {
+        for (PrismObjectDefinition<?> objectDefinition: schema.getObjectDefinitions()) {
             renderObjectDefinition(objectDefinition, schema, prismContext, velocityEngine, pathGenerator);
         }
 

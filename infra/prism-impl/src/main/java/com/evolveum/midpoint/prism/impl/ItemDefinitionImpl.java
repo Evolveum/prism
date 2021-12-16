@@ -7,20 +7,17 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-
 import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Abstract item definition in the schema.
@@ -46,7 +43,9 @@ import org.jetbrains.annotations.NotNull;
  * @author Radovan Semancik
  *
  */
-public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl implements MutableItemDefinition<I>, ItemDefinitionTestAccess {
+public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
+        extends DefinitionImpl
+        implements MutableItemDefinition<I>, ItemDefinitionTestAccess {
     private static final long serialVersionUID = -2643332934312107274L;
 
     @NotNull protected ItemName itemName;
@@ -75,12 +74,13 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
      * @param itemName definition name (element Name)
      * @param typeName type name (XSD complex or simple type)
      */
-    ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, @NotNull PrismContext prismContext) {
-        this(itemName, typeName, prismContext, null);
+    ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName) {
+        this(itemName, typeName, null);
     }
 
-    ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, @NotNull PrismContext prismContext, QName definedInType) {
-        super(typeName, prismContext);
+    // TODO are there any uses if "definedInType"?
+    ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, QName definedInType) {
+        super(typeName);
         this.itemName = ItemName.fromQName(itemName);
         this.serializationProxy = definedInType != null ? SerializationProxy.forItemDef(definedInType, this.itemName) : null;
     }
@@ -117,16 +117,6 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     }
 
     @Override
-    public String getNamespace() {
-        return getItemName().getNamespaceURI();
-    }
-
-    /**
-     * Return the number of minimal value occurrences.
-     *
-     * @return the minOccurs
-     */
-    @Override
     public int getMinOccurs() {
         return minOccurs;
     }
@@ -137,13 +127,6 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         this.minOccurs = minOccurs;
     }
 
-    /**
-     * Return the number of maximal value occurrences.
-     * <p>
-     * Any negative number means "unbounded".
-     *
-     * @return the maxOccurs
-     */
     @Override
     public int getMaxOccurs() {
         return maxOccurs;
@@ -153,26 +136,6 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     public void setMaxOccurs(int maxOccurs) {
         checkMutable();
         this.maxOccurs = maxOccurs;
-    }
-
-    /**
-     * Returns true if property is mandatory.
-     *
-     * @return true if property is mandatory.
-     */
-    @Override
-    public boolean isMandatory() {
-        return getMinOccurs() > 0;
-    }
-
-    /**
-     * Returns true if property is optional.
-     *
-     * @return true if property is optional.
-     */
-    @Override
-    public boolean isOptional() {
-        return getMinOccurs() == 0;
     }
 
     @Override
@@ -275,13 +238,6 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         this.heterogeneousListItem = heterogeneousListItem;
     }
 
-    /**
-     * Reference to an object that directly or indirectly represents possible values for
-     * this item. We do not define here what exactly the object has to be. It can be a lookup
-     * table, script that dynamically produces the values or anything similar.
-     * The object must produce the values of the correct type for this item otherwise an
-     * error occurs.
-     */
     @Override
     public PrismReferenceValue getValueEnumerationRef() {
         return valueEnumerationRef;
@@ -294,19 +250,16 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     }
 
     @Override
-    public boolean isValidFor(QName elementQName, Class<? extends ItemDefinition> clazz) {
-        return isValidFor(elementQName, clazz, false);
-    }
-
-    @Override
-    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition> clazz,
+    public boolean isValidFor(
+            @NotNull QName elementQName,
+            @NotNull Class<? extends ItemDefinition<?>> clazz,
             boolean caseInsensitive) {
         return clazz.isAssignableFrom(this.getClass())
                 && QNameUtil.match(elementQName, getItemName(), caseInsensitive);
     }
 
     @Override
-    public void adoptElementDefinitionFrom(ItemDefinition otherDef) {
+    public void adoptElementDefinitionFrom(ItemDefinition<?> otherDef) {
         if (otherDef == null) {
             return;
         }
@@ -316,9 +269,10 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     }
 
     @Override
-    public <T extends ItemDefinition> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
+    public <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
         if (path.isEmpty()) {
             if (clazz.isAssignableFrom(this.getClass())) {
+                //noinspection unchecked
                 return (T) this;
             } else {
                 throw new IllegalArgumentException("Looking for definition of class " + clazz + " but found " + this);
@@ -333,9 +287,9 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         if (item == null) {
             return false;
         }
-        ItemDefinition<?> itemDefinition = item.getDefinition();
+        ItemDefinition<?> itemDefinition = ((Item<?, ?>) item).getDefinition();
         if (itemDefinition != null) {
-            if (!QNameUtil.match(getTypeName(), itemDefinition.getTypeName())) {
+            if (!QNameUtil.match(((ItemDefinition<?>) this).getTypeName(), itemDefinition.getTypeName())) {
                 return false;
             }
             // TODO: compare entire definition? Probably not.
@@ -346,40 +300,27 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
 
     @NotNull
     @Override
-    public abstract ItemDefinition clone();
+    public abstract ItemDefinition<I> clone();
 
-    protected void copyDefinitionData(ItemDefinitionImpl<I> clone) {
-        super.copyDefinitionData(clone);
-        clone.itemName = this.itemName;
-        clone.minOccurs = this.minOccurs;
-        clone.maxOccurs = this.maxOccurs;
-        clone.dynamic = this.dynamic;
-        clone.canAdd = this.canAdd;
-        clone.canRead = this.canRead;
-        clone.canModify = this.canModify;
-        clone.operational = this.operational;
-        clone.valueEnumerationRef = this.valueEnumerationRef;
-        clone.indexOnly = this.indexOnly;
+    protected void copyDefinitionDataFrom(ItemDefinition<I> source) {
+        super.copyDefinitionDataFrom(source);
+        this.itemName = source.getItemName();
+        this.minOccurs = source.getMinOccurs();
+        this.maxOccurs = source.getMaxOccurs();
+        this.dynamic = source.isDynamic();
+        this.canAdd = source.canAdd();
+        this.canRead = source.canRead();
+        this.canModify = source.canModify();
+        this.operational = source.isOperational();
+        this.valueEnumerationRef = source.getValueEnumerationRef(); // clone?
+        this.indexOnly = source.isIndexOnly();
     }
 
     /**
      * Make a deep clone, cloning all the sub-items and definitions.
-     *
-     * @param ultraDeep if set to true then even the objects that were same instance in the original will be
-     *                  cloned as separate instances in the clone.
-     *
      */
     @Override
-    public ItemDefinition<I> deepClone(boolean ultraDeep, Consumer<ItemDefinition> postCloneAction) {
-        if (ultraDeep) {
-            return deepClone(null, new HashMap<>(), postCloneAction);
-        } else {
-            return deepClone(new HashMap<>(), new HashMap<>(), postCloneAction);
-        }
-    }
-
-    @Override
-    public ItemDefinition<I> deepClone(Map<QName, ComplexTypeDefinition> ctdMap, Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction) {
+    public ItemDefinition<I> deepClone(@NotNull DeepCloneOperation operation) {
         return clone();
     }
 
@@ -394,12 +335,25 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ItemDefinitionImpl<?> that = (ItemDefinitionImpl<?>) o;
-        return minOccurs == that.minOccurs && maxOccurs == that.maxOccurs && operational == that.operational && dynamic == that.dynamic && canAdd == that.canAdd && canRead == that.canRead && canModify == that.canModify && inherited == that.inherited && heterogeneousListItem == that.heterogeneousListItem && indexOnly == that.indexOnly && itemName.equals(that.itemName) && Objects.equals(substitutionHead, that.substitutionHead) && Objects.equals(valueEnumerationRef, that.valueEnumerationRef);
+        return minOccurs == that.minOccurs
+                && maxOccurs == that.maxOccurs
+                && operational == that.operational
+                && dynamic == that.dynamic
+                && canAdd == that.canAdd
+                && canRead == that.canRead
+                && canModify == that.canModify
+                && inherited == that.inherited
+                && heterogeneousListItem == that.heterogeneousListItem
+                && indexOnly == that.indexOnly
+                && itemName.equals(that.itemName)
+                && Objects.equals(substitutionHead, that.substitutionHead)
+                && Objects.equals(valueEnumerationRef, that.valueEnumerationRef);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), itemName, minOccurs, maxOccurs, operational, dynamic, canAdd, canRead, canModify, inherited, substitutionHead, heterogeneousListItem, valueEnumerationRef, indexOnly);
+        return Objects.hash(super.hashCode(), itemName, minOccurs, maxOccurs, operational, dynamic, canAdd, canRead, canModify,
+                inherited, substitutionHead, heterogeneousListItem, valueEnumerationRef, indexOnly);
     }
 
     @Override
@@ -455,7 +409,7 @@ public abstract class ItemDefinitionImpl<I extends Item> extends DefinitionImpl 
     public String debugFlags() {
         StringBuilder sb = new StringBuilder();
         debugFlags(sb);
-        // This starts with a collon, we do not want it here
+        // This starts with a colon, we do not want it here
         if (sb.length() > 0) {
             sb.deleteCharAt(0);
         }

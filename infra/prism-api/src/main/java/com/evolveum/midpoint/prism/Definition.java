@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -21,10 +22,13 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
- *
+ * Common interface to access all definitions.
  */
-public interface Definition extends PrismContextSensitive, Serializable, DebugDumpable, Revivable, Cloneable, Freezable, SmartVisitable<Definition> {
+public interface Definition
+        extends PrismContextSensitive, Serializable, DebugDumpable, Revivable, Cloneable, Freezable, SmartVisitable<Definition> {
 
     /**
      * Returns a name of the type for this definition.
@@ -35,6 +39,7 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
      * ones like c:ExtensionType or c:ShadowAttributesType.
      *
      * Examples of the latter case are types used in
+     *
      * - custom extensions, like ext:LocationsType (where ext = e.g. http://example.com/extension),
      * - resource schema, like ri:inetOrgPerson (ri = http://.../resource/instance-3),
      * - connector schema, like TODO
@@ -52,8 +57,7 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
      *
      * @return the type name
      */
-    @NotNull
-    QName getTypeName();
+    @NotNull QName getTypeName();
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -77,10 +81,20 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
      */
     // TODO Remove in 4.3, check whether all usages are equivalent to getProcessing() == IGNORE
     @Deprecated
-    boolean isIgnored();
+    default boolean isIgnored() {
+        return getProcessing() == ItemProcessing.IGNORE;
+    }
 
+    /**
+     * Level of processing (ignore, minimal, auto, full) for this item/type.
+     */
     ItemProcessing getProcessing();
 
+    /**
+     * For types: is the type abstract so that it should not be instantiated directly?
+     *
+     * For items: TODO
+     */
     boolean isAbstract();
 
     boolean isDeprecated();
@@ -166,13 +180,13 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
     }
 
     // TODO fix this!
-    Class getTypeClassIfKnown();
+    Class<?> getTypeClassIfKnown();
 
     /**
      * Returns a compile-time class that is used to represent items.
-     * E.g. returns String, Integer, sublcasses of Objectable and Containerable and so on.
+     * E.g. returns String, Integer, subclasses of Objectable and Containerable and so on.
      */
-    Class getTypeClass();
+    Class<?> getTypeClass();
 
     /**
      * Returns generic definition annotation. Annotations are a method to
@@ -191,9 +205,17 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
      */
     @Experimental
     <A> A getAnnotation(QName qname);
+
     <A> void setAnnotation(QName qname, A value);
 
-    List<SchemaMigration> getSchemaMigrations();
+    /**
+     * Returns all annotations, as unmodifiable map.
+     *
+     * Nullable by design, to avoid creating lots of empty maps.
+     */
+    @Nullable Map<QName, Object> getAnnotations();
+
+    @Nullable List<SchemaMigration> getSchemaMigrations();
 
     @Experimental
     List<ItemDiagramSpecification> getDiagrams();
@@ -205,6 +227,9 @@ public interface Definition extends PrismContextSensitive, Serializable, DebugDu
         return debugDump(indent);
     }
 
+    /**
+     * Returns an interface to mutate this definition.
+     */
     MutableDefinition toMutable();
 
     // TODO reconsider/fix this

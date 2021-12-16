@@ -9,16 +9,14 @@ package com.evolveum.midpoint.prism;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.prism.path.ItemName;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Provides a definition for a complex type, i.e. type that prescribes inner items.
@@ -26,43 +24,33 @@ import java.util.function.Consumer;
  * markers presence.
  *
  * @author semancik
- * @author mederly
  */
-public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionStore {
+public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefinitionStore {
 
     /**
      * Returns definitions for all inner items.
      *
-     * These are of type ItemDefinition. However, very often subtypes of this type are used,
+     * These are of type {@link ItemDefinition}. However, very often subtypes of this type are used,
      * e.g. ResourceAttributeDefinition, RefinedAttributeDefinition, LayerRefinedAttributeDefinition, and so on.
      *
-     * Although returned as a list, the order of definitions is insignificant. (TODO change to set?)
+     * The returned structure is a {@link List} because the ordering is significant, e.g. for serialization purposes.
      *
      * The list is unmodifiable.
      */
+    @SuppressWarnings("unchecked") // temporary workaround
     @NotNull
-    List<? extends ItemDefinition> getDefinitions();
+    List<? extends ItemDefinition<?>> getDefinitions();
 
     /**
-     * Is this definition shared, i.e. used by more than one prism object?
-     * If so, it should not be e.g. trimmed.
-     *
-     * EXPERIMENTAL
-      */
-    @Experimental
-    boolean isShared();
-
-    /**
-     * If not null, indicates that this type defines the structure of 'extension' element of a given type.
-     * E.g. getExtensionForType() == c:UserType means that this complex type defines structure of
-     * 'extension' elements of UserType objects.
+     * If not null, indicates that this type defines the structure of `extension` element of a given type.
+     * E.g. `getExtensionForType()` == `c:UserType` means that this complex type defines structure of
+     * `extension` elements of `UserType` objects.
      */
     @Nullable
     QName getExtensionForType();
 
     /**
-     * Flag indicating whether this type was marked as "objectReference"
-     * in the original schema.
+     * Flag indicating whether this type was marked as "objectReference" in the original schema.
      */
     boolean isReferenceMarker();
 
@@ -89,13 +77,20 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
      */
     boolean isXsdAnyMarker();
 
-    // TODO. EXPERIMENTAL.
+    /**
+     * True if the complex type definition is a type dedicated to hold so-called
+     * https://docs.evolveum.com/midpoint/devel/design/xml-json-yaml-vs-xnode-vs-internal-data/heterogeneous-lists/[heterogeneous
+     * lists]. See also {@link com.evolveum.midpoint.util.DOMUtil#IS_LIST_ATTRIBUTE_NAME} and
+     * {@link ItemDefinition#isHeterogeneousListItem()}.
+     */
     @Experimental
     boolean isListMarker();
 
     /**
      * When resolving unqualified names for items contained in this CTD, what should be the default namespace
      * to look into at first. Currently does NOT apply recursively (to inner CTDs).
+     *
+     * Set by parsing `defaultNamespace` XSD annotation.
      */
     @Nullable
     String getDefaultNamespace();
@@ -104,6 +99,8 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
      * When resolving unqualified names for items contained in this CTD, what namespace(s) should be ignored.
      * Names in this list are interpreted as a namespace prefixes.
      * Currently does NOT apply recursively (to inner CTDs).
+     *
+     * Set by parsing `ignoredNamespace` XSD annotations.
      */
     @NotNull
     List<String> getIgnoredNamespaces();
@@ -113,9 +110,6 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
      * (TODO remove from the interface?)
      */
     void merge(ComplexTypeDefinition otherComplexTypeDef);
-
-    @Override
-    void revive(PrismContext prismContext);
 
     /**
      * Returns true if there are no item definitions.
@@ -131,24 +125,15 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
 
     /**
      * Does a deep clone of this definition.
-     *
-     * @param ctdMap Keeps already cloned definitions when 'ultra deep cloning' is not requested.
-     *               Each definition is then cloned only once.
-     * @param onThisPath Keeps already cloned definitions on the path from root to current node;
-     *                   in order to prevent infinite loops when doing ultra deep cloning.
      */
     @NotNull
-    ComplexTypeDefinition deepClone(Map<QName, ComplexTypeDefinition> ctdMap, Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction);
+    ComplexTypeDefinition deepClone(@NotNull DeepCloneOperation operation);
 
     /**
      * Trims the definition (and any definitions it refers to) to contain only items related to given paths.
      * USE WITH CARE. Be sure no shared definitions would be affected by this operation!
      */
     void trimTo(@NotNull Collection<ItemPath> paths);
-
-    default boolean containsItemDefinition(QName itemName) {
-        return findItemDefinition(ItemName.fromQName(itemName)) != null;
-    }
 
     @Experimental
     boolean hasSubstitutions();
@@ -158,7 +143,7 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
 
     @Experimental
     default Optional<ItemDefinition<?>> itemOrSubstitution(QName name) {
-        ItemDefinition itemDef = findLocalItemDefinition(name);
+        ItemDefinition<?> itemDef = findLocalItemDefinition(name);
         if(itemDef != null) {
             return Optional.of(itemDef);
         }

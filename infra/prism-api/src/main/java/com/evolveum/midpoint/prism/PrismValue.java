@@ -179,6 +179,13 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
         return getRealClass() != null;
     }
 
+    /**
+     * Returns the statically-typed "real value".
+     *
+     * TODO specify when exactly the returned value can be null.
+     *
+     * TODO decide for containers: they throw an exception if the value is not statically typed.
+     */
     @Nullable
     <T> T getRealValue();
 

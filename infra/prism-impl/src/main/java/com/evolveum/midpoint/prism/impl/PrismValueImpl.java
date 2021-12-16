@@ -169,7 +169,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         if (isMutable()) {
             recompute(getPrismContext());
         }

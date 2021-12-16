@@ -648,7 +648,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             if (!fragmentedNamespaces.contains(namespace)) {
                 Element importElement = DOMUtil.createSubElement(schemaElement, DOMUtil.XSD_IMPORT_ELEMENT);
                 importElement.setAttribute(DOMUtil.XSD_ATTR_NAMESPACE.getLocalPart(), namespace);
-                description.setSchema(new PrismSchemaImpl(namespace, prismContext));
+                description.setSchema(new PrismSchemaImpl(namespace));
                 wrappedDescriptions.add(description);
             }
         }
@@ -1132,13 +1132,13 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     // it's a bit fragile, as adding new references to child CTD in future may break existing code
     @Override
     public ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest) {
-        Map<ComplexTypeDefinition, ItemDefinition> found = new HashMap<>();
+        Map<ComplexTypeDefinition, ItemDefinition<?>> found = new HashMap<>();
         for (PrismSchema schema : getSchemas()) {
             if (schema == null) {
                 continue;
             }
             for (ComplexTypeDefinition ctd : schema.getComplexTypeDefinitions()) {
-                for (ItemDefinition item : ctd.getDefinitions()) {
+                for (ItemDefinition<?> item : ctd.getDefinitions()) {
                     if (!(item instanceof PrismContainerDefinition)) {
                         continue;
                     }
@@ -1727,21 +1727,21 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     private PrismPropertyDefinition<?> createAdHocPropertyDefinition(QName elementName, QName typeName, int minOccurs, int maxOccurs) {
-        PrismPropertyDefinitionImpl<?> def = new PrismPropertyDefinitionImpl<>(elementName, typeName, prismContext);
+        PrismPropertyDefinitionImpl<?> def = new PrismPropertyDefinitionImpl<>(elementName, typeName);
         def.setMinOccurs(minOccurs);
         def.setMaxOccurs(maxOccurs);
         return def;
     }
 
     private PrismReferenceDefinition createAdHocReferenceDefinition(QName elementName, ComplexTypeDefinition ctd, int minOccurs, int maxOccurs) {
-        PrismReferenceDefinitionImpl def = new PrismReferenceDefinitionImpl(elementName, ctd.getTypeName(), prismContext);
+        PrismReferenceDefinitionImpl def = new PrismReferenceDefinitionImpl(elementName, ctd.getTypeName());
         def.setMinOccurs(minOccurs);
         def.setMaxOccurs(maxOccurs);
         return def;
     }
 
     private PrismContainerDefinition<?> createAdHocContainerDefinition(QName elementName, ComplexTypeDefinition ctd, int minOccurs, int maxOccurs) {
-        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(elementName, ctd, prismContext);
+        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(elementName, ctd);
         def.setMinOccurs(minOccurs);
         def.setMaxOccurs(maxOccurs);
         return def;
@@ -1749,9 +1749,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     private PrismObjectDefinition<?> createAdHocObjectDefinition(QName elementName, ComplexTypeDefinition ctd, int minOccurs, int maxOccurs) {
         //noinspection unchecked
-        PrismObjectDefinitionImpl<?> def = new PrismObjectDefinitionImpl(elementName, ctd, prismContext, ctd.getCompileTimeClass());
-        def.setMinOccurs(minOccurs);        // not much relevant for POD
-        def.setMaxOccurs(maxOccurs);        // not much relevant for POD
+        PrismObjectDefinitionImpl<?> def = new PrismObjectDefinitionImpl(elementName, ctd, ctd.getCompileTimeClass());
+        def.setMinOccurs(minOccurs); // not much relevant for POD
+        def.setMaxOccurs(maxOccurs); // not much relevant for POD
         return def;
     }
     //endregion

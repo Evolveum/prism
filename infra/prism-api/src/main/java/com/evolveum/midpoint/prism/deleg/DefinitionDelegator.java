@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.deleg;
 
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -21,6 +22,8 @@ import com.evolveum.midpoint.prism.SchemaMigration;
 import com.evolveum.midpoint.prism.SmartVisitation;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+
+import org.jetbrains.annotations.Nullable;
 
 public interface DefinitionDelegator extends Definition {
 
@@ -147,18 +150,23 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
-    default Class getTypeClassIfKnown() {
+    default Class<?> getTypeClassIfKnown() {
         return delegate().getTypeClassIfKnown();
     }
 
     @Override
-    default Class getTypeClass() {
+    default Class<?> getTypeClass() {
         return delegate().getTypeClass();
     }
 
     @Override
     default <A> A getAnnotation(QName qname) {
         return delegate().getAnnotation(qname);
+    }
+
+    @Override
+    default @Nullable Map<QName, Object> getAnnotations() {
+        return delegate().getAnnotations();
     }
 
     @Override

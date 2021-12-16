@@ -33,20 +33,9 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
         return delegate().defaultValue();
     }
 
-    @Deprecated
-    @Override
-    default QName getValueType() {
-        return delegate().getValueType();
-    }
-
     @Override
     default Boolean isIndexed() {
         return delegate().isIndexed();
-    }
-
-    @Override
-    default boolean isAnyType() {
-        return delegate().isAnyType();
     }
 
     @Override
@@ -55,7 +44,7 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     }
 
     @Override
-    default PropertyDelta<T> createEmptyDelta(ItemPath path) {
+    default @NotNull PropertyDelta<T> createEmptyDelta(ItemPath path) {
         return delegate().createEmptyDelta(path);
     }
 

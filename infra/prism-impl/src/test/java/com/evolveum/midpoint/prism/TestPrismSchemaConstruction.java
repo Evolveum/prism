@@ -115,7 +115,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
     }
 
     private PrismSchema constructSchema(PrismContext prismContext) {
-        PrismSchemaImpl schema = new PrismSchemaImpl(NS_MY_SCHEMA, prismContext);
+        PrismSchemaImpl schema = new PrismSchemaImpl(NS_MY_SCHEMA);
 
         MutableComplexTypeDefinition weaponTypeDef = schema.createComplexTypeDefinition(WEAPON_TYPE_QNAME).toMutable();
         MutablePrismPropertyDefinition<?> kindPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_KIND_QNAME, DOMUtil.XSD_STRING);
@@ -127,7 +127,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         createTimestampPropertyDef.setDisplayName("Create timestamp");
         createTimestampPropertyDef.setOperational(true);
 
-        schema.createPropertyContainerDefinition(WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
+        schema.createContainerDefinition(WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
 
         return schema;
     }

@@ -19,6 +19,7 @@ import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
+import com.evolveum.midpoint.prism.util.PrismUtil;
 import com.evolveum.midpoint.util.DisplayableValue;
 
 import org.jetbrains.annotations.NotNull;
@@ -55,8 +56,8 @@ import org.jetbrains.annotations.NotNull;
 public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProperty<T>> implements PrismPropertyDefinition<T>,
         MutablePrismPropertyDefinition<T> {
 
+    // TODO some documentation
     private static final long serialVersionUID = 7259761997904371009L;
-    private QName valueType;
     private Collection<? extends DisplayableValue<T>> allowedValues;
     private Boolean indexed = null;
     private T defaultValue;
@@ -64,15 +65,19 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
 
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
-    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext) {
-        super(elementName, typeName, prismContext);
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName) {
+        super(elementName, typeName);
         this.structuredType = Lazy.from(() ->
             Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
-    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        super(elementName, typeName, prismContext);
+    public PrismPropertyDefinitionImpl(
+            QName elementName,
+            QName typeName,
+            Collection<? extends DisplayableValue<T>> allowedValues,
+            T defaultValue) {
+        super(elementName, typeName);
         this.allowedValues = allowedValues;
         this.defaultValue = defaultValue;
         this.structuredType = Lazy.from(() ->
@@ -80,39 +85,16 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
         );
     }
 
-    /**
-     * Returns allowed values for this property.
-     *
-     * @return Object array. May be null.
-     */
     @Override
     public Collection<? extends DisplayableValue<T>> getAllowedValues() {
         return allowedValues;
     }
 
     @Override
-    public T defaultValue(){
+    public T defaultValue() {
         return defaultValue;
     }
 
-    @Override
-    public QName getValueType() {
-        return valueType;
-    }
-
-    /**
-     * This is XSD annotation that specifies whether a property should
-     * be indexed in the storage. It can only apply to properties. It
-     * has following meaning:
-     *
-     * true: the property must be indexed. If the storage is not able to
-     * index the value, it should indicate an error.
-     *
-     * false: the property should not be indexed.
-     *
-     * null: data store decides whether to index the property or
-     * not.
-     */
     @Override
     public Boolean isIndexed() {
         return indexed;
@@ -124,13 +106,6 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
         this.indexed = indexed;
     }
 
-    /**
-     * Returns matching rule name. Matching rules are algorithms that specify
-     * how to compare, normalize and/or order the values. E.g. there are matching
-     * rules for case insensitive string comparison, for LDAP DNs, etc.
-     *
-     * @return matching rule name
-     */
     @Override
     public QName getMatchingRuleQName() {
         return matchingRuleQName;
@@ -156,7 +131,7 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     }
 
     @Override
-    public PropertyDelta<T> createEmptyDelta(ItemPath path) {
+    public @NotNull PropertyDelta<T> createEmptyDelta(ItemPath path) {
         return new PropertyDeltaImpl<>(path, this, getPrismContext());
     }
 
@@ -173,7 +148,8 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
             if (!(parent instanceof PrismProperty<?>)) {
                 return false;
             }
-            return canBeDefinitionOf((PrismProperty)parent);
+            //noinspection unchecked
+            return canBeDefinitionOf((PrismProperty) parent);
         } else {
             // TODO: maybe look actual value java type?
             return true;
@@ -183,17 +159,17 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     @NotNull
     @Override
     public PrismPropertyDefinitionImpl<T> clone() {
-        PrismPropertyDefinitionImpl<T> clone = new PrismPropertyDefinitionImpl<>(getItemName(), getTypeName(), getPrismContext());
-        copyDefinitionData(clone);
+        PrismPropertyDefinitionImpl<T> clone = new PrismPropertyDefinitionImpl<>(getItemName(), getTypeName());
+        clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
-    protected void copyDefinitionData(PrismPropertyDefinitionImpl<T> clone) {
-        super.copyDefinitionData(clone);
-        clone.indexed = this.indexed;
-        clone.defaultValue = this.defaultValue;
-        clone.allowedValues = this.allowedValues;
-        clone.valueType = this.valueType;
+    protected void copyDefinitionDataFrom(PrismPropertyDefinition<T> source) {
+        super.copyDefinitionDataFrom(source);
+        allowedValues = source.getAllowedValues(); // todo new collection?
+        indexed = source.isIndexed();
+        defaultValue = source.defaultValue();
+        matchingRuleQName = source.getMatchingRuleQName();
     }
 
     @Override
@@ -213,12 +189,15 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         PrismPropertyDefinitionImpl<?> that = (PrismPropertyDefinitionImpl<?>) o;
-        return Objects.equals(valueType, that.valueType) && Objects.equals(allowedValues, that.allowedValues) && Objects.equals(indexed, that.indexed) && Objects.equals(defaultValue, that.defaultValue) && Objects.equals(matchingRuleQName, that.matchingRuleQName);
+        return Objects.equals(allowedValues, that.allowedValues)
+                && Objects.equals(indexed, that.indexed)
+                && Objects.equals(defaultValue, that.defaultValue)
+                && Objects.equals(matchingRuleQName, that.matchingRuleQName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), valueType, allowedValues, indexed, defaultValue, matchingRuleQName);
+        return Objects.hash(super.hashCode(), allowedValues, indexed, defaultValue, matchingRuleQName);
     }
 
     /**

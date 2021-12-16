@@ -209,7 +209,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public void revive(PrismContext prismContext) throws SchemaException {
+    public void revive(PrismContext prismContext) {
         super.revive(prismContext);
         if (value != null) {
             if (value instanceof Revivable) {

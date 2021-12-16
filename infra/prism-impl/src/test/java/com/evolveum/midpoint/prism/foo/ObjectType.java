@@ -8,6 +8,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismObject;
@@ -242,5 +243,4 @@ public abstract class ObjectType
         }
         return parentOrgRef;
     }
-
 }

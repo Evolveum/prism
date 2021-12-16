@@ -146,9 +146,9 @@ public class PrismUnmarshaller {
         MutableItemDefinition<?> def;
         if (typeDefinition.isContainerMarker()) {
             // TODO what about objects?
-            def = new PrismContainerDefinitionImpl<>(itemName, typeDefinition, prismContext);
+            def = new PrismContainerDefinitionImpl<>(itemName, typeDefinition);
         } else {
-            def = new PrismPropertyDefinitionImpl<>(itemName, typeName, prismContext);
+            def = new PrismPropertyDefinitionImpl<>(itemName, typeName);
         }
         def.setDynamic(true);
         return def;
@@ -844,7 +844,7 @@ public class PrismUnmarshaller {
             return null;
         }
 
-        PrismPropertyDefinitionImpl <?> propDef = new PrismPropertyDefinitionImpl<>(itemName, typeName, prismContext);
+        PrismPropertyDefinitionImpl <?> propDef = new PrismPropertyDefinitionImpl<>(itemName, typeName);
         Integer maxOccurs = node.getMaxOccurs();
         if (maxOccurs != null) {
             propDef.setMaxOccurs(maxOccurs);

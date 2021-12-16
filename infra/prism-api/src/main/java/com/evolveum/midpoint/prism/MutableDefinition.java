@@ -12,7 +12,7 @@ import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import javax.xml.namespace.QName;
 
 /**
- *
+ * An interface that provides an ability to modify a definition.
  */
 public interface MutableDefinition extends Definition {
 

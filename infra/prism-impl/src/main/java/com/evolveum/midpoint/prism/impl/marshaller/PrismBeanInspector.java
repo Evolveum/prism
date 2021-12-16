@@ -629,7 +629,7 @@ public class PrismBeanInspector {
             return false;
         }
         ComplexTypeDefinition ctd = (ComplexTypeDefinition) type;
-        return fields.stream().allMatch(field -> ctd.containsItemDefinition(field));
+        return fields.stream().allMatch(ctd::containsItemDefinition);
     }
     //endregion
 
