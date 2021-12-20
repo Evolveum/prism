@@ -69,7 +69,12 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, @NotNull PrismContext prismContext,
             Class<C> compileTimeClass) {
-        super(name, determineTypeName(complexTypeDefinition), prismContext);
+        this(name, complexTypeDefinition, prismContext, compileTimeClass, null);
+    }
+
+    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, @NotNull PrismContext prismContext,
+            Class<C> compileTimeClass, QName definedInType) {
+        super(name, determineTypeName(complexTypeDefinition), prismContext, definedInType);
         this.complexTypeDefinition = complexTypeDefinition;
         if (complexTypeDefinition == null) {
             isRuntimeSchema = true;

@@ -49,7 +49,11 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
     public PrismReferenceDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext) {
-        super(elementName, typeName, prismContext);
+        this(elementName, typeName, prismContext, null);
+    }
+
+    public PrismReferenceDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext, QName definedInType) {
+        super(elementName, typeName, prismContext, definedInType);
         structuredType = Lazy.from(() ->
             Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );

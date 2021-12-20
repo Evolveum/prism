@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.namespace.QName;
 import java.lang.reflect.Field;
@@ -370,7 +371,7 @@ class DomToSchemaPostProcessor {
                         if (isPropertyContainer(elementDecl)) {
                             XSAnnotation containerAnnotation = xsType.getAnnotation();
                             PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                                    xsType, p, null, containerAnnotation, false);
+                                    xsType, p, null, containerAnnotation, false, ctd.getTypeName());
                             containerDefinition.toMutable().setInherited(particleInherited);
                             ctd.add(containerDefinition);
                         } else {
@@ -407,7 +408,7 @@ class DomToSchemaPostProcessor {
                     }
                     XSAnnotation containerAnnotation = complexType.getAnnotation();
                     PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                            xsType, p, complexTypeDefinition, containerAnnotation, false);
+                            xsType, p, complexTypeDefinition, containerAnnotation, false, ctd.getTypeName());
 //                    if (isAny(xsType)) {
 //                        ((PrismContainerDefinitionImpl) containerDefinition).setRuntimeSchema(true);
 //                        ((PrismContainerDefinitionImpl) containerDefinition).setDynamic(true);
@@ -564,11 +565,11 @@ class DomToSchemaPostProcessor {
                         schema.addDelayedItemDefinition(() -> {
                             ComplexTypeDefinition ctd = findComplexTypeDefinition(typeQName);
                             // here we take the risk that ctd is null
-                            return createPropertyContainerDefinition(xsType, xsElementDecl, ctd, annotation, null, true);
+                            return createPropertyContainerDefinition(xsType, xsElementDecl, ctd, annotation, null, true, null);
                         });
                     } else {
                         definition = createPropertyContainerDefinition(
-                                xsType, xsElementDecl, complexTypeDefinition, annotation, null, true);
+                                xsType, xsElementDecl, complexTypeDefinition, annotation, null, true, null);
                     }
                 } else if (isObjectReference(xsElementDecl, xsType)) {
                     definition = processObjectReferenceDefinition(xsType, elementName,
@@ -819,19 +820,19 @@ class DomToSchemaPostProcessor {
      */
     private PrismContainerDefinition<?> createPropertyContainerDefinition(XSType xsType,
             XSParticle elementParticle, ComplexTypeDefinition complexTypeDefinition, XSAnnotation annotation,
-            boolean topLevel) throws SchemaException {
+            boolean topLevel, QName definedInType) throws SchemaException {
         XSTerm elementTerm = elementParticle.getTerm();
         XSElementDecl elementDecl = elementTerm.asElementDecl();
 
         PrismContainerDefinition<?> pcd = createPropertyContainerDefinition(xsType, elementDecl,
-                complexTypeDefinition, annotation, elementParticle, topLevel);
+                complexTypeDefinition, annotation, elementParticle, topLevel, definedInType);
         return pcd;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private MutablePrismContainerDefinition<?> createPropertyContainerDefinition(XSType xsType,
             XSElementDecl elementDecl, ComplexTypeDefinition complexTypeDefinition,
-            XSAnnotation annotation, XSParticle elementParticle, boolean topLevel)
+            XSAnnotation annotation, XSParticle elementParticle, boolean topLevel, QName definedInType)
                     throws SchemaException {
 
         QName elementName = new QName(elementDecl.getTargetNamespace(), elementDecl.getName());
@@ -849,7 +850,7 @@ class DomToSchemaPostProcessor {
             pcd.setMinOccurs(1);
             pcd.setMaxOccurs(1);
         } else {
-            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, prismContext, compileTimeClass, definedInType);
             setMultiplicity(pcd, elementParticle, elementDecl.getAnnotation(), topLevel);
         }
 
@@ -872,7 +873,7 @@ class DomToSchemaPostProcessor {
      * property-relates stuff.
      */
     private <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(XSType xsType, QName elementName,
-            QName typeName, ComplexTypeDefinition ctd, XSAnnotation annotation, XSParticle elementParticle)
+            QName typeName, @Nullable ComplexTypeDefinition ctd, XSAnnotation annotation, XSParticle elementParticle)
                     throws SchemaException {
         MutablePrismPropertyDefinition<T> propDef;
 

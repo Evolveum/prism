@@ -40,7 +40,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
     public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext,
             Class<O> compileTimeClass) {
         // Object definition can only be top-level, hence null parent
-        super(elementName, complexTypeDefinition, prismContext, compileTimeClass);
+        super(elementName, complexTypeDefinition, prismContext, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT);
     }
 
     @Override

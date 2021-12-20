@@ -65,19 +65,24 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext) {
-        super(elementName, typeName, prismContext);
+        this(elementName, typeName, prismContext, null);
+    }
+
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext, QName definedInType) {
+        super(elementName, typeName, prismContext, definedInType);
         this.structuredType = Lazy.from(() ->
             Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        super(elementName, typeName, prismContext);
+        this(elementName, typeName, prismContext, allowedValues, defaultValue, null);
+    }
+
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, PrismContext prismContext, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue, QName definedInType) {
+        this(elementName, typeName, prismContext, definedInType);
         this.allowedValues = allowedValues;
         this.defaultValue = defaultValue;
-        this.structuredType = Lazy.from(() ->
-            Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
-        );
     }
 
     /**
