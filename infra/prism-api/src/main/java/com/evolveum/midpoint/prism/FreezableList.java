@@ -28,7 +28,8 @@ public class FreezableList<T> extends AbstractFreezable implements Serializable,
 
     @Override
     protected void performFreeze() {
-        list = Collections.unmodifiableList(list);
+        // To be sure that there's no reference to original (mutable) list obtained e.g. via iterator() call.
+        list = List.copyOf(list);
     }
 
     @Override

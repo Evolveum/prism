@@ -68,6 +68,8 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     // TODO: annotations
 
     /**
+     * TODO review this doc
+     *
      * The constructors should be used only occasionally (if used at all).
      * Use the factory methods in the ResourceObjectDefinition instead.
      *
@@ -78,7 +80,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         this(itemName, typeName, null);
     }
 
-    // TODO are there any uses if "definedInType"?
+    // TODO are there any uses of "definedInType"?
     ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, QName definedInType) {
         super(typeName);
         this.itemName = ItemName.fromQName(itemName);
