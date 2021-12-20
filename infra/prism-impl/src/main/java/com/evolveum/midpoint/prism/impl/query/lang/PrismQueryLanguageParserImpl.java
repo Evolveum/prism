@@ -68,6 +68,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             schemaCheck(definition instanceof PrismPropertyDefinition<?>, "Definition %s is not property", definition);
             PrismPropertyDefinition<?> propDef = (PrismPropertyDefinition<?>) definition;
 
+            var expression = subfilterOrValue.expression();
+            if (expression != null) {
+                var expressionWrapper = parseExpression(expression);
+                return expressionFilter(propDef, path, matchingRule, expressionWrapper);
+            }
+
             var valueSet = subfilterOrValue.valueSet();
             if (valueSet != null) {
 
@@ -104,6 +110,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         abstract ObjectFilter propertyFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                 ItemPath rightPath, PrismPropertyDefinition<?> rightDef) throws SchemaException;
+
+        abstract ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                ExpressionWrapper expression);
 
     }
 
@@ -149,12 +158,25 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, value, anchorStart,
                     anchorEnd);
         }
+
+        @Override
+        ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                ExpressionWrapper expression) {
+            return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, expression, anchorStart,
+                    anchorEnd);
+        }
     }
 
     private final ItemFilterFactory equalFilter = new PropertyFilterFactory() {
         @Override
         public ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                 QName matchingRule, Object value) {
+            return EqualFilterImpl.createEqual(path, definition, matchingRule, context, value);
+        }
+
+        @Override
+        public ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path,
+                QName matchingRule, ExpressionWrapper value) {
             return EqualFilterImpl.createEqual(path, definition, matchingRule, context, value);
         }
 
@@ -189,6 +211,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 }
 
                 @Override
+                ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                        ExpressionWrapper value) {
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false, context);
+                }
+
+                @Override
                 ObjectFilter propertyFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ItemPath rightPath, PrismPropertyDefinition<?> rightDef) {
                     return GreaterFilterImpl.createGreater(path, definition, matchingRule, rightPath, rightDef, false);
@@ -198,6 +226,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true, context);
+                }
+
+                @Override
+                ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                        ExpressionWrapper value) {
                     return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true, context);
                 }
 
@@ -215,6 +249,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 }
 
                 @Override
+                ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                        ExpressionWrapper value) {
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false, context);
+                }
+
+                @Override
                 ObjectFilter propertyFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ItemPath rightPath, PrismPropertyDefinition<?> rightDef) {
                     return LessFilterImpl.createLess(path, definition, matchingRule, rightPath, rightDef, false);
@@ -224,6 +264,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true, context);
+                }
+
+                @Override
+                ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                        ExpressionWrapper value) {
                     return LessFilterImpl.createLess(path, definition, matchingRule, value, true, context);
                 }
 
@@ -313,9 +359,27 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private final PrismContext context;
     private final Map<String, String> namespaceContext;
+    private ExpressionParser expressionParser;
 
     public PrismQueryLanguageParserImpl(PrismContext context) {
-        this(context, ImmutableMap.of());
+        this(context, ImmutableMap.of(), null);
+    }
+
+    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext) {
+        this(context, namespaceContext, null);
+    }
+
+    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext, ExpressionParser expressionParser) {
+        this.context = context;
+        this.namespaceContext = namespaceContext;
+        this.expressionParser = expressionParser;
+    }
+
+    ExpressionWrapper parseExpression(ExpressionContext expression) {
+        if (expressionParser == null) {
+            throw new UnsupportedOperationException("Expressions are not supported");
+        }
+        return expressionParser.parse(namespaceContext, expression);
     }
 
     public Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
@@ -355,10 +419,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return parseLiteral(type, value);
     }
 
-    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext) {
-        this.context = context;
-        this.namespaceContext = namespaceContext;
-    }
+
 
     @Override
     public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {

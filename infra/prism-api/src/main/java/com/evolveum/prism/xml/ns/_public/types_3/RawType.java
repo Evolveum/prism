@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2021 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -57,14 +57,12 @@ import java.util.function.Supplier;
  *
  * Implementation has stable Equals, but hashcode is unstable since it would require
  * significant effort to unify XNode and parsed items hashcode computation.
- *
  */
 public class RawType implements Serializable, Cloneable, Equals, Revivable, ShortDumpable, JaxbVisitable, PrismContextSensitive {
     private static final long serialVersionUID = 4430291958902286779L;
 
     /**
      * State wrapper class captures if we have xnode or parsed value
-     *
      */
     private State state;
 
@@ -112,12 +110,11 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
      */
     public synchronized Object getValue(boolean store) throws SchemaException {
         Parsed<?> parsed = current().parse();
-        if(store) {
+        if (store) {
             transition(parsed);
         }
         return parsed.realValue();
     }
-
 
     /**
      * TEMPORARY. EXPERIMENTAL. DO NOT USE.
@@ -171,7 +168,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     }
 
     private <V extends PrismValue> Parsed<V> transition(Parsed<V> newState) {
-        if(!newState.isTransient()) {
+        if (!newState.isTransient()) {
             this.state = newState;
         }
         return newState;
@@ -185,11 +182,11 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     public <V> V getParsedRealValue(ItemDefinition<?> itemDefinition, ItemPath itemPath) throws SchemaException {
         var current = current();
         var parsed = current.asParsed();
-        if(current instanceof Parsed) {
+        if (current instanceof Parsed) {
             return (V) ((Parsed<?>) parsed).realValue();
         }
         var raw = (Raw) current;
-        if(itemDefinition == null) {
+        if (itemDefinition == null) {
             // TODO what will be the result without definition?
             return raw.checkPrismContext().parserFor(raw.xNodeNullable().toRootXNode()).parseRealValue();
         }
@@ -204,19 +201,19 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         return current().realValue(clazz);
     }
 
-    public <IV extends PrismValue,ID extends ItemDefinition<?>> Item<IV,ID> getParsedItem(ID itemDefinition) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> getParsedItem(ID itemDefinition) throws SchemaException {
         Validate.notNull(itemDefinition);
         return getParsedItem(itemDefinition, itemDefinition.getItemName());
     }
 
-    public <IV extends PrismValue,ID extends ItemDefinition<?>> Item<IV,ID> getParsedItem(ID itemDefinition, QName itemName) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> getParsedItem(ID itemDefinition, QName itemName) throws SchemaException {
         Validate.notNull(itemDefinition);
         Validate.notNull(itemName);
         @SuppressWarnings("unchecked")
-        Item<IV,ID> item = itemDefinition.instantiate();
+        Item<IV, ID> item = itemDefinition.instantiate();
         IV newValue = getParsedValue(itemDefinition, itemName);
         if (newValue != null) {
-            // TODO: Is clone neccessary?
+            // TODO: Is clone necessary?
             item.add((IV) newValue.clone());
         }
         return item;
@@ -228,7 +225,11 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
      * This will be resolved later, if needed.)
      */
     public synchronized XNode serializeToXNode() throws SchemaException {
-        XNode xNode = current().toXNode();
+        return serializeToXNode(null);
+    }
+
+    public synchronized XNode serializeToXNode(SerializationContext sc) throws SchemaException {
+        XNode xNode = current().toXNode(sc);
         return xNode.isImmutable() ? xNode.clone() : xNode;
     }
     //endregion
@@ -249,12 +250,15 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
     @Override
     public synchronized boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         RawType other = (RawType) obj;
         return current().equals(other.current());
     }
@@ -264,7 +268,6 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
             EqualsStrategy equalsStrategy) {
         return equals(that);
     }
-
 
     public static RawType create(String value, PrismContext prismContext) {
         var xnode = prismContext.xnodeFactory().primitive(value).frozen();
@@ -277,7 +280,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
     @Override
     public synchronized String toString() {
-        return new StringBuilder("RawType: ").append(current().toString()).append(")").toString();
+        return "RawType: " + current().toString() + ")";
     }
 
     @Override
@@ -297,7 +300,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         }
         if (current instanceof Raw) {
             var node = current.toXNode();
-            if(node instanceof PrimitiveXNode) {
+            if (node instanceof PrimitiveXNode) {
                 return ((PrimitiveXNode<?>) node).getGuessedFormattedValue();
             }
         }
@@ -384,6 +387,8 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         abstract XNode toXNode() throws SchemaException;
 
+        abstract XNode toXNode(SerializationContext sc) throws SchemaException;
+
         protected abstract Parsed<PrismValue> parse() throws SchemaException;
 
         protected abstract String extractString(Supplier<String> defaultValue);
@@ -458,7 +463,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @SuppressWarnings("unchecked")
         public <T> T realValue() {
-            return (T) value.getRealValue();
+            return value.getRealValue();
         }
 
         @Override
@@ -473,8 +478,17 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @Override
         XNode toXNode() throws SchemaException {
+            return toXNode(null);
+        }
+
+        @Override
+        XNode toXNode(SerializationContext sc) throws SchemaException {
             checkPrismContext();
-            XNode rv = getPrismContext().xnodeSerializer().root(new QName("dummy")).serialize(value).getSubnode();
+            PrismSerializer<RootXNode> serializer = getPrismContext().xnodeSerializer();
+            if (sc != null) {
+                serializer = serializer.context(sc);
+            }
+            XNode rv = serializer.root(new QName("dummy")).serialize(value).getSubnode();
             getPrismContext().xnodeMutator().setXNodeType(rv, explicitTypeName, explicitTypeDeclaration());
             return rv;
         }
@@ -492,15 +506,15 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         @Override
         protected void shortDump(StringBuilder sb) {
             if (value instanceof ShortDumpable) {
-                ((ShortDumpable)value).shortDump(sb);
+                ((ShortDumpable) value).shortDump(sb);
             } else {
                 Object realValue = value.getRealValue();
                 if (realValue == null) {
                     sb.append("null");
                 } else if (realValue instanceof ShortDumpable) {
-                    ((ShortDumpable)realValue).shortDump(sb);
+                    ((ShortDumpable) realValue).shortDump(sb);
                 } else {
-                    sb.append(realValue.toString());
+                    sb.append(realValue);
                 }
             }
         }
@@ -557,7 +571,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         @Override
         protected RawType performClone() {
             // FIXME: MID-6833 We clone value since Midpoint assumes clone to mutable contract
-            return new RawType(new Parsed<PrismValue>(getPrismContext(), value.clone(), explicitTypeName));
+            return new RawType(new Parsed<>(getPrismContext(), value.clone(), explicitTypeName));
         }
     }
 
@@ -613,14 +627,14 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                 if (typeDefinition != null && typeDefinition.getCompileTimeClass() != null) {
                     javaClass = typeDefinition.getCompileTimeClass();
                 }
-                if(javaClass != null) {
+                if (javaClass != null) {
                     javaClass = XsdTypeMapper.getXsdToJavaMapping(node.getTypeQName());
                 }
                 if (javaClass != null) {
                     return new Parsed<>(getPrismContext(), valueFor(realValue(javaClass)), node.getTypeQName());
                 }
                 PrismValue asValue = getPrismContext().parserFor(node.toRootXNode()).parseItemValue();
-                return new Parsed<PrismValue>(getPrismContext(), asValue, node.getTypeQName());
+                return new Parsed<>(getPrismContext(), asValue, node.getTypeQName());
             }
 
             // unknown or null type -- try parsing as string
@@ -630,7 +644,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
             String stringValue = ((PrimitiveXNode<?>) node).getStringValue();
 
             // We return transient, so state is not updated.
-            return new Transient<PrismValue>(valueFor(stringValue));
+            return new Transient<>(valueFor(stringValue));
         }
 
         @Override
@@ -641,20 +655,20 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         @Override
         <IV extends PrismValue> Parsed<IV> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName) throws SchemaException {
             IV value;
-            if (itemDefinition != null  && !(itemDefinition instanceof PrismPropertyDefinition && ((PrismPropertyDefinition<?>) itemDefinition).isAnyType())) {
+            if (itemDefinition != null && !(itemDefinition instanceof PrismPropertyDefinition && ((PrismPropertyDefinition<?>) itemDefinition).isAnyType())) {
                 if (itemName == null) {
                     itemName = itemDefinition.getItemName();
                 }
                 checkPrismContext();
                 var rootNode = getPrismContext().xnodeFactory().root(itemName, node);
-                Item<IV, ItemDefinition<?>> subItem = getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).<IV,ItemDefinition<?>>parseItem();
+                Item<IV, ItemDefinition<?>> subItem = getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).parseItem();
                 if (!subItem.isEmpty()) {
                     value = subItem.getAnyValue();
                 } else {
                     value = null;
                 }
                 if (value != null && !itemDefinition.canBeDefinitionOf(value)) {
-                    throw new SchemaException("Attempt to parse raw value into "+value+" that does not match provided definition "+itemDefinition);
+                    throw new SchemaException("Attempt to parse raw value into " + value + " that does not match provided definition " + itemDefinition);
                 }
                 return new Parsed<>(getPrismContext(), value, itemDefinition.getTypeName());
             }
@@ -666,6 +680,11 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @Override
         XNode toXNode() {
+            return node;
+        }
+
+        @Override
+        XNode toXNode(SerializationContext sc) {
             return node;
         }
 
@@ -708,10 +727,10 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @Override
         public boolean equals(Object other) {
-            if(other == this) {
+            if (other == this) {
                 return true;
             }
-            if(other instanceof State) {
+            if (other instanceof State) {
                 return equalsXNode((State) other);
             }
             return false;
@@ -721,7 +740,6 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         public int hashCode() {
             return node.hashCode();
         }
-
 
         private PrismValue valueFor(Object parsedValue) {
             if (parsedValue instanceof Containerable) {

@@ -83,10 +83,12 @@ filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
 
 subfilterSpec: '(' SEP* filter SEP* ')';
 itemFilter: path (SEP+ negation)? SEP+ filterName (matchingRule)? (SEP+ (subfilterOrValue))?;
-subfilterOrValue : subfilterSpec | singleValue | valueSet;
+subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 
 
-
+expression : scriptMultiline | scriptSingleline;
+scriptSingleline : (language=IDENTIFIER)? (script=STRING_BACKTICK);
+scriptMultiline : (language=IDENTIFIER?)? (STRING_BACKTICK_START (~('```'))*'```');
 
 
 
@@ -107,6 +109,7 @@ IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
 
 fragment SQOUTE : '\'';
 fragment DQOUTE : '"';
+fragment BACKTICK : '`';
 
 fragment ESC : '\\';
 //fragment ESC: '\\' ( ["\\/bfnrt] | UNICODE);
@@ -114,6 +117,9 @@ fragment ESC : '\\';
 STRING_SINGLEQUOTE: SQOUTE ((ESC SQOUTE) | ~[\n'])* SQOUTE;
 STRING_DOUBLEQUOTE: DQOUTE ((ESC DQOUTE) | ~[\n"])* DQOUTE;
 STRING_MULTILINE_START: '"""' ('\r')? '\n';
+
+STRING_BACKTICK: BACKTICK ((ESC SQOUTE) | ~[\n'])* BACKTICK;
+STRING_BACKTICK_START: '```' ('\r')? '\n';
 
 fragment UNICODE: 'u' HEX HEX HEX HEX;
 fragment HEX: [0-9a-fA-F];

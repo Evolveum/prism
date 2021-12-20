@@ -7,6 +7,19 @@
 
 package com.evolveum.midpoint.prism.impl.lex.json.writer;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.xml.namespace.QName;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.google.common.base.Strings;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Element;
+
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.SerializationOptions;
 import com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems;
@@ -19,19 +32,6 @@ import com.evolveum.midpoint.prism.xnode.MetadataAware;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.base.Strings;
-
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Element;
-
-import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Writes single or multiple documents (JSON/YAML).
@@ -102,7 +102,7 @@ class DocumentWriter {
     private XNodeDefinition moreSpecificDefinition(XNodeImpl xnode, XNodeDefinition itemDef) {
         var xnodeType = xnode.getTypeQName();
         var xnodeName = xnode.getElementName();
-        if(xnodeType != null && xnode.isExplicitTypeDeclaration()) {
+        if (xnodeType != null && xnode.isExplicitTypeDeclaration()) {
             itemDef = itemDef.withType(xnodeType);
         }
         /*
@@ -174,21 +174,21 @@ class DocumentWriter {
         /**
          *
          * FIMXE: We can not materialize types here, because of anyType
-        if (!primitive.isParsed() && schemaType.isPresent()) {
-            // Node is unparsed, but we know type, so we can reparse it
-            try {
-                primitive.getParsedValue(schemaType.get(), Object.class);
-            } catch (SchemaException e) {
-                // We will fail silently and continue writing with unparsed value
-            }
-        }
-        **/
+         if (!primitive.isParsed() && schemaType.isPresent()) {
+         // Node is unparsed, but we know type, so we can reparse it
+         try {
+         primitive.getParsedValue(schemaType.get(), Object.class);
+         } catch (SchemaException e) {
+         // We will fail silently and continue writing with unparsed value
+         }
+         }
+         **/
         if (primitive.isParsed()) {
             Object value = primitive.getValue();
-            if(value instanceof ItemPathType) {
+            if (value instanceof ItemPathType) {
                 value = ((ItemPathType) value).getItemPath();
             }
-            if(value instanceof ItemPath) {
+            if (value instanceof ItemPath) {
                 writeItemPath((ItemPath) value, context);
             } else if (value instanceof QName) {
                 writeQName((QName) value, context);
@@ -197,9 +197,10 @@ class DocumentWriter {
                 generator.writeObject(value);
             }
         } else {
-            // we asume content is namespace sensitive
+            // we assume content is namespace sensitive
             Map<String, String> maybeNamespaces = primitive.getRelevantNamespaceDeclarations();
-            writeNamespaceSensitive(primitive.getStringValue(), context.childContext(maybeNamespaces));
+            writeNamespaceSensitive(primitive.getStringValue(),
+                    context.optimizedChildContext(maybeNamespaces));
         }
     }
 
@@ -207,7 +208,7 @@ class DocumentWriter {
 
         if (!Strings.isNullOrEmpty(value.getNamespaceURI())) {
             Optional<String> prefix = context.withoutDefault().prefixFor(value.getNamespaceURI());
-            if(prefix.isPresent()) {
+            if (prefix.isPresent()) {
                 generator.writeString(prefix.get() + ":" + value.getLocalPart());
                 return;
             }
@@ -259,7 +260,8 @@ class DocumentWriter {
         QName typeName = getExplicitType(xnode);
         if (typeName != null) {
             if (!ctx.supportsInlineTypes()) {
-                generator.writeObjectField(JsonInfraItems.PROP_TYPE, typeName);
+                generator.writeFieldName(JsonInfraItems.PROP_TYPE);
+                writeQName(typeName, localNamespace);
             }
         }
     }
@@ -301,15 +303,9 @@ class DocumentWriter {
         //return nodeLocal.rebasedOn(current);
     }
 
-    /**
-     *
-     *
-     * @param itemLocal
-     * @return Default namespace
-     */
     private void writeNamespaceContextIfNeeded(PrismNamespaceContext itemLocal) throws IOException {
         if (!itemLocal.isLocalEmpty()) {
-            if(itemLocal.isDefaultNamespaceOnly()) {
+            if (itemLocal.isDefaultNamespaceOnly()) {
                 generator.writeFieldName(JsonInfraItems.PROP_NAMESPACE);
                 generator.writeString(itemLocal.defaultNamespace().get());
                 return;
@@ -317,7 +313,7 @@ class DocumentWriter {
                 // context should be emitted
                 generator.writeFieldName(JsonInfraItems.PROP_CONTEXT);
                 generator.writeStartObject();
-                for (Map.Entry<String,String> prefixPair : itemLocal.localPrefixes().entrySet()) {
+                for (Map.Entry<String, String> prefixPair : itemLocal.localPrefixes().entrySet()) {
                     generator.writeFieldName(prefixPair.getKey());
                     generator.writeString(prefixPair.getValue());
                 }
@@ -327,7 +323,7 @@ class DocumentWriter {
     }
 
     private String determineNewCurrentNamespace(MapXNodeImpl map, String currentNamespace, XNodeDefinition itemDef) {
-        Map<String,Integer> counts = new HashMap<>();
+        Map<String, Integer> counts = new HashMap<>();
         for (QName childName : map.keySet()) {
             String childNs = childName.getNamespaceURI();
             // We do not need to redeclare namespace for already defined items
@@ -344,8 +340,8 @@ class DocumentWriter {
             increaseCounter(counts, map.getElementName().getNamespaceURI());
         }
         // otherwise, take the URI that occurs the most in the map
-        Map.Entry<String,Integer> max = null;
-        for (Map.Entry<String,Integer> count : counts.entrySet()) {
+        Map.Entry<String, Integer> max = null;
+        for (Map.Entry<String, Integer> count : counts.entrySet()) {
             if (max == null || count.getValue() > max.getValue()) {
                 max = count;
             }
@@ -355,7 +351,7 @@ class DocumentWriter {
 
     private void increaseCounter(Map<String, Integer> counts, String childNs) {
         Integer c = counts.get(childNs);
-        counts.put(childNs, c != null ? c+1 : 1);
+        counts.put(childNs, c != null ? c + 1 : 1);
     }
 
     private String createKeyUri(Map.Entry<QName, XNodeImpl> entry, PrismNamespaceContext context, XNodeDefinition entryDef, XNodeDefinition itemDef) {
@@ -365,7 +361,7 @@ class DocumentWriter {
             return JsonInfraItems.PROP_ID;
         }
 
-        if(entryDef.definedInParent()) {
+        if (entryDef.definedInParent()) {
             return key.getLocalPart();
         }
 
@@ -374,9 +370,9 @@ class DocumentWriter {
                 && !itemDef.child(new QName(key.getLocalPart())).definedInParent()) {
             return key.getLocalPart();
         }
-        if(StringUtils.isNotEmpty(key.getNamespaceURI())) {
+        if (StringUtils.isNotEmpty(key.getNamespaceURI())) {
             Optional<String> prefix = context.withoutDefault().prefixFor(key.getNamespaceURI());
-            if(prefix.isPresent()) {
+            if (prefix.isPresent()) {
                 return prefix.get() + ":" + key.getLocalPart();
             }
         }
