@@ -37,6 +37,8 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import com.evolveum.midpoint.util.exception.*;
+
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,10 +47,6 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.CommonException;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
-import com.evolveum.midpoint.util.exception.TunnelException;
 
 /**
  * @author semancik
@@ -1078,6 +1076,12 @@ public class MiscUtil {
     public static void schemaCheck(boolean condition, String template, Object... arguments) throws SchemaException {
         if (!condition) {
             throw new SchemaException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
+    public static void configCheck(boolean condition, String template, Object... arguments) throws ConfigurationException {
+        if (!condition) {
+            throw new ConfigurationException(Strings.lenientFormat(template, arguments));
         }
     }
 
