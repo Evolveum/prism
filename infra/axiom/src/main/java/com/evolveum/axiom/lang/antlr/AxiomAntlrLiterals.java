@@ -39,9 +39,6 @@ public class AxiomAntlrLiterals {
         } else if (value instanceof FloatValueContext) {
             return convertFloat((FloatValueContext) value);
         }
-
-
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unknown type of literal" + value.getClass());
     }
 

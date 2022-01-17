@@ -86,9 +86,10 @@ itemFilter: path (SEP+ negation)? SEP+ filterName (matchingRule)? (SEP+ (subfilt
 subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 
 
-expression : scriptMultiline | scriptSingleline;
-scriptSingleline : (language=IDENTIFIER)? (script=STRING_BACKTICK);
-scriptMultiline : (language=IDENTIFIER?)? (STRING_BACKTICK_START (~('```'))*'```');
+expression : script;
+script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);
+scriptSingleline : STRING_BACKTICK;
+scriptMultiline : (STRING_BACKTICK_START (~('```'))*'```');
 
 
 

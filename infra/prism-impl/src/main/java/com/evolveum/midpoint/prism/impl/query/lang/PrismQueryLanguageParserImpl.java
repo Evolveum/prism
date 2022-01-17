@@ -11,6 +11,7 @@ import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 import java.util.*;
 import java.util.function.Function;
 
+import javax.management.QueryExp;
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 
 import com.evolveum.axiom.lang.antlr.AxiomAntlrLiterals;
 import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
+import com.evolveum.axiom.lang.antlr.AxiomStrings;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
@@ -359,7 +361,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private final PrismContext context;
     private final Map<String, String> namespaceContext;
-    private ExpressionParser expressionParser;
+    private PrismQueryExpressionFactory expressionParser;
 
     public PrismQueryLanguageParserImpl(PrismContext context) {
         this(context, ImmutableMap.of(), null);
@@ -369,7 +371,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         this(context, namespaceContext, null);
     }
 
-    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext, ExpressionParser expressionParser) {
+    public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext, PrismQueryExpressionFactory expressionParser) {
         this.context = context;
         this.namespaceContext = namespaceContext;
         this.expressionParser = expressionParser;
@@ -379,7 +381,23 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         if (expressionParser == null) {
             throw new UnsupportedOperationException("Expressions are not supported");
         }
-        return expressionParser.parse(namespaceContext, expression);
+        if (expression.script() != null) {
+            return parseScript(expression.script());
+        }
+        throw new UnsupportedOperationException("Unsupported expression");
+    }
+
+    private ExpressionWrapper parseScript(ScriptContext script) {
+        String scriptLang = script.language != null ? script.language.getText() : null;
+        String scriptText;
+        if (script.scriptMultiline() != null) {
+            scriptText = AxiomStrings.removeQuotes(script.scriptMultiline().getText(), AxiomStrings.TRIPLE_BACKTICK);
+        } else if (script.scriptSingleline() != null) {
+            scriptText = AxiomStrings.fromSingleBacktick(script.scriptSingleline().getText());
+        } else {
+            throw new IllegalStateException("No script present.");
+        }
+        return expressionParser.parseScript(namespaceContext, scriptLang, scriptText);
     }
 
     public Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {

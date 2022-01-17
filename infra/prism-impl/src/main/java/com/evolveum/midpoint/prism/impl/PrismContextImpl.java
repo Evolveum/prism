@@ -52,6 +52,7 @@ import com.evolveum.midpoint.prism.path.CanonicalItemPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
 import com.evolveum.midpoint.prism.query.QueryConverter;
@@ -121,6 +122,7 @@ public final class PrismContextImpl implements PrismContext {
 
     // ugly hack
     private QName defaultReferenceTypeName;
+    private PrismQueryExpressionFactory queryExpressionFactory;
 
     static {
         PrismPrettyPrinter.initialize();
@@ -706,6 +708,11 @@ public final class PrismContextImpl implements PrismContext {
 
     public void setProvenanceEquivalenceStrategy(EquivalenceStrategy provenanceEquivalenceStrategy) {
         this.provenanceEquivalenceStrategy = provenanceEquivalenceStrategy;
+    }
+
+    @Override
+    public void registerQueryExpressionFactory(PrismQueryExpressionFactory factory) {
+        this.queryExpressionFactory = factory;
     }
 
     @Override

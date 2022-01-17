@@ -34,6 +34,7 @@ import com.evolveum.midpoint.prism.path.CanonicalItemPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
 import com.evolveum.midpoint.prism.query.QueryConverter;
@@ -402,6 +403,8 @@ public interface PrismContext extends ProtectorCreator {
     default PrismQueryLanguageParser createQueryParser() {
         return createQueryParser(Collections.emptyMap());
     }
+
+    void registerQueryExpressionFactory(PrismQueryExpressionFactory factory);
 
     PrismQueryLanguageParser createQueryParser(Map<String, String> prefixToNamespace);
 

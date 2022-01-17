@@ -13,7 +13,10 @@ public class AxiomStrings {
 
     private static final String ESCAPE = "\\";
     private static final String SQUOTE = "'";
+    private static final String BACKTICK = "`";
     private static final String DQUOTE = "\"";
+    public static final String TRIPLE_BACKTICK = "```";
+    public static final String TRIPLE_DQOUTE = "\"\"\"";
 
     private static final BiMap<CharSequence, CharSequence> SINGLE_QUOTE_MAP = ImmutableBiMap.<CharSequence, CharSequence>builder()
             .put(SQUOTE, ESCAPE + SQUOTE)
@@ -23,6 +26,9 @@ public class AxiomStrings {
             .put(DQUOTE, ESCAPE + DQUOTE)
             .build();
 
+    private static final BiMap<CharSequence, CharSequence> BACKTICK_MAP = ImmutableBiMap.<CharSequence, CharSequence>builder()
+            .put(BACKTICK, ESCAPE + BACKTICK)
+            .build();
 
 
     private static final LookupTranslator SINGLE_QUOTED_ESCAPE = new LookupTranslator(SINGLE_QUOTE_MAP);
@@ -30,6 +36,10 @@ public class AxiomStrings {
 
     private static final LookupTranslator DOUBLE_QUOTED_ESCAPE = new LookupTranslator(DOUBLE_QUOTE_MAP);
     private static final LookupTranslator DOUBLE_QUOTED_UNESCAPE = new LookupTranslator(DOUBLE_QUOTE_MAP.inverse());
+
+    private static final LookupTranslator BACKTICK_ESCAPE = new LookupTranslator(BACKTICK_MAP);
+    private static final LookupTranslator BACKTICK_UNESCAPE = new LookupTranslator(BACKTICK_MAP.inverse());
+
 
     public static String fromSingleQuoted(String input) {
         return unescape(SQUOTE, SINGLE_QUOTED_UNESCAPE, input);
@@ -48,10 +58,21 @@ public class AxiomStrings {
         return escape(DQUOTE, DOUBLE_QUOTED_ESCAPE, input);
     }
 
+    public static String fromSingleBacktick(String input) {
+        return unescape(BACKTICK, BACKTICK_UNESCAPE, input);
+    }
+
+    public static String toSingleBacktick(String input) {
+        return escape(BACKTICK, BACKTICK_ESCAPE, input);
+    }
+
+    public static String removeQuotes(String quote, String withQuotes) {
+        Preconditions.checkArgument(isQuoted(withQuotes, quote), "String must be quoted with '%s' quotes", quote);
+        return withQuotes.substring(quote.length(), withQuotes.length() - quote.length());
+    }
 
     private static String unescape(String quote, LookupTranslator unescaper, String withQuotes) {
-        Preconditions.checkArgument(isQuoted(withQuotes, quote), "String must be quoted with '%s' quotes", quote);
-        var withoutQuotes = withQuotes.substring(quote.length(), withQuotes.length() - quote.length());
+        var withoutQuotes = removeQuotes(quote, withQuotes);
         return unescaper.translate(withoutQuotes);
     }
 
