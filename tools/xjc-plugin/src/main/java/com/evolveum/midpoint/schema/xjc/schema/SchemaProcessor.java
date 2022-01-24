@@ -87,14 +87,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
     public static final String METHOD_GET_OBJECTABLE = "getObjectable";
     public static final String METHOD_SETUP_REFERENCE_VALUE = "setupReferenceValue";
 
-    // Internal fields and methods. Although some of these fields needs to be public (so they can be used by
-    // prism classes), they are not really intended for public usage. We also want to avoid conflicts with code
-    // generated for regular fields. Hence the underscore.
-    private static final String CONTAINER_FIELD_NAME = "_container";
-    private static final String CONTAINER_VALUE_FIELD_NAME = "_containerValue";
-    private static final String METHOD_GET_CONTAINER_NAME = "_getContainerName";
-    private static final String METHOD_GET_CONTAINER_TYPE = "_getContainerType";
-    private static final String REFERENCE_VALUE_FIELD_NAME = "_referenceValue";
 
     //methods in PrismForJAXBUtil
     private static final String METHOD_PRISM_UTIL_GET_FIELD_SINGLE_CONTAINERABLE = "getFieldSingleContainerable";
@@ -116,8 +108,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
     //equals, toString, hashCode methods
     private static final String METHOD_TO_STRING = "toString";
-    private static final String METHOD_EQUALS = "equals";
-    private static final String METHOD_EQUIVALENT = "equivalent";
     private static final String METHOD_HASH_CODE = "hashCode";
 
     @Override
@@ -222,7 +212,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         updateObjectReferenceGetObject(definedClass, asReferenceValueMethod);
         updateObjectReferenceGetObjectable(definedClass, asReferenceValueMethod);
 
-        createReferenceFluentEnd(objectReferenceOutline);
+        createReferenceFluentEnd(objectReferenceOutline.implClass);
     }
 
 
@@ -389,49 +379,11 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
     }
 
+    @Deprecated
     private void updateClassAnnotation(ClassOutline classOutline) {
-        try {
-            JDefinedClass definedClass = classOutline.implClass;
-            List<JAnnotationUse> existingAnnotations = getAnnotations(definedClass);
-            for (JAnnotationUse annotation : existingAnnotations) {
-                if (isAnnotationTypeOf(annotation, XmlAccessorType.class)) {
-                    Field field = getField(JAnnotationUse.class, "memberValues");
-                    field.setAccessible(true);
-                    Map<String, Object> map = (Map<String, Object>) field.get(annotation);
-                    field.setAccessible(false);
-                    map.clear();
-                    annotation.param("value", XmlAccessType.PROPERTY);
-                }
-                if (isAnnotationTypeOf(annotation, XmlType.class)) {
-                    Field field = getField(JAnnotationUse.class, "memberValues");
-                    field.setAccessible(true);
-                    Map<String, Object> map = (Map<String, Object>) field.get(annotation);
-                    Object propOrder = map.get("propOrder");
-                    if (propOrder != null) {
-                        JAnnotationArrayMember paramArray = (JAnnotationArrayMember)propOrder;
-                        Field valField = getField(JAnnotationArrayMember.class, "values");
-                        valField.setAccessible(true);
-                        List<JAnnotationValue> values = (List<JAnnotationValue>) valField.get(paramArray);
-                        for (int i=0; i < values.size(); i++) {
-                            JAnnotationValue jAnnValue = values.get(i);
-                            String value = extractString(jAnnValue);
-                            if (value.startsWith("_")) {
-                                paramArray.param(value.substring(1));
-                                values.set(i, values.get(values.size() - 1));
-                                values.remove(values.size() - 1);
-                            }
-//                            String valAfter = extractString(values.get(i));
-//                            print("PPPPPPPPPPPPPPPPPPP: "+value+" -> "+valAfter);
-                        }
-                        valField.setAccessible(false);
-                    }
-                    field.setAccessible(false);
-                }
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex.getMessage(), ex);
-        }
+        updateClassAnnotation(classOutline.implClass);
     }
+
 
     /**
      * remove generated equals methods from classes which extends from prism containers/objects
@@ -496,46 +448,15 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
     }
 
+    @Deprecated
     private void createEqualsMethod(ClassOutline classOutline, String baseMethod) {
-        JDefinedClass definedClass = classOutline.implClass;
-        JMethod equals = definedClass.getMethod(METHOD_EQUALS, new JType[]{CLASS_MAP.get(Object.class)});
-
-        if (equals != null) {
-//            removeOldCustomGeneratedEquals(classOutline, hasParentAnnotation(classOutline, PRISM_OBJECT));  todo can this be removed?
-            equals = recreateMethod(equals, definedClass);
-        } else {
-            equals = definedClass.method(JMod.PUBLIC, boolean.class, METHOD_EQUALS);
-        }
-        equals.annotate(CLASS_MAP.get(Override.class));
-
-        JBlock body = equals.body();
-        JVar obj = equals.listParams()[0];
-        JBlock ifNull = body._if(obj._instanceof(definedClass).not())._then();
-        ifNull._return(JExpr.lit(false));
-
-        JVar other = body.decl(definedClass, "other", JExpr.cast(definedClass, obj));
-
-        JInvocation invocation = JExpr.invoke(baseMethod).invoke(METHOD_EQUIVALENT);
-        invocation.arg(other.invoke(baseMethod));
-        body._return(invocation);
+        createEqualsMethod(classOutline.implClass, baseMethod);
     }
 
+
+    @Deprecated
     private void createAsPrismContainer(ClassOutline classOutline, JVar container) {
-        JDefinedClass definedClass = classOutline.implClass;
-        JMethod getContainer = definedClass.method(JMod.PUBLIC, CLASS_MAP.get(PrismObject.class),
-                METHOD_AS_PRISM_CONTAINER);
-
-        //create method body
-        JBlock body = getContainer.body();
-        JBlock then = body._if(container.eq(JExpr._null()))._then();
-
-        JInvocation newContainer = JExpr._new(CLASS_MAP.get(PrismObjectImpl.class));
-        newContainer.arg(JExpr.invoke(METHOD_GET_CONTAINER_NAME));
-        newContainer.arg(JExpr._this().invoke("getClass"));
-//        newContainer.arg(JExpr.dotclass(definedClass));
-        then.assign(container, newContainer);
-
-        body._return(container);
+        createAsPrismContainer(classOutline.implClass, container);
     }
 
     private QName getCClassInfoQName(CClassInfo info) {
@@ -759,7 +680,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         JDefinedClass implClass = classOutline.implClass;
         Map<String, JFieldVar> fields = implClass.fields();
 
-        createContainerFluentEnd(classOutline);            // not available for beans (no parent there)
+        createContainerFluentEnd(classOutline.implClass);            // not available for beans (no parent there)
 
         updateClassAnnotation(classOutline);
         boolean isObject = hasAnnotation(classOutline, A_PRISM_OBJECT);
@@ -1151,7 +1072,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
     private void createFluentFieldMethods(JFieldVar field, ClassOutline targetClass, ClassOutline fieldsFromClass) {
         print("createFluentFieldMethods for " + field.name() + " on " + targetClass.implClass.fullName() + " (from " + fieldsFromClass.implClass.fullName() + ")");
-        JMethod fluentSetter = createFluentSetter(field, targetClass, fieldsFromClass);
+        JMethod fluentSetter = createFluentSetter(field, targetClass.implClass, fieldsFromClass);
         createMethodStringVersion(field, targetClass, fluentSetter);
 
         // FIXME ugly hack - we create beginXYZ only for our own structures
@@ -1272,9 +1193,9 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
     }
      */
 
-    private JMethod createContainerFluentEnd(ClassOutline classOutline) {
+    private JMethod createContainerFluentEnd(JDefinedClass implClass) {
         String methodName = "end";
-        JMethod method = classOutline.implClass.method(JMod.PUBLIC, (JType) null, methodName);
+        JMethod method = implClass.method(JMod.PUBLIC, (JType) null, methodName);
         method.type(method.generify("X"));
         JBlock body = method.body();
 
@@ -1287,9 +1208,9 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return method;
     }
 
-    private JMethod createReferenceFluentEnd(ClassOutline classOutline) {
+    private JMethod createReferenceFluentEnd(JDefinedClass implClass) {
         String methodName = "end";
-        JMethod method = classOutline.implClass.method(JMod.PUBLIC, (JType) null, methodName);
+        JMethod method = implClass.method(JMod.PUBLIC, (JType) null, methodName);
         method.type(method.generify("X"));
         JBlock body = method.body();
 
@@ -1302,10 +1223,10 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return method;
     }
 
-    private JMethod createFluentSetter(JFieldVar field, ClassOutline targetClass, ClassOutline fieldsFromClass) {
+    private JMethod createFluentSetter(JFieldVar field, JDefinedClass implClass, ClassOutline fieldsFromClass) {
         // e.g. UserType name(String value)
         String methodName = getFluentSetterMethodName(fieldsFromClass, field);
-        JMethod fluentSetter = targetClass.implClass.method(JMod.PUBLIC, targetClass.implClass, methodName);
+        JMethod fluentSetter = implClass.method(JMod.PUBLIC, implClass, methodName);
         JType contentType = getContentType(field);
         JVar value = fluentSetter.param(contentType, "value");
         JBlock body = fluentSetter.body();

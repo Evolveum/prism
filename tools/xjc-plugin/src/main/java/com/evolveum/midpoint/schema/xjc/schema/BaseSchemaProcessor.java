@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.impl.*;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.schema.xjc.PrefixMapper;
 import com.sun.codemodel.*;
+import com.sun.tools.xjc.model.CClassInfo;
 import org.apache.commons.lang3.Validate;
 import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
@@ -61,6 +62,9 @@ public class BaseSchemaProcessor {
     protected static final String CONTAINER_FIELD_NAME = "_container";
     protected static final String CONTAINER_VALUE_FIELD_NAME = "_containerValue";
     protected static final String REFERENCE_VALUE_FIELD_NAME = "_referenceValue";
+    protected static final String METHOD_GET_CONTAINER_NAME = "_getContainerName";
+    protected static final String METHOD_GET_CONTAINER_TYPE = "_getContainerType";
+
 
     //methods in PrismForJAXBUtil
     protected static final String METHOD_PRISM_UTIL_GET_PROPERTY_VALUE = "getPropertyValue";
@@ -83,6 +87,9 @@ public class BaseSchemaProcessor {
     //equals, toString, hashCode methods
     protected static final String METHOD_TO_STRING = "toString";
     protected static final String METHOD_HASH_CODE = "hashCode";
+    protected static final String METHOD_EQUALS = "equals";
+    protected static final String METHOD_EQUIVALENT = "equivalent";
+
     //referenced class map
     protected static final Map<Class, JClass> CLASS_MAP = new HashMap<Class, JClass>() {
 
@@ -93,6 +100,49 @@ public class BaseSchemaProcessor {
             return clazz;
         }
     };
+
+    protected void updateClassAnnotation(JDefinedClass definedClass) {
+        try {
+            List<JAnnotationUse> existingAnnotations = getAnnotations(definedClass);
+            for (JAnnotationUse annotation : existingAnnotations) {
+                if (isAnnotationTypeOf(annotation, XmlAccessorType.class)) {
+                    Field field = getField(JAnnotationUse.class, "memberValues");
+                    field.setAccessible(true);
+                    Map<String, Object> map = (Map<String, Object>) field.get(annotation);
+                    field.setAccessible(false);
+                    map.clear();
+                    annotation.param("value", XmlAccessType.PROPERTY);
+                }
+                if (isAnnotationTypeOf(annotation, XmlType.class)) {
+                    Field field = getField(JAnnotationUse.class, "memberValues");
+                    field.setAccessible(true);
+                    Map<String, Object> map = (Map<String, Object>) field.get(annotation);
+                    Object propOrder = map.get("propOrder");
+                    if (propOrder != null) {
+                        JAnnotationArrayMember paramArray = (JAnnotationArrayMember)propOrder;
+                        Field valField = getField(JAnnotationArrayMember.class, "values");
+                        valField.setAccessible(true);
+                        List<JAnnotationValue> values = (List<JAnnotationValue>) valField.get(paramArray);
+                        for (int i=0; i < values.size(); i++) {
+                            JAnnotationValue jAnnValue = values.get(i);
+                            String value = extractString(jAnnValue);
+                            if (value.startsWith("_")) {
+                                paramArray.param(value.substring(1));
+                                values.set(i, values.get(values.size() - 1));
+                                values.remove(values.size() - 1);
+                            }
+//                            String valAfter = extractString(values.get(i));
+//                            print("PPPPPPPPPPPPPPPPPPP: "+value+" -> "+valAfter);
+                        }
+                        valField.setAccessible(false);
+                    }
+                    field.setAccessible(false);
+                }
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+    }
 
     protected void updateObjectReferenceType(JDefinedClass definedClass, JMethod getReference) {
         JFieldVar typeField = definedClass.fields().get("type");
@@ -258,11 +308,59 @@ public class BaseSchemaProcessor {
         return constructor;
     }
 
+    protected void createEqualsMethod(JDefinedClass definedClass, String baseMethod) {
+        JMethod equals = definedClass.getMethod(METHOD_EQUALS, new JType[]{CLASS_MAP.get(Object.class)});
+
+        if (equals != null) {
+//            removeOldCustomGeneratedEquals(classOutline, hasParentAnnotation(classOutline, PRISM_OBJECT));  todo can this be removed?
+            equals = recreateMethod(equals, definedClass);
+        } else {
+            equals = definedClass.method(JMod.PUBLIC, boolean.class, METHOD_EQUALS);
+        }
+        equals.annotate(CLASS_MAP.get(Override.class));
+
+        JBlock body = equals.body();
+        JVar obj = equals.listParams()[0];
+        JBlock ifNull = body._if(obj._instanceof(definedClass).not())._then();
+        ifNull._return(JExpr.lit(false));
+
+        JVar other = body.decl(definedClass, "other", JExpr.cast(definedClass, obj));
+
+        JInvocation invocation = JExpr.invoke(baseMethod).invoke(METHOD_EQUIVALENT);
+        invocation.arg(other.invoke(baseMethod));
+        body._return(invocation);
+    }
     /*
         public UserType(PrismContext prismContext) {
             setupContainer(new PrismObject(_getContainerName(), this.getClass(), prismContext));
         }
      */
+
+    protected void createAsPrismContainer(JDefinedClass definedClass, JVar container) {
+        JMethod getContainer = definedClass.method(JMod.PUBLIC, CLASS_MAP.get(PrismObject.class),
+                METHOD_AS_PRISM_CONTAINER);
+
+        //create method body
+        JBlock body = getContainer.body();
+        JBlock then = body._if(container.eq(JExpr._null()))._then();
+
+        JInvocation newContainer = JExpr._new(CLASS_MAP.get(PrismObjectImpl.class));
+        newContainer.arg(JExpr.invoke(METHOD_GET_CONTAINER_NAME));
+        newContainer.arg(JExpr._this().invoke("getClass"));
+//        newContainer.arg(JExpr.dotclass(definedClass));
+        then.assign(container, newContainer);
+
+        body._return(container);
+    }
+
+    private QName getCClassInfoQName(CClassInfo info) {
+        QName qname = info.getTypeName();
+        if (qname == null) {
+            qname = info.getElementName();
+        }
+
+        return qname;
+    }
 
     protected JMethod createPrismContextObjectableConstructor(JDefinedClass definedClass) {
         JMethod constructor = definedClass.constructor(JMod.PUBLIC);
