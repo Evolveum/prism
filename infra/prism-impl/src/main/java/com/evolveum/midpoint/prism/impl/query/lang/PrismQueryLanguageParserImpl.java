@@ -11,7 +11,6 @@ import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 import java.util.*;
 import java.util.function.Function;
 
-import javax.management.QueryExp;
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
@@ -164,7 +163,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         @Override
         ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                 ExpressionWrapper expression) {
-            return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, expression, anchorStart,
+            return SubstringFilterImpl.createSubstring(path, definition, matchingRule, expression, anchorStart,
                     anchorEnd);
         }
     }
@@ -179,7 +178,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         @Override
         public ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                 QName matchingRule, ExpressionWrapper value) {
-            return EqualFilterImpl.createEqual(path, definition, matchingRule, context, value);
+            return EqualFilterImpl.createEqual(path, definition, matchingRule, value);
         }
 
         @Override
@@ -215,7 +214,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -234,7 +233,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true);
                 }
 
                 @Override
@@ -253,7 +252,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -272,7 +271,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true);
                 }
 
                 @Override
