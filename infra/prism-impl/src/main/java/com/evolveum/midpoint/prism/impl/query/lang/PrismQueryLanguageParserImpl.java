@@ -493,7 +493,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 ItemFilterContext itemFilter = ((GenFilterContext) next).itemFilter();
                 // If AND contains type filter, we extract it out in order to determine
                 // more specific type
-                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter.filterName()))) {
+                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter))) {
                     typeFilter = (TypeFilter) itemFilter(complexType, typeDef, itemFilter);
                     iterator.remove(); // We remove it from subfilters, since we are moving it u
                 }
@@ -545,7 +545,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private ObjectFilter itemFilter(PrismContainerDefinition<?> parent, ComplexTypeDefinition typeDef, ItemFilterContext itemFilter)
             throws SchemaException {
-        QName filterName = filterName(itemFilter.filterName());
+        QName filterName = filterName(itemFilter);
         QName matchingRule = itemFilter.matchingRule() != null
                 ? toFilterName(MATCHING_RULE_NS, itemFilter.matchingRule().prefixedName())
                 : null;
@@ -588,8 +588,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return ItemPathHolder.parseFromString(path.getText(), namespaceContext);
     }
 
-    private QName filterName(FilterNameContext filterName) {
-        if (filterName.filterNameAlias() != null) {
+    private QName filterName(ItemFilterContext filter) {
+        if (filter.filterNameAlias() != null) {
+            return FilterNames.fromAlias(filter.filterNameAlias().getText()).orElseThrow();
+        }
+        FilterNameContext filterName = filter.filterName();
+        if (filter.filterNameAlias() != null) {
             return FilterNames.fromAlias(filterName.filterNameAlias().getText()).orElseThrow();
         }
         return toFilterName(QUERY_NS, filterName.prefixedName());
@@ -717,7 +721,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             Map<String, Object> result) throws SchemaException {
         if (child instanceof GenFilterContext) {
             ItemFilterContext filter = ((GenFilterContext) child).itemFilter();
-            if (EQUAL.equals(filterName(filter.filterName()))) {
+            if (EQUAL.equals(filterName(filter))) {
                 String name = filter.path().getText();
                 Class<?> propType = props.get(name);
                 schemaCheck(propType != null, "Unknown property %s for %s", name, typeName);

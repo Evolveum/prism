@@ -66,22 +66,33 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify(query, original, PrismTestUtil.parseObject(FILE_USER_JACK_FILTERS));
     }
 
+    private void verify(String query, ObjectFilter original, boolean checkToString) throws SchemaException, IOException {
+        verify(query, original, PrismTestUtil.parseObject(FILE_USER_JACK_FILTERS), checkToString);
+    }
+
     private void verify(String query, ObjectFilter original, PrismObject<?> user) throws SchemaException {
+        verify(query, original, user, true);
+    }
+
+    private void verify(String query, ObjectFilter original, PrismObject<?> user, boolean checkToString) throws SchemaException {
         ObjectFilter dslFilter = parse(query);
         boolean javaResult = ObjectQuery.match(user, original, MATCHING_RULE_REGISTRY);
         boolean dslResult = ObjectQuery.match(user, dslFilter, MATCHING_RULE_REGISTRY);
         try {
-            assertEquals(dslFilter.toString(), original.toString());
+            if (checkToString) {
+                assertEquals(dslFilter.toString(), original.toString());
+            }
             assertEquals(dslResult, javaResult, "Filters do not match.");
 
             //String javaSerialized = serialize(original);
             String dslSerialized = serialize(dslFilter);
 
             //assertEquals(javaSerialized, query);
-            assertEquals(dslSerialized, query);
-
+            if (checkToString) {
+                assertEquals(dslSerialized, query);
+            }
         } catch (AssertionError e) {
-            throw new AssertionError(e.getMessage() + "for filter: \n    " + query);
+            throw e;
         }
     }
 
@@ -121,6 +132,9 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         boolean match = ObjectQuery.match(parseUserJacky(),dslFilter,MATCHING_RULE_REGISTRY);
         assertTrue(match);
         verify("fullName != givenName", dslFilter);
+        verify("fullName!= givenName", dslFilter, false);
+        verify("fullName!=givenName", dslFilter, false);
+
     }
 
     @Test
@@ -158,6 +172,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .buildFilter();
 
         verify("givenName = 'Jack' or givenName = 'Jackie'", filter);
+        verify("givenName ='Jack' or givenName= 'Jackie'", filter, false);
     }
 
     @Test
@@ -166,6 +181,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_GIVEN_NAME).eq("Jackie")
                 .buildFilter();
         verify("givenName = 'Jackie'", filter);
+        verify("givenName= 'Jackie'", filter, false);
+        verify("givenName ='Jackie'", filter, false);
     }
 
     @Test
@@ -335,6 +352,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_ACCOUNT_REF).refRelation(new QName("a-relation"))
                 .buildFilter();
         verify("accountRef matches (relation = a-relation)", filter);
+        verify("accountRef matches (relation=a-relation)", filter, false);
     }
 
     @Test // MID-6487
@@ -344,6 +362,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                         .item(UserType.F_NAME).gt(new PolyString("j")).matchingOrig()
                         .buildFilter();
         verify("name >[polyStringOrig] 'j'",filter);
+        verify("name>[polyStringOrig] 'j'",filter, false);
     }
 
     @Test // MID-6487
