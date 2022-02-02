@@ -133,15 +133,15 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
             stepSchemaConstants.run(outline, options, errorHandler);
 
             Map<String, JFieldVar> namespaceFields = stepSchemaConstants.getNamespaceFields();
-            addComplexType(outline, namespaceFields);
-            addContainerName(outline, namespaceFields);
+            addComplexTypeConstants(outline, namespaceFields);
+            addContainerNames(outline, namespaceFields);
             addFieldQNames(outline, namespaceFields);
 
-            updatePrismObject(outline);
-            updatePrismContainer(outline);
+            updatePrismObjects(outline);
+            updatePrismContainers(outline);
             updateFields(outline);
 
-            updateObjectReferenceType(outline);
+            updateObjectReferenceTypes(outline);
 
             updateObjectFactoryElements(outline);
 
@@ -161,7 +161,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
     }
 
-    private void updateObjectReferenceType(Outline outline) {
+    private void updateObjectReferenceTypes(Outline outline) {
         ClassOutline objectReferenceOutline = null;
         for (Map.Entry<NClass, CClassInfo> entry : outline.getModel().beans().entrySet()) {
             QName qname = entry.getValue().getTypeName();
@@ -217,7 +217,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
 
 
-    private Set<JDefinedClass> updatePrismContainer(Outline outline) {
+    private Set<JDefinedClass> updatePrismContainers(Outline outline) {
         Set<JDefinedClass> containers = new HashSet<>();
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
@@ -269,7 +269,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return containers;
     }
 
-    private Set<JDefinedClass> updatePrismObject(Outline outline) {
+    private Set<JDefinedClass> updatePrismObjects(Outline outline) {
         Set<JDefinedClass> containers = new HashSet<>();
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
@@ -468,7 +468,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return qname;
     }
 
-    private void addContainerName(Outline outline, Map<String, JFieldVar> namespaceFields) {
+    private void addContainerNames(Outline outline, Map<String, JFieldVar> namespaceFields) {
         Map<QName, List<Entry<QName, Boolean>>> complexTypeToElementName = null;
 
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
@@ -544,7 +544,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return hasAnnotation(classOutline, annotation) || hasParentAnnotation(classOutline.getSuperClass(), annotation);
     }
 
-    private void addComplexType(Outline outline, Map<String, JFieldVar> namespaceFields) {
+    private void addComplexTypeConstants(Outline outline, Map<String, JFieldVar> namespaceFields) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());
