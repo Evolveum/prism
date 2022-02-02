@@ -217,8 +217,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
 
 
-    private Set<JDefinedClass> updatePrismContainers(Outline outline) {
-        Set<JDefinedClass> containers = new HashSet<>();
+    private void updatePrismContainers(Outline outline) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());
@@ -234,7 +233,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
             JDefinedClass definedClass = classOutline.implClass;
             definedClass._implements(CLASS_MAP.get(Containerable.class));
-            containers.add(definedClass);
 
             //inserting MidPointObject field into ObjectType class
             JVar containerValue = definedClass.field(JMod.PRIVATE, PrismContainerValue.class, CONTAINER_VALUE_FIELD_NAME);
@@ -265,12 +263,9 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
 
         removeCustomGeneratedMethod(outline);
-
-        return containers;
     }
 
-    private Set<JDefinedClass> updatePrismObjects(Outline outline) {
-        Set<JDefinedClass> containers = new HashSet<>();
+    private void updatePrismObjects(Outline outline) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());
@@ -299,7 +294,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
             }
 
             definedClass._implements(CLASS_MAP.get(Objectable.class));
-            containers.add(definedClass);
 
             //inserting PrismObject field into ObjectType class
             JVar container = definedClass.field(JMod.PRIVATE, PrismObject.class, CONTAINER_FIELD_NAME);
@@ -326,8 +320,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
 
         removeCustomGeneratedMethod(outline);
-
-        return containers;
     }
 
     /**
@@ -469,8 +461,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
     }
 
     private void addContainerNames(Outline outline, Map<String, JFieldVar> namespaceFields) {
-        Map<QName, List<Entry<QName, Boolean>>> complexTypeToElementName = null;
-
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             CClassInfo classInfo = entry.getValue();
