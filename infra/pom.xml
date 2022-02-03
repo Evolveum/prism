@@ -27,5 +27,6 @@
         <module>prism-maven-plugin</module>
         <module>prism-api</module>
         <module>prism-impl</module>
+        <module>prism-codegen</module>
     </modules>
 </project>
