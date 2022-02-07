@@ -11,7 +11,6 @@ import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 import java.util.*;
 import java.util.function.Function;
 
-import javax.management.QueryExp;
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
@@ -164,7 +163,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         @Override
         ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                 ExpressionWrapper expression) {
-            return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, expression, anchorStart,
+            return SubstringFilterImpl.createSubstring(path, definition, matchingRule, expression, anchorStart,
                     anchorEnd);
         }
     }
@@ -179,7 +178,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         @Override
         public ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                 QName matchingRule, ExpressionWrapper value) {
-            return EqualFilterImpl.createEqual(path, definition, matchingRule, context, value);
+            return EqualFilterImpl.createEqual(path, definition, matchingRule, value);
         }
 
         @Override
@@ -215,7 +214,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -234,7 +233,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true);
                 }
 
                 @Override
@@ -253,7 +252,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -272,7 +271,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ExpressionWrapper value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true);
                 }
 
                 @Override
@@ -494,7 +493,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 ItemFilterContext itemFilter = ((GenFilterContext) next).itemFilter();
                 // If AND contains type filter, we extract it out in order to determine
                 // more specific type
-                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter.filterName()))) {
+                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter))) {
                     typeFilter = (TypeFilter) itemFilter(complexType, typeDef, itemFilter);
                     iterator.remove(); // We remove it from subfilters, since we are moving it u
                 }
@@ -546,12 +545,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private ObjectFilter itemFilter(PrismContainerDefinition<?> parent, ComplexTypeDefinition typeDef, ItemFilterContext itemFilter)
             throws SchemaException {
-        QName filterName = filterName(itemFilter.filterName());
+        QName filterName = filterName(itemFilter);
         QName matchingRule = itemFilter.matchingRule() != null
                 ? toFilterName(MATCHING_RULE_NS, itemFilter.matchingRule().prefixedName())
                 : null;
         ItemPath path = path(parent, itemFilter.path());
         ItemDefinition<?> itemDefinition = findDefinition(parent, typeDef, path, ItemDefinition.class);
+        schemaCheck(itemDefinition != null, "Path %s is not present in type %", path, typeDef.getTypeName());
         ItemFilterFactory factory = filterFactories.get(filterName);
         schemaCheck(factory != null, "Unknown filter %s", filterName);
 
@@ -589,8 +589,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return ItemPathHolder.parseFromString(path.getText(), namespaceContext);
     }
 
-    private QName filterName(FilterNameContext filterName) {
-        if (filterName.filterNameAlias() != null) {
+    private QName filterName(ItemFilterContext filter) {
+        if (filter.filterNameAlias() != null) {
+            return FilterNames.fromAlias(filter.filterNameAlias().getText()).orElseThrow();
+        }
+        FilterNameContext filterName = filter.filterName();
+        if (filter.filterNameAlias() != null) {
             return FilterNames.fromAlias(filterName.filterNameAlias().getText()).orElseThrow();
         }
         return toFilterName(QUERY_NS, filterName.prefixedName());
@@ -718,7 +722,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             Map<String, Object> result) throws SchemaException {
         if (child instanceof GenFilterContext) {
             ItemFilterContext filter = ((GenFilterContext) child).itemFilter();
-            if (EQUAL.equals(filterName(filter.filterName()))) {
+            if (EQUAL.equals(filterName(filter))) {
                 String name = filter.path().getText();
                 Class<?> propType = props.get(name);
                 schemaCheck(propType != null, "Unknown property %s for %s", name, typeName);

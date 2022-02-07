@@ -82,7 +82,10 @@ filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
 
 
 subfilterSpec: '(' SEP* filter SEP* ')';
-itemFilter: path (SEP+ negation)? SEP+ filterName (matchingRule)? (SEP+ (subfilterOrValue))?;
+
+itemFilter: (path SEP* usedAlias=filterNameAlias (matchingRule)? SEP* (subfilterOrValue))
+    | (path (SEP+ negation)? SEP+ usedFilter=filterName (matchingRule)? (SEP+ (subfilterOrValue))?);
+
 subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 
 
