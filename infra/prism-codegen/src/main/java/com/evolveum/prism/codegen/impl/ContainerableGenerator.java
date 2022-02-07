@@ -6,49 +6,60 @@
  */
 package com.evolveum.prism.codegen.impl;
 
-import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
+import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
+import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
+import com.evolveum.prism.codegen.binding.TypeBinding;
+import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
+import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JPrimitiveType;
 import com.sun.codemodel.JType;
+import com.sun.codemodel.JVar;
 
 public class ContainerableGenerator<T extends ContainerableContract> extends StructuredGenerator<T> {
 
-    public static final String AS_PRISM_OBJECT = "asPrismObject";
-    public static final String AS_PRISM_OBJECT_VALUE = "asPrismObjectValue";
-    public static final String AS_PRISM_CONTAINER_VALUE = "asPrismContainerValue";
-    protected static final String AS_PRISM_CONTAINER = "asPrismContainer";
+    protected static final String GET_PROPERTY_VALUE = "prismGetPropertyValue";
+    protected static final String GET_PROPERTY_VALUES = "prismGetPropertyValues";
+    protected static final String SET_PROPERTY_VALUE = "prismSetPropertyValue";
 
-    protected static final String PRISM_UTIL_GET_PROPERTY_VALUE = "getPropertyValue";
-    protected static final String PRISM_UTIL_GET_PROPERTY_VALUES = "getPropertyValues";
-    protected static final String PRISM_UTIL_SET_PROPERTY_VALUE = "setPropertyValue";
-    protected static final String PRISM_UTIL_GET_REFERENCE_OBJECTABLE = "getReferenceObjectable";
-    protected static final String PRISM_UTIL_SET_REFERENCE_VALUE_AS_REF = "setReferenceValueAsRef";
-    protected static final String PRISM_UTIL_GET_FILTER = "getFilter";
-    protected static final String PRISM_UTIL_SET_REFERENCE_FILTER_CLAUSE_XNODE = "setReferenceFilterClauseXNode";
-    protected static final String PRISM_UTIL_GET_REFERENCE_TARGET_NAME = "getReferenceTargetName";
-    protected static final String PRISM_UTIL_SET_REFERENCE_TARGET_NAME = "setReferenceTargetName";
-    protected static final String PRISM_UTIL_OBJECTABLE_AS_REFERENCE_VALUE = "objectableAsReferenceValue";
-    protected static final String PRISM_UTIL_SETUP_CONTAINER_VALUE = "setupContainerValue";
-    protected static final String PRISM_UTIL_CREATE_TARGET_INSTANCE = "createTargetInstance";
+    private final Class<?> baseClass;
 
     public ContainerableGenerator(CodeGenerator codeGenerator) {
+        this(codeGenerator, AbstractMutableContainerable.class);
+    }
+
+    public ContainerableGenerator(CodeGenerator codeGenerator, Class<?> baseClass) {
         super(codeGenerator);
+        this.baseClass = baseClass;
     }
 
 
     @Override
-    public void declare(T contract) throws JClassAlreadyExistsException {
+    public JDefinedClass declare(T contract) throws JClassAlreadyExistsException {
         // TODO Auto-generated method stub
+        String name = contract.fullyQualifiedName();
+        JDefinedClass clazz = codeModel()._class(name, ClassType.CLASS);
 
+        if (contract.getSuperType() != null) {
+            TypeBinding superType = bindingFor(contract.getSuperType());
+            clazz._extends(codeModel().ref(superType.defaultBindingClass()));
+        } else {
+            clazz._extends(baseClass);
+        }
+
+        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  null, false, false);
+        declareConstants(clazz, contract);
+        return clazz;
     }
+
 
 
     @Override
@@ -67,12 +78,11 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
         }*/
 
         if (definition.isList()) {
-            invocation = clazz(PrismForJAXBUtil.class).staticInvoke(PRISM_UTIL_GET_PROPERTY_VALUES);
+            invocation = JExpr._this().invoke(GET_PROPERTY_VALUES);
         } else {
-            invocation = clazz(PrismForJAXBUtil.class).staticInvoke(PRISM_UTIL_GET_PROPERTY_VALUE);
+            invocation = JExpr._this().invoke(GET_PROPERTY_VALUE);
         }
         // push arguments
-        invocation.arg(JExpr.invoke(AS_PRISM_CONTAINER_VALUE));
         invocation.arg(fieldConstant(definition.constantName()));
 
         JType type = returnType;
@@ -97,9 +107,19 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
 
     @Override
-    protected void implementSetter(JMethod method, ItemBinding definition, JType returnType) {
-        // TODO Auto-generated method stub
+    protected void implementSetter(JMethod method, ItemBinding definition, JVar value) {
+        JBlock body = method.body();
 
+        // FIXME: Dispatch based on knowledge if type is container / reference / property
+        //final String jaxbUtilMethod;
+        //if (definition instanceof PrismContainerDefinition<?>) {
+        //} else if (definition instanceof PrismReferenceDefinition){
+        //} else {
+        //}
+        JInvocation invocation = body.invoke(JExpr._this(),SET_PROPERTY_VALUE);
+        //push arguments
+        invocation.arg(fieldConstant(definition.constantName()));
+        invocation.arg(value);
     }
 
 

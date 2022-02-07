@@ -36,7 +36,8 @@ public class ItemBinding {
     }
 
     public boolean isList() {
-        return definition.getMaxOccurs() > 1;
+        return definition.getMaxOccurs() == -1 ||
+               definition.getMaxOccurs() > 1;
     }
 
     public String getterName() {
@@ -45,5 +46,13 @@ public class ItemBinding {
 
     public String constantName() {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name);
+    }
+
+    public QName itemName() {
+        return qName;
+    }
+
+    public String setterName() {
+        return StructuredContract.SET_PREFIX + name;
     }
 }

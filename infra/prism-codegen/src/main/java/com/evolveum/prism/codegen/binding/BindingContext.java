@@ -30,6 +30,11 @@ import com.google.common.collect.HashBiMap;
 
 public class BindingContext {
 
+    // FIXME: This should be probably package specific
+    public static final String SCHEMA_CONSTANTS_GENERATED_CLASS_NAME = "com.evolveum.midpoint.schema.SchemaConstantsGenerated";
+
+    public static final String TYPE_CONSTANT = "COMPLEX_TYPE";
+
     Set<PrismSchema> schemas = new HashSet<>();
     Map<QName, TypeBinding> bindings = new HashMap<>();
     BiMap<String, String> xmlToJavaNs = HashBiMap.create();
@@ -83,21 +88,32 @@ public class BindingContext {
 
     @VisibleForTesting
     TypeBinding createBinding(TypeDefinition typeDef) {
-        Class<?> existingClass = typeDef.getCompileTimeClass();
+        Class<?> existingClass = resolvePotentialStaticBinding(typeDef);
         TypeBinding binding = existingClass != null ?  new TypeBinding.Static(typeDef.getTypeName(), existingClass) : new TypeBinding.Derived(typeDef.getTypeName());
+
         if (typeDef instanceof ComplexTypeDefinition) {
             return createFromComplexType(binding, (ComplexTypeDefinition) typeDef);
         }
         return binding;
     }
 
+    private Class<?> resolvePotentialStaticBinding(TypeDefinition typeDef) {
+        if (xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI()) != null) {
+            // FIXME: for now ignore existing artefacts, lets regenerate them
+            return null;
+        }
+        return typeDef.getCompileTimeClass();
+    }
+
+
     private TypeBinding createFromComplexType(TypeBinding binding, ComplexTypeDefinition typeDef) {
+        String packageName = xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI());
         if (typeDef.isObjectMarker()) {
-            binding.defaultContract(new ObjectableContract(typeDef));
+            binding.defaultContract(new ObjectableContract(typeDef, packageName));
         } else if (typeDef.isContainerMarker()) {
-            binding.defaultContract(new ContainerableContract(typeDef));
+            binding.defaultContract(new ContainerableContract(typeDef, packageName));
         } else {
-            binding.defaultContract(new PlainStructuredContract(typeDef));
+            binding.defaultContract(new PlainStructuredContract(typeDef, packageName));
         }
         // Plain mapping
         return binding;

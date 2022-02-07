@@ -6,13 +6,21 @@
  */
 package com.evolveum.prism.codegen.binding;
 
+import javax.xml.namespace.QName;
+
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 
 public class ObjectableContract extends ContainerableContract {
 
-    public ObjectableContract(ComplexTypeDefinition typeDef) {
-        super(typeDef);
+    private QName containerName;
+
+    public ObjectableContract(ComplexTypeDefinition typeDef, String packageName) {
+        super(typeDef, packageName);
         typeDef.getTypeName();
+    }
+
+    public QName containerName() {
+        return containerName;
     }
 
 

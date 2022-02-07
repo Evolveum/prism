@@ -125,6 +125,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
     // FOO schema
     public static final ItemName USER_QNAME = new ItemName(NS_FOO,"user");
     public static final ItemName USER_TYPE_QNAME = new ItemName(NS_FOO,"UserType");
+    public static final ItemName OBJECT_TYPE_QNAME = new ItemName(NS_FOO,"ObjectType");
 
     public static final ItemName OBJECT_REFERENCE_TYPE_QNAME = new ItemName(NS_FOO, "ObjectReferenceType");
 

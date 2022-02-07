@@ -10,8 +10,8 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 
 public class PlainStructuredContract extends StructuredContract {
 
-    public PlainStructuredContract(ComplexTypeDefinition typeDef) {
-        super(typeDef);
+    public PlainStructuredContract(ComplexTypeDefinition typeDef, String packageName) {
+        super(typeDef, packageName);
     }
 
 }

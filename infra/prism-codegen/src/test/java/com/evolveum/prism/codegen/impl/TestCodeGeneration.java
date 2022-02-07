@@ -28,6 +28,7 @@ public class TestCodeGeneration extends AbstractPrismTest {
 
     @Test
     public void test000Mapping() throws IOException, JClassAlreadyExistsException {
+        TARGET.mkdirs();
         PrismContext prismContext = getPrismContext();
 
         ComplexTypeDefinition userType = prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(PrismInternalTestUtil.USER_TYPE_QNAME);
@@ -43,6 +44,7 @@ public class TestCodeGeneration extends AbstractPrismTest {
 
         TypeBinding binding =  generator.requireBinding(userType.getTypeName());
 
+        codeGen.process(generator.requireBinding(PrismInternalTestUtil.OBJECT_TYPE_QNAME));
         codeGen.process(binding);
 
 

@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.writer.FileCodeWriter;
 
 public class CodeGenerator {
@@ -43,8 +44,8 @@ public class CodeGenerator {
 
         for (Contract contract : binding.getContracts()) {
             ContractGenerator<Contract> generator = getGenerator(contract);
-            generator.declare(contract);
-            generator.implement(contract);
+            JDefinedClass clazz = generator.declare(contract);
+            generator.implement(contract, clazz);
         }
     }
 

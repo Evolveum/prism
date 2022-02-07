@@ -10,7 +10,7 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 
 public class ContainerableContract extends StructuredContract {
 
-    public ContainerableContract(ComplexTypeDefinition typeDef) {
-        super(typeDef);
+    public ContainerableContract(ComplexTypeDefinition typeDef, String packageName) {
+        super(typeDef, packageName);
     }
 }

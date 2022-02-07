@@ -16,21 +16,30 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.google.common.base.CaseFormat;
 
 public class StructuredContract extends Contract {
 
     static final String GET_PREFIX = "get";
-    private static final String SET_PREFIX = "set";
+    static final String SET_PREFIX = "set";
 
     private final ComplexTypeDefinition typeDefinition;
+    private final String packageName;
 
     private @NotNull Set<ItemBinding> localDefinitions = new HashSet<>();
 
-    public StructuredContract(ComplexTypeDefinition typeDefinition) {
+    public StructuredContract(ComplexTypeDefinition typeDefinition, String packageName) {
         this.typeDefinition = typeDefinition;
+        this.packageName = packageName;
 
         for (ItemDefinition<?> def : typeDefinition.getDefinitions()) {
+
+            // FIXME: Skip xml:any for now
+            if (DOMUtil.XSD_ANY.equals(def.getTypeName())) {
+                continue;
+            }
+
             String name = javaFromItemName(def.getItemName());
             ItemBinding mapping = new ItemBinding(name, def);
             if (!def.isInherited()) {
@@ -46,7 +55,7 @@ public class StructuredContract extends Contract {
 
     @Override
     public String fullyQualifiedName() {
-        return typeDefinition.getTypeName().getLocalPart();
+        return packageName + "." + typeDefinition.getTypeName().getLocalPart();
     }
 
     public ComplexTypeDefinition getTypeDefinition() {

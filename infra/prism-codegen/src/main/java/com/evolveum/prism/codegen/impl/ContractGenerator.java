@@ -13,6 +13,7 @@ import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.JDefinedClass;
 
 public abstract class ContractGenerator<T extends Contract> {
 
@@ -22,9 +23,9 @@ public abstract class ContractGenerator<T extends Contract> {
         this.codeGenerator = codeGenerator;
     }
 
-    public abstract void declare(T contract) throws JClassAlreadyExistsException;
+    public abstract JDefinedClass declare(T contract) throws JClassAlreadyExistsException;
 
-    public abstract void implement(T contract);
+    public abstract void implement(T contract, JDefinedClass clazz);
 
 
     public CodeGenerator getCodeGenerator() {
