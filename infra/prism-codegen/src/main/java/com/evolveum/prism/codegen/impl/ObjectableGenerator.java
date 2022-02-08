@@ -32,7 +32,7 @@ public class ObjectableGenerator extends ContainerableGenerator<ObjectableContra
         JDefinedClass clazz = super.declare(contract);
 
         // FIXME: We should create CONTAINER_NAME constant
-        //createQNameConstant(clazz, CONTAINER_NAME_FIELD, contract.containerName(), null, false, false);
+        createQNameConstant(clazz, CONTAINER_NAME_CONSTANT, contract.containerName(), null, false, false);
 
         return clazz;
     }

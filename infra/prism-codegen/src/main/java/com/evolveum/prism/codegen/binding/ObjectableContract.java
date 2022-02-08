@@ -23,6 +23,10 @@ public class ObjectableContract extends ContainerableContract {
         return containerName;
     }
 
+    void setContainerName(QName containerName) {
+        this.containerName = containerName;
+    }
+
 
 
 

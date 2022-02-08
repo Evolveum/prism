@@ -23,7 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -41,7 +43,7 @@ public class BindingContext {
 
     public static final String TYPE_CONSTANT = "COMPLEX_TYPE";
 
-    Set<PrismSchema> schemas = new HashSet<>();
+    Map<String, PrismSchema> schemas = new HashMap<>();
     Map<QName, TypeBinding> bindings = new HashMap<>();
 
     Set<TypeBinding> staticBindings = new HashSet<>();
@@ -78,11 +80,13 @@ public class BindingContext {
 
 
     public void addSchemas(Collection<PrismSchema> schemas) {
-        this.schemas.addAll(schemas);
+        for (PrismSchema schema: schemas) {
+            this.schemas.put(schema.getNamespace(), schema);
+        }
     }
 
     public BindingContext process() {
-        for (PrismSchema schema : schemas) {
+        for (PrismSchema schema : schemas.values()) {
             process(schema);
         }
         return this;
@@ -136,7 +140,9 @@ public class BindingContext {
     private TypeBinding createFromComplexType(TypeBinding binding, ComplexTypeDefinition typeDef) {
         String packageName = xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI());
         if (typeDef.isObjectMarker()) {
-            binding.defaultContract(new ObjectableContract(typeDef, packageName));
+            var objectable = new ObjectableContract(typeDef, packageName);
+            binding.defaultContract(objectable);
+            objectable.setContainerName(determineContainerName(typeDef));
         } else if (typeDef.isContainerMarker()) {
             binding.defaultContract(new ContainerableContract(typeDef, packageName));
         } else {
@@ -145,6 +151,13 @@ public class BindingContext {
         // Plain mapping
         return binding;
     }
+
+    private QName determineContainerName(ComplexTypeDefinition typeDef) {
+        PrismSchema schema = schemas.get(typeDef.getTypeName().getNamespaceURI());
+        var objDef = schema.findItemDefinitionByType(typeDef.getTypeName(), PrismObjectDefinition.class);
+        return objDef != null ? objDef.getItemName() : null;
+    }
+
 
     public TypeBinding requireBinding(@NotNull QName typeName) {
         return bindings.get(typeName);
