@@ -77,4 +77,15 @@ public abstract class TypeBinding {
     }
 
     public abstract String defaultBindingClass();
+
+    public QName getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "TypeBinding[name=" + name + "]";
+    }
+
+
 }

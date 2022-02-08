@@ -9,7 +9,8 @@ package com.evolveum.prism.codegen.binding;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
-import com.google.common.base.CaseFormat;
+
+import static com.google.common.base.CaseFormat.*;
 
 public class ItemBinding {
 
@@ -45,7 +46,7 @@ public class ItemBinding {
     }
 
     public String constantName() {
-        return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name);
+        return UPPER_CAMEL.to(UPPER_UNDERSCORE, name);
     }
 
     public QName itemName() {
@@ -54,5 +55,9 @@ public class ItemBinding {
 
     public String setterName() {
         return StructuredContract.SET_PREFIX + name;
+    }
+
+    public String fieldName() {
+        return UPPER_CAMEL.to(LOWER_CAMEL, name);
     }
 }

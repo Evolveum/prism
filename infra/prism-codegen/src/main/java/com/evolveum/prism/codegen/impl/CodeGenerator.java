@@ -7,30 +7,42 @@
 package com.evolveum.prism.codegen.impl;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.prism.codegen.binding.BindingContext;
+import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.ObjectableContract;
+import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.sun.codemodel.CodeWriter;
-import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.writer.FileCodeWriter;
 
 public class CodeGenerator {
-    JCodeModel model = new JCodeModel();
-    private CodeWriter codeWriter;
-    private BindingContext context;
+    final JCodeModel model = new JCodeModel();
+    private final CodeWriter codeWriter;
+    private final BindingContext context;
+
+    private final Set<TypeBinding> processed = new HashSet<>();
+    private final Set<String> pregeneratedNamespaces = ImmutableSet.<String>builder()
+            .add(PrismConstants.NS_TYPES)
+            .add(PrismConstants.NS_QUERY)
+            .build();
 
     private Map<Class<? extends Contract>, ContractGenerator<?>> generators = ImmutableMap.<Class<? extends Contract>, ContractGenerator<?>>builder()
             .put(ObjectableContract.class, new ObjectableGenerator(this))
+            .put(PlainStructuredContract.class, new PlainStructuredGenerator(this))
+            .put(ContainerableContract.class, new ContainerableGenerator<ContainerableContract>(this))
             .build();
 
 
@@ -40,25 +52,44 @@ public class CodeGenerator {
     }
 
 
-    public void process(TypeBinding binding) throws JClassAlreadyExistsException {
-
-        for (Contract contract : binding.getContracts()) {
-            ContractGenerator<Contract> generator = getGenerator(contract);
-            JDefinedClass clazz = generator.declare(contract);
-            generator.implement(contract, clazz);
+    public void process(TypeBinding binding) throws CodeGenerationException {
+        if (alreadyGenerated(binding)) {
+            return;
+        }
+        try {
+            for (Contract contract : binding.getContracts()) {
+                ContractGenerator<Contract> generator = getGenerator(contract);
+                JDefinedClass clazz = generator.declare(contract);
+                generator.implement(contract, clazz);
+            }
+        } catch (Exception e) {
+            throw CodeGenerationException.of(e, "Can not generate code for %s. Reason: %s", binding, e.getMessage());
+        }finally {
+            processed.add(binding);
         }
     }
 
-    private ContractGenerator<Contract> getGenerator(Contract contract) {
+    public void process() throws CodeGenerationException {
+        for (TypeBinding binding : context.getDerivedBindings()) {
+            process(binding);
+        }
+    }
+
+    private boolean alreadyGenerated(TypeBinding binding) {
+        if (pregeneratedNamespaces.contains(binding.getName().getNamespaceURI())) {
+            return true;
+        }
+        return processed.contains(binding);
+    }
+
+
+    private ContractGenerator<Contract> getGenerator(Contract contract) throws CodeGenerationException {
         Class<? extends Contract> contractClass = contract.getClass();
         // FIXME: Check if generator is present
         @SuppressWarnings("unchecked")
         ContractGenerator<Contract> generator = (ContractGenerator<Contract>) generators.get(contractClass);
+        CodeGenerationException.checkNotNull(generator, "Missing code generator for %s", contractClass);
         return generator;
-    }
-
-    public void setWriter(FileCodeWriter writer) {
-        this.codeWriter = writer;
     }
 
     public void write() throws IOException {

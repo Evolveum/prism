@@ -37,16 +37,12 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         super(codeGenerator);
     }
 
-
     protected void declareConstants(JDefinedClass clazz, StructuredContract contract) {
         JFieldVar namespaceField = null;
         for(ItemBinding def : contract.getLocalDefinitions()) {
             createQNameConstant(clazz, "F_"  + def.constantName(), def.itemName(), namespaceField, true, true);
         }
-
     }
-
-
 
     @Override
     public void implement(T contract, JDefinedClass clazz) {
@@ -74,7 +70,7 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     protected abstract void implementSetter(JMethod method, ItemBinding definition, JVar valueParam);
 
 
-    private JType asBindingType(ItemBinding definition) {
+    protected JType asBindingType(ItemBinding definition) {
         TypeBinding binding = getCodeGenerator().bindingFor(definition.getDefinition().getTypeName());
 
         if (binding == null) {

@@ -17,7 +17,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismInternalTestUtil;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.TypeBinding;
-import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.writer.FileCodeWriter;
 
 public class TestCodeGeneration extends AbstractPrismTest {
@@ -27,7 +26,7 @@ public class TestCodeGeneration extends AbstractPrismTest {
 
 
     @Test
-    public void test000Mapping() throws IOException, JClassAlreadyExistsException {
+    public void test000Mapping() throws IOException, CodeGenerationException {
         TARGET.mkdirs();
         PrismContext prismContext = getPrismContext();
 
@@ -47,6 +46,7 @@ public class TestCodeGeneration extends AbstractPrismTest {
         codeGen.process(generator.requireBinding(PrismInternalTestUtil.OBJECT_TYPE_QNAME));
         codeGen.process(binding);
 
+        codeGen.process();
 
         codeGen.write();
     }
