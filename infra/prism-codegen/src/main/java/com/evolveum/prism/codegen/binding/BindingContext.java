@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.EnumerationTypeDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.TypeDefinition;
@@ -116,14 +116,19 @@ public class BindingContext {
         Class<?> existingClass = resolvePotentialStaticBinding(typeDef);
         TypeBinding binding = existingClass != null ?  new TypeBinding.Static(typeDef.getTypeName(), existingClass) : new TypeBinding.Derived(typeDef.getTypeName());
 
+        String packageName;
         if (binding instanceof Static) {
             staticBindings.add(binding);
+            packageName = existingClass.getPackageName();
         } else {
             derivedBindings.add(binding);
-        }
+            packageName = xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI());
 
+        }
         if (typeDef instanceof ComplexTypeDefinition) {
-            return createFromComplexType(binding, (ComplexTypeDefinition) typeDef);
+            return createFromComplexType(binding, (ComplexTypeDefinition) typeDef, packageName);
+        } else if (typeDef instanceof EnumerationTypeDefinition) {
+            binding.defaultContract(new EnumerationContract((EnumerationTypeDefinition) typeDef, packageName));
         }
         return binding;
     }
@@ -137,8 +142,7 @@ public class BindingContext {
     }
 
 
-    private TypeBinding createFromComplexType(TypeBinding binding, ComplexTypeDefinition typeDef) {
-        String packageName = xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI());
+    private TypeBinding createFromComplexType(TypeBinding binding, ComplexTypeDefinition typeDef, String packageName) {
         if (typeDef.isObjectMarker()) {
             var objectable = new ObjectableContract(typeDef, packageName);
             binding.defaultContract(objectable);
