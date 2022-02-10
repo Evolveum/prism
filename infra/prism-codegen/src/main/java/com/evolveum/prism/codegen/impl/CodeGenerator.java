@@ -6,6 +6,7 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.writer.FileCodeWriter;
 
 public class CodeGenerator {
     final JCodeModel model = new JCodeModel();
@@ -49,6 +51,11 @@ public class CodeGenerator {
     public CodeGenerator(CodeWriter codeWriter, BindingContext context) {
         this.codeWriter = codeWriter;
         this.context = context;
+    }
+
+
+    public CodeGenerator(File outDir, BindingContext context) throws IOException {
+        this(new FileCodeWriter(outDir), context);
     }
 
 
