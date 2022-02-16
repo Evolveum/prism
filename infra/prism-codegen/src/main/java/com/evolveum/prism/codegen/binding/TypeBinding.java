@@ -87,5 +87,16 @@ public abstract class TypeBinding {
         return "TypeBinding[name=" + name + "]";
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof TypeBinding) {
+            return this.name.equals(((TypeBinding) obj).getName());
+        }
+        return false;
+    }
 }
