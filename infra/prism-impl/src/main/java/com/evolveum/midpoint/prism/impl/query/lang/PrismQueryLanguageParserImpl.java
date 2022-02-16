@@ -551,6 +551,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 : null;
         ItemPath path = path(parent, itemFilter.path());
         ItemDefinition<?> itemDefinition = findDefinition(parent, typeDef, path, ItemDefinition.class);
+        schemaCheck(itemDefinition != null, "Path %s is not present in type %", path, typeDef.getTypeName());
         ItemFilterFactory factory = filterFactories.get(filterName);
         schemaCheck(factory != null, "Unknown filter %s", filterName);
 
