@@ -8,6 +8,8 @@ package com.evolveum.prism.codegen.binding;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.SourceVersion;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -27,11 +30,27 @@ import com.evolveum.midpoint.prism.EnumerationTypeDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.TypeDefinition;
+import com.evolveum.midpoint.prism.impl.binding.AbstractMutableObjectable;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.codegen.binding.TypeBinding.Static;
+import com.evolveum.prism.xml.ns._public.query_3.PagingType;
+import com.evolveum.prism.xml.ns._public.query_3.QueryType;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
+import com.evolveum.prism.xml.ns._public.types_3.ChangeTypeType;
+import com.evolveum.prism.xml.ns._public.types_3.DeltaSetTripleType;
+import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
+import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaItemType;
+import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+import com.evolveum.prism.xml.ns._public.types_3.ItemType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.evolveum.prism.xml.ns._public.types_3.PlusMinusZeroType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurationType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
+import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
+import com.evolveum.prism.xml.ns._public.types_3.SchemaDefinitionType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -69,7 +88,34 @@ public class BindingContext {
         staticBinding(DOMUtil.XSD_DURATION, Duration.class);
         staticBinding(ItemPathType.COMPLEX_TYPE, ItemPathType.class);
         staticBinding(DOMUtil.XSD_QNAME, QName.class);
+
         staticBinding(PrismConstants.POLYSTRING_TYPE_QNAME, PolyStringType.class);
+
+        staticBinding(DOMUtil.XSD_ANYURI, String.class);
+        staticBinding(DOMUtil.XSD_ANYTYPE, Object.class);
+
+
+        staticBinding(QueryType.COMPLEX_TYPE, QueryType.class);
+        staticBinding(SearchFilterType.COMPLEX_TYPE, SearchFilterType.class);
+        staticBinding(ItemDeltaType.COMPLEX_TYPE, ItemDeltaType.class);
+        staticBinding(ObjectDeltaType.COMPLEX_TYPE, ObjectDeltaType.class);
+        staticBinding(ProtectedStringType.COMPLEX_TYPE, ProtectedStringType.class);
+        staticBinding(typesNs("ChangeTypeType"), ChangeTypeType.class);
+        staticBinding(typesNs("EvaluationTimeType"), EvaluationTimeType.class);
+        staticBinding(typesNs("ReferentialIntegrityType"), ReferentialIntegrityType.class);
+        staticBinding(PagingType.COMPLEX_TYPE, PagingType.class);
+        staticBinding(PolyStringNormalizerConfigurationType.COMPLEX_TYPE, PolyStringNormalizerConfigurationType.class);
+        staticBinding(DeltaSetTripleType.COMPLEX_TYPE, DeltaSetTripleType.class);
+        staticBinding(ItemDeltaItemType.COMPLEX_TYPE, ItemDeltaItemType.class);
+        staticBinding(typesNs("PlusMinusZeroType"), PlusMinusZeroType.class);
+        staticBinding(SchemaDefinitionType.COMPLEX_TYPE, SchemaDefinitionType.class);
+        staticBinding(ItemType.COMPLEX_TYPE, ItemType.class);
+
+        staticBinding(typesNs("ObjectType"), AbstractMutableObjectable.class);
+    }
+
+    private static QName typesNs(String localName) {
+        return new QName(PrismConstants.NS_TYPES, localName);
     }
 
 
@@ -106,10 +152,22 @@ public class BindingContext {
         @NotNull
         List<TypeDefinition> typeDefs = schema.getDefinitions(TypeDefinition.class);
         for (TypeDefinition typeDef : typeDefs) {
+            if (!isSchemaNative(schema, typeDef)) {
+                continue;
+            }
+
             TypeBinding binding = createBinding(typeDef);
-            bindings.put(typeDef.getTypeName(), binding);
+            TypeBinding previous = bindings.put(typeDef.getTypeName(), binding);
+            if (previous != null) {
+                throw new IllegalStateException("Binding " + binding + "mapped twice");
+            }
         }
     }
+
+    private boolean isSchemaNative(PrismSchema schema, TypeDefinition typeDef) {
+        return schema.getNamespace().equals(typeDef.getTypeName().getNamespaceURI());
+    }
+
 
     @VisibleForTesting
     TypeBinding createBinding(TypeDefinition typeDef) {
@@ -122,7 +180,7 @@ public class BindingContext {
             packageName = existingClass.getPackageName();
         } else {
             derivedBindings.add(binding);
-            packageName = xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI());
+            packageName = resolvePackageName(typeDef.getTypeName().getNamespaceURI());
 
         }
         if (typeDef instanceof ComplexTypeDefinition) {
@@ -133,11 +191,63 @@ public class BindingContext {
         return binding;
     }
 
-    private Class<?> resolvePotentialStaticBinding(TypeDefinition typeDef) {
-        if (xmlToJavaNs.get(typeDef.getTypeName().getNamespaceURI()) != null) {
-            // FIXME: for now ignore existing artefacts, lets regenerate them
-            return null;
+    private String resolvePackageName(String namespaceURI) {
+        return xmlToJavaNs.computeIfAbsent(namespaceURI, n -> {
+            try {
+                return namespaceToPackageName(n);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(namespaceURI + "is not valid URI");
+            }
+        });
+    }
+
+
+    public String namespaceToPackageName(String n) throws URISyntaxException {
+        StringBuilder packageName = new StringBuilder();
+        URI uri = new URI(n);
+        String host = uri.getHost();
+        if (host != null) {
+            String[] hostParts = host.split("\\.");
+            for (int j = hostParts.length -1 ; j >= 0 ; j--) {
+                packageName.append(normalizePackageNameComponent(hostParts[j]));
+                packageName.append(".");
+            }
         }
+
+        String path = uri.getPath();
+        if (path != null) {
+            String[] pathParts = path.split("/");
+            for (String pathCmp : pathParts) {
+                pathCmp = normalizePackageNameComponent(pathCmp);
+                if (pathCmp.isBlank()) {
+                    continue;
+                }
+                packageName.append(pathCmp);
+                packageName.append(".");
+            }
+        }
+
+        String ret = packageName.toString();
+        if (ret.endsWith(".")) {
+            ret = ret.substring(0, ret.length() -1);
+        }
+        return ret;
+    }
+
+
+    private String normalizePackageNameComponent(String string) {
+        // FIXME: Extend
+        string = string.toLowerCase();
+
+        if (SourceVersion.isKeyword(string)) {
+            string = "_" + string;
+        }
+        string  = string.replaceAll("-", "_");
+        return string;
+    }
+
+
+    private Class<?> resolvePotentialStaticBinding(TypeDefinition typeDef) {
         return typeDef.getCompileTimeClass();
     }
 
@@ -164,7 +274,11 @@ public class BindingContext {
 
 
     public TypeBinding requireBinding(@NotNull QName typeName) {
-        return bindings.get(typeName);
+        TypeBinding ret = bindings.get(typeName);
+        if (ret == null) {
+            throw new IllegalStateException("Missing binding for " + typeName);
+        }
+        return ret;
     }
 
     public Iterable<TypeBinding> getDerivedBindings() {
