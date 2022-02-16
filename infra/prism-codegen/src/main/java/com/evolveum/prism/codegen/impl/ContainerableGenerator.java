@@ -20,6 +20,7 @@ import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
+import com.sun.codemodel.JMod;
 import com.sun.codemodel.JPrimitiveType;
 import com.sun.codemodel.JType;
 import com.sun.codemodel.JVar;
@@ -44,9 +45,9 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
     @Override
     public JDefinedClass declare(T contract) throws JClassAlreadyExistsException {
-        // TODO Auto-generated method stub
         String name = contract.fullyQualifiedName();
-        JDefinedClass clazz = codeModel()._class(name, ClassType.CLASS);
+        int mods = contract.getTypeDefinition().isAbstract() ? JMod.PUBLIC | JMod.ABSTRACT : JMod.PUBLIC;
+        JDefinedClass clazz = codeModel()._class(mods, name, ClassType.CLASS);
 
         if (contract.getSuperType() != null) {
             TypeBinding superType = bindingFor(contract.getSuperType());
