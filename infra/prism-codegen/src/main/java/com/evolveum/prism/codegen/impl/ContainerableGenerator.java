@@ -7,9 +7,8 @@
 package com.evolveum.prism.codegen.impl;
 
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
+import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
-import com.evolveum.midpoint.util.Producer;
-import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.TypeBinding;
@@ -32,10 +31,11 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
     protected static final String GET_PROPERTY_VALUE = "prismGetPropertyValue";
     protected static final String GET_PROPERTY_VALUES = "prismGetPropertyValues";
     protected static final String GET_CONTAINERABLE_VALUES = "prismGetContainerableList";
+    protected static final String GET_REFERENCABLE_VALUES = "prismGetReferencableList";
+
 
     protected static final String SET_PROPERTY_VALUE = "prismSetPropertyValue";
 
-    protected static final String FACTORY = "FACTORY";
 
     private final Class<?> baseClass;
 
@@ -62,14 +62,10 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             clazz._extends(baseClass);
         }
 
-        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  null, false, false);
         declareConstants(clazz, contract);
 
         if (!contract.getTypeDefinition().isAbstract()) {
-            JClass producerType = clazz(Producer.class).narrow(clazz);
-            JDefinedClass annonFactory = codeModel().anonymousClass(producerType);
-            annonFactory.method(JMod.PUBLIC, clazz, "run").body()._return(JExpr._new(clazz));
-            clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, producerType, FACTORY, JExpr._new(annonFactory));
+            declareFactory(clazz);
         }
 
         return clazz;
@@ -98,6 +94,10 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
                 invocation = JExpr._this().invoke(GET_CONTAINERABLE_VALUES);
                 invocation.arg(rawType.staticRef(FACTORY));
+            } else if (definition.getDefinition() instanceof PrismReferenceDefinition) {
+                invocation = JExpr._this().invoke(GET_REFERENCABLE_VALUES);
+                invocation.arg(rawType.staticRef(FACTORY));
+
             } else {
                 invocation = JExpr._this().invoke(GET_PROPERTY_VALUES);
             }

@@ -256,6 +256,8 @@ public class BindingContext {
             var objectable = new ObjectableContract(typeDef, packageName);
             binding.defaultContract(objectable);
             objectable.setContainerName(determineContainerName(typeDef));
+        } else if (typeDef.isReferenceMarker()) {
+            binding.defaultContract(new ReferenceContract(typeDef, packageName));
         } else if (typeDef.isContainerMarker()) {
             binding.defaultContract(new ContainerableContract(typeDef, packageName));
         } else {

@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.StructuredContract;
@@ -33,12 +34,23 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     private static final String XML_ELEMENT_NAME = "name";
     private static final String VALUE_PARAM = "value";
 
+    protected static final String FACTORY = "FACTORY";
+
+
     public StructuredGenerator(CodeGenerator codeGenerator) {
         super(codeGenerator);
     }
 
+    protected void declareFactory(JDefinedClass clazz) {
+        JClass producerType = clazz(Producer.class).narrow(clazz);
+        JDefinedClass annonFactory = codeModel().anonymousClass(producerType);
+        annonFactory.method(JMod.PUBLIC, clazz, "run").body()._return(JExpr._new(clazz));
+        clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, producerType, FACTORY, JExpr._new(annonFactory));
+    }
+
     protected void declareConstants(JDefinedClass clazz, StructuredContract contract) {
         JFieldVar namespaceField = null;
+        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  null, false, false);
         for(ItemBinding def : contract.getLocalDefinitions()) {
             createQNameConstant(clazz, "F_"  + def.constantName(), def.itemName(), namespaceField, true, true);
         }

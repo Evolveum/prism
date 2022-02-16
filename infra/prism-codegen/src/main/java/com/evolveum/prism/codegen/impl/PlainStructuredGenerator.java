@@ -6,7 +6,6 @@
  */
 package com.evolveum.prism.codegen.impl;
 
-import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
@@ -41,7 +40,6 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
             clazz._extends(codeModel().ref(superType.defaultBindingClass()));
         }
 
-        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  null, false, false);
         declareConstants(clazz, contract);
         declareFields(clazz, contract);
         return clazz;
@@ -70,5 +68,7 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
         JBlock body = method.body();
         body.assign(JExpr._this().ref(definition.fieldName()), value);
     }
+
+
 
 }

@@ -23,6 +23,7 @@ import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.EnumerationContract;
 import com.evolveum.prism.codegen.binding.ObjectableContract;
 import com.evolveum.prism.codegen.binding.PlainStructuredContract;
+import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -47,6 +48,7 @@ public class CodeGenerator {
             .put(PlainStructuredContract.class, new PlainStructuredGenerator(this))
             .put(ContainerableContract.class, new ContainerableGenerator<ContainerableContract>(this))
             .put(EnumerationContract.class, new EnumerationGenerator(this))
+            .put(ReferenceContract.class, new ReferencableGenerator(this))
             .build();
 
 

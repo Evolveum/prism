@@ -7,8 +7,12 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismReference;
+import com.evolveum.midpoint.prism.PrismReferenceValue;
+import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.xjc.PrismContainerArrayList;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
+import com.evolveum.midpoint.prism.impl.xjc.PrismReferenceArrayList;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.Producer;
 
@@ -27,6 +31,12 @@ public abstract class AbstractBoundContainerable implements Containerable {
         PrismContainerValue<?> pcv = asPrismContainerValue();
         PrismContainer<T> container = PrismForJAXBUtil.getContainer(pcv, name);
         return new ContainerableList<>(container, pcv, producer);
+    }
+
+    protected <T extends Referencable> List<T> prismGetReferencableList(Producer<T> producer, QName name, Class<?> clazz) {
+        PrismContainerValue pcv = asPrismContainerValue();
+        PrismReference reference = PrismForJAXBUtil.getReference(pcv, name);
+        return new ReferencableList<>(reference, pcv, producer);
     }
 
     protected <T> void prismSetPropertyValue(ItemName name, T value) {
@@ -68,6 +78,35 @@ public abstract class AbstractBoundContainerable implements Containerable {
             T ret = producer.run();
             ret.setupContainerValue(value);
             return ret;
+        }
+
+    }
+
+    protected static class ReferencableList<T extends Referencable> extends PrismReferenceArrayList<T> {
+
+        private static final long serialVersionUID = 1L;
+        private final Producer<T> factory;
+
+        public ReferencableList(PrismReference reference, PrismContainerValue parent, Producer<T> producer) {
+            super(reference, parent);
+            this.factory= producer;
+        }
+
+        @Override
+        protected T createItem(PrismReferenceValue value) {
+            T approverRef = factory.run();
+            approverRef.setupReferenceValue(value);
+            return approverRef;
+        }
+
+        @Override
+        protected PrismReferenceValue getValueFrom(T value) {
+            return value.asReferenceValue();
+        }
+
+        @Override
+        protected boolean willClear(PrismReferenceValue value) {
+            return (value.getObject() == null);
         }
 
     }
