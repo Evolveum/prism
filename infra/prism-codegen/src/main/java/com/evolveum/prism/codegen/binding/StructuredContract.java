@@ -49,8 +49,11 @@ public class StructuredContract extends Contract {
     }
 
     private String javaFromItemName(@NotNull ItemName itemName) {
-        // FIXME: Support for possible namespace conflicts
-        return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, itemName.getLocalPart());
+        String maybe = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, itemName.getLocalPart());
+        if ("Class".equals(maybe)) {
+            return "Clazz";
+        }
+        return maybe;
     }
 
     @Override

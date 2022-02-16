@@ -6,6 +6,7 @@
  */
 package com.evolveum.prism.codegen.binding;
 
+import javax.lang.model.SourceVersion;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
@@ -58,6 +59,10 @@ public class ItemBinding {
     }
 
     public String fieldName() {
-        return UPPER_CAMEL.to(LOWER_CAMEL, name);
+        String maybe = UPPER_CAMEL.to(LOWER_CAMEL, name);
+        if (SourceVersion.isKeyword(maybe)) {
+            maybe = "_" + maybe;
+        }
+        return maybe;
     }
 }
