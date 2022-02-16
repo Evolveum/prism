@@ -94,7 +94,6 @@ public class BindingContext {
         staticBinding(DOMUtil.XSD_ANYURI, String.class);
         staticBinding(DOMUtil.XSD_ANYTYPE, Object.class);
 
-
         staticBinding(QueryType.COMPLEX_TYPE, QueryType.class);
         staticBinding(SearchFilterType.COMPLEX_TYPE, SearchFilterType.class);
         staticBinding(ItemDeltaType.COMPLEX_TYPE, ItemDeltaType.class);

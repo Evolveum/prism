@@ -85,6 +85,7 @@ public class PrismCodegenMojo extends AbstractMojo {
         BindingContext context = new BindingContext();
 
         context.addSchemas(schemaRegistry.getSchemas());
+        context.process();
 
         try {
             CodeGenerator generator = new CodeGenerator(outDir, context);
