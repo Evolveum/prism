@@ -25,7 +25,7 @@
                 <value>repositoryService</value>
                 <value>cacheRepositoryService</value>
                 <value>taskManager</value>
-                <value>workflowManager</value>
+                <value>caseManager</value>
                 <value>provisioningService</value>
                 <value>synchronizationService</value>
                 <value>modelController</value>
