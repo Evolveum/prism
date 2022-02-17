@@ -53,7 +53,6 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurati
 
 /**
  * @author semancik
- * @author mederly
  */
 public interface PrismContext extends ProtectorCreator {
 

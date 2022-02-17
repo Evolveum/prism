@@ -20,8 +20,6 @@ import javax.xml.namespace.QName;
  *
  * This value is to be held by PrismObject. And such object should hold exactly one
  * PrismObjectValue.
- *
- * @author mederly
  */
 public interface PrismObjectValue<O extends Objectable> extends PrismContainerValue<O> {
 

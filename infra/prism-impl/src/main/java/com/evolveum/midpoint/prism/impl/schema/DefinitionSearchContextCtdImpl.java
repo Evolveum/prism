@@ -10,9 +10,6 @@ package com.evolveum.midpoint.prism.impl.schema;
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.GlobalDefinitionSearchContext;
 
-/**
- * @author mederly
- */
 public class DefinitionSearchContextCtdImpl implements GlobalDefinitionSearchContext<ComplexTypeDefinition> {
 
 //    private final DefinitionSearchImplementation provider;

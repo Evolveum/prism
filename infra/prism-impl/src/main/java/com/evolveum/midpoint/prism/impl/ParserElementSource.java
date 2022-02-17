@@ -14,9 +14,6 @@ import org.w3c.dom.Element;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * @author mederly
- */
 public class ParserElementSource implements ParserSource {
 
     @NotNull private final Element element;

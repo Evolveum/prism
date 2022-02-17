@@ -14,9 +14,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-/**
- * @author mederly
- */
 public class ParserFileSource implements ParserSource {
 
     @NotNull private final File file;

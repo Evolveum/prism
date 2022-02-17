@@ -41,8 +41,6 @@ import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
  * <p>
  * Interfaces are implemented by classes that aggregate state of the query being created.
  * This is quite hacked for now... to be implemented more seriously.
- *
- * @author mederly
  */
 public final class QueryBuilder {
 

@@ -10,8 +10,6 @@ package com.evolveum.midpoint.prism;
 /**
  * Everything we want to maintain during the serialization process.
  * (First of all, processing options.)
- *
- * @author Pavol Mederly
  */
 public class SerializationContext implements Cloneable {
 

@@ -23,8 +23,6 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * EXPERIMENTAL IMPLEMENTATION.
- *
- * @author mederly
  */
 // FIXME: Add better names
 @Experimental

@@ -21,8 +21,6 @@ import java.util.List;
  * where no IOExceptions occur.
  *
  * For methods' descriptions please see the parent interface (PrismParser).
- *
- * @author mederly
  */
 public interface PrismParserNoIO extends PrismParser {
 

@@ -10,8 +10,6 @@ import java.io.Serializable;
 
 /**
  * @author semancik
- * @author mederly
- *
  */
 public interface LocalizableMessage extends Serializable, ShortDumpable {
 

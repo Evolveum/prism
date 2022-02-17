@@ -12,9 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 
-/**
- * @author mederly
- */
 public class ParserXNodeSource implements ParserSource {
 
     @NotNull private final RootXNode xnode;

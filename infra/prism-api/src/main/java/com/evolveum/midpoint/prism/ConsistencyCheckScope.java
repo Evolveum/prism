@@ -11,8 +11,6 @@ package com.evolveum.midpoint.prism;
  *
  * (Originally this was a boolean, but there are many 'checkConsistence'-style methods with a set of boolean arguments,
  * so it was too easy to mix them up with this new one.)
- *
- * @author mederly
  */
 public enum ConsistencyCheckScope {
     /**

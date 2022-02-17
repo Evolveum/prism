@@ -11,9 +11,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectOrdering;
 import com.evolveum.midpoint.prism.query.OrderDirection;
 
-/**
- * @author mederly
- */
 public final class ObjectOrderingImpl implements ObjectOrdering {
 
     private final ItemPath orderBy;

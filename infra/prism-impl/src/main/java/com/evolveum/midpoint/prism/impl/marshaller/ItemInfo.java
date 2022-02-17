@@ -21,9 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.List;
 
-/**
- * @author mederly
- */
 public class ItemInfo<ID extends ItemDefinition> {
     private QName itemName;
     private ID itemDefinition;

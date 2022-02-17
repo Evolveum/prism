@@ -25,8 +25,6 @@ import javax.xml.namespace.QName;
  * EXPERIMENTAL
  *
  * @author semancik
- * @author mederly
- *
  */
 @Experimental
 public class LiteralEqualsStrategy extends JAXBEqualsStrategy {

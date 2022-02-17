@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.util.backoff;
 
-/**
- * @author mederly
- */
 public class LinearBackoffComputer extends RetryLimitedBackoffComputer {
 
     private long delayInterval;

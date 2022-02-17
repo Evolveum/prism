@@ -10,9 +10,6 @@ package com.evolveum.midpoint.prism.query.builder;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 
-/**
- * @author mederly
- */
 public interface S_QueryExit {
 
     ObjectQuery build();

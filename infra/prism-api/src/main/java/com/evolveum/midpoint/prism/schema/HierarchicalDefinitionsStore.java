@@ -7,8 +7,5 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-/**
- * @author mederly
- */
 public interface HierarchicalDefinitionsStore extends DefinitionsStore {
 }

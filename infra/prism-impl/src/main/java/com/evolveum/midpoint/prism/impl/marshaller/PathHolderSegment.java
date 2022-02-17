@@ -14,7 +14,6 @@ import javax.xml.namespace.QName;
 /**
  *
  * @author Radovan Semancik
- * @author Pavol Mederly
  */
 public class PathHolderSegment {
 

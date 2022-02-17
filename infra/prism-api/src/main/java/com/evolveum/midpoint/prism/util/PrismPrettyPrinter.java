@@ -28,10 +28,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- *
- * @author mederly
- */
 public class PrismPrettyPrinter {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismPrettyPrinter.class);

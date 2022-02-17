@@ -7,8 +7,5 @@
 
 package com.evolveum.midpoint.prism.query.builder;
 
-/**
- * @author mederly
- */
 public interface S_FilterEntryOrEmpty extends S_FilterEntry, S_FilterExit {
 }

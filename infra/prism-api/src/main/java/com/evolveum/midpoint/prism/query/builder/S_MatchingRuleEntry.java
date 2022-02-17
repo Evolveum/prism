@@ -9,9 +9,6 @@ package com.evolveum.midpoint.prism.query.builder;
 
 import javax.xml.namespace.QName;
 
-/**
- * @author mederly
- */
 public interface S_MatchingRuleEntry extends S_AtomicFilterExit {
     S_AtomicFilterExit matchingOrig();
     S_AtomicFilterExit matchingNorm();

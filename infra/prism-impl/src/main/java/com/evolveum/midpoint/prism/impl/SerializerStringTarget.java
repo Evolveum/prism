@@ -16,9 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-/**
- * @author mederly
- */
 public class SerializerStringTarget extends SerializerTarget<String> {
 
     @NotNull private final String language;

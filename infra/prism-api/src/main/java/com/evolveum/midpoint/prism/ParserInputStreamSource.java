@@ -11,9 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
 
-/**
- * @author mederly
- */
 public class ParserInputStreamSource implements ParserSource {
 
     @NotNull private final InputStream inputStream;

@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism.query.builder;
 
-/**
- * @author mederly
- */
 public interface S_AtomicFilterExit extends S_FilterExit {
     S_FilterEntry or() ;
     S_FilterEntry and() ;

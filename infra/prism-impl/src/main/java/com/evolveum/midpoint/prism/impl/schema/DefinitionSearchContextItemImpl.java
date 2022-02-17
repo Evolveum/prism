@@ -10,9 +10,6 @@ package com.evolveum.midpoint.prism.impl.schema;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.schema.GlobalDefinitionSearchContext;
 
-/**
- * @author mederly
- */
 public class DefinitionSearchContextItemImpl<ID extends ItemDefinition> implements GlobalDefinitionSearchContext<ID> {
 
 //    private final DefinitionSearchImplementation provider;

@@ -11,9 +11,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 
 import javax.xml.namespace.QName;
 
-/**
- * @author mederly
- */
 public interface S_FilterExit extends S_QueryExit {
 
     S_AtomicFilterExit endBlock();

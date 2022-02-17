@@ -18,9 +18,6 @@ import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * @author mederly
- */
 public class PrismParserImplIO extends PrismParserImpl {
 
     public PrismParserImplIO(ParserSource source, String language, ParsingContext context, PrismContextImpl prismContext,

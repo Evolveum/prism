@@ -9,9 +9,6 @@ package com.evolveum.midpoint.prism.schema;
 
 import com.evolveum.midpoint.prism.Definition;
 
-/**
- * @author mederly
- */
 public interface GlobalDefinitionSearchContext<D extends Definition> extends DefinitionSearchContext<D> {
 
 //    D byType(@NotNull QName type);

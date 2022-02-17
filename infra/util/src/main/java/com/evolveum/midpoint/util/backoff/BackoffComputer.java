@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.util.backoff;
 
-/**
- * @author mederly
- */
 public interface BackoffComputer {
 
     class NoMoreRetriesException extends Exception {

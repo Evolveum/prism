@@ -40,9 +40,6 @@ import java.util.*;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 
-/**
- * @author mederly
- */
 public class PrismBeanInspector {
 
     @NotNull private PrismContext prismContext;

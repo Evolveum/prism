@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism.query.builder;
 
-/**
- * @author mederly
- */
 public interface S_FilterEntry extends S_AtomicFilterEntry {
 
     S_AtomicFilterEntry not();

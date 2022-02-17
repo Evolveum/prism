@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl.lex;
 
-/**
- * @author mederly
- */
 public enum LexicalParsingMode {
 
     // TODO documentation

@@ -21,8 +21,6 @@ import java.io.Serializable;
 /**
  * Used when PrismReferenceValue.getRealValue is called, and no referencable is present in the PRV.
  * It is analogous to ObjectReferenceType; however, the ORT is part of common-3, whereas this one is located in prism layer.
- *
- * @author mederly
  */
 public class DefaultReferencableImpl implements Referencable, Cloneable, Serializable {
 

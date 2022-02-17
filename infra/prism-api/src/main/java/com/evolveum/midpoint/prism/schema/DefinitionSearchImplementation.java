@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-/**
- * @author mederly
- */
 public interface DefinitionSearchImplementation {
 
 //    ComplexTypeDefinition findComplexTypeDefinition(@NotNull QName typeName);

@@ -15,9 +15,6 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
-/**
- * @author mederly
- */
 public class FilterImplUtil {
 
     public static ItemDefinition findItemDefinition(ItemPath itemPath, PrismContainerDefinition<? extends Containerable> containerDef) {

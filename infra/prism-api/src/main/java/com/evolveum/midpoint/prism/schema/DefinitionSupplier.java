@@ -10,9 +10,6 @@ package com.evolveum.midpoint.prism.schema;
 import com.evolveum.midpoint.prism.Definition;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-/**
- * @author mederly
- */
 @FunctionalInterface
 public interface DefinitionSupplier {
     Definition get() throws SchemaException;

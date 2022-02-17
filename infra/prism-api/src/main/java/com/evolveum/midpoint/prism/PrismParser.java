@@ -48,8 +48,6 @@ import java.util.List;
  * - All recognizable definitions are set.
  * - Prism context is set on all items and PCVs.
  * - No unresolved raw values with known types are present.
- *
- * @author mederly
  */
 public interface PrismParser {
 

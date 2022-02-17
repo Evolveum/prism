@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism;
 
-/**
- * @author mederly
- */
 public enum ItemNameQualificationStrategy {
 
     ALWAYS_USE_FULL_URI,

@@ -30,7 +30,6 @@ import com.google.common.collect.HashBiMap;
  * NOT to be used outside prism module (except for XPathTest in schema - but this is also to be resolved).
  *
  * @author semancik
- * @author mederly
  */
 public final class ItemPathSerialization {
 

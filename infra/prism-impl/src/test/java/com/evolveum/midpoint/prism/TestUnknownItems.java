@@ -19,8 +19,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * See MID-3249.
- *
- * @author mederly
  */
 public class TestUnknownItems extends AbstractPrismTest {
 

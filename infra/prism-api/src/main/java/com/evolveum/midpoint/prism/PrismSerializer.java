@@ -25,8 +25,6 @@ import java.util.List;
  * 1. All type QNames will be resolvable (i.e. they will be part of static schema) - TODO think again about this; think also about allowing 'system-wide' parts of dynamic schema ...
  * 2. If root(..) is configured, it will be set regardless of the object type and content.
  * 3. ... TODO ...
- *
- * @author mederly
  */
 public interface PrismSerializer<T> {
 

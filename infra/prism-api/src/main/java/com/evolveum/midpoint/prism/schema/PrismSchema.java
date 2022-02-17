@@ -32,7 +32,6 @@ import javax.xml.namespace.QName;
  * objects, extensions and so on.
  *
  * @author semancik
- * @author mederly
  */
 public interface PrismSchema
         extends DebugDumpable, GlobalDefinitionsStore, DefinitionSearchImplementation,

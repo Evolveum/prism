@@ -26,7 +26,6 @@ import com.evolveum.midpoint.util.QNameUtil;
 
 /**
  * @author katkav
- * @author mederly
  */
 public class CanonicalItemPathImpl implements CanonicalItemPath {
 

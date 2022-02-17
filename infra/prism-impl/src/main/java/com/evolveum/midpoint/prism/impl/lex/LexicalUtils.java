@@ -13,9 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 
-/**
- * @author mederly
- */
 public class LexicalUtils {
 
     @NotNull

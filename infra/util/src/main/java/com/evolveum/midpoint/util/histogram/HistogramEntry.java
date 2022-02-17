@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.util.histogram;
 
-/**
- * @author mederly
- */
 public class HistogramEntry<T> {
 
     private int itemsCount;

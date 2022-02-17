@@ -24,8 +24,6 @@ import java.util.Objects;
  *
  * This value is to be held by PrismObject. And such object should hold exactly one
  * PrismObjectValue.
- *
- * @author mederly
  */
 public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerValueImpl<O> implements PrismObjectValue<O> {
 

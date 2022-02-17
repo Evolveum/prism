@@ -12,9 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-/**
- * @author mederly
- */
 public class ParserStringSource implements ParserSource {
 
     @NotNull private final String data;

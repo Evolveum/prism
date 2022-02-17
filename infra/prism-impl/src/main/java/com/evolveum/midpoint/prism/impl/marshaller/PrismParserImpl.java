@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author mederly
- */
 abstract class PrismParserImpl implements PrismParser {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismParserImpl.class);

@@ -14,8 +14,6 @@ import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
  * Migrator that comes into play when content is parsed.
  *
  * Currently used to treat situations when simple content (e.g. message: string) was replaced by complex one (message: LocalizableMessageType).
- *
- * @author mederly
  */
 public interface ParsingMigrator {
 

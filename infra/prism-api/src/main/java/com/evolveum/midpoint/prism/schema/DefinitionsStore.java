@@ -7,9 +7,6 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-/**
- * @author mederly
- */
 public interface DefinitionsStore {
 
 //    <T extends Item> DefinitionSearchContext<ItemDefinition<T>> findItemDefinition();

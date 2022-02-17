@@ -14,9 +14,6 @@ import com.evolveum.midpoint.prism.query.OrgFilter;
 
 import javax.xml.namespace.QName;
 
-/**
- * @author mederly
- */
 public interface S_AtomicFilterEntry {
     S_AtomicFilterExit all();
     S_AtomicFilterExit none();

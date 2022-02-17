@@ -9,9 +9,6 @@ package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 
-/**
- * @author mederly
- */
 public class TypedObjectQuery<T extends ObjectType> {
 
     private Class<T> objectClass;

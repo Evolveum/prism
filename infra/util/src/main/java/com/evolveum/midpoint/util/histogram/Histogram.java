@@ -11,9 +11,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 
-/**
- * @author mederly
- */
 public class Histogram<T> {
 
     private static final int ZEROS_BEFORE_SKIP = 5;

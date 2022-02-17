@@ -13,8 +13,6 @@ import javax.xml.namespace.QName;
 
 /**
  * Denotes referenced object, like "assignment/targetRef/@/name" (name of assignment's target object)
- *
- * @author mederly
  */
 public class ObjectReferencePathSegment extends ReferencePathSegment {
 

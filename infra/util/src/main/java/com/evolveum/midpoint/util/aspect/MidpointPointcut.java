@@ -13,9 +13,6 @@ import org.springframework.aop.Pointcut;
 
 import java.lang.reflect.Method;
 
-/**
- * @author mederly
- */
 public class MidpointPointcut implements Pointcut {
     @Override
     public ClassFilter getClassFilter() {

@@ -11,9 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * @author mederly
- */
 public class TreeNode<T> implements DebugDumpable {
 
     private final List<TreeNode<T>> children = new ArrayList<>();

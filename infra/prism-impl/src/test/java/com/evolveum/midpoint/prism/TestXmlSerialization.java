@@ -25,10 +25,6 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPAC
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.assertEquals;
 
-/**
- * @author mederly
- *
- */
 public class TestXmlSerialization extends AbstractPrismTest {
 
     @Test

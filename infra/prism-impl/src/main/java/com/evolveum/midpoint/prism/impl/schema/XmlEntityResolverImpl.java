@@ -21,7 +21,6 @@ import java.util.Collection;
 
 /**
  * @author semancik
- * @author mederly
  *
  * TODO refactor this a bit more
  */

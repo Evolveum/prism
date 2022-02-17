@@ -13,9 +13,6 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @author mederly
- */
 public class DefinitionStoreUtils {
     public static <D extends Definition> D getOne(List<D> list) {
         if (list.isEmpty()) {

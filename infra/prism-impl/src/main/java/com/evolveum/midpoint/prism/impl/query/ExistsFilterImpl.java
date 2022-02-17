@@ -24,7 +24,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * TODO think about creating abstract ItemFilter (ItemRelatedFilter) for this filter and ValueFilter.
  *
  * @author lazyman
- * @author mederly
  */
 public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFilter {
 

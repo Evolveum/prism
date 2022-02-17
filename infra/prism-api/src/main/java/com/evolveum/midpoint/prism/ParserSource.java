@@ -14,8 +14,6 @@ import java.io.InputStream;
 
 /**
  * Source for prism parser (file, input stream, string, DOM tree, ...).
- *
- * @author mederly
  */
 public interface ParserSource {
 

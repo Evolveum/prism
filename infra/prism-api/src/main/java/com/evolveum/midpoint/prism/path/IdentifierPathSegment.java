@@ -14,8 +14,6 @@ import javax.xml.namespace.QName;
 /**
  * Denotes identifier of the object or container (i.e. OID or container ID).
  * Currently supported only for sorting (not even for filtering!).
- *
- * @author mederly
  */
 public class IdentifierPathSegment extends ItemPathSegment {
 

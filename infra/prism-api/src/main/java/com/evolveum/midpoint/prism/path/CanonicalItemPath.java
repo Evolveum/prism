@@ -9,9 +9,6 @@ package com.evolveum.midpoint.prism.path;
 
 import java.io.Serializable;
 
-/**
- * @author mederly
- */
 public interface CanonicalItemPath extends Serializable {
 
     int size();
