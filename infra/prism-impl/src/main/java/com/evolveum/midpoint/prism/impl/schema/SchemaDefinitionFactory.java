@@ -53,23 +53,26 @@ public class SchemaDefinitionFactory {
 
     public <T> PrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
-        return new PrismPropertyDefinitionImpl<>(elementName, typeName);
+        var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
+        return new PrismPropertyDefinitionImpl<>(elementName, typeName, definedInType);
     }
 
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) throws SchemaException {
-        return new PrismPropertyDefinitionImpl<>(elementName, typeName, allowedValues, defaultValue);
+        var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
+        return new PrismPropertyDefinitionImpl<>(elementName, typeName, allowedValues, defaultValue, definedInType);
     }
 
     public PrismReferenceDefinition createReferenceDefinition(QName primaryElementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
-        return new PrismReferenceDefinitionImpl(primaryElementName, typeName);
+        var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
+        return new PrismReferenceDefinitionImpl(primaryElementName, typeName, definedInType);
     }
 
     public <C extends Containerable> PrismContainerDefinitionImpl<C> createContainerDefinition(
-            QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<C> compileTimeClass)
+            QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<C> compileTimeClass, QName definedInType)
             throws SchemaException {
-        return new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition, compileTimeClass);
+        return new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition, compileTimeClass, definedInType);
     }
 
     public <T extends Objectable> PrismObjectDefinitionImpl<T> createObjectDefinition(

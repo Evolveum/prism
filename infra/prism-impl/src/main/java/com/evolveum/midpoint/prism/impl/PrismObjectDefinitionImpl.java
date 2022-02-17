@@ -7,8 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import java.util.function.Consumer;
-
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.*;
@@ -38,8 +36,8 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
     private static final long serialVersionUID = -8298581031956931008L;
 
     public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<O> compileTimeClass) {
-        // Object definition can only be top-level, hence null parent
-        super(elementName, complexTypeDefinition, compileTimeClass);
+        // Object definition can only be top-level, hence SCHEMA ROOT parent
+        super(elementName, complexTypeDefinition, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT);
     }
 
     @Override
