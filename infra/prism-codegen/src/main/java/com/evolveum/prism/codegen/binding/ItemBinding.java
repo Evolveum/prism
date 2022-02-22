@@ -10,6 +10,7 @@ import javax.lang.model.SourceVersion;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.util.DOMUtil;
 
 import static com.google.common.base.CaseFormat.*;
 
@@ -25,11 +26,11 @@ public class ItemBinding {
         this.definition = def;
     }
 
-    String getJavaName() {
+    public String getJavaName() {
         return name;
     }
 
-    QName getQName() {
+    public QName getQName() {
         return qName;
     }
 
@@ -43,7 +44,14 @@ public class ItemBinding {
     }
 
     public String getterName() {
+        if (isBoolean(definition)) {
+            return StructuredContract.IS_PREFIX + name;
+        }
         return StructuredContract.GET_PREFIX + name;
+    }
+
+    private boolean isBoolean(ItemDefinition<?> definition) {
+        return DOMUtil.XSD_BOOLEAN.equals(definition.getTypeName());
     }
 
     public String constantName() {

@@ -34,6 +34,7 @@ import com.evolveum.midpoint.prism.impl.binding.AbstractMutableObjectable;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.codegen.binding.TypeBinding.Static;
+import com.evolveum.prism.xml.ns._public.query_3.OrderDirectionType;
 import com.evolveum.prism.xml.ns._public.query_3.PagingType;
 import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
@@ -45,6 +46,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PlusMinusZeroType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurationType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -61,6 +63,8 @@ public class BindingContext {
     public static final String SCHEMA_CONSTANTS_GENERATED_CLASS_NAME = "com.evolveum.midpoint.schema.SchemaConstantsGenerated";
 
     public static final String TYPE_CONSTANT = "COMPLEX_TYPE";
+
+    public static final long SERIAL_VERSION_UID = 201105211233L;
 
     Map<String, PrismSchema> schemas = new HashMap<>();
     Map<QName, TypeBinding> bindings = new HashMap<>();
@@ -99,23 +103,29 @@ public class BindingContext {
         staticBinding(ItemDeltaType.COMPLEX_TYPE, ItemDeltaType.class);
         staticBinding(ObjectDeltaType.COMPLEX_TYPE, ObjectDeltaType.class);
         staticBinding(ProtectedStringType.COMPLEX_TYPE, ProtectedStringType.class);
-        staticBinding(typesNs("ChangeTypeType"), ChangeTypeType.class);
-        staticBinding(typesNs("EvaluationTimeType"), EvaluationTimeType.class);
-        staticBinding(typesNs("ReferentialIntegrityType"), ReferentialIntegrityType.class);
+        staticBinding(typesNs(ChangeTypeType.class), ChangeTypeType.class);
+        staticBinding(typesNs(EvaluationTimeType.class), EvaluationTimeType.class);
+        staticBinding(typesNs(ReferentialIntegrityType.class), ReferentialIntegrityType.class);
         staticBinding(PagingType.COMPLEX_TYPE, PagingType.class);
         staticBinding(PolyStringNormalizerConfigurationType.COMPLEX_TYPE, PolyStringNormalizerConfigurationType.class);
         staticBinding(DeltaSetTripleType.COMPLEX_TYPE, DeltaSetTripleType.class);
         staticBinding(ItemDeltaItemType.COMPLEX_TYPE, ItemDeltaItemType.class);
-        staticBinding(typesNs("PlusMinusZeroType"), PlusMinusZeroType.class);
+        staticBinding(typesNs(PlusMinusZeroType.class), PlusMinusZeroType.class);
         staticBinding(SchemaDefinitionType.COMPLEX_TYPE, SchemaDefinitionType.class);
         staticBinding(ItemType.COMPLEX_TYPE, ItemType.class);
+        staticBinding(queryNs(OrderDirectionType.class), OrderDirectionType.class);
 
-        staticBinding(typesNs("ObjectType"), AbstractMutableObjectable.class);
+        staticBinding(typesNs(ObjectType.class), AbstractMutableObjectable.class);
     }
 
-    private static QName typesNs(String localName) {
-        return new QName(PrismConstants.NS_TYPES, localName);
+    private static QName typesNs(Class<?> clazz) {
+        return new QName(PrismConstants.NS_TYPES, clazz.getSimpleName());
     }
+
+    private static QName queryNs(Class<?> clazz) {
+        return new QName(PrismConstants.NS_QUERY, clazz.getSimpleName());
+    }
+
 
 
     private void staticBinding(QName name, Class<?> javaClass) {

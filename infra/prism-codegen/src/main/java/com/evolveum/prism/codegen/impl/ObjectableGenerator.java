@@ -54,4 +54,9 @@ public class ObjectableGenerator extends ContainerableGenerator<ObjectableContra
         super.implement(contract, clazz);
     }
 
+    @Override
+    protected void implementationAfterFluentApi(ObjectableContract contract, JDefinedClass clazz) {
+        fluentSetter(clazz, String.class, "oid", "setOid");
+        fluentSetter(clazz, String.class, "version", "setVersion");
+    }
 }

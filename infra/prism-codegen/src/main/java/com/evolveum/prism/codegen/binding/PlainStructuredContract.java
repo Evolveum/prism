@@ -14,4 +14,6 @@ public class PlainStructuredContract extends StructuredContract {
         super(typeDef, packageName);
     }
 
+
+
 }

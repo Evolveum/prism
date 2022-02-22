@@ -6,8 +6,9 @@
  */
 package com.evolveum.prism.codegen.binding;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
@@ -23,11 +24,12 @@ public class StructuredContract extends Contract {
 
     static final String GET_PREFIX = "get";
     static final String SET_PREFIX = "set";
+    static final String IS_PREFIX = "is";
 
     private final ComplexTypeDefinition typeDefinition;
     private final String packageName;
 
-    private @NotNull Set<ItemBinding> localDefinitions = new HashSet<>();
+    private @NotNull Collection<ItemBinding> localDefinitions = new ArrayList<>();
 
     public StructuredContract(ComplexTypeDefinition typeDefinition, String packageName) {
         this.typeDefinition = typeDefinition;
@@ -69,8 +71,11 @@ public class StructuredContract extends Contract {
         return typeDefinition.getSuperType();
     }
 
-    public Set<ItemBinding> getLocalDefinitions() {
+    public Collection<ItemBinding> getLocalDefinitions() {
         return localDefinitions;
     }
 
+    public Optional<String> getDocumentation() {
+        return Optional.ofNullable(typeDefinition.getDocumentation());
+    }
 }

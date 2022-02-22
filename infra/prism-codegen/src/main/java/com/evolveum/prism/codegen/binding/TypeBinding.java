@@ -31,6 +31,10 @@ public abstract class TypeBinding {
         defaultContract = contract;
     }
 
+    public Contract getDefaultContract() {
+        return defaultContract;
+    }
+
     public <T extends Contract> void  addContract(T contract) {
         contracts.add(contract);
     }

@@ -6,6 +6,8 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import javax.xml.bind.annotation.XmlAccessType;
+
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
@@ -39,17 +41,21 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
             TypeBinding superType = bindingFor(contract.getSuperType());
             clazz._extends(codeModel().ref(superType.defaultBindingClass()));
         }
-
-        declareConstants(clazz, contract);
+        applyDocumentation(clazz.javadoc(), contract.getDocumentation());
+        annotateType(clazz, contract, XmlAccessType.FIELD);
+        // fields are first to minimize diff against cxf version
         declareFields(clazz, contract);
+        declareConstants(clazz, contract);
         return clazz;
     }
+
+
 
     private void declareFields(JDefinedClass clazz, PlainStructuredContract contract) {
         for (ItemBinding item : contract.getLocalDefinitions()) {
             String fieldName = item.fieldName();
             JType type = asBindingType(item);
-            clazz.field(JMod.PRIVATE, type, fieldName);
+            clazz.field(JMod.PROTECTED, type, fieldName);
         }
     }
 

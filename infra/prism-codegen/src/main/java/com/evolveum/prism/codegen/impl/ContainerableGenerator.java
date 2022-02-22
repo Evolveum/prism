@@ -6,6 +6,8 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import javax.xml.bind.annotation.XmlAccessType;
+
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
@@ -62,6 +64,8 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             clazz._extends(baseClass);
         }
 
+        applyDocumentation(clazz.javadoc(), contract.getDocumentation());
+        annotateType(clazz, contract, XmlAccessType.PROPERTY);
         declareConstants(clazz, contract);
 
         if (!contract.getTypeDefinition().isAbstract()) {
@@ -144,6 +148,18 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
         invocation.arg(value);
     }
 
+    @Override
+    protected void implementationAfterFluentApi(T contract, JDefinedClass clazz) {
+        fluentSetter(clazz, Long.class, "id", "setId");
+    }
+
+    protected void fluentSetter(JDefinedClass clazz, Class<?> param, String methodName, String setterName) {
+        var method = clazz.method(JMod.PUBLIC, clazz, methodName);
+        var value = method.param(param, "value");
+        method.body().invoke(setterName).arg(value);
+        method.body()._return(JExpr._this());
+
+    }
 
 
 }

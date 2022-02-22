@@ -6,14 +6,20 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import java.util.Optional;
+
 import javax.xml.namespace.QName;
 
+import org.w3c.dom.Document;
+
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocComment;
 
 public abstract class ContractGenerator<T extends Contract> {
 
@@ -42,5 +48,15 @@ public abstract class ContractGenerator<T extends Contract> {
 
     public TypeBinding bindingFor(QName name) {
         return codeGenerator.bindingFor(name);
+    }
+
+    protected void applyDocumentation(JDocComment javadoc, Optional<String> documentation) {
+        if (documentation.isPresent()) {
+            Document docDom = DOMUtil.parseDocument(documentation.get());
+            String docText = docDom.getDocumentElement().getTextContent();
+            javadoc.add(docText);
+
+        }
+
     }
 }

@@ -2,6 +2,7 @@ package com.evolveum.prism.codegen.impl;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.EnumerationTypeDefinition.ValueDefinition;
 import com.evolveum.prism.codegen.binding.EnumerationContract;
@@ -27,6 +28,8 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
 
         String fullyqualifiedName = contract.fullyQualifiedName();
         JDefinedClass clazz = codeModel()._class(JMod.PUBLIC, fullyqualifiedName, ClassType.ENUM);
+        applyDocumentation(clazz.javadoc(), contract.getDocumentation());
+        clazz.annotate(XmlType.class).param("name", contract.getQName().getLocalPart());
         clazz.annotate(XmlEnum.class);
         return clazz;
     }
@@ -35,6 +38,7 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
     public void implement(EnumerationContract contract, JDefinedClass clazz) {
         for (ValueDefinition value : contract.values()) {
             JEnumConstant enumConst = clazz.enumConstant(value.getConstantName().get());
+            applyDocumentation(enumConst.javadoc(),value.getDocumentation());
             enumConst.arg(JExpr.lit(value.getValue()));
             enumConst.annotate(XmlEnumValue.class).param("value", value.getValue());
         }
@@ -58,4 +62,6 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
             ._then()._return(forLoop.var());
         fromValue.body()._throw(JExpr._new(clazz(IllegalArgumentException.class)).arg(vParam));
     }
+
+
 }

@@ -13,6 +13,10 @@ public abstract class AbstractMutableContainerable extends AbstractBoundContaine
         this.value = container;
     }
 
+    public void setId(Long value) {
+        asPrismContainerValue().setId(value);
+    }
+
     @Override
     public PrismContainerValue asPrismContainerValue() {
         if (value == null) {
