@@ -54,6 +54,9 @@ class DomToSchemaPostProcessor {
     private static final Trace LOGGER = TraceManager.getTrace(DomToSchemaPostProcessor.class);
 
 
+    private static final String ENUMERATION = "enumeration";
+
+
     private final XSSchemaSet xsSchemaSet;
     private final PrismContext prismContext;
     private MutablePrismSchema schema;
@@ -274,9 +277,17 @@ class DomToSchemaPostProcessor {
     private SimpleTypeDefinition processSimpleTypeDefinition(XSSimpleType simpleType)
             throws SchemaException {
 
+        SimpleTypeDefinitionImpl std;
         SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
-        SimpleTypeDefinitionImpl std = (SimpleTypeDefinitionImpl) definitionFactory.createSimpleTypeDefinition(simpleType, prismContext,
-                simpleType.getAnnotation());
+        if (isEnumeration(simpleType)) {
+            std = definitionFactory.createEnumerationTypeDefinition(simpleType, prismContext,
+                    simpleType.getAnnotation());
+
+
+        } else {
+            std = (SimpleTypeDefinitionImpl) definitionFactory.createSimpleTypeDefinition(simpleType, prismContext,
+                    simpleType.getAnnotation());
+        }
 
         SimpleTypeDefinition existingSimpleTypeDefinition = schema.findSimpleTypeDefinitionByType(std.getTypeName());
         if (existingSimpleTypeDefinition != null) {
@@ -301,6 +312,18 @@ class DomToSchemaPostProcessor {
 
         schema.add(std);
         return std;
+    }
+
+    private boolean isEnumeration(XSSimpleType simpleType) {
+        if (simpleType instanceof XSRestrictionSimpleType) {
+            XSRestrictionSimpleType restType = (XSRestrictionSimpleType) simpleType;
+            Collection<? extends XSFacet> facets = restType.getDeclaredFacets();
+            if (facets.isEmpty() || restType.getDerivationMethod() != XSType.RESTRICTION) {
+                return false;
+            }
+            return facets.stream().allMatch(f -> ENUMERATION.equals(f.getName()));
+        }
+        return false;
     }
 
     private void extractDocumentation(Definition definition, XSAnnotation annotation) {
