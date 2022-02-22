@@ -11,6 +11,12 @@ import javax.xml.namespace.QName;
 public abstract class Contract {
 
 
+    protected final String packageName;
+
+    public Contract(String packageName) {
+        this.packageName = packageName;
+    }
+
     protected String className(QName name) {
         // Lets assume we use upper case format
         return name.getLocalPart();

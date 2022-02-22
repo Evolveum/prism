@@ -28,7 +28,6 @@ import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.StructuredContract;
-import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
@@ -121,7 +120,7 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     private void generateFluentApi(JDefinedClass clazz, Iterable<ItemBinding> localDefs) {
         for (ItemBinding definition : localDefs) {
             JMethod fluentSetter = clazz.method(JMod.PUBLIC, clazz, definition.fieldName());
-            JType type = asBindingTypeUnwrapped(definition);
+            JType type = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
             JVar value = fluentSetter.param(type, "value");
             if (definition.isList()) {
                 fluentSetter.body().invoke(JExpr.invoke(definition.getterName()), "add").arg(value);
@@ -149,7 +148,7 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
                 value = beginMethod.body().decl(type, "value", JExpr._new(type));
                 beginMethod.body().invoke(definition.fieldName()).arg(value);
                 beginMethod.body()._return(value);
-            };
+            }
         }
     }
 
@@ -172,20 +171,9 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     protected abstract void implementSetter(JMethod method, ItemBinding definition, JVar valueParam);
 
 
-    protected JType asBindingTypeUnwrapped(ItemBinding definition) {
-        TypeBinding binding = getCodeGenerator().bindingFor(definition.getDefinition().getTypeName());
-
-        if (binding == null) {
-            throw new IllegalStateException("Missing binding for " + definition.getDefinition().getTypeName());
-        }
-
-        JType valueType;
-        valueType = codeModel().ref(binding.defaultBindingClass());
-        return valueType;
-    }
 
     protected JType asBindingType(ItemBinding definition) {
-        JType valueType = asBindingTypeUnwrapped(definition);
+        JType valueType = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
         if (definition.isList()) {
             // Wrap as list
             valueType = codeModel().ref(List.class).narrow(valueType);

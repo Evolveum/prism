@@ -185,6 +185,7 @@ public class BindingContext {
 
         String packageName;
         if (binding instanceof Static) {
+            assert existingClass != null;
             staticBindings.add(binding);
             packageName = existingClass.getPackageName();
         } else {
@@ -270,11 +271,20 @@ public class BindingContext {
             binding.defaultContract(new ReferenceContract(typeDef, packageName));
         } else if (typeDef.isContainerMarker()) {
             binding.defaultContract(new ContainerableContract(typeDef, packageName));
+        } else if (isSimpleType(typeDef.getSuperType())) {
+            binding.defaultContract(new ValueWrappedContract(typeDef, packageName));
         } else {
             binding.defaultContract(new PlainStructuredContract(typeDef, packageName));
+
+
         }
         // Plain mapping
         return binding;
+    }
+
+    private boolean isSimpleType(@Nullable QName superType) {
+        // FIXME: Add proper checks, String is sufficient for current schema
+        return DOMUtil.XSD_STRING.equals(superType);
     }
 
     private QName determineContainerName(ComplexTypeDefinition typeDef) {

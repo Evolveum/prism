@@ -27,13 +27,12 @@ public class StructuredContract extends Contract {
     static final String IS_PREFIX = "is";
 
     private final ComplexTypeDefinition typeDefinition;
-    private final String packageName;
 
     private @NotNull Collection<ItemBinding> localDefinitions = new ArrayList<>();
 
     public StructuredContract(ComplexTypeDefinition typeDefinition, String packageName) {
+        super(packageName);
         this.typeDefinition = typeDefinition;
-        this.packageName = packageName;
 
         for (ItemDefinition<?> def : typeDefinition.getDefinitions()) {
 

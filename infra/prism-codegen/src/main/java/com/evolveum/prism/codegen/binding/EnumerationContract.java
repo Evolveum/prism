@@ -10,12 +10,11 @@ import com.evolveum.midpoint.prism.EnumerationTypeDefinition.ValueDefinition;
 
 public class EnumerationContract extends Contract {
 
-    private String packageName;
     private EnumerationTypeDefinition typeDefinition;
 
     public EnumerationContract(EnumerationTypeDefinition typeDefinition, String packageName) {
+        super(packageName);
         this.typeDefinition = typeDefinition;
-        this.packageName = packageName;
     }
 
     @Override

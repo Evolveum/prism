@@ -20,6 +20,7 @@ import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
+import com.sun.codemodel.JType;
 
 public abstract class ContractGenerator<T extends Contract> {
 
@@ -58,5 +59,17 @@ public abstract class ContractGenerator<T extends Contract> {
 
         }
 
+    }
+
+    protected JType asBindingTypeUnwrapped(QName typeName) {
+        TypeBinding binding = getCodeGenerator().bindingFor(typeName);
+
+        if (binding == null) {
+            throw new IllegalStateException("Missing binding for " + typeName);
+        }
+
+        JType valueType;
+        valueType = codeModel().ref(binding.defaultBindingClass());
+        return valueType;
     }
 }

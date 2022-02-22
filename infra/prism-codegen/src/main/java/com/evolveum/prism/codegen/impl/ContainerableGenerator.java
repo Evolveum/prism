@@ -8,7 +8,9 @@ package com.evolveum.prism.codegen.impl;
 
 import javax.xml.bind.annotation.XmlAccessType;
 
+import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
+import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
@@ -151,6 +153,22 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
     @Override
     protected void implementationAfterFluentApi(T contract, JDefinedClass clazz) {
         fluentSetter(clazz, Long.class, "id", "setId");
+        createContainerFluentEnd(clazz);
+    }
+
+    protected JMethod createContainerFluentEnd(JDefinedClass implClass) {
+        String methodName = "end";
+        JMethod method = implClass.method(JMod.PUBLIC, (JType) null, methodName);
+        method.type(method.generify("X"));
+        JBlock body = method.body();
+
+        body._return(JExpr.cast(method.type(),
+                JExpr.invoke(JExpr.cast(clazz(PrismContainerValue.class),
+                                JExpr.invoke(JExpr.cast(clazz(PrismContainer.class),
+                                        JExpr.invoke(JExpr.invoke("asPrismContainerValue"),"getParent")), "getParent")),
+                "asContainerable")));
+
+        return method;
     }
 
     protected void fluentSetter(JDefinedClass clazz, Class<?> param, String methodName, String setterName) {
