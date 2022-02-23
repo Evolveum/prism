@@ -1,14 +1,12 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -141,7 +139,7 @@ public interface ItemDefinition<I extends Item>
 
     /**
      * Create an item instance. Definition name or default name will
-     * used as an element name for the instance. The instance will otherwise be empty.
+     * be used as an element name for the instance. The instance will otherwise be empty.
      */
     @NotNull I instantiate() throws SchemaException;
 

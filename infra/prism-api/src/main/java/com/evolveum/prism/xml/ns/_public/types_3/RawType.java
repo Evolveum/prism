@@ -7,20 +7,12 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
-import com.evolveum.midpoint.prism.xnode.XNode;
-import com.evolveum.midpoint.prism.xnode.*;
-import com.evolveum.midpoint.util.ShortDumpable;
-import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.function.Supplier;
+import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.util.exception.TunnelException;
 import com.google.common.base.Preconditions;
-
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,10 +20,18 @@ import org.jvnet.jaxb2_commons.lang.Equals;
 import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 
-import javax.xml.namespace.QName;
-import java.io.Serializable;
-import java.util.Objects;
-import java.util.function.Supplier;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
+import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
+import com.evolveum.midpoint.prism.xnode.RootXNode;
+import com.evolveum.midpoint.prism.xnode.XNode;
+import com.evolveum.midpoint.util.ShortDumpable;
+import com.evolveum.midpoint.util.annotation.Experimental;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.exception.SystemException;
+import com.evolveum.midpoint.util.exception.TunnelException;
 
 /**
  * A class used to hold raw XNodes until the definition for such an object is known.
@@ -164,7 +164,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     }
 
     private <V extends PrismValue> Parsed<V> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName) throws SchemaException {
-        return transition(current().<V>parse(itemDefinition, itemName));
+        return transition(current().parse(itemDefinition, itemName));
     }
 
     private <V extends PrismValue> Parsed<V> transition(Parsed<V> newState) {
@@ -183,7 +183,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
         var current = current();
         var parsed = current.asParsed();
         if (current instanceof Parsed) {
-            return (V) ((Parsed<?>) parsed).realValue();
+            return parsed.realValue();
         }
         var raw = (Raw) current;
         if (itemDefinition == null) {
@@ -536,8 +536,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         @SuppressWarnings("unchecked")
         @Override
-        <IV extends PrismValue> Parsed<IV> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName)
-                throws SchemaException {
+        <IV extends PrismValue> Parsed<IV> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName) {
             // No need to reparse
             return (Parsed<IV>) this;
         }
@@ -593,7 +592,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
 
         private static final long serialVersionUID = 1L;
 
-        private XNode node;
+        private final XNode node;
 
         public Raw(PrismContext context, XNode node) {
             super(context);
@@ -672,7 +671,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
                 }
                 return new Parsed<>(getPrismContext(), value, itemDefinition.getTypeName());
             }
-            // we don't really want to set 'parsed', as we didn't performed real parsing
+            // we don't really want to set 'parsed', as we didn't perform real parsing
             @SuppressWarnings("unchecked")
             Parsed<IV> ret = (Parsed<IV>) new Transient<>(checkPrismContext().itemFactory().createPropertyValue(node));
             return ret;
