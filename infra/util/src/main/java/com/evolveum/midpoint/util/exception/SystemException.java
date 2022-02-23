@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import org.jetbrains.annotations.NotNull;
+
 public class SystemException extends RuntimeException {
 
     private static final long serialVersionUID = -611042093339023362L;
@@ -26,4 +28,20 @@ public class SystemException extends RuntimeException {
         super(message, throwable);
     }
 
+    /**
+     * A shortcut used to signal that an exception was really unexpected in the given context.
+     * It means either a bug, or a problem outside midPoint we cannot do anything with.
+     *
+     * So it is expected _not_ to be caught and treated in any reasonable way.
+     */
+    public static SystemException unexpected(@NotNull Exception e) {
+        return new SystemException("Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+    }
+
+    /**
+     * A variant of {@link #unexpected(Exception)} that provides a little bit of context.
+     */
+    public static SystemException unexpected(@NotNull Exception e, String context) {
+        return new SystemException("Unexpected " + e.getClass().getSimpleName() + " " + context + ": " + e.getMessage(), e);
+    }
 }
