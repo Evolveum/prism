@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 import static java.util.Collections.emptyList;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -303,8 +304,17 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         registerSchemaDescription(desc);
     }
 
+    public void registerWsdlSchemaFile(File file) throws SchemaException, FileNotFoundException {
+        List<SchemaDescriptionImpl> descriptions = SchemaDescriptionParser.parseWsdlResource(file);
+        registerPrismSchemasFromWsdl(file.toString(), descriptions, null);
+    }
+
     public void registerPrismSchemasFromWsdlResource(String resourcePath, List<Package> compileTimeClassesPackages) throws SchemaException {
         List<SchemaDescriptionImpl> descriptions = SchemaDescriptionParser.parseWsdlResource(resourcePath);
+        registerPrismSchemasFromWsdl(resourcePath, descriptions, compileTimeClassesPackages);
+
+    }
+    protected void registerPrismSchemasFromWsdl(String resourcePath, List<SchemaDescriptionImpl> descriptions, List<Package> compileTimeClassesPackages) throws SchemaException {
         Iterator<Package> pkgIterator = null;
         if (compileTimeClassesPackages != null) {
             if (descriptions.size() != compileTimeClassesPackages.size()) {

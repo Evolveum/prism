@@ -39,6 +39,9 @@ public class PrismCodegenMojo extends AbstractMojo {
     private File[] schemaFiles;
 
     @Parameter
+    private File[] wsdlFiles;
+
+    @Parameter
     private File[] catalogFiles;
 
     @Parameter(defaultValue="${project.build.directory}", required=true)
@@ -122,6 +125,16 @@ public class PrismCodegenMojo extends AbstractMojo {
                     throw new MojoFailureException("Schema file "+schemaFile+" does not exist");
                 }
                 schemaRegistry.registerPrismSchemaFile(schemaFile);
+            }
+
+            if (wsdlFiles != null) {
+                for (File wsdlFile : wsdlFiles) {
+                    getLog().debug("SchemaDoc: registering WSDL file: "+ wsdlFile);
+                    if (!wsdlFile.exists()) {
+                        throw new MojoFailureException("WSDLfile "+wsdlFile+" does not exist");
+                    }
+                    schemaRegistry.registerWsdlSchemaFile(wsdlFile);
+                }
             }
 
             if (catalogFiles != null && catalogFiles.length > 0) {

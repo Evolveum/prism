@@ -52,14 +52,17 @@ class SchemaDescriptionParser {
         return desc;
     }
 
-    static List<SchemaDescriptionImpl> parseWsdlResource(File resource) throws SchemaException {
-        return null;
+    static List<SchemaDescriptionImpl> parseWsdlResource(File resource) throws SchemaException, FileNotFoundException {
+        InputStream inputStream = new FileInputStream(resource);
+        return parseWsdlResource(resource.toString(), inputStream);
     }
 
     static List<SchemaDescriptionImpl> parseWsdlResource(String resourcePath) throws SchemaException {
-        List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
-
         InputStream inputStream = SchemaRegistry.class.getClassLoader().getResourceAsStream(resourcePath);
+        return parseWsdlResource(resourcePath, inputStream);
+    }
+    private static List<SchemaDescriptionImpl> parseWsdlResource(String resourcePath, InputStream inputStream) throws SchemaException {
+        List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
         if (inputStream == null) {
             throw new IllegalStateException("Cannot fetch system resource for schema " + resourcePath);
         }
