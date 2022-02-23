@@ -23,8 +23,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.*;
 
 /**
@@ -61,17 +59,18 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     /**
      * The constructors should be used only occasionally (if used at all).
-     * Use the factory methods in the ResourceObjectDefinition instead.
+     * Use the factory methods in the ResourceObjectDefintion instead.
      */
     public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition) {
         this(name, complexTypeDefinition, null);
     }
 
-    public PrismContainerDefinitionImpl(
-            @NotNull QName name,
-            @Nullable ComplexTypeDefinition complexTypeDefinition,
-            @Nullable Class<C> compileTimeClass) {
-        super(name, determineTypeName(complexTypeDefinition));
+    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, Class<C> compileTimeClass) {
+        this(name, complexTypeDefinition, compileTimeClass, null);
+    }
+
+    public PrismContainerDefinitionImpl(@NotNull QName name, ComplexTypeDefinition complexTypeDefinition, Class<C> compileTimeClass, QName definedInType) {
+        super(name, determineTypeName(complexTypeDefinition), definedInType);
         this.complexTypeDefinition = complexTypeDefinition;
         if (complexTypeDefinition == null) {
             isRuntimeSchema = true;

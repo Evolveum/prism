@@ -19,7 +19,6 @@ import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
-import com.evolveum.midpoint.prism.util.PrismUtil;
 import com.evolveum.midpoint.util.DisplayableValue;
 
 import org.jetbrains.annotations.NotNull;
@@ -66,23 +65,24 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName) {
-        super(elementName, typeName);
+        this(elementName, typeName, null);
+    }
+
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
+        super(elementName, typeName, definedInType);
         this.structuredType = Lazy.from(() ->
             Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
-    public PrismPropertyDefinitionImpl(
-            QName elementName,
-            QName typeName,
-            Collection<? extends DisplayableValue<T>> allowedValues,
-            T defaultValue) {
-        super(elementName, typeName);
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
+        this(elementName, typeName, allowedValues, defaultValue, null);
+    }
+
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue, QName definedInType) {
+        this(elementName, typeName, definedInType);
         this.allowedValues = allowedValues;
         this.defaultValue = defaultValue;
-        this.structuredType = Lazy.from(() ->
-            Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
-        );
     }
 
     @Override

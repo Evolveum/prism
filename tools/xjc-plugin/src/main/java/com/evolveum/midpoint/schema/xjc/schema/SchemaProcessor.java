@@ -133,15 +133,15 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
             stepSchemaConstants.run(outline, options, errorHandler);
 
             Map<String, JFieldVar> namespaceFields = stepSchemaConstants.getNamespaceFields();
-            addComplexType(outline, namespaceFields);
-            addContainerName(outline, namespaceFields);
+            addComplexTypeConstants(outline, namespaceFields);
+            addContainerNames(outline, namespaceFields);
             addFieldQNames(outline, namespaceFields);
 
-            updatePrismObject(outline);
-            updatePrismContainer(outline);
+            updatePrismObjects(outline);
+            updatePrismContainers(outline);
             updateFields(outline);
 
-            updateObjectReferenceType(outline);
+            updateObjectReferenceTypes(outline);
 
             updateObjectFactoryElements(outline);
 
@@ -161,7 +161,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         }
     }
 
-    private void updateObjectReferenceType(Outline outline) {
+    private void updateObjectReferenceTypes(Outline outline) {
         ClassOutline objectReferenceOutline = null;
         for (Map.Entry<NClass, CClassInfo> entry : outline.getModel().beans().entrySet()) {
             QName qname = entry.getValue().getTypeName();
@@ -217,117 +217,116 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
 
 
 
-    private Set<JDefinedClass> updatePrismContainer(Outline outline) {
-        Set<JDefinedClass> containers = new HashSet<>();
+    private void updatePrismContainers(Outline outline) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());
 
             QName qname = getCClassInfoQName(entry.getValue());
-            if (qname == null || !hasAnnotation(classOutline, A_PRISM_CONTAINER)) {
-                continue;
-            }
-
-            if (hasAnnotation(classOutline, A_PRISM_OBJECT) && hasAnnotation(classOutline, A_PRISM_CONTAINER)) {
-                continue;
-            }
-
-            JDefinedClass definedClass = classOutline.implClass;
-            definedClass._implements(CLASS_MAP.get(Containerable.class));
-            containers.add(definedClass);
-
-            //inserting MidPointObject field into ObjectType class
-            JVar containerValue = definedClass.field(JMod.PRIVATE, PrismContainerValue.class, CONTAINER_VALUE_FIELD_NAME);
-
-            // default constructor
-            createDefaultConstructor(definedClass);
-
-            //create asPrismContainer
-//            createAsPrismContainer(classOutline, containerValue);
-            createAsPrismContainerValue(definedClass, containerValue);
-
-            //create setContainer
-            JMethod setupContainerMethod = createSetContainerValueMethod(definedClass, containerValue);
-
-            // constructor with prismContext
-            createPrismContextContainerableConstructor(definedClass, setupContainerMethod);
-
-            //create toString, equals, hashCode
-            createToStringMethod(definedClass, METHOD_AS_PRISM_CONTAINER_VALUE);
-            createEqualsMethod(classOutline, METHOD_AS_PRISM_CONTAINER_VALUE);
-            createHashCodeMethod(definedClass, METHOD_AS_PRISM_CONTAINER_VALUE);
-
-            //get container type
-            JMethod getContainerType = definedClass.method(JMod.NONE, QName.class, METHOD_GET_CONTAINER_TYPE);
-//            getContainerType.annotate(CLASS_MAP.get(XmlTransient.class));
-            JBlock body = getContainerType.body();
-            body._return(definedClass.staticRef(COMPLEX_TYPE_FIELD_NAME));
+            updatePrismContainer(classOutline, qname);
         }
 
         removeCustomGeneratedMethod(outline);
-
-        return containers;
     }
 
-    private Set<JDefinedClass> updatePrismObject(Outline outline) {
-        Set<JDefinedClass> containers = new HashSet<>();
+    private void updatePrismContainer(ClassOutline classOutline, QName qname) {
+        if (qname == null || !hasAnnotation(classOutline, A_PRISM_CONTAINER)) {
+            return;
+        }
+
+        if (hasAnnotation(classOutline, A_PRISM_OBJECT) && hasAnnotation(classOutline, A_PRISM_CONTAINER)) {
+            return;
+        }
+
+        JDefinedClass definedClass = classOutline.implClass;
+        definedClass._implements(CLASS_MAP.get(Containerable.class));
+
+        //inserting MidPointObject field into ObjectType class
+        JVar containerValue = definedClass.field(JMod.PRIVATE, PrismContainerValue.class, CONTAINER_VALUE_FIELD_NAME);
+
+        // default constructor
+        createDefaultConstructor(definedClass);
+
+        //create asPrismContainer
+//        createAsPrismContainer(classOutline, containerValue);
+        createAsPrismContainerValue(definedClass, containerValue);
+
+        //create setContainer
+        JMethod setupContainerMethod = createSetContainerValueMethod(definedClass, containerValue);
+
+        // constructor with prismContext
+        createPrismContextContainerableConstructor(definedClass, setupContainerMethod);
+
+        //create toString, equals, hashCode
+        createToStringMethod(definedClass, METHOD_AS_PRISM_CONTAINER_VALUE);
+        createEqualsMethod(classOutline, METHOD_AS_PRISM_CONTAINER_VALUE);
+        createHashCodeMethod(definedClass, METHOD_AS_PRISM_CONTAINER_VALUE);
+
+        //get container type
+        JMethod getContainerType = definedClass.method(JMod.NONE, QName.class, METHOD_GET_CONTAINER_TYPE);
+//        getContainerType.annotate(CLASS_MAP.get(XmlTransient.class));
+        JBlock body = getContainerType.body();
+        body._return(definedClass.staticRef(COMPLEX_TYPE_FIELD_NAME));
+    }
+
+    private void updatePrismObjects(Outline outline) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());
             QName qname = getCClassInfoQName(entry.getValue());
-
-            if (qname == null) {
-                continue;
-            }
-
-            boolean isDirectPrismObject = hasAnnotation(classOutline, A_PRISM_OBJECT);
-            boolean isIndirectPrismObject = hasParentAnnotation(classOutline, A_PRISM_OBJECT);
-
-            if (!isIndirectPrismObject) {
-                continue;
-            }
-
-            JDefinedClass definedClass = classOutline.implClass;
-
-            createDefaultConstructor(definedClass);
-            createPrismContextObjectableConstructor(definedClass);
-
-            createAsPrismObject(definedClass);
-
-            if (!isDirectPrismObject) {
-                continue;
-            }
-
-            definedClass._implements(CLASS_MAP.get(Objectable.class));
-            containers.add(definedClass);
-
-            //inserting PrismObject field into ObjectType class
-            JVar container = definedClass.field(JMod.PRIVATE, PrismObject.class, CONTAINER_FIELD_NAME);
-
-            //create getContainer
-//            createGetContainerMethod(classOutline, container);
-            //create setContainer
-            createSetContainerMethod(definedClass, container);
-
-            //create asPrismObject()
-            createAsPrismContainer(classOutline, container);
-            // Objectable is also Containerable, we also need these
-            createAsPrismContainerValueInObject(definedClass);
-            createSetContainerValueMethodInObject(definedClass, container);
-
-            print("Creating toString, equals, hashCode methods.");
-            //create toString, equals, hashCode
-            createToStringMethod(definedClass, METHOD_AS_PRISM_CONTAINER);
-            createEqualsMethod(classOutline, METHOD_AS_PRISM_CONTAINER);
-            createHashCodeMethod(definedClass, METHOD_AS_PRISM_CONTAINER);
-            //create toDebugName, toDebugType
-            createToDebugName(definedClass);
-            createToDebugType(definedClass);
+            updatePrismObject(qname, classOutline);
         }
 
         removeCustomGeneratedMethod(outline);
+    }
 
-        return containers;
+    private void updatePrismObject(QName qname, ClassOutline classOutline) {
+        if (qname == null) {
+            return;
+        }
+
+        boolean isDirectPrismObject = hasAnnotation(classOutline, A_PRISM_OBJECT);
+        boolean isIndirectPrismObject = hasParentAnnotation(classOutline, A_PRISM_OBJECT);
+
+        if (!isIndirectPrismObject) {
+            return;
+        }
+
+        JDefinedClass definedClass = classOutline.implClass;
+
+        createDefaultConstructor(definedClass);
+        createPrismContextObjectableConstructor(definedClass);
+
+        createAsPrismObject(definedClass);
+
+        if (!isDirectPrismObject) {
+            return;
+        }
+
+        definedClass._implements(CLASS_MAP.get(Objectable.class));
+
+        //inserting PrismObject field into ObjectType class
+        JVar container = definedClass.field(JMod.PRIVATE, PrismObject.class, CONTAINER_FIELD_NAME);
+
+        //create getContainer
+//        createGetContainerMethod(classOutline, container);
+        //create setContainer
+        createSetContainerMethod(definedClass, container);
+
+        //create asPrismObject()
+        createAsPrismContainer(classOutline, container);
+        // Objectable is also Containerable, we also need these
+        createAsPrismContainerValueInObject(definedClass);
+        createSetContainerValueMethodInObject(definedClass, container);
+
+        print("Creating toString, equals, hashCode methods.");
+        //create toString, equals, hashCode
+        createToStringMethod(definedClass, METHOD_AS_PRISM_CONTAINER);
+        createEqualsMethod(classOutline, METHOD_AS_PRISM_CONTAINER);
+        createHashCodeMethod(definedClass, METHOD_AS_PRISM_CONTAINER);
+        //create toDebugName, toDebugType
+        createToDebugName(definedClass);
+        createToDebugType(definedClass);
     }
 
     /**
@@ -468,7 +467,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return qname;
     }
 
-    private void addContainerName(Outline outline, Map<String, JFieldVar> namespaceFields) {
+    private void addContainerNames(Outline outline, Map<String, JFieldVar> namespaceFields) {
         Map<QName, List<Entry<QName, Boolean>>> complexTypeToElementName = null;
 
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
@@ -544,7 +543,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
         return hasAnnotation(classOutline, annotation) || hasParentAnnotation(classOutline.getSuperClass(), annotation);
     }
 
-    private void addComplexType(Outline outline, Map<String, JFieldVar> namespaceFields) {
+    private void addComplexTypeConstants(Outline outline, Map<String, JFieldVar> namespaceFields) {
         Set<Map.Entry<NClass, CClassInfo>> set = outline.getModel().beans().entrySet();
         for (Map.Entry<NClass, CClassInfo> entry : set) {
             ClassOutline classOutline = outline.getClazz(entry.getValue());

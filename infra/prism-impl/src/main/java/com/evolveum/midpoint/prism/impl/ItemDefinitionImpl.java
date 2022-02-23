@@ -8,7 +8,6 @@
 package com.evolveum.midpoint.prism.impl;
 
 import java.util.Objects;
-import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -80,7 +79,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         this(itemName, typeName, null);
     }
 
-    // TODO are there any uses of "definedInType"?
     ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, QName definedInType) {
         super(typeName);
         this.itemName = ItemName.fromQName(itemName);
