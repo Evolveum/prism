@@ -49,7 +49,7 @@ public class StructuredContract extends Contract {
         }
     }
 
-    private String javaFromItemName(@NotNull ItemName itemName) {
+    static String javaFromItemName(@NotNull ItemName itemName) {
         String maybe = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, itemName.getLocalPart());
         if ("Class".equals(maybe)) {
             return "Clazz";

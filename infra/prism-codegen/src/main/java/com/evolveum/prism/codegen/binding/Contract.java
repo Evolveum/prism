@@ -22,5 +22,5 @@ public abstract class Contract {
         return name.getLocalPart();
     }
 
-    protected abstract String fullyQualifiedName();
+    public abstract String fullyQualifiedName();
 }

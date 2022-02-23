@@ -6,14 +6,11 @@
  */
 package com.evolveum.prism.codegen.binding;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
-public abstract class TypeBinding {
+public abstract class TypeBinding extends Binding {
 
     private final QName name;
 
@@ -21,26 +18,6 @@ public abstract class TypeBinding {
     public TypeBinding(QName name) {
         super();
         this.name = name;
-    }
-
-    protected Contract defaultContract;
-    private Set<Contract> contracts = new HashSet<>();
-
-    public <T extends Contract> void defaultContract(T contract) {
-        addContract(contract);
-        defaultContract = contract;
-    }
-
-    public Contract getDefaultContract() {
-        return defaultContract;
-    }
-
-    public <T extends Contract> void  addContract(T contract) {
-        contracts.add(contract);
-    }
-
-    public Iterable<Contract> getContracts() {
-        return contracts;
     }
 
     public Static asStatic() {
@@ -80,10 +57,14 @@ public abstract class TypeBinding {
 
     }
 
-    public abstract String defaultBindingClass();
 
     public QName getName() {
         return name;
+    }
+
+    @Override
+    public String getNamespaceURI() {
+        return getName().getNamespaceURI();
     }
 
     @Override

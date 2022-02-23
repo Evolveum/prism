@@ -69,8 +69,8 @@ public class BindingContext {
     Map<String, PrismSchema> schemas = new HashMap<>();
     Map<QName, TypeBinding> bindings = new HashMap<>();
 
-    Set<TypeBinding> staticBindings = new HashSet<>();
-    Set<TypeBinding> derivedBindings = new HashSet<>();
+    Set<Binding> staticBindings = new HashSet<>();
+    Set<Binding> derivedBindings = new HashSet<>();
 
 
     BiMap<String, String> xmlToJavaNs = HashBiMap.create();
@@ -158,6 +158,10 @@ public class BindingContext {
 
     @VisibleForTesting
     void process(PrismSchema schema) {
+
+        createBinding(schema);
+
+
         @NotNull
         List<TypeDefinition> typeDefs = schema.getDefinitions(TypeDefinition.class);
         for (TypeDefinition typeDef : typeDefs) {
@@ -171,6 +175,15 @@ public class BindingContext {
                 throw new IllegalStateException("Binding " + binding + "mapped twice");
             }
         }
+    }
+
+    private SchemaBinding createBinding(PrismSchema schema) {
+        String packageName = resolvePackageName(schema.getNamespace());
+        var schemaBinding = new SchemaBinding(schema.getNamespace(), packageName);
+        // FIXME: Detect if binding exists staticly
+        derivedBindings.add(schemaBinding);
+        schemaBinding.defaultContract(new ObjectFactoryContract(schemaBinding, schema));
+        return schemaBinding;
     }
 
     private boolean isSchemaNative(PrismSchema schema, TypeDefinition typeDef) {
@@ -302,7 +315,7 @@ public class BindingContext {
         return ret;
     }
 
-    public Iterable<TypeBinding> getDerivedBindings() {
+    public Iterable<Binding> getDerivedBindings() {
         return derivedBindings;
     }
 

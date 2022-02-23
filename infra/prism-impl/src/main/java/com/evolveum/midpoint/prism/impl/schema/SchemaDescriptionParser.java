@@ -52,6 +52,10 @@ class SchemaDescriptionParser {
         return desc;
     }
 
+    static List<SchemaDescriptionImpl> parseWsdlResource(File resource) throws SchemaException {
+        return null;
+    }
+
     static List<SchemaDescriptionImpl> parseWsdlResource(String resourcePath) throws SchemaException {
         List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
 

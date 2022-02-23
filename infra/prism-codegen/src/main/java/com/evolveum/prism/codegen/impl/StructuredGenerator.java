@@ -7,7 +7,9 @@
 package com.evolveum.prism.codegen.impl;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -22,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ItemBinding;
@@ -33,9 +34,7 @@ import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JExpression;
 import com.sun.codemodel.JFieldVar;
-import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
@@ -97,8 +96,9 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         StructuredContract current = contract;
         // Generate fluent api from local definitions of current contract and
         // then from parent type contracts.
+        Set<String> alreadyGenerated = new HashSet<>();
         while (current != null) {
-            generateFluentApi(clazz, current.getLocalDefinitions());
+            generateFluentApi(clazz, current.getLocalDefinitions(), alreadyGenerated);
             QName superType = current.getSuperType();
             current = null;
             if (superType != null) {
@@ -117,8 +117,12 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         // Intentional NOOP
     }
 
-    private void generateFluentApi(JDefinedClass clazz, Iterable<ItemBinding> localDefs) {
+    private void generateFluentApi(JDefinedClass clazz, Iterable<ItemBinding> localDefs, Set<String> alreadyGenerated) {
         for (ItemBinding definition : localDefs) {
+            if (alreadyGenerated.contains(definition.fieldName())) {
+                continue;
+            }
+            alreadyGenerated.add(definition.fieldName());
             JMethod fluentSetter = clazz.method(JMod.PUBLIC, clazz, definition.fieldName());
             JType type = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
             JVar value = fluentSetter.param(type, "value");
@@ -179,31 +183,6 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             valueType = codeModel().ref(List.class).narrow(valueType);
         }
         return valueType;
-    }
-
-
-    protected void createQNameConstant(JDefinedClass targetClass, String targetField, QName qname, JFieldVar namespaceField, boolean namespaceFieldIsLocal, boolean createPath) {
-        JExpression namespaceArgument;
-        if (namespaceField != null) {
-            if (namespaceFieldIsLocal) {
-                namespaceArgument = namespaceField;
-            } else {
-                JClass schemaClass = codeModel()._getClass(BindingContext.SCHEMA_CONSTANTS_GENERATED_CLASS_NAME);
-                namespaceArgument = schemaClass.staticRef(namespaceField);
-            }
-        } else {
-            namespaceArgument = JExpr.lit(qname.getNamespaceURI());
-        }
-        createNameConstruction(targetClass, targetField, qname, namespaceArgument, createPath ? ItemName.class : QName.class);
-    }
-
-    private void createNameConstruction(JDefinedClass definedClass, String fieldName,
-            QName reference, JExpression namespaceArgument, Class<?> nameClass) {
-        JClass clazz = (JClass) codeModel()._ref(nameClass);
-        JInvocation invocation = JExpr._new(clazz);
-        invocation.arg(namespaceArgument);
-        invocation.arg(reference.getLocalPart());
-        definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, nameClass, fieldName, invocation);
     }
 
     public void annotateType(JDefinedClass clazz, StructuredContract contract, XmlAccessType type) {
