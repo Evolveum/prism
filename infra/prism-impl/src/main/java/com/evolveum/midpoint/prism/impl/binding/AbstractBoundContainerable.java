@@ -5,6 +5,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Containerable;
+import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismReference;
@@ -34,7 +35,7 @@ public abstract class AbstractBoundContainerable implements Containerable {
     }
 
     protected <T extends Referencable> List<T> prismGetReferencableList(Producer<T> producer, QName name, Class<?> clazz) {
-        PrismContainerValue pcv = asPrismContainerValue();
+        PrismContainerValue<?> pcv = asPrismContainerValue();
         PrismReference reference = PrismForJAXBUtil.getReference(pcv, name);
         return new ReferencableList<>(reference, pcv, producer);
     }
@@ -50,6 +51,15 @@ public abstract class AbstractBoundContainerable implements Containerable {
     protected <T extends Containerable> void prismSetSingleContainerable(ItemName name, T mappedValue) {
         PrismContainerValue<?> value = mappedValue != null ? mappedValue.asPrismContainerValue() : null;
         PrismForJAXBUtil.setFieldContainerValue(asPrismContainerValue(), name, value);
+    }
+
+    protected <T extends Objectable> T prismGetReferenceObjectable(ItemName refName, Class<T> objType) {
+        PrismReferenceValue reference = PrismForJAXBUtil.getReferenceValue(asPrismContainerValue(), refName);
+        if ((reference == null) || (reference.getObject() == null)) {
+            return null;
+        }
+        return objType.cast(reference.getObject().asObjectable());
+
     }
 
     protected static class ContainerableList<T extends Containerable> extends PrismContainerArrayList<T> {
