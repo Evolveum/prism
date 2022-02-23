@@ -11,11 +11,6 @@ public class SchemaBinding extends Binding {
         this.packageName = packageName;
     }
 
-    @Override
-    public String defaultBindingClass() {
-        // TODO Auto-generated method stub
-        return packageName + "." + OBJECT_FACTORY;
-    }
 
     public String getPackageName() {
         return packageName;

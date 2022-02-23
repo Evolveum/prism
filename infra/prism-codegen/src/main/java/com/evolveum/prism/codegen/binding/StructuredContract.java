@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.google.common.base.CaseFormat;
 
 public class StructuredContract extends Contract {
@@ -28,25 +27,28 @@ public class StructuredContract extends Contract {
 
     private final ComplexTypeDefinition typeDefinition;
 
+    private @NotNull Collection<ItemBinding> attributes = new ArrayList();
     private @NotNull Collection<ItemBinding> localDefinitions = new ArrayList<>();
 
     public StructuredContract(ComplexTypeDefinition typeDefinition, String packageName) {
         super(packageName);
         this.typeDefinition = typeDefinition;
-
         for (ItemDefinition<?> def : typeDefinition.getDefinitions()) {
-
-            // FIXME: Skip xml:any for now
-            if (DOMUtil.XSD_ANY.equals(def.getTypeName())) {
-                continue;
-            }
-
             String name = javaFromItemName(def.getItemName());
-            ItemBinding mapping = new ItemBinding(name, def);
+            ItemBinding mapping = new ItemBinding(name, def, false);
             if (!def.isInherited()) {
                 localDefinitions.add(mapping);
             }
         }
+
+        for (ItemDefinition<?> def : typeDefinition.getXmlAttributeDefinitions()) {
+            String name = javaFromItemName(def.getItemName());
+            ItemBinding mapping = new ItemBinding(name, def, true);
+            if (!def.isInherited()) {
+                attributes.add(mapping);
+            }
+        }
+
     }
 
     static String javaFromItemName(@NotNull ItemName itemName) {
@@ -72,6 +74,10 @@ public class StructuredContract extends Contract {
 
     public Collection<ItemBinding> getLocalDefinitions() {
         return localDefinitions;
+    }
+
+    public Collection<ItemBinding> getAttributeDefinitions() {
+        return attributes;
     }
 
     public Optional<String> getDocumentation() {

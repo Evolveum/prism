@@ -6,13 +6,18 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import java.util.ArrayList;
+
 import javax.xml.bind.annotation.XmlAccessType;
 
+import com.evolveum.midpoint.prism.impl.binding.AbstractPlainStructured;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
+import com.google.common.collect.Iterables;
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JBlock;
+import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
@@ -37,30 +42,38 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
         String name = contract.fullyQualifiedName();
         JDefinedClass clazz = codeModel()._class(name, ClassType.CLASS);
 
+        JClass superClazz = clazz(AbstractPlainStructured.class);
         if (contract.getSuperType() != null) {
             TypeBinding superType = bindingFor(contract.getSuperType());
-            clazz._extends(codeModel().ref(superType.defaultBindingClass()));
+            superClazz = codeModel().ref(superType.defaultBindingClass());
         }
+        clazz._extends(superClazz);
         applyDocumentation(clazz.javadoc(), contract.getDocumentation());
         annotateType(clazz, contract, XmlAccessType.FIELD);
         // fields are first to minimize diff against cxf version
         declareFields(clazz, contract);
-        declareConstants(clazz, contract);
+        var allDef = new ArrayList<>(contract.getAttributeDefinitions());
+        allDef.addAll(contract.getLocalDefinitions());
+        declareConstants(clazz, contract, allDef);
         return clazz;
     }
 
+    @Override
+    protected Iterable<ItemBinding> itemDefinitions(PlainStructuredContract contract) {
+        return Iterables.concat(contract.getAttributeDefinitions(), contract.getLocalDefinitions());
+    }
 
 
     private void declareFields(JDefinedClass clazz, PlainStructuredContract contract) {
-        for (ItemBinding item : contract.getLocalDefinitions()) {
+        for (ItemBinding item : itemDefinitions(contract)) {
             String fieldName = item.fieldName();
-            JType type = asBindingType(item);
+            JType type = asBindingType(item, contract);
             clazz.field(JMod.PROTECTED, type, fieldName);
         }
     }
 
     @Override
-    protected void implementGetter(JMethod method, ItemBinding definition, JType returnType) {
+    protected void implementGetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JType returnType) {
         method.body()._return(JExpr._this().ref(definition.fieldName()));
     }
 
@@ -70,7 +83,7 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
 
 
     @Override
-    protected void implementSetter(JMethod method, ItemBinding definition, JVar value) {
+    protected void implementSetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JVar value) {
         JBlock body = method.body();
         body.assign(JExpr._this().ref(definition.fieldName()), value);
     }

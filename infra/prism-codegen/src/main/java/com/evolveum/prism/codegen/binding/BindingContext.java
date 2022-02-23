@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.SourceVersion;
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -97,6 +97,8 @@ public class BindingContext {
 
         staticBinding(DOMUtil.XSD_ANYURI, String.class);
         staticBinding(DOMUtil.XSD_ANYTYPE, Object.class);
+        staticBinding(DOMUtil.XSD_ANY, Object.class);
+
 
         staticBinding(QueryType.COMPLEX_TYPE, QueryType.class);
         staticBinding(SearchFilterType.COMPLEX_TYPE, SearchFilterType.class);

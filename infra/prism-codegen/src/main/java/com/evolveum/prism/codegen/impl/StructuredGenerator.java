@@ -12,21 +12,27 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
+import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ItemBinding;
+import com.evolveum.prism.codegen.binding.ObjectFactoryContract;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.StructuredContract;
 import com.sun.codemodel.JAnnotationArrayMember;
@@ -34,7 +40,6 @@ import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
@@ -46,6 +51,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     private static final String VALUE_PARAM = "value";
 
     protected static final String FACTORY = "FACTORY";
+    private static final String FROM_ORIG = "fromOrig";
+    private static final String CREATE_GREGORIAN = "createXMLGregorianCalendar";
 
 
     public StructuredGenerator(CodeGenerator codeGenerator) {
@@ -59,35 +66,35 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, producerType, FACTORY, JExpr._new(annonFactory));
     }
 
-    protected void declareConstants(JDefinedClass clazz, StructuredContract contract) {
+    protected void declareConstants(JDefinedClass clazz, StructuredContract contract, Collection<ItemBinding> definitions) {
         clazz.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, clazz(Long.class), "serialVersionUid",
                 JExpr.lit(BindingContext.SERIAL_VERSION_UID));
 
-        JFieldVar namespaceField = null;
-        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  null, false, false);
-        for(ItemBinding def : contract.getLocalDefinitions()) {
+        var namespaceField = codeModel().ref(clazz.getPackage().name() + "." + ObjectFactoryContract.OBJECT_FACTORY).staticRef(ObjectFactoryContract.NAMESPACE_CONST);
+        createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  namespaceField, false, false);
+        for(ItemBinding def : definitions) {
             createQNameConstant(clazz, "F_"  + def.constantName(), def.itemName(), namespaceField, true, true);
         }
     }
 
     @Override
     public void implement(T contract, JDefinedClass clazz) {
-        for (ItemBinding definition : contract.getLocalDefinitions()) {
+        for (ItemBinding definition : itemDefinitions(contract)) {
 
             // Getter
-            JType bindingType = asBindingType(definition);
-            JMethod getter = clazz.method(JMod.PUBLIC, asBindingType(definition), definition.getterName());
+            JType bindingType = asBindingType(definition, contract);
+            JMethod getter = clazz.method(JMod.PUBLIC, bindingType, definition.getterName());
 
             // @XmlElement annotation
             JAnnotationUse jaxbAnn = getter.annotate(XmlElement.class);
             jaxbAnn.param(XML_ELEMENT_NAME, definition.itemName().getLocalPart());
 
-            implementGetter(getter, definition, bindingType);
+            implementGetter(clazz, getter, definition, bindingType);
 
             // Setter
             JMethod setter = clazz.method(JMod.PUBLIC, void.class, definition.setterName());
             JVar valueParam = setter.param(bindingType, VALUE_PARAM);
-            implementSetter(setter, definition, valueParam);
+            implementSetter(clazz, setter, definition, valueParam);
         }
 
         // Fluent API
@@ -98,7 +105,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         // then from parent type contracts.
         Set<String> alreadyGenerated = new HashSet<>();
         while (current != null) {
-            generateFluentApi(clazz, current.getLocalDefinitions(), alreadyGenerated);
+            generateFluentApi(clazz, contract, current.getAttributeDefinitions(), alreadyGenerated);
+            generateFluentApi(clazz, contract, current.getLocalDefinitions(), alreadyGenerated);
             QName superType = current.getSuperType();
             current = null;
             if (superType != null) {
@@ -111,20 +119,32 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         }
 
         implementationAfterFluentApi(contract,clazz);
+
+        var clone = clazz.method(JMod.PUBLIC, clazz, "clone");
+        clone.annotate(Override.class);
+        implementClone(clazz, contract, clone);
+    }
+
+    protected Iterable<ItemBinding> itemDefinitions(T contract) {
+        return contract.getLocalDefinitions();
+    }
+
+    protected void implementClone(JDefinedClass clazz, T contract, JMethod clone) {
+        clone.body()._throw(JExpr._new(clazz(UnsupportedOperationException.class)));
     }
 
     protected void implementationAfterFluentApi(T contract, JDefinedClass clazz) {
         // Intentional NOOP
     }
 
-    private void generateFluentApi(JDefinedClass clazz, Iterable<ItemBinding> localDefs, Set<String> alreadyGenerated) {
+    private void generateFluentApi(JDefinedClass clazz, T contract, Iterable<ItemBinding> localDefs, Set<String> alreadyGenerated) {
         for (ItemBinding definition : localDefs) {
             if (alreadyGenerated.contains(definition.fieldName())) {
                 continue;
             }
             alreadyGenerated.add(definition.fieldName());
             JMethod fluentSetter = clazz.method(JMod.PUBLIC, clazz, definition.fieldName());
-            JType type = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
+            JClass type = asBindingTypeOrJaxbElement(definition, contract);
             JVar value = fluentSetter.param(type, "value");
             if (definition.isList()) {
                 fluentSetter.body().invoke(JExpr.invoke(definition.getterName()), "add").arg(value);
@@ -146,8 +166,26 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
                 });
 
             }
+            if (PrismConstants.POLYSTRING_TYPE_QNAME.equals(definition.getDefinition().getTypeName())) {
+                JMethod stringSetter = clazz.method(JMod.PUBLIC, clazz, definition.fieldName());
+                var stringValue = stringSetter.param(String.class, "value");
+                stringSetter.body()._return(
+                        JExpr.invoke(definition.fieldName()).arg(type.staticInvoke(FROM_ORIG).arg(stringValue)));
+            }
 
-            if (targetContract instanceof StructuredContract) {
+            if (clazz(XMLGregorianCalendar.class).equals(type)) {
+                JMethod stringSetter = clazz.method(JMod.PUBLIC, clazz, definition.fieldName());
+                var stringValue = stringSetter.param(String.class, "value");
+                stringSetter.body()._return(
+                        JExpr.invoke(definition.fieldName())
+                        .arg(clazz(XmlTypeConverter.class).staticInvoke(CREATE_GREGORIAN).arg(stringValue)));
+
+            }
+
+            // Generate begin only for structured, non substituble, non abstract complex types
+            if (targetContract instanceof StructuredContract
+                    && !((StructuredContract) targetContract).getTypeDefinition().isAbstract()
+                    && !type.erasure().equals(clazz(JAXBElement.class))) {
                 var beginMethod = clazz.method(JMod.PUBLIC, type, "begin" + definition.getJavaName());
                 value = beginMethod.body().decl(type, "value", JExpr._new(type));
                 beginMethod.body().invoke(definition.fieldName()).arg(value);
@@ -170,17 +208,27 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         body._return(JExpr.invoke(name).arg(ort));
     }
 
-    protected abstract void implementGetter(JMethod method, ItemBinding definition, JType returnType);
+    protected abstract void implementGetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JType returnType);
 
-    protected abstract void implementSetter(JMethod method, ItemBinding definition, JVar valueParam);
+    protected abstract void implementSetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JVar valueParam);
 
 
 
-    protected JType asBindingType(ItemBinding definition) {
-        JType valueType = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
+    protected JType asBindingType(ItemBinding definition, T contract) {
+        JClass valueType = asBindingTypeOrJaxbElement(definition, contract);
         if (definition.isList()) {
             // Wrap as list
             valueType = codeModel().ref(List.class).narrow(valueType);
+        }
+        return valueType;
+    }
+
+    protected JClass asBindingTypeOrJaxbElement(ItemBinding definition, T contract) {
+        ComplexTypeDefinition parentDef = contract.getTypeDefinition();
+        JClass valueType = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
+        // we have multiple object elements, which are not target for substitutions
+        if (!definition.getJavaName().equals("Object") && parentDef.hasSubstitutions(definition.getQName())) {
+            valueType = clazz(JAXBElement.class).narrow(valueType.wildcard());
         }
         return valueType;
     }

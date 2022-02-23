@@ -76,7 +76,9 @@ public class CodeGenerator {
             for (Contract contract : binding.getContracts()) {
                 ContractGenerator<Contract> generator = getGenerator(contract);
                 JDefinedClass clazz = generator.declare(contract);
-                generator.implement(contract, clazz);
+                if (clazz != null) {
+                    generator.implement(contract, clazz);
+                }
             }
         } catch (Exception e) {
             throw CodeGenerationException.of(e, "Can not generate code for %s. Reason: %s", binding, e.getMessage());
