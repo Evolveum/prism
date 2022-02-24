@@ -16,14 +16,16 @@ import static com.google.common.base.CaseFormat.*;
 
 public class ItemBinding {
 
-    private ItemDefinition<?> definition;
-    private QName qName;
-    private String name;
+    private final ItemDefinition<?> definition;
+    private final QName qName;
+    private final String name;
+    private final boolean attribute;
 
-    public ItemBinding(String name, ItemDefinition<?> def) {
+    public ItemBinding(String name, ItemDefinition<?> def, boolean attribute) {
         this.name = name;
         this.qName = def.getItemName();
         this.definition = def;
+        this.attribute = attribute;
     }
 
     public String getJavaName() {

@@ -8,6 +8,7 @@ package com.evolveum.prism.codegen.impl;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableObjectable;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ObjectableContract;
@@ -30,7 +31,7 @@ public class ObjectableGenerator extends ContainerableGenerator<ObjectableContra
     @Override
     public JDefinedClass declare(ObjectableContract contract) throws JClassAlreadyExistsException {
         JDefinedClass clazz = super.declare(contract);
-
+        clazz._implements(clazz(Objectable.class));
         // FIXME: We should create CONTAINER_NAME constant
         if (contract.containerName() != null) {
             createQNameConstant(clazz, CONTAINER_NAME_CONSTANT, contract.containerName(), null, false, false);
@@ -54,10 +55,4 @@ public class ObjectableGenerator extends ContainerableGenerator<ObjectableContra
         super.implement(contract, clazz);
     }
 
-    @Override
-    protected void implementationAfterFluentApi(ObjectableContract contract, JDefinedClass clazz) {
-        fluentSetter(clazz, String.class, "oid", "setOid");
-        fluentSetter(clazz, String.class, "version", "setVersion");
-        createContainerFluentEnd(clazz);
-    }
 }

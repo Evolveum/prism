@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +38,7 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
      *
      * The list is unmodifiable.
      */
+    @Override
     @SuppressWarnings("unchecked") // temporary workaround
     @NotNull
     List<? extends ItemDefinition<?>> getDefinitions();
@@ -138,6 +140,16 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     @Experimental
     boolean hasSubstitutions();
 
+
+    /**
+     * Returns true if item has substitutions in current container definition
+     */
+    @Experimental
+    default boolean hasSubstitutions(QName qName) {
+        // Impl for backwards compatibility
+        return false;
+    }
+
     @Experimental
     Optional<ItemDefinition<?>> substitution(QName name);
 
@@ -152,4 +164,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
 
     @Override
     MutableComplexTypeDefinition toMutable();
+
+    @Experimental
+    default List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
+        return Collections.emptyList();
+    }
 }

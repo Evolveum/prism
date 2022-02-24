@@ -1,16 +1,21 @@
 package com.evolveum.midpoint.prism.impl.binding;
 
+
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.impl.PrismContainerValueImpl;
 
-public abstract class AbstractMutableContainerable extends AbstractBoundContainerable implements Containerable {
+public abstract class AbstractMutableContainerable extends AbstractBoundContainerable implements Containerable, Cloneable {
 
     private PrismContainerValue value;
 
     @Override
     public void setupContainerValue(PrismContainerValue container) {
         this.value = container;
+    }
+
+    public Long getId() {
+        return asPrismContainerValue().getId();
     }
 
     public void setId(Long value) {
@@ -42,6 +47,11 @@ public abstract class AbstractMutableContainerable extends AbstractBoundContaine
     @Override
     public int hashCode() {
         return asPrismContainerValue().hashCode();
+    }
+
+    @Override
+    protected Containerable clone() {
+        return asPrismContainerValue().clone().asContainerable();
     }
 
 }

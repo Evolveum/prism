@@ -17,10 +17,12 @@ import javax.xml.namespace.QName;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.prism.codegen.binding.Binding;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.EnumerationContract;
+import com.evolveum.prism.codegen.binding.ObjectFactoryContract;
 import com.evolveum.prism.codegen.binding.ObjectableContract;
 import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
@@ -38,7 +40,7 @@ public class CodeGenerator {
     private final CodeWriter codeWriter;
     private final BindingContext context;
 
-    private final Set<TypeBinding> processed = new HashSet<>();
+    private final Set<Binding> processed = new HashSet<>();
     private final Set<String> pregeneratedNamespaces = ImmutableSet.<String>builder()
             .add(PrismConstants.NS_TYPES)
             .add(PrismConstants.NS_QUERY)
@@ -47,10 +49,11 @@ public class CodeGenerator {
     private Map<Class<? extends Contract>, ContractGenerator<?>> generators = ImmutableMap.<Class<? extends Contract>, ContractGenerator<?>>builder()
             .put(ObjectableContract.class, new ObjectableGenerator(this))
             .put(PlainStructuredContract.class, new PlainStructuredGenerator(this))
-            .put(ContainerableContract.class, new ContainerableGenerator<ContainerableContract>(this))
+            .put(ContainerableContract.class, new ContainerableGenerator<>(this))
             .put(EnumerationContract.class, new EnumerationGenerator(this))
             .put(ReferenceContract.class, new ReferencableGenerator(this))
             .put(ValueWrappedContract.class, new ValueWrapperGenerator(this))
+            .put(ObjectFactoryContract.class, new ObjectFactoryGenerator(this))
             .build();
 
 
@@ -65,7 +68,7 @@ public class CodeGenerator {
     }
 
 
-    public void process(TypeBinding binding) throws CodeGenerationException {
+    public void process(Binding binding) throws CodeGenerationException {
         if (alreadyGenerated(binding)) {
             return;
         }
@@ -73,7 +76,9 @@ public class CodeGenerator {
             for (Contract contract : binding.getContracts()) {
                 ContractGenerator<Contract> generator = getGenerator(contract);
                 JDefinedClass clazz = generator.declare(contract);
-                generator.implement(contract, clazz);
+                if (clazz != null) {
+                    generator.implement(contract, clazz);
+                }
             }
         } catch (Exception e) {
             throw CodeGenerationException.of(e, "Can not generate code for %s. Reason: %s", binding, e.getMessage());
@@ -83,13 +88,13 @@ public class CodeGenerator {
     }
 
     public void process() throws CodeGenerationException {
-        for (TypeBinding binding : context.getDerivedBindings()) {
+        for (Binding binding : context.getDerivedBindings()) {
             process(binding);
         }
     }
 
-    private boolean alreadyGenerated(TypeBinding binding) {
-        if (pregeneratedNamespaces.contains(binding.getName().getNamespaceURI())) {
+    private boolean alreadyGenerated(Binding binding) {
+        if (pregeneratedNamespaces.contains(binding.getNamespaceURI())) {
             return true;
         }
         return processed.contains(binding);
@@ -98,7 +103,6 @@ public class CodeGenerator {
 
     private ContractGenerator<Contract> getGenerator(Contract contract) throws CodeGenerationException {
         Class<? extends Contract> contractClass = contract.getClass();
-        // FIXME: Check if generator is present
         @SuppressWarnings("unchecked")
         ContractGenerator<Contract> generator = (ContractGenerator<Contract>) generators.get(contractClass);
         CodeGenerationException.checkNotNull(generator, "Missing code generator for %s", contractClass);

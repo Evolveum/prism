@@ -66,4 +66,9 @@ public interface MutableComplexTypeDefinition extends ComplexTypeDefinition, Mut
 
     @Experimental
     void addSubstitution(ItemDefinition<?> itemDef, ItemDefinition<?> maybeSubst);
+
+    @Experimental
+    default void setAttributeDefinitions(List<PrismPropertyDefinition<?>> definitions) {
+        // Intentional NOOP
+    }
 }

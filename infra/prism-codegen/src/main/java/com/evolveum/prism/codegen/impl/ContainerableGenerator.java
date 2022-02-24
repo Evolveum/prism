@@ -7,15 +7,18 @@
 package com.evolveum.prism.codegen.impl;
 
 import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.TypeBinding;
+import com.google.common.base.CaseFormat;
 import com.sun.codemodel.ClassType;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClass;
@@ -36,6 +39,7 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
     protected static final String GET_PROPERTY_VALUES = "prismGetPropertyValues";
     protected static final String GET_CONTAINERABLE_VALUES = "prismGetContainerableList";
     protected static final String GET_REFERENCABLE_VALUES = "prismGetReferencableList";
+    protected static final String GET_REFERENCE_OBJECTABLE = "prismGetReferenceObjectable";
 
 
     protected static final String SET_PROPERTY_VALUE = "prismSetPropertyValue";
@@ -68,7 +72,15 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
         applyDocumentation(clazz.javadoc(), contract.getDocumentation());
         annotateType(clazz, contract, XmlAccessType.PROPERTY);
-        declareConstants(clazz, contract);
+        declareConstants(clazz, contract, contract.getLocalDefinitions());
+
+
+        clazz.constructor(JMod.PUBLIC).body().invoke("super");
+
+        var publicPrismConst = clazz.constructor(JMod.PUBLIC);
+        publicPrismConst.param(PrismContext.class, "context");
+        publicPrismConst.annotate(Deprecated.class);
+        publicPrismConst.body().invoke("super");
 
         if (!contract.getTypeDefinition().isAbstract()) {
             declareFactory(clazz);
@@ -78,9 +90,13 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
     }
 
 
+    @Override
+    protected JClass asBindingTypeOrJaxbElement(ItemBinding definition, T contract) {
+        return asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
+    }
 
     @Override
-    protected void implementGetter(JMethod method, ItemBinding definition, JType returnType) {
+    protected void implementGetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JType returnType) {
         JBlock body = method.body();
         JInvocation invocation;
         /*if (hasAnnotationClass(method, XmlAnyElement.class)) {
@@ -103,11 +119,26 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             } else if (definition.getDefinition() instanceof PrismReferenceDefinition) {
                 invocation = JExpr._this().invoke(GET_REFERENCABLE_VALUES);
                 invocation.arg(rawType.staticRef(FACTORY));
-
             } else {
                 invocation = JExpr._this().invoke(GET_PROPERTY_VALUES);
             }
         } else {
+            if (definition.getDefinition() instanceof PrismReferenceDefinition) {
+                // FIXME: Generate ObjectType classes
+                var refDef = (PrismReferenceDefinition) definition.getDefinition();
+
+                String name = refDef.getCompositeObjectElementName() != null ? lowerToUpper(refDef.getCompositeObjectElementName().getLocalPart()) : null;
+                QName targetType = refDef.getTargetTypeName();
+
+                if (name != null && targetType != null) {
+                    var objType = codeModel().ref(bindingFor(targetType).defaultBindingClass());
+                    var objGetter = clazz.method(JMod.PUBLIC, objType, "get" + name);
+                    objGetter.body()._return(JExpr.invoke(GET_REFERENCE_OBJECTABLE)
+                            .arg(fieldConstant(definition.constantName()))
+                            .arg(JExpr.dotclass(objType)));
+                }
+
+            }
             invocation = JExpr._this().invoke(GET_PROPERTY_VALUE);
         }
         // push arguments
@@ -118,15 +149,26 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             JPrimitiveType primitive = (JPrimitiveType) type;
             invocation.arg(JExpr.dotclass(primitive.boxify()));
         } else {
-            JClass clazz = (JClass) type;
+            JClass clz = (JClass) type;
             if (definition.isList()) {
-                invocation.arg(JExpr.dotclass(clazz.getTypeParameters().get(0)));
+                invocation.arg(JExpr.dotclass(clz.getTypeParameters().get(0)));
             } else {
-                invocation.arg(JExpr.dotclass(clazz));
+                invocation.arg(JExpr.dotclass(clz));
             }
         }
 
         body._return(invocation);
+    }
+
+    private String lowerToUpper(String localPart) {
+        return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, localPart);
+    }
+
+    private String removeRefSuffix(String javaName) {
+        if (javaName.endsWith("Ref")) {
+            return javaName.substring(0, javaName.length() - 3);
+        }
+        return null;
     }
 
     private JExpression fieldConstant(String constantName) {
@@ -135,7 +177,7 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
 
     @Override
-    protected void implementSetter(JMethod method, ItemBinding definition, JVar value) {
+    protected void implementSetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JVar value) {
         JBlock body = method.body();
 
         // FIXME: Dispatch based on knowledge if type is container / reference / property
@@ -152,7 +194,6 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
     @Override
     protected void implementationAfterFluentApi(T contract, JDefinedClass clazz) {
-        fluentSetter(clazz, Long.class, "id", "setId");
         createContainerFluentEnd(clazz);
     }
 

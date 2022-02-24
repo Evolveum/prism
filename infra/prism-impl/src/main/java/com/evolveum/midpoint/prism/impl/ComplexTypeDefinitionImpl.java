@@ -82,6 +82,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     /** TODO */
     private final @NotNull Map<QName, ItemDefinition<?>> substitutions = new HashMap<>();
 
+    private transient List<PrismPropertyDefinition<?>> attributeDefinitions;
+
     public ComplexTypeDefinitionImpl(@NotNull QName typeName) {
         super(typeName);
     }
@@ -597,5 +599,25 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public boolean hasSubstitutions() {
         return !substitutions.isEmpty();
+    }
+
+    @Override
+    public boolean hasSubstitutions(QName itemName) {
+        for(ItemDefinition<?> substition : substitutions.values()) {
+            if (itemName.equals(substition.getSubstitutionHead())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void setAttributeDefinitions(List<PrismPropertyDefinition<?>> definitions) {
+        this.attributeDefinitions = definitions;
+    }
+
+    @Override
+    public List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
+        return attributeDefinitions != null ? attributeDefinitions : Collections.emptyList();
     }
 }
