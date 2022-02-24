@@ -372,8 +372,8 @@ public class PrismAsserts {
         assertSet("delta " + propertyDelta + " for " + path.last(), "replace", propertyDelta.getValuesToReplace(), expectedValues);
     }
 
-    public static void assertPropertyAdd(ObjectDelta<?> userDelta, ItemPath propertyPath, Object... expectedValues) {
-        PropertyDelta<Object> propertyDelta = userDelta.findPropertyDelta(propertyPath);
+    public static void assertPropertyAdd(ObjectDelta<?> objectDelta, ItemPath propertyPath, Object... expectedValues) {
+        PropertyDelta<Object> propertyDelta = objectDelta.findPropertyDelta(propertyPath);
         assertNotNull("Property delta for "+propertyPath+" not found",propertyDelta);
         assertAdd(propertyDelta, expectedValues);
     }
