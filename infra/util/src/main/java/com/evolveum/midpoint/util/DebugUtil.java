@@ -779,6 +779,45 @@ public class DebugUtil {
         sb.append("]");
     }
 
+    /**
+     * Dumps a throwable. This is aligned with the need of operation result dumping, so it may not be universally
+     * applicable. But it should be good enough.
+     */
+    public static void dumpThrowable(StringBuilder sb, String label, Throwable throwable, int indent, boolean printStackTrace) {
+        indentDebugDump(sb, indent);
+        sb.append(label);
+        sb.append(throwable.getClass().getSimpleName());
+        sb.append(":");
+        sb.append(throwable.getMessage());
+        sb.append("\n");
+        if (printStackTrace) {
+            dumpStackTrace(sb, throwable.getStackTrace(), indent + 2);
+            dumpInnerCauses(sb, throwable.getCause(), indent + 1);
+        }
+    }
+
+    private static void dumpStackTrace(StringBuilder sb, StackTraceElement[] stackTrace, int indent) {
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            indentDebugDump(sb, indent);
+            sb.append(stackTraceElement.toString());
+            sb.append("\n");
+        }
+    }
+
+    private static void dumpInnerCauses(StringBuilder sb, Throwable innerCause, int indent) {
+        if (innerCause == null) {
+            return;
+        }
+        indentDebugDump(sb, indent);
+        sb.append("Caused by ");
+        sb.append(innerCause.getClass().getName());
+        sb.append(": ");
+        sb.append(innerCause.getMessage());
+        sb.append("\n");
+        dumpStackTrace(sb, innerCause.getStackTrace(), indent + 1);
+        dumpInnerCauses(sb, innerCause.getCause(), indent);
+    }
+
     @Experimental
     public static class LazilyDumpable {
         private final Supplier<Object> supplier;
