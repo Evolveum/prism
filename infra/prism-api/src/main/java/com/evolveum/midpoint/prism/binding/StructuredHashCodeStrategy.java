@@ -31,7 +31,7 @@ public abstract class StructuredHashCodeStrategy {
         // Make sure both lists are non-null
         val = val != null ? val : Collections.emptyList();
         for(T value : val) {
-            current += hashCodeDispatch(val);
+            current += hashCodeDispatch(value);
         }
         return current;
     }
@@ -50,7 +50,7 @@ public abstract class StructuredHashCodeStrategy {
             return hashCodeNonNull((byte[]) val);
         }
         if (val instanceof JAXBElement<?>) {
-            return hashCodeNonNull(val);
+            return hashCodeNonNull((JAXBElement<?>) val);
         }
         if (val instanceof Element) {
             return hashCodeNonNull((Element) val);
@@ -70,6 +70,10 @@ public abstract class StructuredHashCodeStrategy {
     }
 
     protected abstract int  hashCodeNonNull(Element val);
+
+    public int hashCodeNonNull(JAXBElement<?> val) {
+        return hashCodeNonNull(0, val);
+    }
 
     protected int  hashCodeNonNull(int current, JAXBElement<?> val) {
         current = hashCode(current, val.getName());
