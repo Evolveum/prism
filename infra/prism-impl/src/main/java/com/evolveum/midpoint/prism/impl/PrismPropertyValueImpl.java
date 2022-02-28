@@ -23,6 +23,8 @@ import org.jvnet.jaxb2_commons.lang.Equals;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 import com.evolveum.midpoint.prism.crypto.EncryptionException;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.marshaller.BeanMarshaller;
@@ -473,6 +475,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                             StringUtils.equals(((QName) thisRealValue).getPrefix(), ((QName) otherRealValue).getPrefix());
                 } else if (thisRealValue instanceof Equals && otherRealValue instanceof Equals) {
                     return ((Equals) thisRealValue).equals(null, null, otherRealValue, LiteralEqualsStrategy.INSTANCE);
+                } else if (thisRealValue instanceof PlainStructured && otherRealValue instanceof PlainStructured) {
+                    return ((PlainStructured) thisRealValue).equals(other, StructuredEqualsStrategy.LITERAL);
                 }
             }
             return thisRealValue.equals(otherRealValue);
