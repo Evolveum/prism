@@ -18,6 +18,12 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jvnet.jaxb2_commons.lang.Equals;
+import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
+import org.jvnet.jaxb2_commons.lang.HashCode;
+import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
+import org.jvnet.jaxb2_commons.locator.ObjectLocator;
+
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
@@ -37,7 +43,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
         // BTW, the order is the following: description, filterClause
 })
 
-public class SearchFilterType extends AbstractFreezable implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable {
+public class SearchFilterType extends AbstractFreezable implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable,
+    Equals, HashCode { // FIXME: Still we need also old Equals, HashCode until switch is made in midpoint
 
     private static final long serialVersionUID = 201303040000L;
 
@@ -216,8 +223,19 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
     }
 
     @Override
+    public int hashCode(ObjectLocator locator, HashCodeStrategy hashCodeStrategy) {
+        return hashCode();
+    }
+
+    @Override
     public int hashCode() {
         return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
+    }
+
+    @Override
+    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object that,
+            EqualsStrategy equalsStrategy) {
+        return this.equals(that, StructuredEqualsStrategy.DOM_AWARE);
     }
 
     @Override
