@@ -14,17 +14,12 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 /**
@@ -62,7 +57,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
         "maxSize",
         "groupBy"
 })
-public class PagingType implements Serializable, Cloneable, Equals, HashCode {
+public class PagingType implements PlainStructured, Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -223,22 +218,24 @@ public class PagingType implements Serializable, Cloneable, Equals, HashCode {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
         int currentHashCode = 1;
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "orderBy", this.getOrderBy()), currentHashCode, this.getOrderBy());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "orderDirection", this.getOrderDirection()), currentHashCode, this.getOrderDirection());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "offset", this.getOffset()), currentHashCode, this.getOffset());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "maxSize", this.getMaxSize()), currentHashCode, this.getMaxSize());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "groupBy", this.getGroupBy()), currentHashCode, this.getGroupBy());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getOrderBy());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getOrderDirection());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getOffset());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getMaxSize());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getGroupBy());
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof PagingType)) {
             return false;
         }
@@ -250,44 +247,40 @@ public class PagingType implements Serializable, Cloneable, Equals, HashCode {
         lhsOrderBy = this.getOrderBy();
         ItemPathType rhsOrderBy;
         rhsOrderBy = that.getOrderBy();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "orderBy", lhsOrderBy), LocatorUtils.property(thatLocator, "orderBy", rhsOrderBy), lhsOrderBy, rhsOrderBy)) {
+        if (!strategy.equals(lhsOrderBy, rhsOrderBy)) {
             return false;
         }
         OrderDirectionType lhsOrderDirection;
         lhsOrderDirection = this.getOrderDirection();
         OrderDirectionType rhsOrderDirection;
         rhsOrderDirection = that.getOrderDirection();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "orderDirection", lhsOrderDirection), LocatorUtils.property(thatLocator, "orderDirection", rhsOrderDirection), lhsOrderDirection, rhsOrderDirection)) {
+        if (!strategy.equals(lhsOrderDirection, rhsOrderDirection)) {
             return false;
         }
         Integer lhsOffset;
         lhsOffset = this.getOffset();
         Integer rhsOffset;
         rhsOffset = that.getOffset();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "offset", lhsOffset), LocatorUtils.property(thatLocator, "offset", rhsOffset), lhsOffset, rhsOffset)) {
+        if (!strategy.equals(lhsOffset, rhsOffset)) {
             return false;
         }
         Integer lhsMaxSize;
         lhsMaxSize = this.getMaxSize();
         Integer rhsMaxSize;
         rhsMaxSize = that.getMaxSize();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "maxSize", lhsMaxSize), LocatorUtils.property(thatLocator, "maxSize", rhsMaxSize), lhsMaxSize, rhsMaxSize)) {
+        if (!strategy.equals(lhsMaxSize, rhsMaxSize)) {
             return false;
         }
         ItemPathType lhsGroupBy;
         lhsGroupBy = this.getGroupBy();
         ItemPathType rhsGroupBy;
         rhsGroupBy = that.getOrderBy();
-        return strategy.equals(
-                LocatorUtils.property(thisLocator, "groupBy", lhsGroupBy),
-                LocatorUtils.property(thatLocator, "groupBy", rhsGroupBy),
-                lhsGroupBy, rhsGroupBy);
+        return strategy.equals(lhsGroupBy, rhsGroupBy);
     }
 
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        return equals(object, StructuredEqualsStrategy.DOM_AWARE);
     }
 
     /**

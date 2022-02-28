@@ -16,8 +16,8 @@ package com.evolveum.prism.xml.ns._public.types_3;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -55,7 +55,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CipherDataType", propOrder = {
     "cipherValue"
 })
-public class CipherDataType implements Serializable, Cloneable, JaxbVisitable {
+public class CipherDataType implements PlainStructured.WithoutStrategy, JaxbVisitable {
+
+
+    private static final long serialVersionUID = 1L;
 
     @XmlElement(required = true)
     protected byte[] cipherValue;

@@ -14,15 +14,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 
 /**
  * <p>Java class for LogicalOperatorFilterType complex type.
@@ -46,7 +39,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 })
 public abstract class LogicalOperatorFilterType
         extends FilterClauseType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -83,30 +76,17 @@ public abstract class LogicalOperatorFilterType
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        return super.hashCode(locator, strategy);
-    }
-
-    public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
-
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof LogicalOperatorFilterType)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        return super.equals(thisLocator, thatLocator, object, strategy);
+        return super.equals(object, strategy);
     }
 
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
-    }
 
     /**
      * Creates and returns a deep copy of this object.

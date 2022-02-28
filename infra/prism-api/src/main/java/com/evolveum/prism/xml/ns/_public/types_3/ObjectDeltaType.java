@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 
 import org.w3c.dom.Element;
 
@@ -74,7 +75,10 @@ import com.evolveum.midpoint.util.exception.SystemException;
         "oid",
         "itemDelta"
 })
-public class ObjectDeltaType implements Serializable, JaxbVisitable {
+public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVisitable {
+
+
+    private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_TYPES, "ObjectDeltaType");
     public static final QName F_CHANGE_TYPE = new QName(PrismConstants.NS_TYPES, "changeType");
@@ -293,6 +297,7 @@ public class ObjectDeltaType implements Serializable, JaxbVisitable {
         }
 
         // todo this method is UNTESTED for now; however, as "any" will usually be ObjectType or its subclass, it should work
+        @Override
         public ObjectToAdd clone() {
             ObjectToAdd retval = new ObjectToAdd();
             if (any != null) {
@@ -321,6 +326,7 @@ public class ObjectDeltaType implements Serializable, JaxbVisitable {
      *
      * @return copy of the object
      */
+    @Override
     public ObjectDeltaType clone() {
 
         ObjectDeltaType clone = new ObjectDeltaType();

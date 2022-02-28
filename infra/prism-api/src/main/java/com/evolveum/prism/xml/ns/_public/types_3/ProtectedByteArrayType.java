@@ -66,4 +66,11 @@ public class ProtectedByteArrayType extends ProtectedDataType<Byte[]> {
     public void accept(JaxbVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public ProtectedByteArrayType clone() {
+        ProtectedByteArrayType cloned = new ProtectedByteArrayType();
+        cloneTo(cloned);
+        return cloned;
+    }
 }

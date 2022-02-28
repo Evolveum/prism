@@ -14,17 +14,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 /**
  * <p>Java class for UnaryLogicalOperatorFilterType complex type.
@@ -49,7 +43,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 })
 public class UnaryLogicalOperatorFilterType
         extends LogicalOperatorFilterType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -111,27 +105,24 @@ public class UnaryLogicalOperatorFilterType
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
+        int currentHashCode = super.hashCode(strategy);
         Element theFilter;
         theFilter = this.getFilter();
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "filter", theFilter), currentHashCode, theFilter);
+        currentHashCode = strategy.hashCode(currentHashCode, theFilter);
         return currentHashCode;
     }
 
-    public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
-
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals( Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof UnaryLogicalOperatorFilterType)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
+        if (!super.equals(object, strategy)) {
             return false;
         }
         final UnaryLogicalOperatorFilterType that = ((UnaryLogicalOperatorFilterType) object);
@@ -139,15 +130,10 @@ public class UnaryLogicalOperatorFilterType
         lhsFilter = this.getFilter();
         Element rhsFilter;
         rhsFilter = that.getFilter();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "filter", lhsFilter), LocatorUtils.property(thatLocator, "filter", rhsFilter), lhsFilter, rhsFilter)) {
+        if (!strategy.equals(lhsFilter, rhsFilter)) {
             return false;
         }
         return true;
-    }
-
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
     }
 
     /**

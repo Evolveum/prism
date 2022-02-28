@@ -13,17 +13,12 @@ import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 /**
  * <p>Java class for ValueType complex type.
@@ -46,7 +41,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 @XmlType(name = "ValueType", propOrder = {
         "content"
 })
-public class ValueType implements Serializable, Cloneable, Equals, HashCode {
+public class ValueType implements PlainStructured, Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -119,20 +114,22 @@ public class ValueType implements Serializable, Cloneable, Equals, HashCode {
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
         int currentHashCode = 1;
         List<Object> theContent;
         theContent = this.content != null && !this.content.isEmpty() ? this.getContent() : null;
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "content", theContent), currentHashCode, theContent);
+        currentHashCode = strategy.hashCode(currentHashCode, theContent);
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof ValueType)) {
             return false;
         }
@@ -144,13 +141,13 @@ public class ValueType implements Serializable, Cloneable, Equals, HashCode {
         lhsContent = this.content != null && !this.content.isEmpty() ? this.getContent() : null;
         List<Object> rhsContent;
         rhsContent = that.content != null && !that.content.isEmpty() ? that.getContent() : null;
-        return strategy.equals(LocatorUtils.property(thisLocator, "content", lhsContent), LocatorUtils.property(thatLocator, "content", rhsContent), lhsContent, rhsContent);
+        return strategy.equals(lhsContent, rhsContent);
     }
 
+    @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        return equals(object, StructuredEqualsStrategy.DOM_AWARE);
     }
 
     /**

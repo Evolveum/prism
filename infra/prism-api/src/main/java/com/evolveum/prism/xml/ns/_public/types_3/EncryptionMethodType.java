@@ -57,6 +57,9 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class EncryptionMethodType  implements Serializable, Cloneable, JaxbVisitable {
 
+
+    private static final long serialVersionUID = 1L;
+
     @XmlElement(required = true)
     @XmlSchemaType(name = "anyURI")
     protected String algorithm;
@@ -115,6 +118,7 @@ public class EncryptionMethodType  implements Serializable, Cloneable, JaxbVisit
         return "EncryptionMethodType(algorithm=" + algorithm + ")";
     }
 
+    @Override
     public EncryptionMethodType clone() {
         EncryptionMethodType cloned = new EncryptionMethodType();
         cloned.setAlgorithm(getAlgorithm());

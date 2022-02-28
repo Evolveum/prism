@@ -11,16 +11,9 @@ import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 /**
  * <p>Java class for UriFilterType complex type.
@@ -41,7 +34,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 @XmlType(name = "UriFilterType")
 public class UriFilterType
         extends FilterClauseType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -105,25 +98,23 @@ public class UriFilterType
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "uri", getUri()), currentHashCode, getUri());
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
+        int currentHashCode = super.hashCode(strategy);
+        currentHashCode = strategy.hashCode(currentHashCode, getUri());
         return currentHashCode;
     }
 
-    public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof UriFilterType)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
+        if (!super.equals(object, strategy)) {
             return false;
         }
         final UriFilterType that = ((UriFilterType) object);
@@ -131,16 +122,7 @@ public class UriFilterType
         lhsUri = this.getUri();
         String rhsUri;
         rhsUri = that.getUri();
-        return strategy.equals(
-                LocatorUtils.property(thisLocator, "uri", lhsUri),
-                LocatorUtils.property(thatLocator, "uri", rhsUri),
-                lhsUri, rhsUri);
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        return strategy.equals(lhsUri, rhsUri);
     }
 
     /**

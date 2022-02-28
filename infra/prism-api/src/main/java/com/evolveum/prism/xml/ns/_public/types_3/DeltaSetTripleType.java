@@ -7,7 +7,6 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,6 +16,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.delta.PrismValueDeltaSetTriple;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 
@@ -29,7 +29,7 @@ import com.evolveum.midpoint.prism.util.CloneUtil;
         "plus",
         "minus"
 })
-public class DeltaSetTripleType implements Serializable, JaxbVisitable, Cloneable {
+public class DeltaSetTripleType implements PlainStructured.WithoutStrategy, JaxbVisitable, Cloneable {
 
     @XmlElement
     @Raw
@@ -76,6 +76,7 @@ public class DeltaSetTripleType implements Serializable, JaxbVisitable, Cloneabl
         }
     }
 
+    @Override
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     public DeltaSetTripleType clone() {
         DeltaSetTripleType clone = new DeltaSetTripleType();

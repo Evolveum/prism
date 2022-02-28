@@ -18,14 +18,10 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
@@ -35,15 +31,13 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 
 @XmlAccessorType(XmlAccessType.NONE)        // we select getters/fields to expose via JAXB individually
 @XmlType(name = "SearchFilterType", propOrder = {       // no prop order, because we serialize this class manually
         // BTW, the order is the following: description, filterClause
 })
 
-public class SearchFilterType extends AbstractFreezable implements Serializable, Cloneable, Equals, HashCode, DebugDumpable, Freezable, JaxbVisitable {
+public class SearchFilterType extends AbstractFreezable implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable {
 
     private static final long serialVersionUID = 201303040000L;
 
@@ -214,22 +208,20 @@ public class SearchFilterType extends AbstractFreezable implements Serializable,
     }
 
     @Override
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+    public int hashCode(StructuredHashCodeStrategy strategy) {
         int currentHashCode = 1;
         MapXNode theFilter = this.filterClauseXNode;
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "filter", theFilter), currentHashCode, theFilter);
+        currentHashCode = strategy.hashCode(currentHashCode, theFilter);
         return currentHashCode;
     }
 
     @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
     }
 
     @Override
-    @SuppressWarnings("RedundantIfStatement")
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof SearchFilterType)) {
             return false;
         }
@@ -252,8 +244,7 @@ public class SearchFilterType extends AbstractFreezable implements Serializable,
     @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        return equals(object, StructuredEqualsStrategy.DOM_AWARE);
     }
 
     /**

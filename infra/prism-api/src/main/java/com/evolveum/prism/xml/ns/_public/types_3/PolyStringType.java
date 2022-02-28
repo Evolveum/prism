@@ -40,6 +40,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -83,7 +84,7 @@ import org.w3c.dom.Element;
     "lang",
     "any"
 })
-public class PolyStringType implements DebugDumpable, Serializable, Cloneable, JaxbVisitable {
+public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStrategy, JaxbVisitable {
     private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "PolyStringType");
@@ -329,12 +330,12 @@ public class PolyStringType implements DebugDumpable, Serializable, Cloneable, J
                 }
                 if (next instanceof String) {
                     // CBuiltinLeafInfo: java.lang.String
-                    target.add(((String) next));
+                    target.add((next));
                     continue;
                 }
                 if (next instanceof Object) {
                     // CBuiltinLeafInfo: java.lang.Object
-                    target.add(copyOf(((Object) next)));
+                    target.add(copyOf((next)));
                     continue;
                 }
                 // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
@@ -433,16 +434,16 @@ public class PolyStringType implements DebugDumpable, Serializable, Cloneable, J
                     return ((Locale) o).clone();
                 }
                 if (o instanceof Element) {
-                    return ((Element)((Element) o).cloneNode(true));
+                    return (((Element) o).cloneNode(true));
                 }
                 if (o instanceof JAXBElement) {
-                    return copyOf(((JAXBElement) o));
+                    return copyOf((o));
                 }
                 try {
                     return o.getClass().getMethod("clone", ((Class[]) null)).invoke(o, ((Object[]) null));
                 } catch (NoSuchMethodException e) {
                     if (o instanceof Serializable) {
-                        return copyOf(((Serializable) o));
+                        return copyOf((o));
                     }
                     // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
                     throw((AssertionError) new AssertionError((("Unexpected instance during copying object '"+ o)+"'.")).initCause(e));
@@ -485,28 +486,28 @@ public class PolyStringType implements DebugDumpable, Serializable, Cloneable, J
         // CC-XJC Version 2.0 Build 2011-09-16T18:27:24+0000
         if (array!= null) {
             if (array.getClass() == boolean[].class) {
-                return copyOf(((boolean[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == byte[].class) {
-                return copyOf(((byte[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == char[].class) {
-                return copyOf(((char[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == double[].class) {
-                return copyOf(((double[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == float[].class) {
-                return copyOf(((float[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == int[].class) {
-                return copyOf(((int[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == long[].class) {
-                return copyOf(((long[]) array));
+                return copyOf((array));
             }
             if (array.getClass() == short[].class) {
-                return copyOf(((short[]) array));
+                return copyOf((array));
             }
             final int len = Array.getLength(array);
             final Object copy = Array.newInstance(array.getClass().getComponentType(), len);
@@ -533,7 +534,7 @@ public class PolyStringType implements DebugDumpable, Serializable, Cloneable, J
             final JAXBElement<String> copy = new JAXBElement<>(e.getName(), e.getDeclaredType(), e.getScope(), e.getValue());
             copy.setNil(e.isNil());
             // CBuiltinLeafInfo: java.lang.String
-            copy.setValue(((String) copy.getValue()));
+            copy.setValue((copy.getValue()));
             return copy;
         }
         return null;

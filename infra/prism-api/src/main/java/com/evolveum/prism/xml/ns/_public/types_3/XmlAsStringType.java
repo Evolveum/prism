@@ -12,19 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.*;
 
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 import org.w3c.dom.Node;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 
 /**
  * A class used to hold string represented either as plain string or as XML markup. (Useful e.g. for jasper templates.)
@@ -33,7 +28,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 @XmlType(name = "XmlAsStringType", propOrder = {
         "content"
 })
-public class XmlAsStringType implements Serializable, Cloneable, Equals, HashCode, JaxbVisitable {
+public class XmlAsStringType implements PlainStructured, Serializable, Cloneable, JaxbVisitable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -73,20 +68,22 @@ public class XmlAsStringType implements Serializable, Cloneable, Equals, HashCod
         return sb.toString();
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
         int currentHashCode = 1;
         List<Object> theContent;
         theContent = this.content != null && !this.content.isEmpty() ? this.getContent() : null;
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "content", theContent), currentHashCode, theContent);
+        currentHashCode = strategy.hashCode(currentHashCode, theContent);
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof XmlAsStringType)) {
             return false;
         }
@@ -98,16 +95,13 @@ public class XmlAsStringType implements Serializable, Cloneable, Equals, HashCod
         lhsContent = this.content != null && !this.content.isEmpty() ? this.getContent() : null;
         List<Object> rhsContent;
         rhsContent = that.content != null && !that.content.isEmpty() ? that.getContent() : null;
-        return strategy.equals(
-                LocatorUtils.property(thisLocator, "content", lhsContent),
-                LocatorUtils.property(thatLocator, "content", rhsContent),
-                lhsContent, rhsContent);
+        return strategy.equals(lhsContent, rhsContent);
     }
 
+    @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        return equals(object, StructuredEqualsStrategy.DOM_AWARE);
     }
 
     /**

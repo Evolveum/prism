@@ -16,11 +16,10 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
@@ -58,7 +57,7 @@ import com.evolveum.midpoint.util.exception.TunnelException;
  * Implementation has stable Equals, but hashcode is unstable since it would require
  * significant effort to unify XNode and parsed items hashcode computation.
  */
-public class RawType implements Serializable, Cloneable, Equals, Revivable, ShortDumpable, JaxbVisitable, PrismContextSensitive {
+public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, Revivable, ShortDumpable, PrismContextSensitive {
     private static final long serialVersionUID = 4430291958902286779L;
 
     /**
@@ -244,6 +243,11 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     }
 
     @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
+        return hashCode();
+    }
+
+    @Override
     public synchronized int hashCode() {
         return current().hashCode();
     }
@@ -264,8 +268,7 @@ public class RawType implements Serializable, Cloneable, Equals, Revivable, Shor
     }
 
     @Override
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object that,
-            EqualsStrategy equalsStrategy) {
+    public boolean equals(Object that, StructuredEqualsStrategy equalsStrategy) {
         return equals(that);
     }
 

@@ -9,14 +9,12 @@ package com.evolveum.prism.xml.ns._public.types_3;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -53,7 +51,7 @@ import java.util.stream.Collectors;
 //   however, unlike RawType, ItemPathType is still present in externally-visible schemas (XSD, WSDL)
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ItemPathType")
-public class ItemPathType implements Serializable, Equals, Cloneable, JaxbVisitable {
+public class ItemPathType implements PlainStructured, Serializable, Cloneable, JaxbVisitable {
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ItemPathType");
 
@@ -78,6 +76,7 @@ public class ItemPathType implements Serializable, Equals, Cloneable, JaxbVisita
         this.itemPath = itemPath;
     }
 
+    @Override
     public ItemPathType clone() {
         return new ItemPathType(itemPath);
     }
@@ -94,8 +93,7 @@ public class ItemPathType implements Serializable, Equals, Cloneable, JaxbVisita
 
     @Override
     public boolean equals(Object obj) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, obj, strategy);
+        return equals(obj, StructuredEqualsStrategy.DEFAULT);
     }
 
     public boolean equivalent(Object other) {
@@ -109,8 +107,7 @@ public class ItemPathType implements Serializable, Equals, Cloneable, JaxbVisita
     }
 
     @Override
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object that,
-            EqualsStrategy equalsStrategy) {
+    public boolean equals(Object that, StructuredEqualsStrategy equalsStrategy) {
 
         if (!(that instanceof ItemPathType)){
             return false;
@@ -122,6 +119,11 @@ public class ItemPathType implements Serializable, Equals, Cloneable, JaxbVisita
         ItemPath otherPath = other.getItemPath();
 
         return thisPath.equals(otherPath);
+    }
+
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
+        return hashCode();
     }
 
     @Override

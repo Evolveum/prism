@@ -28,17 +28,11 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
+import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 /**
  * <p>Java class for PropertyComplexValueFilterType complex type.
@@ -69,7 +63,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 })
 public class PropertyComplexValueFilterType
         extends FilterClauseType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -178,27 +172,24 @@ public class PropertyComplexValueFilterType
         return ToStringBuilder.reflectionToString(this);
     }
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "path", this.getPath()), currentHashCode, this.getPath());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "value", this.getValue()), currentHashCode, this.getValue());
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "any", this.getAny()), currentHashCode, this.getAny());
+    @Override
+    public int hashCode(StructuredHashCodeStrategy strategy) {
+        int currentHashCode = super.hashCode(strategy);
+        currentHashCode = strategy.hashCode(currentHashCode, this.getPath());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getValue());
+        currentHashCode = strategy.hashCode(currentHashCode, this.getAny());
         return currentHashCode;
     }
 
-    public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
-    }
-
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
+    @Override
+    public boolean equals(Object object, StructuredEqualsStrategy strategy) {
         if (!(object instanceof PropertyComplexValueFilterType)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
+        if (!super.equals(object, strategy)) {
             return false;
         }
         final PropertyComplexValueFilterType that = ((PropertyComplexValueFilterType) object);
@@ -206,29 +197,24 @@ public class PropertyComplexValueFilterType
         lhsPath = this.getPath();
         Element rhsPath;
         rhsPath = that.getPath();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "path", lhsPath), LocatorUtils.property(thatLocator, "path", rhsPath), lhsPath, rhsPath)) {
+        if (!strategy.equals(lhsPath, rhsPath)) {
             return false;
         }
         ValueType lhsValue;
         lhsValue = this.getValue();
         ValueType rhsValue;
         rhsValue = that.getValue();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "value", lhsValue), LocatorUtils.property(thatLocator, "value", rhsValue), lhsValue, rhsValue)) {
+        if (!strategy.equals(lhsValue, rhsValue)) {
             return false;
         }
         Object lhsAny;
         lhsAny = this.getAny();
         Object rhsAny;
         rhsAny = that.getAny();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "any", lhsAny), LocatorUtils.property(thatLocator, "any", rhsAny), lhsAny, rhsAny)) {
+        if (!strategy.equals(lhsAny, rhsAny)) {
             return false;
         }
         return true;
-    }
-
-    public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
     }
 
     /**

@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.crypto.ProtectedData;
 import com.evolveum.midpoint.prism.crypto.Protector;
 import com.evolveum.midpoint.prism.util.CloneUtil;
@@ -38,7 +39,7 @@ import com.evolveum.midpoint.util.QNameUtil;
         ProtectedByteArrayType.class,
         ProtectedStringType.class
 })
-public abstract class ProtectedDataType<T> implements ProtectedData<T>, Serializable, JaxbVisitable {
+public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStructured.WithoutStrategy, JaxbVisitable {
     private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ProtectedDataType");
@@ -338,6 +339,9 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, Serializ
 
         // content is virtual, there is no point in copying it
     }
+
+    @Override
+    public abstract ProtectedDataType<T> clone();
 
     class ContentList implements List<Object>, Serializable {
 
