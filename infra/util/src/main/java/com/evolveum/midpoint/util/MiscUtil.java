@@ -1056,7 +1056,7 @@ public class MiscUtil {
         E get();
     }
 
-    public static <T, E extends Exception> T requireNonNull(T value, ExceptionSupplier<E> exceptionSupplier) throws E {
+    public static <T, E extends Throwable> T requireNonNull(T value, ExceptionSupplier<E> exceptionSupplier) throws E {
         if (value != null) {
             return value;
         } else {
