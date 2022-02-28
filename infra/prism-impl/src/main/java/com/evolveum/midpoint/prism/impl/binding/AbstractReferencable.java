@@ -25,7 +25,7 @@ import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 
-public abstract class AbstractReferencable<T extends AbstractReferencable<T>> implements Referencable, Serializable {
+public abstract class AbstractReferencable<T extends AbstractReferencable<T>> implements Cloneable, Referencable, Serializable {
 
     private PrismReferenceValue value;
 
