@@ -476,7 +476,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 } else if (thisRealValue instanceof Equals && otherRealValue instanceof Equals) {
                     return ((Equals) thisRealValue).equals(null, null, otherRealValue, LiteralEqualsStrategy.INSTANCE);
                 } else if (thisRealValue instanceof PlainStructured && otherRealValue instanceof PlainStructured) {
-                    return ((PlainStructured) thisRealValue).equals(other, StructuredEqualsStrategy.LITERAL);
+                    return ((PlainStructured) thisRealValue).equals(otherRealValue, StructuredEqualsStrategy.LITERAL);
                 }
             }
             return thisRealValue.equals(otherRealValue);
