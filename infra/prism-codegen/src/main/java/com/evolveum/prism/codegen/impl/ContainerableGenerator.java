@@ -263,5 +263,10 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
         clone.body()._return(JExpr.cast(clazz, JExpr._super().invoke("clone")));
     }
 
+    @Override
+    protected void implementEquals(JDefinedClass clazz, T contract) {
+        var method = clazz.method(JMod.PUBLIC, boolean.class, "equals");
+        method.body()._return(JExpr._super().invoke("equals").arg(method.param(Object.class, "other")));
+    }
 
 }
