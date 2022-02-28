@@ -5,7 +5,7 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-package com.evolveum.midpoint.prism.maven;
+package com.evolveum.midpoint.prism.codegen.maven;
 
 import java.io.*;
 

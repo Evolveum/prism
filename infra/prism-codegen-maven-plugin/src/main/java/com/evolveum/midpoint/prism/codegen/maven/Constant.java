@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.prism.maven;
+package com.evolveum.midpoint.prism.codegen.maven;
 
 import org.apache.maven.plugins.annotations.Parameter;
 
