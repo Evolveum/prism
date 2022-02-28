@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.PrismContainerValueImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 
@@ -44,7 +45,7 @@ public abstract class AbstractMutableContainerable implements ContainerablePrism
     @Override
     public PrismContainerValue asPrismContainerValue() {
         if (value == null) {
-            value = new PrismContainerValueImpl<>(this);
+            value = new PrismContainerValueImpl<>(this, PrismContext.get());
         }
         return value;
     }
