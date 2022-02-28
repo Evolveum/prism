@@ -130,6 +130,10 @@ public class PrismCodegenMojo extends AbstractMojo {
         try {
             SchemaRegistryImpl schemaRegistry = createSchemaRegistry();
 
+            schemaRegistry.registerPrismSchemaResource("xml/ns/public/types-3.xsd", "t", com.evolveum.prism.xml.ns._public.types_3.ObjectFactory.class.getPackage());
+            schemaRegistry.registerPrismSchemaResource("xml/ns/public/query-3.xsd", "q", com.evolveum.prism.xml.ns._public.query_3.ObjectFactory.class.getPackage());
+
+
             for (File schemaFile: schemaFiles) {
                 getLog().debug("SchemaDoc: registering schema file: "+schemaFile);
                 if (!schemaFile.exists()) {

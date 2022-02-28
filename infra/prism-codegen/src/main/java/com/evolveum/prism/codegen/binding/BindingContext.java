@@ -179,6 +179,10 @@ public class BindingContext {
             if (!isSchemaNative(schema, typeDef)) {
                 continue;
             }
+            if (bindings.containsKey(typeDef.getTypeName())) {
+                // Type was probably staticly mapped
+                continue;
+            }
 
             TypeBinding binding = createBinding(typeDef);
             TypeBinding previous = bindings.put(typeDef.getTypeName(), binding);
