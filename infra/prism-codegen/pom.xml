@@ -25,6 +25,11 @@
     </properties>
 
     <dependencies>
+           <dependency>
+            <groupId>com.evolveum.axiom</groupId>
+            <artifactId>axiom</artifactId>
+            <version>4.5-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.evolveum.prism</groupId>
             <artifactId>prism-api</artifactId>

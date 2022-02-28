@@ -2,10 +2,14 @@ package com.evolveum.prism.codegen.impl;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
+import javax.xml.bind.annotation.XmlNsForm;
+import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.Raw;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.ObjectFactoryContract;
+import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
@@ -23,6 +27,12 @@ public class ObjectFactoryGenerator extends ContractGenerator<ObjectFactoryContr
     public JDefinedClass declare(ObjectFactoryContract contract) throws JClassAlreadyExistsException {
 
         JDefinedClass clazz = codeModel()._class(contract.fullyQualifiedName());
+
+        JAnnotationUse packageAnn = clazz._package().annotate(XmlSchema.class);
+        packageAnn.param("namespace", contract.getNamespace());
+        packageAnn.param("elementFormDefault", clazz(XmlNsForm.class).staticRef("QUALIFIED"));
+
+
         var namespaceVar =  clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, String.class, NAMESPACE, JExpr.lit(contract.getNamespace()));
 
         for (ItemBinding item : contract.getItemNameToType()) {
@@ -56,9 +66,18 @@ public class ObjectFactoryGenerator extends ContractGenerator<ObjectFactoryContr
                     .arg(JExpr._null())
                     .arg(value));
 
-            method.annotate(XmlElementDecl.class) //
+            JAnnotationUse decl = method.annotate(XmlElementDecl.class) //
                 .param("namespace", JExpr.ref(NAMESPACE))
                 .param("name", item.getQName().getLocalPart());
+
+            QName subst = item.getDefinition().getSubstitutionHead();
+            if (subst != null) {
+                decl.param("substitutionHeadNamespace", subst.getNamespaceURI());
+                decl.param("substitutionHeadName", subst.getLocalPart());
+            }
+            if (item.isRaw()) {
+                method.annotate(Raw.class);
+            }
         }
 
         for (QName typeName : contract.getTypes()) {

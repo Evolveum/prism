@@ -30,7 +30,6 @@ import com.evolveum.midpoint.util.Handler;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
-import com.evolveum.midpoint.util.exception.TunnelException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
@@ -108,8 +107,6 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                         .getSubnode();
             } else if (bean instanceof Enum) {
                 return marshalEnum((Enum<?>) bean, ctx);
-            } else if (bean.getClass().getAnnotation(XmlType.class) != null) {
-                return marshalXmlType(bean, ctx);
             } else if (bean instanceof Referencable) {
                 // i.e. we are Referencable but not ObjectReferenceType (e.g. DefaultReferencableImpl)
                 PrismReferenceValue referenceValue = ((Referencable) bean).asReferenceValue();
@@ -119,6 +116,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 xnode.setTypeQName(ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE));
                 xnode.setExplicitTypeDeclaration(true);     // probably not much correct, but...
                 return xnode;
+            } else if (bean.getClass().getAnnotation(XmlType.class) != null) {
+                return marshalXmlType(bean, ctx);
             } else if (bean instanceof RawType && ((RawType) bean).getXnode() != null) {
                 return (XNodeImpl) ((RawType) bean).getXnode();
             } else {

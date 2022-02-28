@@ -3,6 +3,8 @@ package com.evolveum.prism.codegen.impl;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import javax.xml.bind.annotation.XmlAccessType;
+
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.binding.AbstractReferencable;
 import com.evolveum.prism.codegen.binding.ItemBinding;
@@ -28,6 +30,7 @@ public class ReferencableGenerator extends StructuredGenerator<ReferenceContract
         JDefinedClass clazz = codeModel()._class(contract.fullyQualifiedName());
         clazz._extends(clazz(SUPER_CLASS).narrow(clazz));
         clazz._implements(Referencable.class);
+        annotateType(clazz, contract, XmlAccessType.PROPERTY);
         var allDef = new ArrayList<>(contract.getAttributeDefinitions());
         allDef.addAll(contract.getLocalDefinitions());
         declareConstants(clazz, contract, allDef);

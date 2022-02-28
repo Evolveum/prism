@@ -1,9 +1,20 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.impl.binding;
+
+import java.io.Serializable;
 
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Objectable;
+import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismReference;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
@@ -13,8 +24,7 @@ import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 
-public abstract class AbstractReferencable<T extends AbstractReferencable<T>> implements Referencable {
-
+public abstract class AbstractReferencable<T extends AbstractReferencable<T>> implements Referencable, Serializable {
 
     private PrismReferenceValue value;
 
@@ -36,7 +46,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
 
     @Override
     public QName getType() {
-        return asReferenceValue().getTypeName();
+        return asReferenceValue().getTargetType();
     }
 
     @Override
@@ -112,5 +122,30 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
 
     public void setTargetName(PolyStringType value) {
         PrismForJAXBUtil.setReferenceTargetName(asReferenceValue(), value);
+    }
+
+    @SuppressWarnings("unchecked")
+    public<X >X end() {
+        return ((X)((PrismContainerValue<?>)((PrismReference) asReferenceValue().getParent()).getParent()).asContainerable());
+    }
+
+    @Override
+    public int hashCode() {
+        return asReferenceValue().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof AbstractReferencable)) {
+            return false;
+        }
+
+        return this.asReferenceValue().equals(((AbstractReferencable)obj).asReferenceValue());
     }
 }

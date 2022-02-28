@@ -57,7 +57,9 @@ public class ItemBinding {
     }
 
     public String constantName() {
-        return UPPER_CAMEL.to(UPPER_UNDERSCORE, name);
+        // FIXME: This is needed for few cases where in model, we use OID insted of Oid
+        var mod =  name.contains("OID") ? name.replace("OID", "Oid") : name;
+        return UPPER_CAMEL.to(UPPER_UNDERSCORE, mod);
     }
 
     public QName itemName() {
@@ -74,5 +76,13 @@ public class ItemBinding {
             maybe = "_" + maybe;
         }
         return maybe;
+    }
+
+    public boolean isRaw() {
+        return DOMUtil.XSD_ANYTYPE.equals(definition.getTypeName());
+    }
+
+    public boolean isAttribute() {
+        return attribute;
     }
 }

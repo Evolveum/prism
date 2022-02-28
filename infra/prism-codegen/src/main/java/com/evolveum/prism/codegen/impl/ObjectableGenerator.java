@@ -9,6 +9,7 @@ package com.evolveum.prism.codegen.impl;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Objectable;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableObjectable;
 import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.ObjectableContract;
@@ -51,6 +52,10 @@ public class ObjectableGenerator extends ContainerableGenerator<ObjectableContra
         JMethod contTypeMethod = clazz.method(JMod.PROTECTED, QName.class, GET_CONTAINER_TYPE);
         contTypeMethod.annotate(Override.class);
         contTypeMethod.body()._return(JExpr.ref(BindingContext.TYPE_CONSTANT));
+
+        var prismObjectType = clazz(PrismObject.class).narrow(contract.getTypeDefinition().isAbstract() ? clazz.wildcard() : clazz);
+        clazz.method(JMod.PUBLIC, prismObjectType, "asPrismObject")
+            .body()._return(JExpr._super().invoke("asPrismContainer"));
 
         super.implement(contract, clazz);
     }

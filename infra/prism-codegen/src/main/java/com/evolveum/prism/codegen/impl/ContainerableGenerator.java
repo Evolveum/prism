@@ -15,8 +15,10 @@ import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
+import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
+import com.evolveum.prism.codegen.binding.StructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.google.common.base.CaseFormat;
 import com.sun.codemodel.ClassType;
@@ -40,9 +42,14 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
     protected static final String GET_CONTAINERABLE_VALUES = "prismGetContainerableList";
     protected static final String GET_REFERENCABLE_VALUES = "prismGetReferencableList";
     protected static final String GET_REFERENCE_OBJECTABLE = "prismGetReferenceObjectable";
-
+    protected static final String SET_REFERENCE_OBJECTABLE = "prismSetReferenceObjectable";
 
     protected static final String SET_PROPERTY_VALUE = "prismSetPropertyValue";
+    private static final String SET_SINGLE_CONTAINERABLE = "prismSetSingleContainerable";
+    private static final String GET_SINGLE_CONTAINERABLE = "prismGetSingleContainerable";
+
+    private static final String GET_REFERENCABLE = "prismGetReferencable";
+    private static final String SET_REFERENCABLE = "prismSetReferencable";
 
 
     private final Class<?> baseClass;
@@ -89,10 +96,9 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
         return clazz;
     }
 
-
     @Override
-    protected JClass asBindingTypeOrJaxbElement(ItemBinding definition, T contract) {
-        return asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
+    protected boolean shouldUseJaxbElement(ItemBinding definition, T contract) {
+        return false;
     }
 
     @Override
@@ -109,7 +115,7 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             body._return(invocation);
             return;
         }*/
-
+        JExpression extraArg = null;
         if (definition.isList()) {
             JClass rawType = ((JClass) returnType).getTypeParameters().get(0);
             if (definition.getDefinition() instanceof PrismContainerDefinition<?>) {
@@ -124,22 +130,13 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             }
         } else {
             if (definition.getDefinition() instanceof PrismReferenceDefinition) {
-                // FIXME: Generate ObjectType classes
-                var refDef = (PrismReferenceDefinition) definition.getDefinition();
-
-                String name = refDef.getCompositeObjectElementName() != null ? lowerToUpper(refDef.getCompositeObjectElementName().getLocalPart()) : null;
-                QName targetType = refDef.getTargetTypeName();
-
-                if (name != null && targetType != null) {
-                    var objType = codeModel().ref(bindingFor(targetType).defaultBindingClass());
-                    var objGetter = clazz.method(JMod.PUBLIC, objType, "get" + name);
-                    objGetter.body()._return(JExpr.invoke(GET_REFERENCE_OBJECTABLE)
-                            .arg(fieldConstant(definition.constantName()))
-                            .arg(JExpr.dotclass(objType)));
-                }
-
+                invocation = JExpr._this().invoke(GET_REFERENCABLE);
+                extraArg = ((JClass) returnType).staticRef(FACTORY);
+            } else if (definition.getDefinition() instanceof PrismContainerDefinition<?>){
+                invocation = JExpr._this().invoke(GET_SINGLE_CONTAINERABLE);
+            } else {
+                invocation = JExpr._this().invoke(GET_PROPERTY_VALUE);
             }
-            invocation = JExpr._this().invoke(GET_PROPERTY_VALUE);
         }
         // push arguments
         invocation.arg(fieldConstant(definition.constantName()));
@@ -157,6 +154,9 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
             }
         }
 
+        if (extraArg != null) {
+            invocation.arg(extraArg);
+        }
         body._return(invocation);
     }
 
@@ -177,19 +177,57 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
 
     @Override
+    protected boolean shouldImplementSetter(JDefinedClass clazz, T contract, ItemBinding definition) {
+        return !definition.isList();
+    }
+
+    @Override
     protected void implementSetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JVar value) {
         JBlock body = method.body();
 
-        // FIXME: Dispatch based on knowledge if type is container / reference / property
-        //final String jaxbUtilMethod;
-        //if (definition instanceof PrismContainerDefinition<?>) {
-        //} else if (definition instanceof PrismReferenceDefinition){
-        //} else {
-        //}
-        JInvocation invocation = body.invoke(JExpr._this(),SET_PROPERTY_VALUE);
+        var def = definition.getDefinition();
+
+        var call = SET_PROPERTY_VALUE;
+        if (def instanceof PrismContainerDefinition<?>) {
+            call = SET_SINGLE_CONTAINERABLE;
+        } else if (def instanceof PrismReferenceDefinition){
+            call = SET_REFERENCABLE;
+        }
+        JInvocation invocation = body.invoke(JExpr._this(),call);
         //push arguments
         invocation.arg(fieldConstant(definition.constantName()));
         invocation.arg(value);
+    }
+
+    @Override
+    protected void implementAdditionalFieldMethod(JDefinedClass clazz, ItemBinding definition, JType returnType) {
+
+        if (definition.getDefinition() instanceof PrismReferenceDefinition) {
+            PrismReferenceDefinition prismRef = (PrismReferenceDefinition) definition.getDefinition();
+            QName compositeObjectName = prismRef.getCompositeObjectElementName();
+            if (compositeObjectName != null) {
+                String name = StructuredContract.javaFromItemName(compositeObjectName);
+                JClass type = asBindingTypeUnwrapped(prismRef.getTargetTypeName());
+                var itemName = fieldConstant(definition.constantName());
+
+                JMethod getter = clazz.method(JMod.PUBLIC, type, "get" + name);
+                getter.body()._return(JExpr.invoke(GET_REFERENCE_OBJECTABLE)
+                        .arg(itemName)
+                        .arg(type.dotclass()));
+
+                JMethod setter = clazz.method(JMod.PUBLIC,void.class, "set" + name);
+                var value = setter.param(type, "value");
+                setter.body().invoke(SET_REFERENCE_OBJECTABLE).arg(itemName).arg(value);
+            }
+        } else if (definition.isList() && bindingFor(definition.getDefinition().getTypeName()).getDefaultContract() instanceof ContainerableContract) {
+            JMethod create = clazz.method(JMod.PUBLIC, returnType, "create" + definition.getJavaName() + "List");
+            create.body().staticInvoke(clazz(PrismForJAXBUtil.class), "createContainer")
+                .arg(JExpr.invoke("asPrismContainerValue"))
+                .arg(fieldConstant(definition.constantName()));
+            create.body()._return(JExpr.invoke(definition.getterName()));
+        }
+
+
     }
 
     @Override
@@ -218,6 +256,11 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
         method.body().invoke(setterName).arg(value);
         method.body()._return(JExpr._this());
 
+    }
+
+    @Override
+    protected void implementClone(JDefinedClass clazz, T contract, JMethod clone) {
+        clone.body()._return(JExpr.cast(clazz, JExpr._super().invoke("clone")));
     }
 
 

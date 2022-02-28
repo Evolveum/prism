@@ -13,4 +13,5 @@ public class ContainerableContract extends StructuredContract {
     public ContainerableContract(ComplexTypeDefinition typeDef, String packageName) {
         super(typeDef, packageName);
     }
+
 }

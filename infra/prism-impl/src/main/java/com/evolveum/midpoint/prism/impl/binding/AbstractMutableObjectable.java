@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.impl.binding;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -5,17 +12,25 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.impl.PrismObjectImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
+import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 
-public abstract class AbstractMutableObjectable extends AbstractBoundContainerable implements Objectable {
+public abstract class AbstractMutableObjectable extends ObjectType implements ContainerablePrismBinding, Objectable {
 
     private PrismObject<?> object;
 
-    public PrismObject<?> asPrismContainer() {
+    public AbstractMutableObjectable() {
+        asPrismContainer();
+    }
+
+
+    @SuppressWarnings("rawtypes")
+    public PrismObject asPrismContainer() {
         if (object == null) {
-            object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass());
+            object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
         }
         return object;
     }
@@ -103,6 +118,11 @@ public abstract class AbstractMutableObjectable extends AbstractBoundContainerab
         builder.append(getName());
         builder.append("]");
         return builder.toString();
+    }
+
+    @Override
+    protected Object clone() {
+        return asPrismObject().clone().asObjectable();
     }
 }
 

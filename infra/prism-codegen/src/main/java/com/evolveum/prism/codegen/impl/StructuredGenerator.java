@@ -42,6 +42,7 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
+import com.sun.codemodel.JPrimitiveType;
 import com.sun.codemodel.JType;
 import com.sun.codemodel.JVar;
 
@@ -62,13 +63,18 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
     protected void declareFactory(JDefinedClass clazz) {
         JClass producerType = clazz(Producer.class).narrow(clazz);
         JDefinedClass annonFactory = codeModel().anonymousClass(producerType);
+        declareSerialVersionUid(annonFactory);
         annonFactory.method(JMod.PUBLIC, clazz, "run").body()._return(JExpr._new(clazz));
         clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, producerType, FACTORY, JExpr._new(annonFactory));
     }
 
-    protected void declareConstants(JDefinedClass clazz, StructuredContract contract, Collection<ItemBinding> definitions) {
-        clazz.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, clazz(Long.class), "serialVersionUid",
+    protected void declareSerialVersionUid(JDefinedClass clazz) {
+        clazz.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, long.class, "serialVersionUID",
                 JExpr.lit(BindingContext.SERIAL_VERSION_UID));
+    }
+
+    protected void declareConstants(JDefinedClass clazz, StructuredContract contract, Collection<ItemBinding> definitions) {
+        declareSerialVersionUid(clazz);
 
         var namespaceField = codeModel().ref(clazz.getPackage().name() + "." + ObjectFactoryContract.OBJECT_FACTORY).staticRef(ObjectFactoryContract.NAMESPACE_CONST);
         createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  namespaceField, false, false);
@@ -82,24 +88,44 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         for (ItemBinding definition : itemDefinitions(contract)) {
 
             // Getter
-            JType bindingType = asBindingType(definition, contract);
-            JMethod getter = clazz.method(JMod.PUBLIC, bindingType, definition.getterName());
+            JClass bindingType = asBindingType(definition, contract);
+            JType  maybeBoxedType = asBoxedTypeIfPossible(bindingType, definition);
+
+            JMethod getter = clazz.method(JMod.PUBLIC,  maybeBoxedType, definition.getterName());
 
             // @XmlElement annotation
-            JAnnotationUse jaxbAnn = getter.annotate(XmlElement.class);
-            jaxbAnn.param(XML_ELEMENT_NAME, definition.itemName().getLocalPart());
-
-            implementGetter(clazz, getter, definition, bindingType);
-
+            if (shouldAnnotateGetter(definition, contract)) {
+                JAnnotationUse jaxbAnn = getter.annotate(XmlElement.class);
+                jaxbAnn.param(XML_ELEMENT_NAME, definition.itemName().getLocalPart());
+            }
+            if (shouldImplementGetter(clazz, contract, definition)) {
+                implementGetter(clazz, getter, definition, bindingType);
+            }
             // Setter
-            JMethod setter = clazz.method(JMod.PUBLIC, void.class, definition.setterName());
-            JVar valueParam = setter.param(bindingType, VALUE_PARAM);
-            implementSetter(clazz, setter, definition, valueParam);
+            if (shouldImplementSetter(clazz, contract, definition)) {
+                JMethod setter = clazz.method(JMod.PUBLIC, void.class, definition.setterName());
+                JVar valueParam = setter.param(bindingType, VALUE_PARAM);
+                implementSetter(clazz, setter, definition, valueParam);
+            }
+            implementAdditionalFieldMethod(clazz, definition, bindingType);
         }
 
         // Fluent API
 
+        implementHashCode(clazz, contract);
+        implementEquals(clazz, contract);
 
+
+        implementFluentApi(clazz, contract);
+        implementationAfterFluentApi(contract,clazz);
+
+
+        var clone = clazz.method(JMod.PUBLIC, clazz, "clone");
+        clone.annotate(Override.class);
+        implementClone(clazz, contract, clone);
+    }
+
+    private void implementFluentApi(JDefinedClass clazz, T contract) {
         StructuredContract current = contract;
         // Generate fluent api from local definitions of current contract and
         // then from parent type contracts.
@@ -115,14 +141,37 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
                     current = (StructuredContract) superContract;
                 }
             }
-
         }
 
-        implementationAfterFluentApi(contract,clazz);
+    }
 
-        var clone = clazz.method(JMod.PUBLIC, clazz, "clone");
-        clone.annotate(Override.class);
-        implementClone(clazz, contract, clone);
+    protected void implementEquals(JDefinedClass clazz, T contract) {
+        // NOOP
+    }
+
+    protected void implementHashCode(JDefinedClass clazz, T contract) {
+        // NOOP
+    }
+
+    protected boolean shouldAnnotateGetter(ItemBinding definition, T contract) {
+        return true;
+    }
+
+    protected JType asBoxedTypeIfPossible(JClass bindingType, ItemBinding definition) {
+        JPrimitiveType primitiveType = bindingType.getPrimitiveType();
+        // If item is required and it is primitive
+        if (primitiveType != null && definition.getDefinition().getMinOccurs() == 1 && definition.getDefinition().getMaxOccurs() == 1) {
+            return primitiveType;
+        }
+        return bindingType;
+    }
+
+    protected boolean shouldImplementSetter(JDefinedClass clazz, T contract, ItemBinding definition) {
+        return true;
+    }
+
+    protected boolean shouldImplementGetter(JDefinedClass clazz, T contract, ItemBinding definition) {
+        return true;
     }
 
     protected Iterable<ItemBinding> itemDefinitions(T contract) {
@@ -212,9 +261,12 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
 
     protected abstract void implementSetter(JDefinedClass clazz, JMethod method, ItemBinding definition, JVar valueParam);
 
+    protected void implementAdditionalFieldMethod(JDefinedClass clazz, ItemBinding definition, JType returnType) {
+        // Intentional NOOP
+    }
 
 
-    protected JType asBindingType(ItemBinding definition, T contract) {
+    protected JClass asBindingType(ItemBinding definition, T contract) {
         JClass valueType = asBindingTypeOrJaxbElement(definition, contract);
         if (definition.isList()) {
             // Wrap as list
@@ -227,10 +279,21 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         ComplexTypeDefinition parentDef = contract.getTypeDefinition();
         JClass valueType = asBindingTypeUnwrapped(definition.getDefinition().getTypeName());
         // we have multiple object elements, which are not target for substitutions
-        if (!definition.getJavaName().equals("Object") && parentDef.hasSubstitutions(definition.getQName())) {
+        if (shouldUseJaxbElement(definition, contract)) {
             valueType = clazz(JAXBElement.class).narrow(valueType.wildcard());
         }
         return valueType;
+    }
+
+    protected boolean shouldUseJaxbElement(ItemBinding definition, T contract) {
+        ComplexTypeDefinition parentDef = contract.getTypeDefinition();
+        if (!parentDef.hasSubstitutions(definition.getQName())) {
+            return false;
+        }
+        if (definition.getJavaName().equals("Object")) {
+            return false;
+        }
+        return true;
     }
 
     public void annotateType(JDefinedClass clazz, StructuredContract contract, XmlAccessType type) {
@@ -240,22 +303,23 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         // XML Type annotation
         JAnnotationUse typeAnnon = clazz.annotate(XmlType.class);
         typeAnnon.param("name", contract.getTypeDefinition().getTypeName().getLocalPart());
-
         // Property order
-        JAnnotationArrayMember propOrder = typeAnnon.paramArray("propOrder");
-        for(ItemBinding def : contract.getLocalDefinitions()) {
-            propOrder.param(def.itemName().getLocalPart());
-        }
-
-        @NotNull
-        Collection<TypeDefinition> subtypes = contract.getTypeDefinition().getStaticSubTypes();
-        if (!subtypes.isEmpty()) {
-            var seeAlso = clazz.annotate(XmlSeeAlso.class).paramArray("value");
-            for(TypeDefinition subtype : subtypes) {
-                seeAlso.param(codeModel().ref(bindingFor(subtype.getTypeName()).defaultBindingClass()));
+        if (contract != null) {
+            JAnnotationArrayMember propOrder = typeAnnon.paramArray("propOrder");
+            for(ItemBinding def : contract.getLocalDefinitions()) {
+                propOrder.param(def.fieldName());
             }
 
+            @NotNull
+            Collection<TypeDefinition> subtypes = contract.getTypeDefinition().getStaticSubTypes();
+            if (!subtypes.isEmpty()) {
+                var seeAlso = clazz.annotate(XmlSeeAlso.class).paramArray("value");
+                for(TypeDefinition subtype : subtypes) {
+                    seeAlso.param(codeModel().ref(bindingFor(subtype.getTypeName()).defaultBindingClass()));
+                }
 
+
+            }
         }
     }
 }

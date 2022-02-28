@@ -75,6 +75,8 @@ public class BindingContext {
 
     BiMap<String, String> xmlToJavaNs = HashBiMap.create();
 
+    private ConstantBinding constants;
+
 
     public BindingContext() {
         staticBinding(DOMUtil.XSD_STRING, String.class);
@@ -90,8 +92,9 @@ public class BindingContext {
         staticBinding(DOMUtil.XSD_BASE64BINARY, byte[].class);
         staticBinding(DOMUtil.XSD_DATETIME, XMLGregorianCalendar.class);
         staticBinding(DOMUtil.XSD_DURATION, Duration.class);
-        staticBinding(ItemPathType.COMPLEX_TYPE, ItemPathType.class);
         staticBinding(DOMUtil.XSD_QNAME, QName.class);
+
+        staticBinding(ItemPathType.COMPLEX_TYPE, ItemPathType.class);
 
         staticBinding(PrismConstants.POLYSTRING_TYPE_QNAME, PolyStringType.class);
 
@@ -118,6 +121,8 @@ public class BindingContext {
         staticBinding(queryNs(OrderDirectionType.class), OrderDirectionType.class);
 
         staticBinding(typesNs(ObjectType.class), AbstractMutableObjectable.class);
+
+        constants = new ConstantBinding();
     }
 
     private static QName typesNs(Class<?> clazz) {
@@ -143,8 +148,12 @@ public class BindingContext {
     }
 
     public BindingContext process() {
+
         for (PrismSchema schema : schemas.values()) {
             process(schema);
+        }
+        if (!constants.isEmpty()) {
+            derivedBindings.add(constants);
         }
         return this;
     }
@@ -184,7 +193,9 @@ public class BindingContext {
         var schemaBinding = new SchemaBinding(schema.getNamespace(), packageName);
         // FIXME: Detect if binding exists staticly
         derivedBindings.add(schemaBinding);
-        schemaBinding.defaultContract(new ObjectFactoryContract(schemaBinding, schema));
+        ObjectFactoryContract contract = new ObjectFactoryContract(schemaBinding, schema, constants.get(schema.getNamespace()));
+        schemaBinding.defaultContract(contract);
+        constants.put(schema.getNamespace(), contract);
         return schemaBinding;
     }
 
@@ -285,7 +296,11 @@ public class BindingContext {
         } else if (typeDef.isReferenceMarker()) {
             binding.defaultContract(new ReferenceContract(typeDef, packageName));
         } else if (typeDef.isContainerMarker()) {
-            binding.defaultContract(new ContainerableContract(typeDef, packageName));
+            if (typeDef.isXsdAnyMarker()) {
+                binding.defaultContract(new ContainerableAnyContract(typeDef, packageName));
+            } else {
+                binding.defaultContract(new ContainerableContract(typeDef, packageName));
+            }
         } else if (isSimpleType(typeDef.getSuperType())) {
             binding.defaultContract(new ValueWrappedContract(typeDef, packageName));
         } else {
@@ -319,6 +334,10 @@ public class BindingContext {
 
     public Iterable<Binding> getDerivedBindings() {
         return derivedBindings;
+    }
+
+    public void addConstantMapping(NamespaceConstantMapping constant) {
+        this.constants.put(constant.getNamespace(), constant);
     }
 
 }

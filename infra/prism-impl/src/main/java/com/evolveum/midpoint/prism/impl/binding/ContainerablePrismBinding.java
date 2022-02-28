@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.impl.binding;
 
 import java.util.List;
@@ -8,6 +15,7 @@ import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismReference;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.Referencable;
@@ -17,43 +25,58 @@ import com.evolveum.midpoint.prism.impl.xjc.PrismReferenceArrayList;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.Producer;
 
-public abstract class AbstractBoundContainerable implements Containerable {
+public interface ContainerablePrismBinding extends Containerable {
 
 
-    protected <T> T prismGetPropertyValue(QName name, Class<T> clazz) {
+    default <T> T prismGetPropertyValue(QName name, Class<T> clazz) {
         return PrismForJAXBUtil.getPropertyValue(asPrismContainerValue(), name, clazz);
     }
 
-    protected <T> List<T> prismGetPropertyValues(QName name, Class<T> clazz) {
+    default <T> List<T> prismGetPropertyValues(QName name, Class<T> clazz) {
         return PrismForJAXBUtil.getPropertyValues(asPrismContainerValue(), name, clazz);
     }
 
-    protected <T extends AbstractBoundContainerable> List<T> prismGetContainerableList(Producer<T> producer, QName name, Class<T> clazz) {
+    default <T extends ContainerablePrismBinding> List<T> prismGetContainerableList(Producer<T> producer, QName name, Class<T> clazz) {
         PrismContainerValue<?> pcv = asPrismContainerValue();
         PrismContainer<T> container = PrismForJAXBUtil.getContainer(pcv, name);
         return new ContainerableList<>(container, pcv, producer);
     }
 
-    protected <T extends Referencable> List<T> prismGetReferencableList(Producer<T> producer, QName name, Class<?> clazz) {
+    default <T extends Referencable> List<T> prismGetReferencableList(Producer<T> producer, QName name, Class<?> clazz) {
         PrismContainerValue<?> pcv = asPrismContainerValue();
         PrismReference reference = PrismForJAXBUtil.getReference(pcv, name);
         return new ReferencableList<>(reference, pcv, producer);
     }
 
-    protected <T> void prismSetPropertyValue(ItemName name, T value) {
+    default <T> void prismSetPropertyValue(ItemName name, T value) {
         PrismForJAXBUtil.setPropertyValue(asPrismContainerValue(), name, value);
     }
 
-    protected <T extends Containerable> T prismGetSingleContainerable(QName name, Class<T> clazz) {
+    default <T extends Containerable> T prismGetSingleContainerable(QName name, Class<T> clazz) {
         return PrismForJAXBUtil.getFieldSingleContainerable(asPrismContainerValue(), name, clazz);
     }
 
-    protected <T extends Containerable> void prismSetSingleContainerable(ItemName name, T mappedValue) {
+    default <T extends Containerable> void prismSetSingleContainerable(ItemName name, T mappedValue) {
         PrismContainerValue<?> value = mappedValue != null ? mappedValue.asPrismContainerValue() : null;
         PrismForJAXBUtil.setFieldContainerValue(asPrismContainerValue(), name, value);
     }
 
-    protected <T extends Objectable> T prismGetReferenceObjectable(ItemName refName, Class<T> objType) {
+    default <T extends Referencable> T prismGetReferencable(ItemName name, Class<T> type, Producer<T> factory) {
+        var value = PrismForJAXBUtil.getReferenceValue(asPrismContainerValue(), name);
+        if (value == null) {
+            return null;
+        }
+        T ret = factory.run();
+        ret.setupReferenceValue(value);
+        return ret;
+    }
+
+    default void prismSetReferencable(ItemName name, Referencable value) {
+        PrismReferenceValue referenceValue = (value!= null) ? value.asReferenceValue() : null;
+        PrismForJAXBUtil.setReferenceValueAsRef(asPrismContainerValue(), name, referenceValue);
+    }
+
+    default <T extends Objectable> T prismGetReferenceObjectable(ItemName refName, Class<T> objType) {
         PrismReferenceValue reference = PrismForJAXBUtil.getReferenceValue(asPrismContainerValue(), refName);
         if ((reference == null) || (reference.getObject() == null)) {
             return null;
@@ -62,7 +85,14 @@ public abstract class AbstractBoundContainerable implements Containerable {
 
     }
 
-    protected static class ContainerableList<T extends Containerable> extends PrismContainerArrayList<T> {
+
+    default <T extends Objectable> void prismSetReferenceObjectable(ItemName refName, Objectable value) {
+        PrismObject object = (value!= null) ? value.asPrismObject() : null;
+        PrismForJAXBUtil.setReferenceValueAsObject(asPrismContainerValue(), refName, object);
+    }
+
+
+    static class ContainerableList<T extends Containerable> extends PrismContainerArrayList<T> {
 
         private static final long serialVersionUID = -8244451828909384509L;
 
@@ -92,7 +122,7 @@ public abstract class AbstractBoundContainerable implements Containerable {
 
     }
 
-    protected static class ReferencableList<T extends Referencable> extends PrismReferenceArrayList<T> {
+    static class ReferencableList<T extends Referencable> extends PrismReferenceArrayList<T> {
 
         private static final long serialVersionUID = 1L;
         private final Producer<T> factory;

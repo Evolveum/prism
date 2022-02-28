@@ -29,6 +29,7 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.codegen.binding.BindingContext;
+import com.evolveum.prism.codegen.binding.NamespaceConstantMapping;
 import com.evolveum.prism.codegen.impl.CodeGenerator;
 
 @Mojo(name="codegen", requiresDependencyResolution = ResolutionScope.COMPILE)
@@ -43,6 +44,9 @@ public class PrismCodegenMojo extends AbstractMojo {
 
     @Parameter
     private File[] catalogFiles;
+
+    @Parameter
+    private Constant[] constants;
 
     @Parameter(defaultValue="${project.build.directory}", required=true)
     private File buildDir;
@@ -88,6 +92,13 @@ public class PrismCodegenMojo extends AbstractMojo {
         BindingContext context = new BindingContext();
 
         context.addSchemas(schemaRegistry.getSchemas());
+
+        if (constants != null) {
+            for (NamespaceConstantMapping constant : constants) {
+                context.addConstantMapping(constant);
+            }
+        }
+
         context.process();
 
         try {

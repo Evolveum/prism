@@ -8,8 +8,8 @@ package com.evolveum.prism.codegen.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.prism.codegen.binding.Binding;
 import com.evolveum.prism.codegen.binding.BindingContext;
+import com.evolveum.prism.codegen.binding.ConstantsContract;
+import com.evolveum.prism.codegen.binding.ContainerableAnyContract;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.EnumerationContract;
@@ -28,8 +30,9 @@ import com.evolveum.prism.codegen.binding.PlainStructuredContract;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.evolveum.prism.codegen.binding.ValueWrappedContract;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
@@ -46,7 +49,7 @@ public class CodeGenerator {
             .add(PrismConstants.NS_QUERY)
             .build();
 
-    private Map<Class<? extends Contract>, ContractGenerator<?>> generators = ImmutableMap.<Class<? extends Contract>, ContractGenerator<?>>builder()
+    private Multimap<Class<? extends Contract>, ContractGenerator<?>> generators = ImmutableMultimap.<Class<? extends Contract>, ContractGenerator<?>>builder()
             .put(ObjectableContract.class, new ObjectableGenerator(this))
             .put(PlainStructuredContract.class, new PlainStructuredGenerator(this))
             .put(ContainerableContract.class, new ContainerableGenerator<>(this))
@@ -54,6 +57,8 @@ public class CodeGenerator {
             .put(ReferenceContract.class, new ReferencableGenerator(this))
             .put(ValueWrappedContract.class, new ValueWrapperGenerator(this))
             .put(ObjectFactoryContract.class, new ObjectFactoryGenerator(this))
+            .put(ConstantsContract.class, new SchemaConstantsGenerator(this))
+            .put(ContainerableAnyContract.class, new ContainerableAnyGenerator(this))
             .build();
 
 
@@ -74,10 +79,11 @@ public class CodeGenerator {
         }
         try {
             for (Contract contract : binding.getContracts()) {
-                ContractGenerator<Contract> generator = getGenerator(contract);
-                JDefinedClass clazz = generator.declare(contract);
-                if (clazz != null) {
-                    generator.implement(contract, clazz);
+                for(ContractGenerator<Contract> generator : getGenerators(contract)) {
+                    JDefinedClass clazz = generator.declare(contract);
+                    if (clazz != null) {
+                        generator.implement(contract, clazz);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -101,11 +107,11 @@ public class CodeGenerator {
     }
 
 
-    private ContractGenerator<Contract> getGenerator(Contract contract) throws CodeGenerationException {
+    private Collection<ContractGenerator<Contract>>  getGenerators(Contract contract) throws CodeGenerationException {
         Class<? extends Contract> contractClass = contract.getClass();
-        @SuppressWarnings("unchecked")
-        ContractGenerator<Contract> generator = (ContractGenerator<Contract>) generators.get(contractClass);
-        CodeGenerationException.checkNotNull(generator, "Missing code generator for %s", contractClass);
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        Collection<ContractGenerator<Contract>> generator = (Collection) generators.get(contractClass);
+        CodeGenerationException.check(!generator.isEmpty(), "Missing code generator for %s", contractClass);
         return generator;
     }
 

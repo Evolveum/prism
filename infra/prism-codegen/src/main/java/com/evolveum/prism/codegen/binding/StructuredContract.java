@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.google.common.base.CaseFormat;
 
 public class StructuredContract extends Contract {
@@ -51,8 +50,8 @@ public class StructuredContract extends Contract {
 
     }
 
-    static String javaFromItemName(@NotNull ItemName itemName) {
-        String maybe = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, itemName.getLocalPart());
+    public static String javaFromItemName(@NotNull QName compositeObjectName) {
+        String maybe = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, compositeObjectName.getLocalPart());
         if ("Class".equals(maybe)) {
             return "Clazz";
         }
