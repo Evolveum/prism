@@ -31,10 +31,12 @@ import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.codegen.binding.BindingContext;
+import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
 import com.evolveum.prism.codegen.binding.ObjectFactoryContract;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.StructuredContract;
+import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.sun.codemodel.JAnnotationArrayMember;
 import com.sun.codemodel.JAnnotationUse;
 import com.sun.codemodel.JClass;
@@ -291,6 +293,11 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             return false;
         }
         if (definition.getJavaName().equals("Object")) {
+            TypeBinding type = bindingFor(definition.getDefinition().getTypeName());
+            if (type.getDefaultContract() instanceof ContainerableContract) {
+                ComplexTypeDefinition typeDef = ((ContainerableContract) type.getDefaultContract()).getTypeDefinition();
+                return typeDef.isAbstract();
+            }
             return false;
         }
         return true;
