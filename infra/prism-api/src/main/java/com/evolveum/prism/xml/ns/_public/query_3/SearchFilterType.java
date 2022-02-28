@@ -224,7 +224,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
 
     @Override
     public int hashCode(ObjectLocator locator, HashCodeStrategy hashCodeStrategy) {
-        return hashCode();
+        return this.hashCode(StructuredHashCodeStrategy.DEFAULT);
     }
 
     @Override

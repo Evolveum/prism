@@ -19,6 +19,7 @@ import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
+import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -147,5 +148,14 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
         }
 
         return this.asReferenceValue().equals(((AbstractReferencable)obj).asReferenceValue());
+    }
+
+    @Override
+    public abstract AbstractReferencable<T> clone();
+
+    protected <T extends AbstractReferencable<T>> T clone(Producer<T> producer) {
+        T ret = producer.run();
+        ret.setupReferenceValue(asReferenceValue().clone());
+        return ret;
     }
 }

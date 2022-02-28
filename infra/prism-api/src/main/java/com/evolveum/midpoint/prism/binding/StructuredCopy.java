@@ -121,7 +121,7 @@ public class StructuredCopy {
         if (value == null) {
             return null;
         }
-        return (T) value.asReferenceValue().clone().asReferencable();
+        return (T) value.clone();
     }
 
 

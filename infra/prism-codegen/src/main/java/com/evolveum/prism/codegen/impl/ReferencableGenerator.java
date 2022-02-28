@@ -79,6 +79,10 @@ public class ReferencableGenerator extends StructuredGenerator<ReferenceContract
     }
 
 
+    @Override
+    protected void implementClone(JDefinedClass clazz, ReferenceContract contract, JMethod clone) {
+        clone.body()._return(JExpr._super().invoke("clone").arg(JExpr.ref(FACTORY)));
+    }
 
 
 
