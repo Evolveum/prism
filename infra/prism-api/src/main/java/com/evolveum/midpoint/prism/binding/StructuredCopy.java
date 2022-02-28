@@ -78,8 +78,10 @@ public class StructuredCopy {
             ret = of((JAXBElement<?>) value);
         } else if (value instanceof Cloneable) {
             ret = clone((Cloneable) value);
+        } else if (value instanceof Enum<?>) {
+            ret = value;
         } else {
-            throw new IllegalArgumentException("Value " + value + "is not supported for structured copy");
+            throw new IllegalArgumentException("Value '" + value + "' of type " +value.getClass().getName() + "is not supported for structured copy");
         }
         return (T) ret;
     }
