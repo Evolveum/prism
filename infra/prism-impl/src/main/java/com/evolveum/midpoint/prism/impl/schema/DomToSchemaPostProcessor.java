@@ -273,6 +273,8 @@ class DomToSchemaPostProcessor {
             ItemName name = new ItemName(ctd.getTypeName().getNamespaceURI(), attributeDecl.getName());
             QName type = getType(attributeDecl.getType());
             var attributeDef = getDefinitionFactory().createPropertyDefinition(name, type, null, prismContext, null,  null);
+            attributeDef.toMutable().setMinOccurs(0);
+            attributeDef.toMutable().setMaxOccurs(1);
             definitions.add(attributeDef);
         }
         ctd.setAttributeDefinitions(definitions);
