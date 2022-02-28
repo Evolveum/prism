@@ -20,6 +20,7 @@ import com.evolveum.midpoint.util.DOMUtil;
  * @author Radovan Semancik
  *
  */
+@Deprecated
 public class DomAwareEqualsStrategy extends JAXBEqualsStrategy {
 
     public static final DomAwareEqualsStrategy INSTANCE = new DomAwareEqualsStrategy();
