@@ -14,6 +14,7 @@ import org.w3c.dom.Document;
 
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.prism.codegen.binding.BindingContext;
 import com.evolveum.prism.codegen.binding.Contract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.sun.codemodel.JClass;
@@ -63,6 +64,11 @@ public abstract class ContractGenerator<T extends Contract> {
 
         }
 
+    }
+
+    protected void declareSerialVersionUid(JDefinedClass clazz) {
+        clazz.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, long.class, "serialVersionUID",
+                JExpr.lit(BindingContext.SERIAL_VERSION_UID));
     }
 
     protected JClass asBindingTypeUnwrapped(QName typeName) {

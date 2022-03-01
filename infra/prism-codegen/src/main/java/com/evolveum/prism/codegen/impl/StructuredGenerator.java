@@ -70,10 +70,6 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         clazz.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, producerType, FACTORY, JExpr._new(annonFactory));
     }
 
-    protected void declareSerialVersionUid(JDefinedClass clazz) {
-        clazz.field(JMod.PRIVATE | JMod.FINAL | JMod.STATIC, long.class, "serialVersionUID",
-                JExpr.lit(BindingContext.SERIAL_VERSION_UID));
-    }
 
     protected void declareConstants(JDefinedClass clazz, StructuredContract contract, Collection<ItemBinding> definitions) {
         declareSerialVersionUid(clazz);

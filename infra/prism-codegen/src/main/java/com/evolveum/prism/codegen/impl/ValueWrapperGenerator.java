@@ -9,6 +9,7 @@ import com.evolveum.midpoint.prism.impl.binding.AbstractValueWrapper;
 import com.evolveum.prism.codegen.binding.ValueWrappedContract;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
 
@@ -30,6 +31,8 @@ public class ValueWrapperGenerator extends ContractGenerator<ValueWrappedContrac
         clazz.annotate(XmlType.class)
             .param("name", contract.getTypeDefinition().getTypeName().getLocalPart())
             .paramArray("propOrder").param("value");
+
+        declareSerialVersionUid(clazz);
         return clazz;
     }
 
@@ -47,5 +50,11 @@ public class ValueWrapperGenerator extends ContractGenerator<ValueWrappedContrac
         var param = set.param(bindingType, "val");
         set.annotate(Override.class);
         set.body().assign(value, param);
+
+        var clone = clazz.method(JMod.PUBLIC, clazz, "clone");
+        var ret = clone.body().decl(clazz, "ret", JExpr._new(clazz));
+        clone.body().invoke(ret, "setValue").arg(JExpr._this().invoke("getValue"));
+        clone.body()._return(ret);
+
     }
 }
