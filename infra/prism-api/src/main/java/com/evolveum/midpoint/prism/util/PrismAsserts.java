@@ -1118,26 +1118,31 @@ public class PrismAsserts {
         return a.equals(b);
     }
 
-    public static <T> void assertEqualsUnordered(String message, Stream<T> actualStream, T... expectedValues) {
+    @SafeVarargs
+    public static <T> void assertEqualsUnordered(String message, Stream<? extends T> actualStream, T... expectedValues) {
         List<T> expectedCollection = Arrays.asList(expectedValues);
         Collection<T> actualCollection = actualStream.collect(Collectors.toList());
-        assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) : message + ": expected "+expectedCollection+
-            "; was "+actualCollection;
+        assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) :
+                message + ": expected " + expectedCollection + "; was " + actualCollection;
     }
 
-    public static <T> void assertEqualsCollectionUnordered(String message, Collection<T> actualCollection, T... expectedValues) {
+    @SafeVarargs
+    public static <T> void assertEqualsCollectionUnordered(
+            String message, Collection<? extends T> actualCollection, T... expectedValues) {
         List<T> expectedCollection = Arrays.asList(expectedValues);
-        assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) : message + ": expected "+expectedCollection+
-            "; was "+actualCollection;
+        assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) :
+                message + ": expected " + expectedCollection + "; was " + actualCollection;
     }
 
-    public static <T> void assertEqualsCollectionUnorderedNullable(String message, Collection<T> actualCollection, T... expectedValues) {
+    @SafeVarargs
+    public static <T> void assertEqualsCollectionUnorderedNullable(
+            String message, Collection<? extends T> actualCollection, T... expectedValues) {
         if (CollectionUtils.isEmpty(actualCollection) && expectedValues.length == 0) {
             // ok
         } else {
             List<T> expectedCollection = Arrays.asList(expectedValues);
-            assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) : message + ": expected " + expectedCollection +
-                    "; was " + actualCollection;
+            assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection) :
+                    message + ": expected " + expectedCollection + "; was " + actualCollection;
         }
     }
 
