@@ -191,7 +191,7 @@ public interface MidpointTestMixin {
 
     /**
      * Displays "given" subsection header with test name.
-     * Even better, use {@link #given(String)} and provide human readable description.
+     * Even better, use {@link #given(String)} and provide human-readable description.
      */
     default void given() {
         given(null);
@@ -211,7 +211,7 @@ public interface MidpointTestMixin {
 
     /**
      * Displays "when" subsection header with test name.
-     * Even better, use {@link #when(String)} and provide human readable description.
+     * Even better, use {@link #when(String)} and provide human-readable description.
      */
     default void when() {
         when(null);
@@ -226,7 +226,7 @@ public interface MidpointTestMixin {
 
     /**
      * Displays "then" subsection header with test name.
-     * Even better, use {@link #then(String)} and provide human readable description.
+     * Even better, use {@link #then(String)} and provide human-readable description.
      */
     default void then() {
         then(null);
@@ -256,7 +256,7 @@ public interface MidpointTestMixin {
 
     /**
      * Displays "expect" subsection header with test name.
-     * Even better, use {@link #expect(String)} and provide human readable description.
+     * Even better, use {@link #expect(String)} and provide human-readable description.
      */
     default void expect() {
         expect(null);
