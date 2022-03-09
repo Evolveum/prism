@@ -23,8 +23,12 @@ public class AxiomQuerySource {
         // DO NOT log to STDIN
         lexer.removeErrorListeners();
         parser.removeErrorListeners();
-        FilterContext root = parser.filter();
-        return new AxiomQuerySource(root);
+
+        var root = parser.root();
+        if (root.filter() == null) {
+            throw new IllegalArgumentException("Unable to parse query: " + query);
+        }
+        return new AxiomQuerySource(root.filter());
     }
 
     public FilterContext root() {

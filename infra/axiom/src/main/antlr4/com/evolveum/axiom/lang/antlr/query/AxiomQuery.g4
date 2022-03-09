@@ -51,7 +51,7 @@ itemPathComponent: '#' #IdentifierComponent
 path: '.' #SelfPath
     | parent ( '/' parent)* ( '/' itemPathComponent)* #ParentPath
     | itemPathComponent ( '/' itemPathComponent)* #DescendantPath
-    ;
+    | axiomPath #PathAxiomPath;
 
 
 
@@ -75,6 +75,8 @@ valueSet: '(' SEP* values+=singleValue SEP* (',' SEP* values+=singleValue SEP*)*
 negation: NOT_KEYWORD;
 // Filter could be Value filter or Logic Filter
 
+
+root: SEP* filter SEP*; // Needed for trailing spaces if multiline
 filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
            | left=filter (SEP+ OR_KEYWORD SEP+ right=filter) #orFilter
            | itemFilter #genFilter
@@ -92,7 +94,7 @@ subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 expression : script;
 script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);
 scriptSingleline : STRING_BACKTICK;
-scriptMultiline : (STRING_BACKTICK_START (~('```'))*'```');
+scriptMultiline : (STRING_BACKTICK_START (~('```'))*(STRING_BACKTICK_START|'```'));
 
 
 

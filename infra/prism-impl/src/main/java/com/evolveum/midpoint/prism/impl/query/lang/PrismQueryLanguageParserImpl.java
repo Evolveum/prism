@@ -90,9 +90,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             schemaCheck(valueSpec != null, "Single value is required.");
             if (valueSpec.path() != null) {
                 ItemPath rightPath = path(parentDef, valueSpec.path());
-                PrismPropertyDefinition<?> rightDef = findDefinition(parentDef, typeDef, rightPath, PrismPropertyDefinition.class);
-                schemaCheck(rightDef != null, "Path %s does not reference property", rightPath);
-                return propertyFilter(propDef, path, matchingRule, rightPath, rightDef);
+                if (isVariablePath(valueSpec.path())) {
+                    return expressionFilter(propDef, path, matchingRule, parseExpression(rightPath));
+                } else {
+                    PrismPropertyDefinition<?> rightDef = findDefinition(parentDef, typeDef, rightPath, PrismPropertyDefinition.class);
+                    schemaCheck(rightDef != null, "Path %s does not reference property", rightPath);
+                    return propertyFilter(propDef, path, matchingRule, rightPath, rightDef);
+                }
             } else if (valueSpec.literalValue() != null) {
                 Object parsedValue = parseLiteral(propDef, valueSpec.literalValue());
                 return valueFilter(propDef, path, matchingRule, parsedValue);
@@ -169,6 +173,32 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     private final ItemFilterFactory equalFilter = new PropertyFilterFactory() {
+
+        @Override
+        public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath path,
+                ItemDefinition<?> definition, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
+                throws SchemaException {
+            schemaCheck(subfilterOrValue != null, "Value or subfilter is missing");
+
+            /*
+             *  Special case for reference `ref` filter with expression, since expression can return
+             *  object, we could use equals
+             */
+            if (definition instanceof PrismReferenceDefinition) {
+                var refDef = (PrismReferenceDefinition) definition;
+                if (subfilterOrValue.expression() != null) {
+                    return RefFilterImpl.createReferenceEqual(path,refDef, parseExpression(subfilterOrValue.expression()));
+                } else if (isVariablePath(subfilterOrValue.singleValue())) {
+                    var rightPath = path(parentDef, subfilterOrValue.singleValue().path());
+                    return RefFilterImpl.createReferenceEqual(path, refDef, parseExpression(rightPath));
+                }
+            }
+
+
+            return super.create(parentDef, typeDef, path, definition, matchingRule, subfilterOrValue);
+        }
+
+
         @Override
         public ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                 QName matchingRule, Object value) {
@@ -366,6 +396,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         this(context, ImmutableMap.of(), null);
     }
 
+
+    protected boolean isVariablePath(SingleValueContext singleValue) {
+        return singleValue != null && isVariablePath(singleValue.path());
+    }
+
+
+    public boolean isVariablePath(PathContext path) {
+        return path.getText().contains("$");
+    }
+
     public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext) {
         this(context, namespaceContext, null);
     }
@@ -376,21 +416,28 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         this.expressionParser = expressionParser;
     }
 
-    ExpressionWrapper parseExpression(ExpressionContext expression) {
+    ExpressionWrapper parseExpression(ItemPath rightPath) throws SchemaException {
         if (expressionParser == null) {
-            throw new UnsupportedOperationException("Expressions are not supported");
+            throw new SchemaException("Expressions are not supported");
         }
-        if (expression.script() != null) {
-            return parseScript(expression.script());
+        return expressionParser.parsePath(rightPath);
+    }
+
+    ExpressionWrapper parseExpression(ExpressionContext expression) throws SchemaException {
+        if (expressionParser == null) {
+            throw new SchemaException("Expressions are not supported");
         }
-        throw new UnsupportedOperationException("Unsupported expression");
+        if (expression.script() == null) {
+            throw new SchemaException("Expression '" + expression.getText() +"' must contain script");
+        }
+        return parseScript(expression.script());
     }
 
     private ExpressionWrapper parseScript(ScriptContext script) {
         String scriptLang = script.language != null ? script.language.getText() : null;
         String scriptText;
         if (script.scriptMultiline() != null) {
-            scriptText = AxiomStrings.removeQuotes(script.scriptMultiline().getText(), AxiomStrings.TRIPLE_BACKTICK);
+            scriptText = AxiomStrings.removeQuotes(AxiomStrings.TRIPLE_BACKTICK, script.scriptMultiline().getText());
         } else if (script.scriptSingleline() != null) {
             scriptText = AxiomStrings.fromSingleBacktick(script.scriptSingleline().getText());
         } else {
@@ -594,7 +641,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return FilterNames.fromAlias(filter.filterNameAlias().getText()).orElseThrow();
         }
         FilterNameContext filterName = filter.filterName();
-        if (filter.filterNameAlias() != null) {
+        if (filterName.filterNameAlias() != null) {
             return FilterNames.fromAlias(filterName.filterNameAlias().getText()).orElseThrow();
         }
         return toFilterName(QUERY_NS, filterName.prefixedName());

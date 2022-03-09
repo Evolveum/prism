@@ -9,10 +9,15 @@ package com.evolveum.midpoint.prism.query;
 import java.util.Map;
 
 import com.evolveum.midpoint.prism.ExpressionWrapper;
+import com.evolveum.midpoint.prism.path.ItemPath;
 
 public interface PrismQueryExpressionFactory {
 
 
     ExpressionWrapper parseScript(Map<String, String> namespaceContext, String language, String script);
+
+    default ExpressionWrapper parsePath(ItemPath rightPath) {
+        throw new UnsupportedOperationException();
+    }
 
 }

@@ -67,7 +67,8 @@ public class AxiomStrings {
     }
 
     public static String removeQuotes(String quote, String withQuotes) {
-        Preconditions.checkArgument(isQuoted(withQuotes, quote), "String must be quoted with '%s' quotes", quote);
+        withQuotes = withQuotes.trim();
+        Preconditions.checkArgument(isQuoted(withQuotes, quote), "String `%s` must be quoted with '%s' quotes", quote, withQuotes);
         return withQuotes.substring(quote.length(), withQuotes.length() - quote.length());
     }
 
