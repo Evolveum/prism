@@ -186,4 +186,9 @@ public class PrismParserImplNoIO extends PrismParserImpl implements PrismParserN
             throw new IllegalStateException(e);
         }
     }
+
+    @Override
+    public PrismParserNoIO convertMissingTypes() {
+        return (PrismParserNoIO) super.convertMissingTypes();
+    }
 }

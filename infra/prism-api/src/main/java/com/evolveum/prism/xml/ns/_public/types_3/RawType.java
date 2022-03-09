@@ -28,6 +28,7 @@ import org.jvnet.jaxb2_commons.lang.Equals;
 import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.Objects;
@@ -58,6 +59,7 @@ import java.util.function.Supplier;
  * Implementation has stable Equals, but hashcode is unstable since it would require
  * significant effort to unify XNode and parsed items hashcode computation.
  */
+@XmlType(name = "RawType")
 public class RawType implements Serializable, Cloneable, Equals, Revivable, ShortDumpable, JaxbVisitable, PrismContextSensitive {
     private static final long serialVersionUID = 4430291958902286779L;
 

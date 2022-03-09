@@ -236,6 +236,8 @@ public interface PrismParser {
      */
     void parseObjectsIteratively(@NotNull ObjectHandler handler) throws SchemaException, IOException;
 
+    PrismParser convertMissingTypes();
+
     // ============= other methods (convenience ones, deprecated ones etc) =============
 
     //    /**

@@ -43,4 +43,8 @@ public interface ParsingContext extends Cloneable {
     ParsingContext compat();
 
     XNodeProcessorEvaluationMode getEvaluationMode();
+
+    boolean isConvertUnknownTypes();
+
+    ParsingContext convertUnknownTypes(boolean value);
 }

@@ -22,6 +22,7 @@ public class ParsingContextImpl implements ParsingContext {
 
     private XNodeProcessorEvaluationMode evaluationMode = XNodeProcessorEvaluationMode.STRICT;
     private boolean allowMissingRefTypes;
+    private boolean convertUnknownTypesToRaw;
     private final List<String> warnings = new ArrayList<>();
 
     ParsingContextImpl() {
@@ -57,31 +58,38 @@ public class ParsingContextImpl implements ParsingContext {
         this.evaluationMode = evaluationMode;
     }
 
+    @Override
     public boolean isAllowMissingRefTypes() {
         return allowMissingRefTypes;
     }
 
+    @Override
     public XNodeProcessorEvaluationMode getEvaluationMode() {
         return evaluationMode;
     }
 
+    @Override
     public boolean isCompat() {
         return evaluationMode == XNodeProcessorEvaluationMode.COMPAT;
     }
 
+    @Override
     public boolean isStrict() {
         return evaluationMode == XNodeProcessorEvaluationMode.STRICT;
     }
 
+    @Override
     public void warn(Trace logger, String message) {
         logger.warn("{}", message);
         warn(message);
     }
 
+    @Override
     public void warnOrThrow(Trace logger, String message) throws SchemaException {
         warnOrThrow(logger, message, null);
     }
 
+    @Override
     public void warnOrThrow(Trace logger, String message, Throwable t) throws SchemaException {
         if (isCompat()) {
             logger.warn("{}", message, t);
@@ -91,18 +99,22 @@ public class ParsingContextImpl implements ParsingContext {
         }
     }
 
+    @Override
     public void warn(String message) {
         warnings.add(message);
     }
 
+    @Override
     public List<String> getWarnings() {
         return warnings;
     }
 
+    @Override
     public boolean hasWarnings() {
         return !warnings.isEmpty();
     }
 
+    @Override
     public ParsingContext clone() {
         ParsingContextImpl clone;
         try {
@@ -116,13 +128,26 @@ public class ParsingContextImpl implements ParsingContext {
         return clone;
     }
 
+    @Override
     public ParsingContext strict() {
         this.setEvaluationMode(XNodeProcessorEvaluationMode.STRICT);
         return this;
     }
 
+    @Override
     public ParsingContext compat() {
         this.setEvaluationMode(XNodeProcessorEvaluationMode.COMPAT);
+        return this;
+    }
+
+    @Override
+    public boolean isConvertUnknownTypes() {
+        return convertUnknownTypesToRaw;
+    }
+
+    @Override
+    public ParsingContext convertUnknownTypes(boolean value) {
+        convertUnknownTypesToRaw = value;
         return this;
     }
 }

@@ -147,6 +147,7 @@ public class PrismConstants {
     public static final Class DEFAULT_VALUE_CLASS = String.class;
 
     public static final QName POLYSTRING_TYPE_QNAME = new QName(NS_TYPES, "PolyStringType");
+    public static final QName RAW_TYPE_QNAME = new QName(NS_TYPES, "RawType");
     public static final QName POLYSTRING_ELEMENT_ORIG_QNAME = new QName(NS_TYPES, "orig");
     public static final QName POLYSTRING_ELEMENT_NORM_QNAME = new QName(NS_TYPES, "norm");
 
