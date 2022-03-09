@@ -101,6 +101,11 @@ abstract class PrismParserImpl implements PrismParser {
         return create(source, language, context.clone().compat(), prismContext, itemDefinition, itemName, typeName, typeClass);
     }
 
+    @Override
+    public PrismParser convertMissingTypes() {
+        return create(source, language, context.clone().convertUnknownTypes(true), prismContext, itemDefinition, itemName, typeName, typeClass);
+    }
+
     @NotNull
     @Override
     public PrismParser definition(ItemDefinition<?> itemDefinition) {

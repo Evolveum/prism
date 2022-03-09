@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
+import javax.xml.bind.annotation.XmlType;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang.Validate;
@@ -57,6 +58,7 @@ import com.evolveum.midpoint.util.exception.TunnelException;
  * Implementation has stable Equals, but hashcode is unstable since it would require
  * significant effort to unify XNode and parsed items hashcode computation.
  */
+@XmlType(name = "RawType")
 public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, Revivable, ShortDumpable, PrismContextSensitive {
     private static final long serialVersionUID = 4430291958902286779L;
 

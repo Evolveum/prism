@@ -24,42 +24,66 @@ import java.util.List;
  */
 public interface PrismParserNoIO extends PrismParser {
 
+    @Override
     @NotNull
     PrismParserNoIO language(@Nullable String language);
+    @Override
     @NotNull
     PrismParserNoIO xml();
+    @Override
     @NotNull
     PrismParserNoIO json();
+    @Override
     @NotNull
     PrismParserNoIO yaml();
+    @Override
     @NotNull
     PrismParserNoIO context(@NotNull ParsingContext context);
+    @Override
     @NotNull
     PrismParserNoIO strict();
+    @Override
     @NotNull
     PrismParserNoIO compat();
+    @Override
     @NotNull
     PrismParserNoIO definition(ItemDefinition<?> itemDefinition);
+    @Override
     @NotNull
     PrismParserNoIO name(QName itemName);
+    @Override
     @NotNull
     PrismParserNoIO type(QName typeName);
+    @Override
     @NotNull
     PrismParserNoIO type(Class<?> typeClass);
 
+    @Override
     @NotNull
     <O extends Objectable> PrismObject<O> parse() throws SchemaException;
+    @Override
     <IV extends PrismValue, ID extends ItemDefinition> Item<IV,ID> parseItem() throws SchemaException;
+    @Override
     <IV extends PrismValue> IV parseItemValue() throws SchemaException;
+    @Override
     <T> T parseRealValue(Class<T> clazz) throws SchemaException;
+    @Override
     <T> T parseRealValue() throws SchemaException;
+    @Override
     <T> JAXBElement<T> parseRealValueToJaxbElement() throws SchemaException;
+    @Override
     RootXNode parseToXNode() throws SchemaException;
+    @Override
     Object parseItemOrRealValue() throws SchemaException;
 
     // auxiliary methods
+    @Override
     @NotNull
     List<PrismObject<? extends Objectable>> parseObjects() throws SchemaException;
 
+    @Override
     void parseObjectsIteratively(@NotNull ObjectHandler handler) throws SchemaException;
+
+    @Override
+    PrismParserNoIO convertMissingTypes();
 }
