@@ -15,6 +15,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -1023,6 +1024,13 @@ public class BeanUnmarshaller {
                         .parseItemValue();// TODO what about objects? oid/version will be lost here
                 if (value != null && !value.isRaw()) {
                     raw = new RawType(value, xsubnode.getTypeQName(), prismContext);
+                } else if (pc.isConvertUnknownTypes() && value.isRaw() && value instanceof PrismPropertyValue<?>) {
+                    // This is in case that value is raw & we support convert unknown types
+                    // We can not use original rawType created, since it contains type name
+                    // of type not supported, but we should use raw element, returned from parse
+                    // which did migration
+                    XNode rawElem = ((PrismPropertyValue<?>)value).getRawElement();
+                    raw = new RawType(rawElem.frozen(), getPrismContext());
                 }
             }
             propValue = raw;

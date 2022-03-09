@@ -539,10 +539,9 @@ public class PrismUnmarshaller {
             }
         } else if (pc.isConvertUnknownTypes()){
             node = node.clone();
-            // We need to change xsi:type to RawType and introduce legacyType?
-            node.setTypeQName(PrismConstants.RAW_TYPE_QNAME);
-
-            return parsePropertyValue(node, definition, pc);
+            // We need to remove xsi:type
+            node.setTypeQName(null);
+            rv = createRawPrismPropertyValue(node);
         } else {
             pc.warnOrThrow(LOGGER, "Cannot parse as " + typeName + " because bean unmarshaller cannot process it (generated bean classes are missing?): " + node.debugDump());
             rv = createRawPrismPropertyValue(node);
