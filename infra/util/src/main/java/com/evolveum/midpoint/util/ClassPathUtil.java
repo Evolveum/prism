@@ -41,8 +41,9 @@ public class ClassPathUtil {
         return classes;
     }
 
-    public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass) {
+    public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String... packageNames) {
         try (ScanResult scanResult = new ClassGraph()
+                .acceptPackages(packageNames)
                 .enableClassInfo()
                 .enableAnnotationInfo()
                 .scan()) {
