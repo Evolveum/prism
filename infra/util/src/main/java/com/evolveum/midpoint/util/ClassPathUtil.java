@@ -73,7 +73,7 @@ public class ClassPathUtil {
     }
 
     public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String... packageNames) {
-        LOGGER.error("Scanning classes for: {} with package scope: {}", annotationClass, packageNames);
+        LOGGER.debug("Scanning classes for: {} with package scope: {}", annotationClass, packageNames);
         try (ScanResult scanResult = new ClassGraph()
                 .acceptPackages(packageNames)
                 .enableClassInfo()
