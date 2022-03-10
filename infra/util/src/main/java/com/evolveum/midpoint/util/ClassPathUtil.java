@@ -6,21 +6,21 @@
  */
 package com.evolveum.midpoint.util;
 
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
+
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
  * Various class path, class loading and class scanning utilities.
@@ -31,17 +31,49 @@ public class ClassPathUtil {
 
     public static final Trace LOGGER = TraceManager.getTrace(ClassPathUtil.class);
 
+    public static final String DEFAULT_PACKAGE_TO_SCAN = "com.evolveum.midpoint";
+
     public static Set<Class<?>> listClasses(Package pkg) {
         return listClasses(pkg.getName());
     }
 
-    public static Set<Class<?>> listClasses(String packageName) {
-        Set<Class<?>> classes = new HashSet<>();
-        searchClasses(packageName, c -> classes.add(c));
-        return classes;
+    public static Set<Class<?>> listClasses(String... packageNames) {
+        try (ScanResult scan = new ClassGraph()
+                .acceptPackages(packageNames)
+                .scan()) {
+            List<Class<?>> classes = scan.getAllClasses().loadClasses();
+            LOGGER.debug("Found {} classes in packages {}", classes.size(), packageNames);
+
+            Set<Class<?>> result = new HashSet<>();
+            result.addAll(classes);
+
+            return result;
+        }
+    }
+
+    /**
+     * @param annotationClass
+     * @param packageNames comma separated package names
+     * @return
+     */
+    public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String packageNames) {
+        List<String> packages = new ArrayList<>();
+
+        if (StringUtils.isNotEmpty(packageNames)) {
+            String[] array = packageNames.split(",");
+            for (String a : array) {
+                String p = a.trim();
+                if (StringUtils.isNotEmpty(p)) {
+                    packages.add(p);
+                }
+            }
+        }
+
+        return scanClasses(annotationClass, packages.toArray(new String[packages.size()]));
     }
 
     public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String... packageNames) {
+        LOGGER.error("Scanning classes for: {} with package scope: {}", annotationClass, packageNames);
         try (ScanResult scanResult = new ClassGraph()
                 .acceptPackages(packageNames)
                 .enableClassInfo()
@@ -52,18 +84,6 @@ public class ClassPathUtil {
                     .loadClasses();
             LOGGER.debug("Found {} classes with annotation {}", classes.size(), annotationClass.getName());
             return classes;
-        }
-    }
-
-    public static void searchClasses(String packageName, Consumer<Class<?>> consumer) {
-        try (ScanResult scan = new ClassGraph()
-                .acceptPackages(packageName)
-                .scan()) {
-            List<Class<?>> classes = scan.getAllClasses().loadClasses();
-            LOGGER.debug("Found {} classes in package {}", classes.size(), packageName);
-            for (Class<?> aClass : classes) {
-                consumer.accept(aClass);
-            }
         }
     }
 
