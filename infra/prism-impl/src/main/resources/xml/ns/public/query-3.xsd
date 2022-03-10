@@ -107,10 +107,9 @@
             <xsd:element name="maxSize" type="xsd:int" default="2147483647" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
-                        The maximum number of entries returned. The
-                        operation may return specified number of number of
-                        entries or less. If not specified, unlimited maximum
-                        size is assumed.
+                        The maximum number of entries returned.
+                        The operation may return specified number of entries or less.
+                        If not specified, unlimited maximum size is assumed.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
