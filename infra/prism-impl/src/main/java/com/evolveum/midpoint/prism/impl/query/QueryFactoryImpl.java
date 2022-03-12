@@ -1,35 +1,28 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.util.Collection;
+import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.xnode.XNode;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import javax.xml.namespace.QName;
-import java.util.Collection;
-import java.util.List;
-
-/**
- *  TODO remove prism context parameter from the methods + set it in all filters created
- */
 public class QueryFactoryImpl implements QueryFactory {
 
-    @NotNull private final PrismContextImpl prismContext;
-
-    public QueryFactoryImpl(@NotNull PrismContextImpl prismContext) {
-        this.prismContext = prismContext;
+    public QueryFactoryImpl() {
     }
 
     @Override
@@ -155,13 +148,13 @@ public class QueryFactoryImpl implements QueryFactory {
 
     @NotNull
     @Override
-    public AndFilter createAnd(ObjectFilter... conditions){
+    public AndFilter createAnd(ObjectFilter... conditions) {
         return AndFilterImpl.createAnd(conditions);
     }
 
     @NotNull
     @Override
-    public AndFilter createAnd(List<ObjectFilter> conditions){
+    public AndFilter createAnd(List<ObjectFilter> conditions) {
         return AndFilterImpl.createAnd(conditions);
     }
 
@@ -246,7 +239,7 @@ public class QueryFactoryImpl implements QueryFactory {
 
     @Override
     @NotNull
-    public ObjectPaging createPaging(Integer offset, Integer maxSize){
+    public ObjectPaging createPaging(Integer offset, Integer maxSize) {
         return ObjectPagingImpl.createPaging(offset, maxSize);
     }
 
@@ -258,46 +251,14 @@ public class QueryFactoryImpl implements QueryFactory {
 
     @Override
     @NotNull
-    public ObjectPaging createPaging(Integer offset, Integer maxSize, ItemPath groupBy) {
-        return ObjectPagingImpl.createPaging(offset, maxSize, groupBy);
-    }
-
-    @Override
-    @NotNull
-    public ObjectPaging createPaging(Integer offset, Integer maxSize, ItemPath orderBy, OrderDirection direction,
-            ItemPath groupBy) {
-        return ObjectPagingImpl.createPaging(offset, maxSize, orderBy, direction, groupBy);
-    }
-
-    @Override
-    @NotNull
     public ObjectPaging createPaging(Integer offset, Integer maxSize, List<ObjectOrdering> orderings) {
         return ObjectPagingImpl.createPaging(offset, maxSize, orderings);
     }
 
     @Override
     @NotNull
-    public ObjectPaging createPaging(Integer offset, Integer maxSize, List<ObjectOrdering> orderings,
-            List<ObjectGrouping> groupings) {
-        return ObjectPagingImpl.createPaging(offset, maxSize, orderings, groupings);
-    }
-
-    @Override
-    @NotNull
     public ObjectPaging createPaging(ItemPath orderBy, OrderDirection direction) {
         return ObjectPagingImpl.createPaging(orderBy, direction);
-    }
-
-    @Override
-    @NotNull
-    public ObjectPaging createPaging(ItemPath orderBy, OrderDirection direction, ItemPath groupBy) {
-        return ObjectPagingImpl.createPaging(orderBy, direction, groupBy);
-    }
-
-    @Override
-    @NotNull
-    public ObjectPaging createPaging(ItemPath groupBy) {
-        return ObjectPagingImpl.createPaging(groupBy);
     }
 
     @Override
@@ -335,5 +296,4 @@ public class QueryFactoryImpl implements QueryFactory {
     public ObjectQuery createQuery(ObjectFilter filter, ObjectPaging paging) {
         return ObjectQueryImpl.createObjectQuery(filter, paging);
     }
-
 }

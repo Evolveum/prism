@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2010-2021 Evolveum and contributors
+  ~ Copyright (C) 2010-2022 Evolveum and contributors
   ~
   ~ This work is dual-licensed under the Apache License 2.0
   ~ and European Union Public License. See LICENSE file for details.
@@ -111,22 +111,6 @@
                         The operation may return specified number of entries or less.
                         If not specified, unlimited maximum size is assumed.
                     </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-            <xsd:element name="groupBy" type="t:ItemPathType" minOccurs="0">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        DO NOT USE: This has unclear semantics for object-based query language
-                        without aggregations, it is not supported in the Native repo and causes
-                        problems in the Generic repo as well. See MID-7327.
-
-                        This will be removed in 4.5.
-                    </xsd:documentation>
-                    <xsd:appinfo>
-                        <a:deprecated>true</a:deprecated>
-                        <a:deprecatedSince>4.4</a:deprecatedSince>
-                        <a:plannedRemoval>4.5</a:plannedRemoval>
-                    </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
         </xsd:sequence>

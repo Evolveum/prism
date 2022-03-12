@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2019 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -42,7 +42,6 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
  *         &lt;element name="orderDirection" type="{http://prism.evolveum.com/xml/ns/public/query-2}OrderDirectionType" minOccurs="0"/&gt;
  *         &lt;element name="offset" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="maxSize" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
- *         &lt;element name="groupBy" type="{http://prism.evolveum.com/xml/ns/public/types-3}XPathType" minOccurs="0"/>
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -54,8 +53,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
         "orderBy",
         "orderDirection",
         "offset",
-        "maxSize",
-        "groupBy"
+        "maxSize"
 })
 public class PagingType implements PlainStructured, Serializable, Cloneable {
 
@@ -71,8 +69,6 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
 
     @XmlElement(defaultValue = "2147483647")
     protected Integer maxSize;
-
-    protected ItemPathType groupBy;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "PagingType");
     public static final QName F_ORDER_DIRECTION = new QName(PrismConstants.NS_QUERY, "orderDirection");
@@ -106,7 +102,6 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
         this.offset = ((o.offset == null) ? null : o.getOffset());
         // CBuiltinLeafInfo: java.lang.Integer
         this.maxSize = ((o.maxSize == null) ? null : o.getMaxSize());
-        this.groupBy = (o.groupBy == null) ? null : o.groupBy.clone();
     }
 
     /**
@@ -190,26 +185,6 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
     }
 
     /**
-     * Gets the value of the groupBy property.
-     *
-     * @return possible object is
-     * {@link Element }
-     */
-    public ItemPathType getGroupBy() {
-        return groupBy;
-    }
-
-    /**
-     * Sets the value of the orderBy property.
-     *
-     * @param value allowed object is
-     * {@link Element }
-     */
-    public void setGroupBy(ItemPathType value) {
-        this.groupBy = value;
-    }
-
-    /**
      * Generates a String representation of the contents of this type.
      * This is an extension method, produced by the 'ts' xjc plugin
      */
@@ -225,7 +200,6 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
         currentHashCode = strategy.hashCode(currentHashCode, this.getOrderDirection());
         currentHashCode = strategy.hashCode(currentHashCode, this.getOffset());
         currentHashCode = strategy.hashCode(currentHashCode, this.getMaxSize());
-        currentHashCode = strategy.hashCode(currentHashCode, this.getGroupBy());
         return currentHashCode;
     }
 
@@ -268,14 +242,7 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
         lhsMaxSize = this.getMaxSize();
         Integer rhsMaxSize;
         rhsMaxSize = that.getMaxSize();
-        if (!strategy.equals(lhsMaxSize, rhsMaxSize)) {
-            return false;
-        }
-        ItemPathType lhsGroupBy;
-        lhsGroupBy = this.getGroupBy();
-        ItemPathType rhsGroupBy;
-        rhsGroupBy = that.getOrderBy();
-        return strategy.equals(lhsGroupBy, rhsGroupBy);
+        return strategy.equals(lhsMaxSize, rhsMaxSize);
     }
 
     @Override
@@ -301,13 +268,10 @@ public class PagingType implements PlainStructured, Serializable, Cloneable {
             clone.offset = ((this.offset == null) ? null : this.getOffset());
             // CBuiltinLeafInfo: java.lang.Integer
             clone.maxSize = ((this.maxSize == null) ? null : this.getMaxSize());
-            // CWildcardTypeInfo: org.w3c.dom.Element
-            clone.groupBy = ((this.groupBy == null) ? null : ((this.getGroupBy() == null) ? null : (this.getGroupBy().clone())));
             return clone;
         } catch (CloneNotSupportedException e) {
             // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
             throw new AssertionError(e);
         }
     }
-
 }

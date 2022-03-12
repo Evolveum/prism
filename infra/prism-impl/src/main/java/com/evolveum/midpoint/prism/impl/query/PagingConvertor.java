@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -19,19 +19,9 @@ public class PagingConvertor {
         if (pagingType == null) {
             return null;
         }
-        if (pagingType.getOrderBy() != null && pagingType.getGroupBy() != null) {
-            return prismContext.queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize(),
-                    pagingType.getOrderBy().getItemPath(), toOrderDirection(pagingType.getOrderDirection()), pagingType.getGroupBy().getItemPath());
-        }
-
         if (pagingType.getOrderBy() != null) {
             return prismContext.queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize(),
                     pagingType.getOrderBy().getItemPath(), toOrderDirection(pagingType.getOrderDirection()));
-
-        }
-        if (pagingType.getGroupBy() != null) {
-            return prismContext.queryFactory().createPaging(pagingType.getGroupBy().getItemPath());
-
         } else {
             return prismContext.queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize());
         }
@@ -62,9 +52,6 @@ public class PagingConvertor {
         pagingType.setOffset(paging.getOffset());
         if (paging.getPrimaryOrderingPath() != null) {
             pagingType.setOrderBy(new ItemPathType(paging.getPrimaryOrderingPath()));
-        }
-        if (paging.getGroupBy() != null) {
-            pagingType.setGroupBy(new ItemPathType(paging.getGroupBy()));
         }
         return pagingType;
     }

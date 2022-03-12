@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -21,24 +21,14 @@ public interface ObjectPaging extends DebugDumpable, Serializable {
 
     ObjectOrdering getPrimaryOrdering();
 
-    ItemPath getGroupBy();
-
-    ObjectGrouping getPrimaryGrouping();
-
     // TODO name?
     List<? extends ObjectOrdering> getOrderingInstructions();
-
-    List<? extends ObjectGrouping> getGroupingInstructions();
 
     boolean hasOrdering();
 
     void setOrdering(ItemPath orderBy, OrderDirection direction);
 
-    boolean hasGrouping();
-
     boolean hasCookie();
-
-    void setGrouping(ItemPath groupBy);
 
     void addOrderingInstruction(ItemPath orderBy, OrderDirection direction);
 
@@ -46,12 +36,6 @@ public interface ObjectPaging extends DebugDumpable, Serializable {
     void setOrdering(ObjectOrdering... orderings);
 
     void setOrdering(Collection<? extends ObjectOrdering> orderings);
-
-    void addGroupingInstruction(ItemPath groupBy);
-
-    void setGrouping(ObjectGrouping... groupings);
-
-    void setGrouping(Collection<ObjectGrouping> groupings);
 
     Integer getOffset();
 

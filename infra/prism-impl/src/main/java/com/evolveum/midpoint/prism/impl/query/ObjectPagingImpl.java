@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -9,12 +9,12 @@ package com.evolveum.midpoint.prism.impl.query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.query.ObjectGrouping;
 import com.evolveum.midpoint.prism.query.ObjectOrdering;
 import com.evolveum.midpoint.prism.query.ObjectPaging;
 import com.evolveum.midpoint.prism.query.OrderDirection;
@@ -25,7 +25,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
     private Integer offset;
     private Integer maxSize;
     @NotNull private final List<ObjectOrderingImpl> ordering = new ArrayList<>();
-    private List<ObjectGroupingImpl> grouping = new ArrayList<>();
 
     private String cookie;
 
@@ -37,37 +36,14 @@ public final class ObjectPagingImpl implements ObjectPaging {
         this.maxSize = maxSize;
     }
 
-    private ObjectPagingImpl(Integer offset, Integer maxSize, ItemPath groupBy) {
-        this.offset = offset;
-        this.maxSize = maxSize;
-        setGrouping(groupBy);
-    }
-
     private ObjectPagingImpl(ItemPath orderBy, OrderDirection direction) {
         setOrdering(orderBy, direction);
-    }
-
-    private ObjectPagingImpl(ItemPath orderBy, OrderDirection direction, ItemPath groupBy) {
-        setOrdering(orderBy, direction);
-        setGrouping(groupBy);
     }
 
     private ObjectPagingImpl(Integer offset, Integer maxSize, ItemPath orderBy, OrderDirection direction) {
         this.offset = offset;
         this.maxSize = maxSize;
         setOrdering(orderBy, direction);
-    }
-
-    private ObjectPagingImpl(Integer offset, Integer maxSize, ItemPath orderBy, OrderDirection direction, ItemPath groupBy) {
-        this.offset = offset;
-        this.maxSize = maxSize;
-        setOrdering(orderBy, direction);
-
-        setGrouping(groupBy);
-    }
-
-    private ObjectPagingImpl(ItemPath groupBy) {
-        setGrouping(groupBy);
     }
 
     public static ObjectPaging createPaging(Integer offset, Integer maxSize) {
@@ -78,37 +54,14 @@ public final class ObjectPagingImpl implements ObjectPaging {
         return new ObjectPagingImpl(offset, maxSize, orderBy, direction);
     }
 
-    public static ObjectPaging createPaging(Integer offset, Integer maxSize, ItemPath groupBy) {
-        return new ObjectPagingImpl(offset, maxSize, groupBy);
-    }
-
-    public static ObjectPaging createPaging(Integer offset, Integer maxSize, ItemPath orderBy, OrderDirection direction, ItemPath groupBy) {
-        return new ObjectPagingImpl(offset, maxSize, orderBy, direction, groupBy);
-    }
-
     public static ObjectPaging createPaging(Integer offset, Integer maxSize, List<ObjectOrdering> orderings) {
         ObjectPagingImpl paging = new ObjectPagingImpl(offset, maxSize);
         paging.setOrdering(orderings);
         return paging;
     }
 
-    public static ObjectPaging createPaging(Integer offset, Integer maxSize, List<ObjectOrdering> orderings, List<ObjectGrouping> groupings) {
-        ObjectPagingImpl paging = new ObjectPagingImpl(offset, maxSize);
-        paging.setOrdering(orderings);
-        paging.setGrouping(groupings);
-        return paging;
-    }
-
     public static ObjectPaging createPaging(ItemPath orderBy, OrderDirection direction) {
         return new ObjectPagingImpl(orderBy, direction);
-    }
-
-    public static ObjectPaging createPaging(ItemPath orderBy, OrderDirection direction, ItemPath groupBy) {
-        return new ObjectPagingImpl(orderBy, direction, groupBy);
-    }
-
-    public static ObjectPaging createPaging(ItemPath groupBy) {
-        return new ObjectPagingImpl(groupBy);
     }
 
     public static ObjectPaging createEmptyPaging() {
@@ -133,25 +86,8 @@ public final class ObjectPagingImpl implements ObjectPaging {
         }
     }
 
-    public ItemPath getGroupBy() {
-        ObjectGrouping primary = getPrimaryGrouping();
-        return primary != null ? primary.getGroupBy() : null;
-    }
-
-    public ObjectGrouping getPrimaryGrouping() {
-        if (hasGrouping()) {
-            return grouping.get(0);
-        } else {
-            return null;
-        }
-    }
-
     public List<? extends ObjectOrdering> getOrderingInstructions() {
         return ordering;
-    }
-
-    public List<? extends ObjectGrouping> getGroupingInstructions() {
-        return grouping;
     }
 
     public boolean hasOrdering() {
@@ -163,20 +99,10 @@ public final class ObjectPagingImpl implements ObjectPaging {
         addOrderingInstruction(orderBy, direction);
     }
 
-    public boolean hasGrouping() {
-        return !grouping.isEmpty();
-    }
-
-    public void setGrouping(ItemPath groupBy) {
-        this.grouping.clear();
-        addGroupingInstruction(groupBy);
-    }
-
     public void addOrderingInstruction(ItemPath orderBy, OrderDirection direction) {
         this.ordering.add(ObjectOrderingImpl.createOrdering(orderBy, direction));
     }
 
-    @SuppressWarnings("NullableProblems")
     public void setOrdering(ObjectOrdering... orderings) {
         this.ordering.clear();
         for (ObjectOrdering ordering : orderings) {
@@ -188,24 +114,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
         this.ordering.clear();
         for (ObjectOrdering ordering : CollectionUtils.emptyIfNull(orderings)) {
             this.ordering.add((ObjectOrderingImpl) ordering);
-        }
-    }
-
-    public void addGroupingInstruction(ItemPath groupBy) {
-        this.grouping.add(ObjectGroupingImpl.createGrouping(groupBy));
-    }
-
-    public void setGrouping(ObjectGrouping... groupings) {
-        this.grouping.clear();
-        for (ObjectGrouping grouping : groupings) {
-            this.grouping.add((ObjectGroupingImpl) grouping);
-        }
-    }
-
-    public void setGrouping(Collection<ObjectGrouping> groupings) {
-        this.grouping.clear();
-        for (ObjectGrouping grouping : CollectionUtils.emptyIfNull(groupings)) {
-            this.grouping.add((ObjectGroupingImpl) grouping);
         }
     }
 
@@ -260,6 +168,7 @@ public final class ObjectPagingImpl implements ObjectPaging {
         this.cookie = cookie;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public ObjectPaging clone() {
         ObjectPagingImpl clone = new ObjectPagingImpl();
         copyTo(clone);
@@ -271,13 +180,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
         clone.maxSize = this.maxSize;
         clone.ordering.clear();
         clone.ordering.addAll(this.ordering);
-
-        if (this.grouping != null) {
-            clone.grouping = new ArrayList<>(this.grouping);
-        } else {
-            clone.grouping = null;
-        }
-
         clone.cookie = this.cookie;
     }
 
@@ -299,11 +201,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
             sb.append("\n");
             DebugUtil.indentDebugDump(sb, indent + 1);
             sb.append("Ordering: ").append(ordering);
-        }
-        if (hasGrouping()) {
-            sb.append("\n");
-            DebugUtil.indentDebugDump(sb, indent + 1);
-            sb.append("Grouping: ").append(grouping);
         }
         if (getCookie() != null) {
             sb.append("\n");
@@ -332,11 +229,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
             sb.append(ordering);
             sb.append(", ");
         }
-        if (hasGrouping()) {
-            sb.append("GRP: ");
-            sb.append(grouping);
-            sb.append(", ");
-        }
         if (getCookie() != null) {
             sb.append("C:");
             sb.append(getCookie());
@@ -352,15 +244,15 @@ public final class ObjectPagingImpl implements ObjectPaging {
     }
 
     public boolean equals(Object o, boolean exact) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         ObjectPagingImpl that = (ObjectPagingImpl) o;
 
-        if (offset != null ? !offset.equals(that.offset) : that.offset != null) {
+        if (!Objects.equals(offset, that.offset)) {
             return false;
         }
-        if (maxSize != null ? !maxSize.equals(that.maxSize) : that.maxSize != null) {
+        if (!Objects.equals(maxSize, that.maxSize)) {
             return false;
         }
         if (ordering.size() != that.ordering.size()) {
@@ -373,17 +265,7 @@ public final class ObjectPagingImpl implements ObjectPaging {
                 return false;
             }
         }
-        if (grouping.size() != that.grouping.size()) {
-            return false;
-        }
-        for (int i = 0; i < grouping.size(); i++) {
-            ObjectGrouping og1 = this.grouping.get(i);
-            ObjectGrouping og2 = that.grouping.get(i);
-            if (!og1.equals(og2, exact)) {
-                return false;
-            }
-        }
-        return cookie != null ? cookie.equals(that.cookie) : that.cookie == null;
+        return Objects.equals(cookie, that.cookie);
     }
 
     @Override
@@ -391,7 +273,6 @@ public final class ObjectPagingImpl implements ObjectPaging {
         int result = offset != null ? offset.hashCode() : 0;
         result = 31 * result + (maxSize != null ? maxSize.hashCode() : 0);
         result = 31 * result + ordering.hashCode();
-        result = 31 * result + (grouping != null ? grouping.hashCode() : 0);
         result = 31 * result + (cookie != null ? cookie.hashCode() : 0);
         return result;
     }

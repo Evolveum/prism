@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -143,7 +143,7 @@ public final class PrismContextImpl implements PrismContext {
         this.hacks = new HacksImpl();
         this.xnodeFactory = new XNodeFactoryImpl();
         this.deltaFactory = new DeltaFactoryImpl(this);
-        this.queryFactory = new QueryFactoryImpl(this);
+        this.queryFactory = new QueryFactoryImpl();
         this.itemFactory = new ItemFactoryImpl(this);
         this.definitionFactory = new DefinitionFactoryImpl(this);
         this.itemPathParser = new ItemPathParserImpl(this);

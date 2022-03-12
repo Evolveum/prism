@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -9,8 +9,6 @@ package com.evolveum.midpoint.prism.impl.query.builder;
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.util.MiscUtil;
 
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.Nullable;
@@ -25,6 +23,7 @@ import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.RefFilter;
 import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.prism.query.builder.*;
+import com.evolveum.midpoint.util.MiscUtil;
 
 public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_RightHandItemEntry {
 
@@ -389,16 +388,6 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     @Override
     public S_FilterExit desc(ItemPath path) {
         return finish().desc(path);
-    }
-
-    @Override
-    public S_FilterExit group(QName... names) {
-        return finish().group(names);
-    }
-
-    @Override
-    public S_FilterExit group(ItemPath path) {
-        return finish().group(path);
     }
 
     @Override

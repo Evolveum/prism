@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query.builder;
 
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     private final QName typeRestriction;
     private final ItemPath existsRestriction;
     private final List<ObjectOrdering> orderingList;
-    private final List<ObjectGrouping> groupingList;
     private final Integer offset;
     private final Integer maxSize;
 
@@ -51,13 +49,12 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         this.typeRestriction = null;
         this.existsRestriction = null;
         this.orderingList = new ArrayList<>();
-        this.groupingList = new ArrayList<>();
         this.offset = null;
         this.maxSize = null;
     }
 
     private R_Filter(QueryBuilder queryBuilder, Class<? extends Containerable> currentClass, OrFilter currentFilter, LogicalSymbol lastLogicalSymbol,
-            boolean isNegated, R_Filter parentFilter, QName typeRestriction, ItemPath existsRestriction, List<ObjectOrdering> orderingList, List<ObjectGrouping> groupingList, Integer offset, Integer maxSize) {
+            boolean isNegated, R_Filter parentFilter, QName typeRestriction, ItemPath existsRestriction, List<ObjectOrdering> orderingList, Integer offset, Integer maxSize) {
         this.queryBuilder = queryBuilder;
         this.currentClass = currentClass;
         this.currentFilter = currentFilter;
@@ -70,11 +67,6 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
             this.orderingList = orderingList;
         } else {
             this.orderingList = new ArrayList<>();
-        }
-        if (groupingList != null) {
-            this.groupingList = groupingList;
-        } else {
-            this.groupingList = new ArrayList<>();
         }
         this.offset = offset;
         this.maxSize = maxSize;
@@ -115,7 +107,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
                             subfilter));
         } else {
             OrFilter newFilter = appendAtomicFilter(subfilter, isNegated, lastLogicalSymbol);
-            return new R_Filter(queryBuilder, currentClass, newFilter, null, false, parentFilter, typeRestriction, existsRestriction, orderingList, groupingList, offset, maxSize);
+            return new R_Filter(queryBuilder, currentClass, newFilter, null, false, parentFilter, typeRestriction, existsRestriction, orderingList, offset, maxSize);
         }
     }
 
@@ -138,36 +130,29 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         if (this.lastLogicalSymbol != null) {
             throw new IllegalStateException("Two logical symbols in a sequence");
         }
-        return new R_Filter(queryBuilder, currentClass, currentFilter, newLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, groupingList, offset, maxSize);
+        return new R_Filter(queryBuilder, currentClass, currentFilter, newLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, offset, maxSize);
     }
 
     private R_Filter setNegated() {
         if (isNegated) {
             throw new IllegalStateException("Double negation");
         }
-        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, true, parentFilter, typeRestriction, existsRestriction, orderingList, groupingList, offset, maxSize);
+        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, true, parentFilter, typeRestriction, existsRestriction, orderingList, offset, maxSize);
     }
 
     private R_Filter addOrdering(ObjectOrdering ordering) {
         Validate.notNull(ordering);
         List<ObjectOrdering> newList = new ArrayList<>(orderingList);
         newList.add(ordering);
-        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, newList, groupingList, offset, maxSize);
-    }
-
-    private R_Filter addGrouping(ObjectGrouping grouping) {
-        Validate.notNull(grouping);
-        List<ObjectGrouping> newList = new ArrayList<>(groupingList);
-        newList.add(grouping);
-        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, newList, offset, maxSize);
+        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, newList, offset, maxSize);
     }
 
     private R_Filter setOffset(Integer n) {
-        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, groupingList, n, maxSize);
+        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, n, maxSize);
     }
 
     private R_Filter setMaxSize(Integer n) {
-        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, groupingList, offset, n);
+        return new R_Filter(queryBuilder, currentClass, currentFilter, lastLogicalSymbol, isNegated, parentFilter, typeRestriction, existsRestriction, orderingList, offset, n);
     }
 
     @Override
@@ -281,7 +266,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
 
     @Override
     public S_FilterEntryOrEmpty block() {
-        return new R_Filter(queryBuilder, currentClass, OrFilterImpl.createOr(), null, false, this, null, null, null, null, null, null);
+        return new R_Filter(queryBuilder, currentClass, OrFilterImpl.createOr(), null, false, this, null, null, null, null, null);
     }
 
     @Override
@@ -294,7 +279,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         if (typeName == null) {
             throw new IllegalStateException("No type name for " + ctd);
         }
-        return new R_Filter(queryBuilder, type, OrFilterImpl.createOr(), null, false, this, typeName, null, null, null, null, null);
+        return new R_Filter(queryBuilder, type, OrFilterImpl.createOr(), null, false, this, typeName, null, null, null, null);
     }
 
     @Override
@@ -308,7 +293,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         if (type == null) {
             throw new IllegalStateException("No compile time class for " + ctd);
         }
-        return new R_Filter(queryBuilder, type, OrFilterImpl.createOr(), null, false, this, typeName, null, null, null, null, null);
+        return new R_Filter(queryBuilder, type, OrFilterImpl.createOr(), null, false, this, typeName, null, null, null, null);
     }
 
     @Override
@@ -320,13 +305,12 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
             throw new IllegalArgumentException("Empty path in exists() filter is not allowed.");
         }
         ItemPath existsPath = ItemPath.create(components);
-        PrismContainerDefinition pcd = resolveItemPath(existsPath, PrismContainerDefinition.class);
-        //noinspection unchecked
+        PrismContainerDefinition<?> pcd = resolveItemPath(existsPath, PrismContainerDefinition.class);
         Class<? extends Containerable> clazz = pcd.getCompileTimeClass();
         if (clazz == null) {
             throw new IllegalArgumentException("Item path of '" + existsPath + "' in " + currentClass + " does not point to a valid prism container.");
         }
-        return new R_Filter(queryBuilder, clazz, OrFilterImpl.createOr(), null, false, this, null, existsPath, null, null, null, null);
+        return new R_Filter(queryBuilder, clazz, OrFilterImpl.createOr(), null, false, this, null, existsPath, null, null, null);
     }
 
     private <ID extends ItemDefinition> ID resolveItemPath(ItemPath itemPath, Class<ID> type) {
@@ -460,22 +444,6 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
             throw new IllegalArgumentException("There must be non-empty path for desc(...) ordering");
         }
         return addOrdering(ObjectOrderingImpl.createOrdering(path, OrderDirection.DESCENDING));
-    }
-
-    @Override
-    public S_FilterExit group(QName... names) {
-        if (names.length == 0) {
-            throw new IllegalArgumentException("There must be at least one name for uniq(...) grouping");
-        }
-        return addGrouping(ObjectGroupingImpl.createGrouping(ItemPath.create((Object[]) names)));
-    }
-
-    @Override
-    public S_FilterExit group(ItemPath path) {
-        if (ItemPath.isEmpty(path)) {
-            throw new IllegalArgumentException("There must be non-empty path for uniq(...) grouping");
-        }
-        return addGrouping(ObjectGroupingImpl.createGrouping(path));
     }
 
     @Override
