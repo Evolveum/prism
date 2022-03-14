@@ -158,4 +158,15 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
         ret.setupReferenceValue(asReferenceValue().clone());
         return ret;
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName())
+                .append("[")
+                .append("value=")
+                .append(value)
+                .append("]")
+                .toString();
+    }
+
 }
