@@ -13,7 +13,6 @@ import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -146,57 +145,17 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
-        for (;;) {
-            if (path.isEmpty()) {
-                if (clazz.isAssignableFrom(PrismContainerDefinition.class)) {
-                    //noinspection unchecked
-                    return (ID) this;
-                } else {
-                    return null;
-                }
-            }
-            Object first = path.first();
-            if (ItemPath.isName(first)) {
-                return findNamedItemDefinition(ItemPath.toName(first), path.rest(), clazz);
-            } else if (ItemPath.isId(first)) {
-                path = path.rest();
-            } else if (ItemPath.isParent(first)) {
-                ItemPath rest = path.rest();
-                ComplexTypeDefinition parent = getSchemaRegistry().determineParentDefinition(getComplexTypeDefinition(), rest);
-                if (rest.isEmpty()) {
-                    // requires that the parent is defined as an item (container, object)
-                    //noinspection unchecked
-                    return (ID) getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
-                } else {
-                    return parent.findItemDefinition(rest, clazz);
-                }
-            } else if (ItemPath.isObjectReference(first)) {
-                throw new IllegalStateException("Couldn't use '@' path segment in this context. PCD=" + getTypeName() + ", path=" + path);
+        if (path.isEmpty()) {
+            if (clazz.isAssignableFrom(PrismContainerDefinition.class)) {
+                //noinspection unchecked
+                return (ID) this;
             } else {
-                throw new IllegalStateException("Unexpected path segment: " + first + " in " + path);
+                return null;
             }
         }
-    }
-
-    private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
-            @NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
-
-        for (ItemDefinition<?> def : getDefinitions()) {
-            if (QNameUtil.match(firstName, def.getItemName())) {
-                return def.findItemDefinition(rest, clazz);
-            }
+        if (getComplexTypeDefinition() != null) {
+            return getComplexTypeDefinition().findItemDefinition(path, clazz);
         }
-
-        if (complexTypeDefinition != null && complexTypeDefinition.isXsdAnyMarker()) {
-            SchemaRegistry schemaRegistry = getSchemaRegistry();
-            if (schemaRegistry != null) {
-                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
-                if (def != null) {
-                    return def.findItemDefinition(rest, clazz);
-                }
-            }
-        }
-
         return null;
     }
 
