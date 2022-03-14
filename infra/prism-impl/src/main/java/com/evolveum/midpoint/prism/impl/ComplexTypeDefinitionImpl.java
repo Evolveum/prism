@@ -309,18 +309,23 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             @NotNull Class<ID> clazz) {
         ID found = null;
         for (ItemDefinition<?> def : getDefinitions()) {
-            if (def.isValidFor(firstName, clazz, false)) {
+
+            if (QNameUtil.match(def.getItemName(), firstName, false)) {
                 if (found != null) {
                     throw new IllegalStateException("More definitions found for " + firstName + "/" + rest + " in " + this);
                 }
                 found = def.findItemDefinition(rest, clazz);
                 if (QNameUtil.hasNamespace(firstName)) {
-                    return found;            // if qualified then there's no risk of matching more entries
+                    break;            // if qualified then there's no risk of matching more entries
                 }
             }
         }
         if (found != null) {
-            return found;
+            if (clazz.isInstance(found)) {
+                return found;
+            } else {
+                return null;
+            }
         }
         if (isXsdAnyMarker()) {
             SchemaRegistry schemaRegistry = getSchemaRegistry();
