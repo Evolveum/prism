@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.binding;
 
 import java.math.BigDecimal;
@@ -16,9 +23,13 @@ import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
+/**
+ *
+ * Utility class intended to simplify implementation of clone / copy contract
+ * for generated {@link PlainStructured} objects.
+ *
+ */
 public class StructuredCopy {
-
-
 
     public static <T> List<T> ofList(List<T> values) {
         if (values == null) {

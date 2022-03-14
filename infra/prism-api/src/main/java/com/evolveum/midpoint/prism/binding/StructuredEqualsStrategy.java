@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.binding;
 
 import java.util.Arrays;
@@ -13,8 +20,15 @@ import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.util.DOMUtil;
 
+/**
+ * Strategy for equals computation of {@link PlainStructured} objects
+ *
+ */
 public abstract class StructuredEqualsStrategy {
 
+    /**
+     * DOM Aware strategy, which ignores differences in namespace prefixes.
+     */
     public static final StructuredEqualsStrategy DOM_AWARE = new StructuredEqualsStrategy() {
 
         @Override
@@ -33,6 +47,9 @@ public abstract class StructuredEqualsStrategy {
         }
     };
 
+    /**
+     * DOM Aware strategy, which takes into account also differences in namespace prefixes.
+     */
     public static final StructuredEqualsStrategy LITERAL = new StructuredEqualsStrategy() {
 
         @Override

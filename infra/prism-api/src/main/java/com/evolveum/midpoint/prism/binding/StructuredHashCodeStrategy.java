@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
 package com.evolveum.midpoint.prism.binding;
 
 import java.util.Arrays;
@@ -10,6 +17,12 @@ import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;
 
+
+/**
+ *
+ * Strategy for hashCode computation of {@link PlainStructured} objects.
+ *
+ */
 public abstract class StructuredHashCodeStrategy {
 
     public static final StructuredHashCodeStrategy DEFAULT = new StructuredHashCodeStrategy() {
