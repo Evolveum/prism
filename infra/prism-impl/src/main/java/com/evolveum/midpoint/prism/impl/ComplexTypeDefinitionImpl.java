@@ -84,6 +84,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     private transient List<PrismPropertyDefinition<?>> attributeDefinitions;
 
+    private boolean strictAnyMarker;
+
     public ComplexTypeDefinitionImpl(@NotNull QName typeName) {
         super(typeName);
     }
@@ -624,5 +626,15 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
         return attributeDefinitions != null ? attributeDefinitions : Collections.emptyList();
+    }
+
+    @Override
+    public boolean isStrictAnyMarker() {
+        return strictAnyMarker;
+    }
+
+    @Override
+    public void setStrictAnyMarker(boolean marker) {
+        strictAnyMarker = marker;
     }
 }

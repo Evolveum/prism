@@ -169,4 +169,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     default List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
         return Collections.emptyList();
     }
+
+    @Experimental
+    default boolean isStrictAnyMarker() {
+        return false;
+    }
 }

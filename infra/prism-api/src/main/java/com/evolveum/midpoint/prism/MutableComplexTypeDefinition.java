@@ -71,4 +71,8 @@ public interface MutableComplexTypeDefinition extends ComplexTypeDefinition, Mut
     default void setAttributeDefinitions(List<PrismPropertyDefinition<?>> definitions) {
         // Intentional NOOP
     }
+
+    default void setStrictAnyMarker(boolean marker) {
+        // intentional NOOP
+    }
 }

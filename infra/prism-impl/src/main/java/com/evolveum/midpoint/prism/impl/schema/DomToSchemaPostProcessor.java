@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
@@ -230,8 +231,12 @@ class DomToSchemaPostProcessor {
         ctd.setDefaultNamespace(getDefaultNamespace(complexType));
         ctd.setIgnoredNamespaces(getIgnoredNamespaces(complexType));
 
-        if (isAny(complexType)) {
+        if (isAny(complexType, Optional.empty())) {
             ctd.setXsdAnyMarker(true);
+            if (isAny(complexType, Optional.of(XSWildcard.STRTICT))) {
+                ctd.setStrictAnyMarker(true);
+            }
+
         }
 
         if (isList(complexType)) {
@@ -415,7 +420,7 @@ class DomToSchemaPostProcessor {
 
                 } else if (xsType.getName() == null && typeFromAnnotation == null) {
 
-                    if (isAny(xsType)) {
+                    if (isAny(xsType, Optional.empty())) {
                         if (isPropertyContainer(elementDecl)) {
                             XSAnnotation containerAnnotation = xsType.getAnnotation();
                             PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
@@ -697,7 +702,7 @@ class DomToSchemaPostProcessor {
     /**
      * Determine whether the definition contains xsd:any (directly or indirectly)
      */
-    private boolean isAny(XSType xsType) {
+    private boolean isAny(XSType xsType, Optional<Integer> mode) {
         if (xsType instanceof XSComplexType) {
             XSComplexType complexType = (XSComplexType) xsType;
             XSContentType contentType = complexType.getContentType();
@@ -706,7 +711,7 @@ class DomToSchemaPostProcessor {
                 if (particle != null) {
                     XSTerm term = particle.getTerm();
                     if (term != null) {
-                        return isAny(term);
+                        return isAny(term, mode);
                     }
                 }
             }
@@ -757,9 +762,14 @@ class DomToSchemaPostProcessor {
     /**
      * Determine whether the definition contains xsd:any (directly or indirectly)
      */
-    private boolean isAny(XSTerm term) {
+    private boolean isAny(XSTerm term, Optional<Integer> mode) {
         if (term.isWildcard()) {
-            return true;
+            if (mode.isPresent()) {
+
+                return mode.get().equals(term.asWildcard().getMode());
+            } else {
+                return true;
+            }
         }
         if (term.isModelGroup()) {
             XSParticle[] children = term.asModelGroup().getChildren();
@@ -767,7 +777,7 @@ class DomToSchemaPostProcessor {
                 for (XSParticle childParticle : children) {
                     XSTerm childTerm = childParticle.getTerm();
                     if (childTerm != null) {
-                        if (isAny(childTerm)) {
+                        if (isAny(childTerm, mode)) {
                             return true;
                         }
                     }

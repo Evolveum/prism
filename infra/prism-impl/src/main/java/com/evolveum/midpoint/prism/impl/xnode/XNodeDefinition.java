@@ -64,7 +64,7 @@ public abstract class XNodeDefinition {
         if (!QNameUtil.isUriQName(name)) {
             PrefixedName prefixed = QNameUtil.parsePrefixedName(name);
             if (prefixed.prefix().isEmpty()) {
-                XNodeDefinition resolved = resolveLocally(name);
+                XNodeDefinition resolved = resolveLocally(name, namespaceContext.defaultNamespace().orElse(null));
                 if (resolved != null) {
                     return resolved;
                 }
@@ -134,7 +134,7 @@ public abstract class XNodeDefinition {
         throw new SchemaException(Strings.lenientFormat(string, prefix));
     }
 
-    protected @Nullable XNodeDefinition resolveLocally(@NotNull String localName) {
+    protected @Nullable XNodeDefinition resolveLocally(@NotNull String localName, String defaultNs) {
         return null;
     }
 
@@ -248,6 +248,9 @@ public abstract class XNodeDefinition {
                 if(complex.hasSubstitutions()) {
                     return new ComplexTypeWithSubstitutions(name, complex, this, inherited);
                 }
+                if (allowsStrictAny(complex)) {
+                    return new ComplexTypeWithStrictAny(name, complex, this, inherited);
+                }
                 return new ComplexTypeAware(name, complex, this, inherited);
             }
             return new SimpleType(name, typeName, inherited, this);
@@ -261,7 +264,7 @@ public abstract class XNodeDefinition {
 
 
         @Override
-        protected XNodeDefinition resolveLocally(String localName) {
+        protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
             return null;
         }
 
@@ -349,7 +352,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(String localName) {
+        protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
             QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
             ItemDefinition<?> def = findDefinition(proposed);
             if(def == null) {
@@ -388,6 +391,38 @@ public abstract class XNodeDefinition {
         protected ItemDefinition<?> findDefinition(QName name) {
             // TODO: Add schemaMigrations lookup
             return definition.itemOrSubstitution(name).orElse(null);
+        }
+    }
+
+    private static class ComplexTypeWithStrictAny extends ComplexTypeAware {
+
+        public ComplexTypeWithStrictAny(QName name, ComplexTypeDefinition definition, SchemaRoot root, boolean inherited) {
+            super(name, definition, root, inherited);
+        }
+
+        @Override
+        protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
+            QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
+            ItemDefinition<?> def = findDefinition(proposed);
+            if(def == null && !Strings.isNullOrEmpty(defaultNs)) {
+                def = findDefinition(new QName(defaultNs, localName));
+            }
+            if(def == null) {
+                def = findDefinition(new QName(localName));
+            }
+            if(def != null) {
+                return awareFrom(proposed, def, true);
+            }
+            return null;
+        }
+
+        @Override
+        protected ItemDefinition<?> findDefinition(QName name) {
+            var maybe = super.findDefinition(name);
+            if (maybe == null) {
+                maybe = root.registry.findItemDefinitionByElementName(name);
+            }
+            return maybe;
         }
     }
 
@@ -438,8 +473,8 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected @Nullable XNodeDefinition resolveLocally(@NotNull String localName) {
-            return delegate.resolveLocally(localName);
+        protected @Nullable XNodeDefinition resolveLocally(@NotNull String localName, String defaultNs) {
+            return delegate.resolveLocally(localName, defaultNs);
         }
 
         @Override
@@ -509,6 +544,10 @@ public abstract class XNodeDefinition {
     @Override
     public String toString() {
         return Objects.toString(getName());
+    }
+
+    static boolean allowsStrictAny(ComplexTypeDefinition complex) {
+        return complex.isStrictAnyMarker();
     }
 
     public boolean definedInParent() {
