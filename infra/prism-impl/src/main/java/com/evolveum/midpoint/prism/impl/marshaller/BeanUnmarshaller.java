@@ -117,11 +117,11 @@ public class BeanUnmarshaller {
      */
     <T> T unmarshal(@NotNull XNodeImpl xnode, @NotNull Class<T> beanClass, @NotNull ParsingContext pc) throws SchemaException {
         T value = unmarshalInternal(xnode, beanClass, pc);
-        if (PrismContextImpl.isExtraValidation() && value != null) {
+        if (value != null) {
             Class<?> requested = ClassUtils.primitiveToWrapper(beanClass);
             Class<?> actual = ClassUtils.primitiveToWrapper(value.getClass());
             if (!requested.isAssignableFrom(actual)) {
-                throw new AssertionError("Postcondition fail: unmarshal returned a value of " + value + " ("
+                throw new SchemaException("Unmarshal returned a value of " + value + " ("
                         + actual + ") which is not of requested type (" + requested + ")");
             }
         }
