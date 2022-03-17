@@ -27,7 +27,7 @@ import com.evolveum.midpoint.prism.util.CloneUtil;
         "name",
         "value"
 })
-public class ItemType implements Serializable, JaxbVisitable {
+public class ItemType implements Cloneable, Serializable, JaxbVisitable {
 
     protected QName name;
 
