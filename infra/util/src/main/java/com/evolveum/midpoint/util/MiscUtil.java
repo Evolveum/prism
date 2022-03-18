@@ -1185,16 +1185,14 @@ public class MiscUtil {
     }
 
     /**
-     * Replacing colons in file name on Windows.
-     *
-     * This is a workaround for a strange problem in Apache file utils: Colons are no problem for Windows,
-     * but Apache file utils complain for them when running on Windows.
-     *
-     * Until this problem is fixed, this method should be used.
+     * Replacing illegal characters in file name on Windows.
      */
-    public static String replaceColonsInFileNameOnWindows(String path) {
+    public static String replaceIllegalCharInFileNameOnWindows(String path) {
         if (onWindows()) {
-            return path.replaceAll(":", "_");
+            return path
+                    .replaceAll( "[\\\\|\\*|\\:|\\||\"|\\<|\\>|\\?]+", "_")
+                    .replaceAll("_{1,} _{1,}| _{1,}|_{1,} ", " ")
+                    .replaceAll("_{2,}", "_");
         } else {
             return path;
         }
