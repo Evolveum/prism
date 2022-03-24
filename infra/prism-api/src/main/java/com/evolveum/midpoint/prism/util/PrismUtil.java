@@ -10,8 +10,11 @@ import static java.util.Collections.unmodifiableCollection;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -190,6 +193,24 @@ public class PrismUtil {
         if (property != null) {
             property.setRealValue(null);
             property.setIncomplete(false);
+        }
+    }
+
+    /**
+     * As {@link Objects#equals(Object, Object)} but comparing with {@link EquivalenceStrategy#REAL_VALUE}.
+     *
+     * Null values are considered equal to empty PCVs.
+     */
+    public static boolean realValueEquals(Containerable first, Containerable second) {
+        if (first != null && second != null) {
+            return first.asPrismContainerValue()
+                    .equals(second.asPrismContainerValue(), EquivalenceStrategy.REAL_VALUE);
+        } else if (first == null) {
+            return second == null || second.asPrismContainerValue().isEmpty();
+        } else {
+            assert second == null;
+            assert first != null;
+            return first.asPrismContainerValue().isEmpty();
         }
     }
 }
