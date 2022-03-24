@@ -515,10 +515,12 @@ public class QueryConverterImpl implements QueryConverter {
             }
         }
 
-        // The reference definition in prism data might be single-valued. However, filters allow to look for multiple values.
+        // The reference definition in prism data might be single-valued. However, filters allow multiple values.
+        // The modified definition will be used ONLY for parsing, filter uses the right one (original).
+        ItemDefinition<?> itemDefinitionForParse = itemDefinition;
         if (itemDefinition != null && itemDefinition.getMaxOccurs() != -1) {
-            itemDefinition = itemDefinition.clone();
-            itemDefinition.toMutable().setMaxOccurs(-1);
+            itemDefinitionForParse = itemDefinition.clone();
+            itemDefinitionForParse.toMutable().setMaxOccurs(-1);
         }
 
         XNodeImpl valueXnode = clauseXMap.get(ELEMENT_VALUE);
@@ -529,7 +531,7 @@ public class QueryConverterImpl implements QueryConverter {
             RootXNodeImpl valueRoot = new RootXNodeImpl(ELEMENT_VALUE, valueXnode);
             Item<?,?> item = prismContext.parserFor(valueRoot)
                     .name(itemName)
-                    .definition(itemDefinition)
+                    .definition(itemDefinitionForParse)
                     .context(prismContext.createParsingContextForAllowMissingRefTypes())
                     .parseItem();
             if (!(item instanceof PrismReference)) {
