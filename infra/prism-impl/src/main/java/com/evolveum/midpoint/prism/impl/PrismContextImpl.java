@@ -52,11 +52,7 @@ import com.evolveum.midpoint.prism.path.CanonicalItemPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
-import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
-import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
-import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
-import com.evolveum.midpoint.prism.query.QueryConverter;
-import com.evolveum.midpoint.prism.query.QueryFactory;
+import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.schema.SchemaFactory;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
@@ -77,8 +73,7 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurati
  */
 public final class PrismContextImpl implements PrismContext {
 
-    private static boolean allowSchemalessSerialization = true;
-    private static boolean extraValidation = false;                                        // TODO replace by something serious
+    private static boolean extraValidation = false; // TODO replace by something serious
 
     @NotNull private final SchemaRegistryImpl schemaRegistry;
     @NotNull private final QueryConverterImpl queryConverter;
@@ -174,7 +169,8 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
-    public void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         if (configuration == null) {
             defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
             return;
@@ -214,14 +210,6 @@ public final class PrismContextImpl implements PrismContext {
         return AlphanumericPolyStringNormalizer.class.getPackage().getName() + "." + shortClassName;
     }
 
-    public static boolean isAllowSchemalessSerialization() {
-        return allowSchemalessSerialization;
-    }
-
-    public static void setAllowSchemalessSerialization(boolean allowSchemalessSerialization) {
-        PrismContextImpl.allowSchemalessSerialization = allowSchemalessSerialization;
-    }
-
     public static boolean isExtraValidation() {
         return extraValidation;
     }
@@ -237,7 +225,7 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     /**
-     * WARNING! This is not really public method. It should NOT not used outside the prism implementation.
+     * WARNING! This is not really public method. It should NOT be used outside the prism implementation.
      */
     public PrismUnmarshaller getPrismUnmarshaller() {
         return prismUnmarshaller;
@@ -249,14 +237,14 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     /**
-     * WARNING! This is not really public method. It should NOT not used outside the prism implementation.
+     * WARNING! This is not really public method. It should NOT be used outside the prism implementation.
      */
     public DomLexicalProcessor getParserDom() {
         return lexicalProcessorRegistry.domProcessor();
     }
 
     /**
-     * WARNING! This is not really public method. It should NOT not used outside the prism implementation.
+     * WARNING! This is not really public method. It should NOT be used outside the prism implementation.
      */
     @NotNull
     public BeanMarshaller getBeanMarshaller() {
@@ -360,31 +348,36 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull
     @Override
     public PrismParser parserFor(@NotNull File file) {
-        return new PrismParserImplIO(new ParserFileSource(file), null, getDefaultParsingContext(), this, null, null, null, null);
+        return new PrismParserImplIO(new ParserFileSource(file), null
+                , getDefaultParsingContext(), this, null, null, null, null);
     }
 
     @NotNull
     @Override
     public PrismParser parserFor(@NotNull InputStream stream) {
-        return new PrismParserImplIO(new ParserInputStreamSource(stream), null, getDefaultParsingContext(), this, null, null, null, null);
+        return new PrismParserImplIO(new ParserInputStreamSource(stream), null,
+                getDefaultParsingContext(), this, null, null, null, null);
     }
 
     @NotNull
     @Override
     public PrismParserNoIO parserFor(@NotNull String data) {
-        return new PrismParserImplNoIO(new ParserStringSource(data), null, getDefaultParsingContext(), this, null, null, null, null);
+        return new PrismParserImplNoIO(new ParserStringSource(data), null,
+                getDefaultParsingContext(), this, null, null, null, null);
     }
 
     @NotNull
     @Override
     public PrismParserNoIO parserFor(@NotNull RootXNode xnode) {
-        return new PrismParserImplNoIO(new ParserXNodeSource(xnode), null, getDefaultParsingContext(), this, null, null, null, null);
+        return new PrismParserImplNoIO(new ParserXNodeSource(xnode), null,
+                getDefaultParsingContext(), this, null, null, null, null);
     }
 
     @NotNull
     @Override
     public PrismParserNoIO parserFor(@NotNull Element data) {
-        return new PrismParserImplNoIO(new ParserElementSource(data), null, getDefaultParsingContext(), this, null, null, null, null);
+        return new PrismParserImplNoIO(new ParserElementSource(data), null,
+                getDefaultParsingContext(), this, null, null, null, null);
     }
 
     @NotNull
@@ -422,6 +415,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public void adopt(Objectable objectable) throws SchemaException {
+        //noinspection unchecked
         adopt(objectable.asPrismObject(), objectable.getClass());
     }
 
@@ -442,7 +436,10 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
-    public <C extends Containerable, O extends Objectable> void adopt(C containerable, Class<O> type, ItemPath path) throws SchemaException {
+    public <C extends Containerable, O extends Objectable> void adopt(
+            C containerable, Class<O> type, ItemPath path)
+            throws SchemaException {
+        //noinspection unchecked
         PrismContainerValue<C> prismContainerValue = containerable.asPrismContainerValue();
         adopt(prismContainerValue, type, path);
     }
@@ -461,6 +458,8 @@ public final class PrismContextImpl implements PrismContext {
         getSchemaRegistry().applyDefinition(prismContainerValue, typeName, path, false);
     }
     //endregion
+
+    //region Serialization
 
     @NotNull
     @Override

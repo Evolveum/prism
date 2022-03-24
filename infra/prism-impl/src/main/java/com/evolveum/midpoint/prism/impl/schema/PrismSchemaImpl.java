@@ -1,11 +1,28 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.schema;
+
+import static com.evolveum.midpoint.util.MiscUtil.argCheck;
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
+
+import java.util.*;
+import javax.xml.namespace.QName;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.EntityResolver;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.*;
@@ -18,29 +35,9 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
-import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
-
-import javax.xml.namespace.QName;
-import java.util.*;
-
-import static com.evolveum.midpoint.util.MiscUtil.argCheck;
-import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 /**
- *
  * @author Radovan Semancik
- *
  */
 public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSchema {
 
@@ -91,7 +88,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     private final Multimap<QName, ItemDefinition<?>> substitutions = HashMultimap.create();
 
     public PrismSchemaImpl(@NotNull String namespace) {
-        argCheck(StringUtils.isNotEmpty(namespace),  "Namespace can't be null or empty.");
+        argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
         this.namespace = namespace;
         this.prismContext = PrismContext.get();
     }
@@ -222,7 +219,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     private static PrismSchema parse(Element element, EntityResolver resolver, PrismSchemaImpl schema, boolean isRuntime,
             String shortDescription, boolean allowDelayedItemDefinitions, PrismContext prismContext) throws SchemaException {
         if (element == null) {
-            throw new IllegalArgumentException("Schema element must not be null in "+shortDescription);
+            throw new IllegalArgumentException("Schema element must not be null in " + shortDescription);
         }
         DomToSchemaProcessor processor = new DomToSchemaProcessor(resolver, prismContext);
         processor.parseSchema(schema, element, isRuntime, allowDelayedItemDefinitions, shortDescription);
@@ -239,13 +236,13 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     //endregion
 
     //region Creating definitions
+
     /**
      * Creates a new property container definition and adds it to the schema.
      *
      * This is a preferred way how to create definition in the schema.
      *
-     * @param localTypeName
-     *            type name "relative" to schema namespace
+     * @param localTypeName type name "relative" to schema namespace
      * @return new property container definition
      */
     @Override
@@ -285,10 +282,8 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      *
      * This is a preferred way how to create definition in the schema.
      *
-     * @param localName
-     *            element name "relative" to schema namespace
-     * @param typeName
-     *            XSD type name of the element
+     * @param localName element name "relative" to schema namespace
+     * @param typeName XSD type name of the element
      * @return new property definition
      */
     @Override
@@ -297,32 +292,13 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         return createPropertyDefinition(name, typeName);
     }
 
-    /*
-     * Creates a top-level property definition and adds it to the schema.
-     *
-     * This is a preferred way how to create definition in the schema.
-     *
-     * @param localName
-     *            element name "relative" to schema namespace
-     * @param localTypeName
-     *            XSD type name "relative" to schema namespace
-     * @return new property definition
-     */
-//    public PrismPropertyDefinition createPropertyDefinition(String localName, String localTypeName) {
-//        QName name = new QName(getNamespace(), localName);
-//        QName typeName = new QName(getNamespace(), localTypeName);
-//        return createPropertyDefinition(name, typeName);
-//    }
-
     /**
      * Creates a top-level property definition and adds it to the schema.
      *
      * This is a preferred way how to create definition in the schema.
      *
-     * @param name
-     *            element name
-     * @param typeName
-     *            XSD type name of the element
+     * @param name element name
+     * @param typeName XSD type name of the element
      * @return new property definition
      */
     @Override
@@ -350,14 +326,15 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     public String debugDump(int indent) {
         IdentityHashMap<Definition, Object> seen = new IdentityHashMap<>();
         StringBuilder sb = new StringBuilder();
-        for (int i=0;i<indent;i++) {
+        //noinspection StringRepeatCanBeUsed
+        for (int i = 0; i < indent; i++) {
             sb.append(INDENT_STRING);
         }
-        sb.append(toString()).append("\n");
+        sb.append(this).append("\n");
         Iterator<Definition> i = definitions.iterator();
         while (i.hasNext()) {
             Definition def = i.next();
-            sb.append(def.debugDump(indent+1, seen));
+            sb.append(def.debugDump(indent + 1, seen));
             if (i.hasNext()) {
                 sb.append("\n");
             }
@@ -380,7 +357,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     public <ID extends ItemDefinition> List<ID> findItemDefinitionsByCompileTimeClass(
             @NotNull Class<?> compileTimeClass, @NotNull Class<ID> definitionClass) {
         List<ID> found = new ArrayList<>();
-        for (Definition def: definitions) {
+        for (Definition def : definitions) {
             if (definitionClass.isAssignableFrom(def.getClass())) {
                 if (def instanceof PrismContainerDefinition) {
                     @SuppressWarnings("unchecked")
@@ -461,7 +438,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
 
     @Override
     public <C extends Containerable> ComplexTypeDefinition findComplexTypeDefinitionByCompileTimeClass(@NotNull Class<C> compileTimeClass) {
-        for (Definition def: definitions) {
+        for (Definition def : definitions) {
             if (def instanceof ComplexTypeDefinition) {
                 ComplexTypeDefinition ctd = (ComplexTypeDefinition) def;
                 if (compileTimeClass.equals(ctd.getCompileTimeClass())) {
@@ -482,7 +459,8 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
 
     @NotNull
     @Override
-    public <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByType(@NotNull QName typeName, @NotNull Class<TD> definitionClass) {
+    public <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByType(
+            @NotNull QName typeName, @NotNull Class<TD> definitionClass) {
         List<TD> rv = new ArrayList<>();
         addMatchingTypeDefinitions(rv, typeDefinitionMap.get(typeName), definitionClass);
         if (QNameUtil.isUnqualified(typeName)) {
@@ -502,10 +480,12 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public <TD extends TypeDefinition> TD findTypeDefinitionByCompileTimeClass(@NotNull Class<?> compileTimeClass, @NotNull Class<TD> definitionClass) {
+    public <TD extends TypeDefinition> TD findTypeDefinitionByCompileTimeClass(
+            @NotNull Class<?> compileTimeClass, @NotNull Class<TD> definitionClass) {
         // TODO: check for multiple definition with the same type
         for (Definition definition : definitions) {
-            if (definitionClass.isAssignableFrom(definition.getClass()) && compileTimeClass.equals(((TD) definition).getCompileTimeClass())) {
+            if (definitionClass.isAssignableFrom(definition.getClass())
+                    && compileTimeClass.equals(((TD) definition).getCompileTimeClass())) {
                 return (TD) definition;
             }
         }

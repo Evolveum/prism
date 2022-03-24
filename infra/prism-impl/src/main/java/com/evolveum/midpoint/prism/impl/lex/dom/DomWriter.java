@@ -1,33 +1,21 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.impl.lex.dom;
 
-import com.evolveum.midpoint.prism.PrismNamespaceContext;
-import com.evolveum.midpoint.prism.SerializationContext;
-import com.evolveum.midpoint.prism.SerializationOptions;
-import com.evolveum.midpoint.prism.impl.PrismContextImpl;
-import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerialization;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
-import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.SchemaXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
-import com.evolveum.midpoint.prism.path.UniformItemPath;
-import com.evolveum.midpoint.prism.xnode.IncompleteMarkerXNode;
-import com.evolveum.midpoint.prism.xnode.MapXNode;
-import com.evolveum.midpoint.prism.xnode.RootXNode;
-import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.QNameUtil;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+import static com.evolveum.midpoint.prism.impl.lex.dom.DomReader.VALUE_LOCAL_PART;
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.xml.namespace.QName;
+
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,19 +23,25 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.namespace.QName;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.evolveum.midpoint.prism.impl.lex.dom.DomReader.VALUE_LOCAL_PART;
-import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
+import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.midpoint.prism.SerializationContext;
+import com.evolveum.midpoint.prism.SerializationOptions;
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerialization;
+import com.evolveum.midpoint.prism.impl.xnode.*;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
+import com.evolveum.midpoint.prism.xnode.IncompleteMarkerXNode;
+import com.evolveum.midpoint.prism.xnode.MapXNode;
+import com.evolveum.midpoint.prism.xnode.RootXNode;
+import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 /**
  * @author semancik
- *
  */
 class DomWriter {
 
@@ -151,7 +145,7 @@ class DomWriter {
 
     private void writeMap(MapXNodeImpl xmap, Element parent) throws SchemaException {
         writeMetadata(xmap.getMetadataNodes(), parent);
-        for (Entry<QName, XNodeImpl> entry: xmap.entrySet()) {
+        for (Entry<QName, XNodeImpl> entry : xmap.entrySet()) {
             QName elementQName = entry.getKey();
             XNodeImpl xsubnode = entry.getValue();
             writeNode(xsubnode, parent, elementQName);
@@ -168,16 +162,12 @@ class DomWriter {
             DOMUtil.setAttributeValue(child, DOMUtil.IS_INCOMPLETE_ATTRIBUTE_NAME, "true");
         } else if (node instanceof RootXNodeImpl) {
             throw new IllegalStateException("Shouldn't be here!");
-            // TODO remove eventually
-//            Element child = createAndAppendChild(elementName, parentElement);
-//            appendCommentIfPresent(child, node);
-//            writeNode(((RootXNodeImpl) node).getSubnode(), child, ((RootXNodeImpl) node).getRootElementName());
         } else if (node instanceof MapXNodeImpl) {
             Element child = createAndAppendChild(elementName, parentElement);
             appendCommentIfPresent(child, node);
-            writeMap((MapXNodeImpl)node, child);
+            writeMap((MapXNodeImpl) node, child);
         } else if (node instanceof PrimitiveXNodeImpl<?>) {
-            PrimitiveXNodeImpl<?> xprim = (PrimitiveXNodeImpl<?>)node;
+            PrimitiveXNodeImpl<?> xprim = (PrimitiveXNodeImpl<?>) node;
             writePrimitive(xprim, parentElement, elementName, xprim.isAttribute());
         } else if (node instanceof ListXNodeImpl) {
             ListXNodeImpl list = (ListXNodeImpl) node;
@@ -190,9 +180,9 @@ class DomWriter {
                 }
             }
         } else if (node instanceof SchemaXNodeImpl) {
-            writeSchema((SchemaXNodeImpl)node, parentElement);
+            writeSchema((SchemaXNodeImpl) node, parentElement);
         } else {
-            throw new IllegalArgumentException("Unknown subnode "+node);
+            throw new IllegalArgumentException("Unknown subnode " + node);
         }
     }
 
@@ -236,11 +226,8 @@ class DomWriter {
         }
     }
 
-    private void writePrimitiveWithoutType(PrimitiveXNodeImpl<?> xprim, Element parentElement, QName elementOrAttributeName,
-            boolean asAttribute) {
-        if (!PrismContextImpl.isAllowSchemalessSerialization()) {
-            throw new IllegalStateException("No type for primitive element "+elementOrAttributeName+", cannot serialize (schemaless serialization is disabled)");
-        }
+    private void writePrimitiveWithoutType(
+            PrimitiveXNodeImpl<?> xprim, Element parentElement, QName elementOrAttributeName, boolean asAttribute) {
 
         // We cannot correctly serialize without a type. But this is needed sometimes. So just default to string.
         String stringValue = xprim.getStringValue();
@@ -258,7 +245,7 @@ class DomWriter {
                 DOMUtil.setElementTextContent(element, stringValue);
             }
             PrismNamespaceContext rebased = relevantNs.rebasedOn(currentNs);
-            if(!rebased.isLocalEmpty()) {
+            if (!rebased.isLocalEmpty()) {
                 DOMUtil.setNamespaceDeclarations(element, rebased.localPrefixes());
             }
         }
@@ -311,7 +298,8 @@ class DomWriter {
         try {
             DOMUtil.setQNameAttribute(parentElement, attributeName, value);
         } catch (DOMException e) {
-            throw new DOMException(e.code, e.getMessage() + "; setting attribute "+attributeName+" in element "+DOMUtil.getQName(parentElement)+" to QName value "+value);
+            throw new DOMException(e.code, e.getMessage() + "; setting attribute " + attributeName
+                    + " in element " + DOMUtil.getQName(parentElement) + " to QName value " + value);
         }
     }
 
@@ -327,10 +315,11 @@ class DomWriter {
             Map<String, String> availableNamespaces = DOMUtil.getAllNonDefaultNamespaceDeclarations(parent);
             PrismNamespaceContext localNs = PrismNamespaceContext.from(availableNamespaces);
 
-            ItemPathSerialization ctx = ItemPathSerialization.serialize(UniformItemPath.from(itemPathType.getItemPath()), localNs, true);
+            ItemPathSerialization ctx = ItemPathSerialization.serialize(
+                    UniformItemPath.from(itemPathType.getItemPath()), localNs, true);
 
             Element element = createAndAppendChild(elementName, parent);
-            DOMUtil.setNamespaceDeclarations(element,ctx.undeclaredPrefixes());
+            DOMUtil.setNamespaceDeclarations(element, ctx.undeclaredPrefixes());
             element.setTextContent(ctx.getXPathWithoutDeclarations());
             return element;
         } else {
@@ -384,6 +373,7 @@ class DomWriter {
 
     /**
      * Create XML element with the correct namespace prefix and namespace definition.
+     *
      * @param qname element QName
      * @return created DOM element
      */
