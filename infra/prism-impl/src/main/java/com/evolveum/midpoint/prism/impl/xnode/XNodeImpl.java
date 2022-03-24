@@ -214,6 +214,13 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         } else {
             throw new IllegalArgumentException("Unknown xnode "+xnode);
         }
+
+        QName name = xnode.getElementName();
+        if (name != null) {
+            QName newName = keyTransformer != null ? keyTransformer.transform(name) : name;
+            xclone.setElementName(newName);
+        }
+
         xclone.copyCommonAttributesFrom(xnode);
         return (X) xclone;
     }
