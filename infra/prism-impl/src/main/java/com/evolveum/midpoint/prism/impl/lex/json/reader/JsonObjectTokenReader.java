@@ -311,6 +311,9 @@ class JsonObjectTokenReader {
         addTypeNameTo(ret);
         addElementNameTo(ret);
         addMetadataTo(ret);
+        if (ret instanceof PrimitiveXNodeImpl<?>) {
+            ((PrimitiveXNodeImpl) ret).setAttribute(definition.isXmlAttribute());
+        }
         return ret;
     }
 

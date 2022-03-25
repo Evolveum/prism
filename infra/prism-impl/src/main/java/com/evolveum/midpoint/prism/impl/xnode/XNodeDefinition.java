@@ -57,6 +57,10 @@ public abstract class XNodeDefinition {
 
     public abstract Optional<QName> getType();
 
+    public boolean isXmlAttribute() {
+        return false;
+    }
+
     public @NotNull XNodeDefinition resolve(@NotNull String name, @NotNull PrismNamespaceContext namespaceContext) throws SchemaException {
         if (isInfra(name)) {
             return infra(name);
@@ -506,9 +510,16 @@ public abstract class XNodeDefinition {
 
     private static class SimpleType extends SchemaAware {
 
+        private boolean xmlAttribute;
+
         public SimpleType(QName name, QName type, boolean inherited, SchemaRoot root) {
+            this(name, type, inherited, root, false);
+        }
+
+        public SimpleType(QName name, QName type, boolean inherited, SchemaRoot root, boolean xmlAttribute) {
             super(name, root, inherited);
             this.type = type;
+            this.xmlAttribute = xmlAttribute;
         }
 
         private final QName type;
@@ -516,6 +527,11 @@ public abstract class XNodeDefinition {
         @Override
         public Optional<QName> getType() {
             return Optional.ofNullable(type);
+        }
+
+        @Override
+        public boolean isXmlAttribute() {
+            return xmlAttribute;
         }
 
     }
@@ -528,14 +544,16 @@ public abstract class XNodeDefinition {
 
         @Override
         protected XNodeDefinition resolveLocally(QName name) {
+            // TODO: Since CTD now contains attributes section this could be reworked
+            // into ComplexTypeAware as search in attributes section
             if (PrismConstants.ATTRIBUTE_OID_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_STRING, true, root);
+                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_STRING, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_REF_TYPE_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root);
+                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_RELATION_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root);
+                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
             }
             return super.resolveLocally(name);
         }
