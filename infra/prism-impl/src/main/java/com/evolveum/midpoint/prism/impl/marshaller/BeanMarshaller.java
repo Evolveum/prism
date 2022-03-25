@@ -110,11 +110,14 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             } else if (bean instanceof Referencable) {
                 // Starting from 4.5, here we go also for regular ObjectReferenceType instances.
                 PrismReferenceValue referenceValue = ((Referencable) bean).asReferenceValue();
+                QName typeName = ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE);
                 XNodeImpl xnode = (XNodeImpl) prismContext.xnodeSerializer()
                         .context(createNameSerializationContext(ctx, referenceValue))
-                        .serialize(referenceValue, new QName("dummy"))
+                        .definition(prismContext.definitionFactory().createReferenceDefinition(
+                                new QName(typeName.getNamespaceURI(), "dummy"), typeName))
+                        .serialize(referenceValue)
                         .getSubnode();
-                xnode.setTypeQName(ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE));
+                xnode.setTypeQName(typeName);
                 xnode.setExplicitTypeDeclaration(true);     // probably not much correct, but...
                 return xnode;
             } else if (bean.getClass().getAnnotation(XmlType.class) != null) {
