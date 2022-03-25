@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.google.common.base.Strings;
 
 import org.apache.commons.lang.Validate;
 import org.jetbrains.annotations.NotNull;
@@ -357,6 +358,10 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
         }
         for (Map.Entry<String,String> candidateNamespace : candidateNamespaces.entrySet()) {
             String prefix = candidateNamespace.getKey();
+            if (Strings.isNullOrEmpty(prefix) && Strings.isNullOrEmpty(candidateNamespace.getValue())) {
+                // Skip xmlns="" (empty default namespace, since detection would detect :)
+                continue;
+            }
             if (stringValue.contains(prefix+":")) {
                 retval.put(candidateNamespace.getKey(), candidateNamespace.getValue());
             }
