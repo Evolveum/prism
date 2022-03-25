@@ -108,9 +108,10 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             } else if (bean instanceof Enum) {
                 return marshalEnum((Enum<?>) bean, ctx);
             } else if (bean instanceof Referencable) {
-                // i.e. we are Referencable but not ObjectReferenceType (e.g. DefaultReferencableImpl)
+                // Starting from 4.5, here we go also for regular ObjectReferenceType instances.
                 PrismReferenceValue referenceValue = ((Referencable) bean).asReferenceValue();
-                XNodeImpl xnode = (XNodeImpl) prismContext.xnodeSerializer().context(ctx)
+                XNodeImpl xnode = (XNodeImpl) prismContext.xnodeSerializer()
+                        .context(createNameSerializationContext(ctx, referenceValue))
                         .serialize(referenceValue, new QName("dummy"))
                         .getSubnode();
                 xnode.setTypeQName(ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE));
@@ -126,6 +127,31 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
         } catch (Throwable t) {
             LOGGER.error("Couldn't marshal an object:\n{}", inputBean, t);
             throw t;
+        }
+    }
+
+    /**
+     * To preserve pre-4.5 behavior regarding serialization of reference target names, we create
+     * a serialization context with "serialize reference names" option set.
+     *
+     * This is a temporary solution for MID-7771.
+     */
+    private SerializationContext createNameSerializationContext(SerializationContext ctx, PrismReferenceValue referenceValue) {
+        if (referenceValue.getTargetName() == null || SerializationContext.isSerializeReferenceNames(ctx)) {
+            return ctx; // no need to change the context
+        }
+        if (ctx == null) {
+            return SerializationContext.forOptions(
+                    SerializationOptions.createSerializeReferenceNames());
+        } else {
+            SerializationContext ctxClone = ctx.clone();
+            if (ctxClone.getOptions() == null) {
+                ctxClone.setOptions(
+                        SerializationOptions.createSerializeReferenceNames());
+            } else {
+                ctxClone.getOptions().setSerializeReferenceNames(true);
+            }
+            return ctxClone;
         }
     }
 
