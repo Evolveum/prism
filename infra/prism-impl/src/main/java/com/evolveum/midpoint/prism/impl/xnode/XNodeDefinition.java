@@ -249,6 +249,9 @@ public abstract class XNodeDefinition {
                 Optional<ComplexTypeDefinition> structuredType, boolean inherited) {
             if(structuredType.isPresent()) {
                 var complex = structuredType.get();
+                if(complex.isReferenceMarker()) {
+                    return new ObjectReference(name, complex, this, inherited);
+                }
                 if(complex.hasSubstitutions()) {
                     return new ComplexTypeWithSubstitutions(name, complex, this, inherited);
                 }

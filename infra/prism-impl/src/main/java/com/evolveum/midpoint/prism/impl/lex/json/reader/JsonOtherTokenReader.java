@@ -114,6 +114,7 @@ class JsonOtherTokenReader {
         ValueNode jn = parser.readValueAs(ValueNode.class);
         ValueParser<T> vp = new JsonValueParser<>(parser, jn, parentContext);
         primitive.setValueParser(vp);
+        primitive.setAttribute(def.isXmlAttribute());
         // FIXME: Materialize when possible
         return primitive;
     }
