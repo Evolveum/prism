@@ -69,7 +69,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
 
     /**
      * Returns cached name of the target object.
-     * This is a ephemeral value. It is usually not stored.
+     * This is a ephemeral value.
      * It may be computed at object retrieval time or it may not be present at all.
      * This is NOT an authoritative information. Setting it or changing it will
      * not influence the reference meaning. OID is the only authoritative linking
