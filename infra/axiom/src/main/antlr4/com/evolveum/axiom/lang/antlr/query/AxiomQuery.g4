@@ -91,11 +91,12 @@ itemFilter: (path SEP* usedAlias=filterNameAlias (matchingRule)? SEP* (subfilter
 subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 
 
-expression : script;
+expression : script | constant;
 script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);
 scriptSingleline : STRING_BACKTICK;
 scriptMultiline : (STRING_BACKTICK_START (~('```'))*(STRING_BACKTICK_START|'```'));
 
+constant: '@' name=IDENTIFIER;
 
 
 // grammar AxiomLiterals;

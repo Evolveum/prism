@@ -427,11 +427,20 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         if (expressionParser == null) {
             throw new SchemaException("Expressions are not supported");
         }
+        if (expression.constant() != null) {
+            return parseConstant(expression.constant());
+        }
+
         if (expression.script() == null) {
             throw new SchemaException("Expression '" + expression.getText() +"' must contain script");
         }
         return parseScript(expression.script());
     }
+
+    private ExpressionWrapper parseConstant(ConstantContext constant) {
+        return expressionParser.parseScript(namespaceContext, "const", constant.name.getText());
+    }
+
 
     private ExpressionWrapper parseScript(ScriptContext script) {
         String scriptLang = script.language != null ? script.language.getText() : null;
