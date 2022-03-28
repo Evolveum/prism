@@ -94,7 +94,7 @@ subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 expression : script | constant;
 script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);
 scriptSingleline : STRING_BACKTICK;
-scriptMultiline : (STRING_BACKTICK_START (~('```'))*(STRING_BACKTICK_START|'```'));
+scriptMultiline : (STRING_BACKTICK_START (~('```'|STRING_BACKTICK_START))*(STRING_BACKTICK_START|'```'));
 
 constant: '@' name=IDENTIFIER;
 
