@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -9,17 +9,25 @@ package com.evolveum.midpoint.prism.query.builder;
 import java.util.Collection;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
-
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.PrismProperty;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.query.RefFilter;
 
 public interface S_ConditionEntry {
-    S_MatchingRuleEntry eq(Object... values); // beware, repository can handle only a single value in eq
-    <T> S_MatchingRuleEntry eq(PrismProperty<T> property);            // TODO implement something like itemAs(property) to copy the property definition, path, and values into filter
+
+    /**
+     * See https://docs.evolveum.com/midpoint/reference/concepts/query/query-api/[Query API] docs
+     * about support of multiple values (generally good in the new Native repository with IN semantics).
+     * For multi-value properties the semantics is ANY IN (non-empty intersection is a match).
+     */
+    S_MatchingRuleEntry eq(Object... values);
+
+    // TODO implement something like itemAs(property) to copy the property definition, path, and values into filter
+    <T> S_MatchingRuleEntry eq(PrismProperty<T> property);
+
     S_RightHandItemEntry eq();
     S_MatchingRuleEntry eqPoly(String orig, String norm);
     S_MatchingRuleEntry eqPoly(String orig);
@@ -56,7 +64,7 @@ public interface S_ConditionEntry {
 
     /**
      * Creates filter matching oid and/or targetTypeName, any of them optional.
-     * If both are null the result is the same like {@link #isNull()} (null ref OID matches).
+     * If both are null the result is the same as {@link #isNull()} (null ref OID matches).
      */
     default S_AtomicFilterExit ref(@Nullable String oid, @Nullable QName targetTypeName) {
         return ref(oid, targetTypeName, null);
