@@ -266,7 +266,11 @@ public class PrettyPrinter {
         if (attempt != null) {
             return attempt;
         } else {
-            return value.toString();
+            try {
+                return value.toString();
+            } catch (Exception e) {
+                return "toString() exception for " + value.getClass() + ": " + e;
+            }
         }
     }
 
