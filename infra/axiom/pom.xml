@@ -14,7 +14,7 @@
         <relativePath>../..</relativePath>
         <artifactId>prism-parent</artifactId>
         <groupId>com.evolveum.prism</groupId>
-        <version>4.5</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.evolveum.axiom</groupId>
@@ -30,7 +30,7 @@
         <dependency>
             <groupId>com.evolveum.commons</groupId>
             <artifactId>concepts</artifactId>
-            <version>4.5</version>
+            <version>4.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
