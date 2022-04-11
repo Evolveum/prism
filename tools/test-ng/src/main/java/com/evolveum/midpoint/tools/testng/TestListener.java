@@ -67,6 +67,8 @@ public class TestListener implements ITestListener {
     }
 
     private void print(String message) {
-        System.out.println(DATE_FORMAT.format(new Date()) + PREFIX + message + SUFFIX);
+        synchronized (DATE_FORMAT) {
+            System.out.println(DATE_FORMAT.format(new Date()) + PREFIX + message + SUFFIX);
+        }
     }
 }
