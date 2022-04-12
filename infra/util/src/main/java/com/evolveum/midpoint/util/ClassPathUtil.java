@@ -1,17 +1,10 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.util;
-
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
-
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -21,6 +14,13 @@ import java.net.URL;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+import org.apache.commons.lang3.StringUtils;
+
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
  * Various class path, class loading and class scanning utilities.
@@ -44,18 +44,10 @@ public class ClassPathUtil {
             List<Class<?>> classes = scan.getAllClasses().loadClasses();
             LOGGER.debug("Found {} classes in packages {}", classes.size(), packageNames);
 
-            Set<Class<?>> result = new HashSet<>();
-            result.addAll(classes);
-
-            return result;
+            return new HashSet<>(classes);
         }
     }
 
-    /**
-     * @param annotationClass
-     * @param packageNames comma separated package names
-     * @return
-     */
     public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String packageNames) {
         List<String> packages = new ArrayList<>();
 
@@ -69,7 +61,7 @@ public class ClassPathUtil {
             }
         }
 
-        return scanClasses(annotationClass, packages.toArray(new String[packages.size()]));
+        return scanClasses(annotationClass, packages.toArray(new String[0]));
     }
 
     public static Collection<Class<?>> scanClasses(Class<? extends Annotation> annotationClass, String... packageNames) {
@@ -151,7 +143,7 @@ public class ClassPathUtil {
         try {
             srcStream.close();
         } catch (IOException e) {
-            LOGGER.error("This never happend:", e);
+            LOGGER.error("This never happened:", e);
             return false;
         }
 
