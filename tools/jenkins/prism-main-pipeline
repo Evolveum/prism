@@ -1,0 +1,48 @@
+podTemplate(
+        activeDeadlineSeconds: 7200,
+        idleMinutes: 1,
+        nodeSelector: '${NODE_SELECTOR}',
+        containers: [
+                containerTemplate(name: 'jnlp',
+                        image: 'jenkins/inbound-agent:4.7-1-alpine',
+                        runAsUser: '0',
+                        resourceLimitCpu: '900m',
+                        resourceLimitMemory: '1Gi',
+                        resourceRequestCpu: '900m',
+                        resourceRequestMemory: '1Gi'),
+                containerTemplate(name: 'maven',
+                        image: 'maven:3.8.5-openjdk-11-slim',
+                        ttyEnabled: true,
+                        command: 'cat',
+                        resourceLimitCpu: '1',
+                        resourceLimitMemory: '1Gi') // for tests we use Xmx512m, so it's fine
+        ]
+) {
+    node(POD_LABEL) {
+        stage("checkout") {
+            git branch: "${BRANCH}",
+                    url: 'https://github.com/Evolveum/prism.git'
+            echo "git checkout done..."
+        }
+        stage("build") {
+            container('maven') {
+                try {
+                    sh """#!/bin/bash
+                        if [ '${VERBOSE}' = '1' ]
+                        then
+	                        env | sort
+	                        mvn --version
+			            fi
+
+				        mvn clean deploy -DdeployAtEnd=true
+                    """
+                } catch (err) {
+                    echo "Caught: ${err}"
+                    currentBuild.result = 'FAILURE'
+                } finally {
+                    step([$class: 'Publisher', reportFilenamePattern: '**/testng-results.xml'])
+                }
+            }
+        }
+    }
+}
