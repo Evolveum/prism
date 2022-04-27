@@ -27,23 +27,14 @@ podTemplate(
             git branch: "${BRANCH}",
                     url: 'https://github.com/Evolveum/prism.git'
             echo "git checkout done..."
-
-            sh """echo "ID:"
-                id
-                echo
-                """
         }
         stage("build") {
             container('maven') {
                 try {
                     sh """#!/bin/bash
-                        // .m2 is mutable and short-term, we just sym-link the settings.xml there.
+                        # .m2 is mutable and short-term, we just sym-link the settings.xml there.
                         mkdir -p /root/.m2
                         ln -s ../jenkins-nexus/settings.xml /root/.m2/settings.xml
-
-                        echo "ID:"
-                        id
-                        echo
 
                         if [ '${VERBOSE}' = '1' ]
                         then
