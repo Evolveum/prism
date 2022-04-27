@@ -155,12 +155,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
             setText(parseString(xmap, F_TEXT, "Text"));
             Map<QName, XNode> filterMap = new HashMap<>();
             for (QName key : xmap.keySet()) {
-                if ((xmap.size() == 1 && QNameUtil.match(key, SearchFilterType.F_TEXT))) {
-                    filterMap.put(key, xmap.get(key));
-                    continue;
-                }
-                if (!QNameUtil.match(key, SearchFilterType.F_DESCRIPTION) && !QNameUtil.match(key, new QName("condition"))
-                        && !QNameUtil.match(key, SearchFilterType.F_TEXT)) {
+                if (!QNameUtil.match(key, SearchFilterType.F_DESCRIPTION) && !QNameUtil.match(key, new QName("condition"))) {
                     filterMap.put(key, xmap.get(key));
                 }
             }
