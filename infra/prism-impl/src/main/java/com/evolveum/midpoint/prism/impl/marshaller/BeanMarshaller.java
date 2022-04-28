@@ -59,6 +59,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
         specialMarshallers.put(ProtectedStringType.class, this::marshalProtectedDataType);
         specialMarshallers.put(ItemPathType.class, this::marshalItemPathType);
         specialMarshallers.put(RawType.class, this::marshalRawType);
+        specialMarshallers.put(RawObjectType.class, this::marshalRawObjectType);
         specialMarshallers.put(PolyString.class, this::marshalPolyString);
         specialMarshallers.put(PolyStringType.class, this::marshalPolyString);
     }
@@ -560,6 +561,12 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
         xprim.setValue(value, valueType, getOptions(ctx));
         xprim.setAttribute(isAttribute);
         return xprim;
+    }
+
+    private XNodeImpl marshalRawObjectType(Object value, SerializationContext sc) throws SchemaException {
+        XNodeImpl node = marshalRawType(((RawObjectType) value).rawValue(), sc);
+        node.setTypeQName(PrismConstants.T_RAW_OBJECT_TYPE);
+        return node;
     }
 
     private XNodeImpl marshalRawType(Object value, SerializationContext sc) throws SchemaException {
