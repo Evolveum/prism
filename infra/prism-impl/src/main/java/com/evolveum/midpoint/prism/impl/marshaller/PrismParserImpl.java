@@ -15,6 +15,9 @@ import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import com.evolveum.prism.xml.ns._public.types_3.RawObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.RawType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -272,8 +275,20 @@ abstract class PrismParserImpl implements PrismParser {
             return getBeanUnmarshaller().unmarshal(root, clazz, context);
         } else if (clazz != null && Objectable.class.isAssignableFrom(clazz)) {
             // we need to NOT strip off OID
-            PrismObject object = (PrismObject) doParseItem(root, clazz);
-            return (T) object.asObjectable();
+            Item<PrismValue, ItemDefinition> parsed = doParseItem(root, clazz);
+            if (parsed instanceof PrismObject) {
+                return (T) ((PrismObject) parsed).asObjectable();
+            } else if (context.isCompat() && parsed instanceof PrismProperty) {
+                // This case also only happens if requested class is of types3.ObjectType
+                // In some cases (eg. parsing type which was removed, but was derived from object type
+                // parsed is returned as prism property containing RawType
+                PrismProperty<RawType> property = ((PrismProperty) parsed);
+                RawType value = property.getRealValue();
+                return (T) new RawObjectType(value);
+            } else {
+                // Fail horribly
+                throw new SchemaException("Value was parsed as " + parsed.getClass().getName() + "instead of PrismObject");
+            }
         } else {
             PrismValue prismValue = doParseItemValue(root, clazz);
             if (prismValue == null) {
