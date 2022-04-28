@@ -1,7 +1,7 @@
 podTemplate(
         activeDeadlineSeconds: 7200,
         idleMinutes: 1,
-        nodeSelector: '${NODE_SELECTOR}',
+        // Secret volume with maven settings.xml for deploy, see also sim-link in "build" stage.
         volumes: [secretVolume(secretName: "jenkins-nexus",mountPath: "/root/jenkins-nexus")],
         workspaceVolume: dynamicPVC(requestsSize: "20Gi"),
         containers: [
@@ -18,7 +18,8 @@ podTemplate(
                         ttyEnabled: true,
                         command: 'cat',
                         resourceLimitCpu: '1',
-                        resourceLimitMemory: '1Gi') // for tests we use Xmx512m, so it's fine
+                        // For tests we use -Xmx512m (see the POM file) so 1GB RAM is enough.
+                        resourceLimitMemory: '1Gi')
         ]
 ) {
     node(POD_LABEL) {
@@ -26,22 +27,14 @@ podTemplate(
             git branch: "${BRANCH}",
                     url: 'https://github.com/Evolveum/prism.git'
             echo "git checkout done..."
-
-            sh """echo "ID:"
-                id
-                echo
-                """
         }
         stage("build") {
             container('maven') {
                 try {
                     sh """#!/bin/bash
+                        # .m2 is mutable and short-term, we just sym-link the settings.xml there.
                         mkdir -p /root/.m2
                         ln -s ../jenkins-nexus/settings.xml /root/.m2/settings.xml
-
-                        echo "ID:"
-                        id
-                        echo
 
                         if [ '${VERBOSE}' = '1' ]
                         then

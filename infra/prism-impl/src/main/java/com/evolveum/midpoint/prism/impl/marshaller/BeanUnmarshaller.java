@@ -83,6 +83,7 @@ public class BeanUnmarshaller {
     private void createSpecialUnmarshallerMaps() {
         add(XmlAsStringType.class, this::unmarshalXmlAsStringFromPrimitive, this::unmarshalXmlAsStringFromMap);
         add(RawType.class, this::unmarshalRawType, this::unmarshalRawType);
+        add(RawObjectType.class, this::unmarshalRawObjectType, this::unmarshalRawObjectType);
         add(PolyString.class, this::unmarshalPolyStringFromPrimitive, this::unmarshalPolyStringFromMap);
         add(PolyStringType.class, this::unmarshalPolyStringFromPrimitive, this::unmarshalPolyStringFromMap);
         add(ItemPathType.class, this::unmarshalItemPath, this::notSupported);
@@ -1242,6 +1243,10 @@ public class BeanUnmarshaller {
             String value = domParser.write(entry.getValue(), entry.getKey(), null);
             return new XmlAsStringType(value);
         }
+    }
+
+    private RawObjectType unmarshalRawObjectType(XNodeImpl node, Class<RawObjectType> beanClass, ParsingContext parsingContext) {
+        return new RawObjectType(unmarshalRawType(node, RawType.class, parsingContext));
     }
 
     private RawType unmarshalRawType(XNodeImpl node, Class<RawType> beanClass, ParsingContext parsingContext) {
