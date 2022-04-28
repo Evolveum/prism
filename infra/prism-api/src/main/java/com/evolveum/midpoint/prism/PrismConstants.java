@@ -149,6 +149,8 @@ public class PrismConstants {
 
     public static final QName POLYSTRING_TYPE_QNAME = new QName(NS_TYPES, "PolyStringType");
     public static final QName RAW_TYPE_QNAME = new QName(NS_TYPES, "RawType");
+    public static final QName T_OBJECT_TYPE = new QName(NS_TYPES, "ObjectType");
+    public static final QName T_RAW_OBJECT_TYPE = new QName(NS_TYPES, "RawObjectType");
     public static final QName POLYSTRING_ELEMENT_ORIG_QNAME = new QName(NS_TYPES, "orig");
     public static final QName POLYSTRING_ELEMENT_NORM_QNAME = new QName(NS_TYPES, "norm");
 
@@ -165,4 +167,5 @@ public class PrismConstants {
     public static final QName VALUE_METADATA_CONTAINER_NAME = new QName(NS_METADATA, "valueMetadata");
 
     public static final QName VIRTUAL_SCHEMA_ROOT = new QName(NS_TYPES, "virtualSchemaRoot");
+
 }
