@@ -1,0 +1,56 @@
+podTemplate(
+        activeDeadlineSeconds: 3600,
+        idleMinutes: 1,
+        // Secret volume with maven settings.xml for deploy, see also sim-link in "build" stage.
+        volumes: [secretVolume(secretName: "jenkins-nexus",mountPath: "/root/jenkins-nexus")],
+        workspaceVolume: dynamicPVC(requestsSize: "5Gi"),
+        containers: [
+                containerTemplate(name: 'jnlp',
+                        image: 'jenkins/inbound-agent:4.10-3-alpine',
+                        runAsUser: '0',
+                        resourceLimitCpu: '900m',
+                        resourceLimitMemory: '1Gi',
+                        resourceRequestCpu: '900m',
+                        resourceRequestMemory: '1Gi'),
+                containerTemplate(name: 'maven',
+                        image: 'maven:3.8.5-openjdk-11-slim',
+                        runAsUser: '0',
+                        ttyEnabled: true,
+                        command: 'cat',
+                        resourceLimitCpu: '1',
+                        // For tests we use -Xmx512m (see the POM file) so 1GB RAM is enough.
+                        resourceLimitMemory: '1Gi')
+        ]
+) {
+    node(POD_LABEL) {
+        stage("checkout") {
+            git branch: "${BRANCH}",
+                    url: 'https://github.com/Evolveum/prism.git'
+            echo "git checkout done..."
+        }
+        stage("build") {
+            container('maven') {
+                try {
+                    sh """#!/bin/bash
+                        # .m2 is mutable and short-term, we just sym-link the settings.xml there.
+                        mkdir -p /root/.m2
+                        ln -s ../jenkins-nexus/settings.xml /root/.m2/settings.xml
+
+                        if [ '${VERBOSE}' = '1' ]
+                        then
+	                        env | sort
+	                        mvn --version
+			            fi
+
+				        mvn clean deploy -DdeployAtEnd=true
+                    """
+                } catch (err) {
+                    echo "Caught: ${err}"
+                    currentBuild.result = 'FAILURE'
+                } finally {
+                    step([$class: 'Publisher', reportFilenamePattern: '**/testng-results.xml'])
+                }
+            }
+        }
+    }
+}
