@@ -315,8 +315,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity</artifactId>
-                <version>1.7</version>
+                <artifactId>velocity-engine-core</artifactId>
+                <version>2.3</version>
             </dependency>
 
             <dependency>
@@ -680,7 +680,7 @@
                                 <ignoredUsedUndeclaredDependency>jakarta.activation:jakarta.activation-api</ignoredUsedUndeclaredDependency>
                                 <ignoredUsedUndeclaredDependency>com.sun.activation:jakarta.activation</ignoredUsedUndeclaredDependency>
 
-                                <!-- needs to much exclusions, used by apache-cxf (xjc plugin, prism-impl, schema, ..) -->
+                                <!-- Needs too many exclusions, used by apache-cxf (xjc plugin, prism-impl, schema, ..) -->
                                 <ignoredUsedUndeclaredDependency>jakarta.xml.bind:jakarta.xml.bind-api</ignoredUsedUndeclaredDependency>
                                 <ignoredUsedUndeclaredDependency>org.glassfish.jaxb:xsom</ignoredUsedUndeclaredDependency>
                                 <ignoredUsedUndeclaredDependency>org.glassfish.jaxb:jaxb-runtime</ignoredUsedUndeclaredDependency>
