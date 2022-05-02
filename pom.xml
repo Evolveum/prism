@@ -99,6 +99,12 @@
         <commons.lang.version>2.6</commons.lang.version>
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.11</logback.version>
+        <!--
+        TODO versions 7.4.0 and 7.5 rely on jquery 3.5.1 webjar, but we want to use 3.6.0 after AdminLTE upgrade.
+         7.6 should be fine but is not released yet, see this commit: https://github.com/cbeust/testng/commit/e3fe52af2a42faba6823da4ab3d5aa68ad493a61
+         We worked around this by adding 3.5.1. jquery.min.js to the place expected by TestNG to our tools/test-ng.
+         This can (and should) be removed after the upgrade of TestNG, which will by then (hopefully) have the JS embedded.
+        -->
         <testng.version>7.4.0</testng.version>
         <xml.resolver.version>1.2</xml.resolver.version>
         <classgraph.version>4.8.146</classgraph.version>
