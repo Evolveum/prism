@@ -42,7 +42,7 @@ podTemplate(
 	                        mvn --version
 			            fi
 
-				        mvn clean deploy -DdeployAtEnd=true
+				        mvn -B -ntp -Dmaven.test.failure.ignore clean deploy -DdeployAtEnd=true
                     """
                 } catch (err) {
                     echo "Caught: ${err}"
