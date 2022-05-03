@@ -420,6 +420,31 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    <xsd:complexType name="OwnedByFilterClauseType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:FilterClauseType">
+                <xsd:sequence>
+                    <xsd:element name="type" type="xsd:QName"/>
+                    <xsd:element name="path" type="t:ItemPathType"/>
+                    <xsd:element ref="tns:filter" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="ReferencedByFilterClauseType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:FilterClauseType">
+                <xsd:sequence>
+                    <xsd:element name="type" type="xsd:QName"/>
+                    <xsd:element name="path" type="t:ItemPathType"/>
+                    <xsd:element name="relation" type="xsd:QName" minOccurs="0" />
+                    <xsd:element ref="tns:filter" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
 
     <xsd:complexType name="ExistsFilterClauseType">
         <xsd:complexContent>
@@ -431,6 +456,8 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    
+    
 
     <xsd:element name="path" type="t:ItemPathType">
         <xsd:annotation>

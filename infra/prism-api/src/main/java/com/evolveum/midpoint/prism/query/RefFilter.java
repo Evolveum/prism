@@ -6,6 +6,10 @@
  */
 package com.evolveum.midpoint.prism.query;
 
+
+
+import org.jetbrains.annotations.Nullable;
+
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 
@@ -21,4 +25,10 @@ public interface RefFilter extends ValueFilter<PrismReferenceValue, PrismReferen
     boolean isOidNullAsAny();
 
     boolean isTargetTypeNullAsAny();
+
+    @Nullable
+    default ObjectFilter getFilter() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
 }
