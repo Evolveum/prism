@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 
 public interface OwnedByFilter extends ObjectFilter {
 
+    @Nullable
     QName getType();
 
     @Nullable
