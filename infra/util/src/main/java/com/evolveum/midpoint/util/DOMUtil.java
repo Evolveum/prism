@@ -482,6 +482,15 @@ public class DOMUtil {
         if (qnameStringRepresentation == null) {
             return null;
         }
+        if (qnameStringRepresentation.contains("/")) {
+            // XML QNames can not contain slash, but URIs can
+            // Somehow we got QName URI (this could happen if parsed JSON was serialized (QName was in RawType)
+            // then deserialized (RawType was not materialized), and serialized to XML (in this case the URI
+            // form was not converted)
+            return QNameUtil.uriToQName(qnameStringRepresentation);
+            
+            
+        }
         int colonIndex = qnameStringRepresentation.indexOf(':');
         if (colonIndex < 0) {
             if (StringUtils.isBlank(qnameStringRepresentation)) {
