@@ -21,6 +21,17 @@ public class PathSet implements Set<ItemPath> {
 
     private final List<ItemPath> content = new ArrayList<>();
 
+    public PathSet() {
+    }
+
+    public PathSet(@NotNull Collection<ItemPath> initialContent) {
+        content.addAll(initialContent);
+    }
+
+    public static @NotNull PathSet of(ItemPath... paths) {
+        return new PathSet(List.of(paths));
+    }
+
     @Override
     public int size() {
         return content.size();
