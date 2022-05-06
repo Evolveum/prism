@@ -239,6 +239,10 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     @Override
     void accept(Visitor visitor, ItemPath path, boolean recursive);
 
+    /**
+     * Returns true if all contained items have complete definitions.
+     * (Currently does not check the definition of this value itself.)
+     */
     boolean hasCompleteDefinition();
 
     boolean addRawElement(Object element) throws SchemaException;
