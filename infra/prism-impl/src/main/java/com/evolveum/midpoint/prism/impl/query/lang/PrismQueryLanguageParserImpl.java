@@ -395,6 +395,23 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 }
 
             })
+            .put(OWNED_BY, new SelfFilterFactory(OWNED_BY) {
+
+                @Override
+                protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+                    var subfilter = subfilterOrValue.subfilterSpec().filter();
+
+                    List<FilterContext> andChildren = new ArrayList<>();
+                    expand(andChildren,AndFilterContext.class,AndFilterContext::filter, Collections.singletonList(subfilter));
+
+                    QName type = consumeFromAnd(QName.class, "@type", andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
+                    var referrerSchema = context.getSchemaRegistry().findComplexTypeDefinitionByType(type);
+                    ObjectFilter filter = andFilter(null, referrerSchema, andChildren);
+                    return OwnedByFilterImpl.create(type, path, filter);
+                }
+
+            })
             .build();
 
     private final Map<QName, ItemFilterFactory> notFilterFactories = ImmutableMap.<QName, ItemFilterFactory>builder()

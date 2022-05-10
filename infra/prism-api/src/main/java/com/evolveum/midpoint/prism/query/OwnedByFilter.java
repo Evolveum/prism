@@ -6,16 +6,16 @@
  */
 package com.evolveum.midpoint.prism.query;
 
-import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 public interface OwnedByFilter extends ObjectFilter {
 
     @Nullable
-    QName getType();
+    ComplexTypeDefinition getType();
 
     @Nullable
     ItemPath getPath();

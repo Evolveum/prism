@@ -24,5 +24,9 @@ public interface S_FilterEntryOrEmpty extends S_FilterEntry, S_FilterExit {
 
     S_FilterEntryOrEmpty referencedBy(Class<? extends Containerable> clazz, ItemPath path, QName relation);
 
+    default S_FilterEntryOrEmpty ownedBy(Class<? extends Containerable> clazz, Object... path) {
+        return ownedBy(clazz, ItemPath.create(path));
+    }
 
+    S_FilterEntryOrEmpty ownedBy(Class<? extends Containerable> clazz, ItemPath path);
 }
