@@ -293,6 +293,15 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
+    public OwnedByEntry ownedBy(Class<? extends Containerable> type, ItemPath path) {
+        ComplexTypeDefinition ctd = queryBuilder.getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(type);
+        if (ctd == null) {
+            throw new IllegalArgumentException("Unknown type: " + type);
+        }
+        return new OwnedByEntry(queryBuilder,this, ctd, type, path);
+    }
+
+    @Override
     public S_FilterEntryOrEmpty type(@NotNull QName typeName) {
         ComplexTypeDefinition ctd = queryBuilder.getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(typeName);
         if (ctd == null) {
@@ -549,6 +558,26 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         @Override
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = ReferencedByFilterImpl.create(definition, path, subfilter, relation);
+            return this.parentFilter.addSubfilter(filter);
+        }
+
+    }
+
+    private static class OwnedByEntry extends R_Filter {
+
+        private ComplexTypeDefinition definition;
+        private Class<? extends Containerable> type;
+        private ItemPath path;
+
+        public OwnedByEntry(QueryBuilder queryBuilder, R_Filter parent, ComplexTypeDefinition ctd, Class<? extends Containerable> type, ItemPath path) {
+            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            this.definition = ctd;
+            this.type = type;
+            this.path = path;
+        }
+        @Override
+        R_Filter addSubfilter(ObjectFilter subfilter) {
+            var filter = OwnedByFilterImpl.create(definition, path, subfilter);
             return this.parentFilter.addSubfilter(filter);
         }
 
