@@ -47,12 +47,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String REF_OID = "oid";
     private static final String REF_TYPE = "targetType";
     private static final String REF_REL = "relation";
+    private static final String REF_TARGET_ALIAS = "@";
+    private static final String REF_TARGET = "@";
+
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
 
     private static final Map<String, Class<?>> REF_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(REF_OID, String.class).put(REF_TYPE, QName.class).put(REF_REL, QName.class).build();
+
 
     public interface ItemFilterFactory {
         ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -814,16 +818,41 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
      */
     private ObjectFilter matchesReferenceFilter(ItemPath path, PrismReferenceDefinition definition,
             FilterContext filter) throws SchemaException {
-        Map<String, Object> props = valuesFromFilter("ObjectReference", REF_PROPS, filter, new HashMap<>(), true);
-        PrismReferenceValue value = new PrismReferenceValueImpl((String) props.get(REF_OID),
-                (QName) props.get(REF_TYPE));
-        value.setRelation((QName) props.get(REF_REL));
+        List<FilterContext> andChildren = new ArrayList<>();
+        expand(andChildren,AndFilterContext.class,AndFilterContext::filter, Collections.singletonList(filter));
 
+        boolean oidNullAsAny = !andContains(REF_OID, andChildren);
+        boolean typeNullAsAny = !andContains(REF_TYPE, andChildren);
+
+        String oid = consumeFromAnd(String.class, REF_OID, andChildren);
+        QName relation = consumeFromAnd(QName.class, REF_REL, andChildren);
+        QName type = consumeFromAnd(QName.class, REF_TYPE, andChildren);
+
+
+        QName targetType = definition.getTargetTypeName();
+        if (targetType == null) {
+            targetType = type;
+        } else {
+            targetType = context.getSchemaRegistry().selectMoreSpecific(type, targetType);
+        }
+
+        ObjectFilter targetFilter = null;
+        if (andChildren.size() == 1) {
+            var targetCtx = consumeFromAnd(REF_TARGET_ALIAS, MATCHES, andChildren);
+            var targetSchema = context.getSchemaRegistry().findObjectDefinitionByType(targetType);
+            targetFilter = parseFilter(targetSchema, targetSchema.getComplexTypeDefinition(), targetCtx.subfilterOrValue().subfilterSpec().filter());
+        }
+
+        PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
+        value.setRelation(relation);
         RefFilterImpl result = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition,
-                Collections.singletonList(value));
+                Collections.singletonList(value), targetFilter);
+        result.setOidNullAsAny(oidNullAsAny);
+        result.setTargetTypeNullAsAny(typeNullAsAny);
 
-        result.setOidNullAsAny(!props.containsKey(REF_OID));
-        result.setTargetTypeNullAsAny(!props.containsKey(REF_TYPE));
+
+
+
         return result;
     }
 
@@ -838,6 +867,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 if (name.equals(filter.path().getText())) {
                     result.put(name, extractValue(propType, filter.subfilterOrValue()));
                 }
+            } else if (strict) {
+                throw new SchemaException("Only 'equals' and 'and' filters are supported.");
             }
         } else if (child instanceof AndFilterContext) {
             valuesFromFilter(typeName, props, ((AndFilterContext) child).left, result, strict);
@@ -867,6 +898,31 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     private <T> T consumeFromAnd(Class<T> valueType, String path, Collection<FilterContext> andFilters) throws SchemaException {
+        ItemFilterContext maybe = consumeFromAnd(path, EQUAL, andFilters);
+        if (maybe != null) {
+            return extractValue(valueType, maybe.subfilterOrValue());
+        }
+        return null;
+    }
+
+    private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) throws SchemaException {
+        var iterator = andFilters.iterator();
+        while (iterator.hasNext()) {
+            var maybe = iterator.next();
+            if (maybe instanceof GenFilterContext) {
+                ItemFilterContext filter = ((GenFilterContext) maybe).itemFilter();
+                // If we have equals filter and name matches, extract value and remove it from list
+                // for further processing
+                if (path.equals(filter.path().getText()) && (filterName == null || filterName.equals(filterName(filter)))) {
+                    iterator.remove();
+                    return filter;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean andContains(String path, Collection<FilterContext> andFilters) throws SchemaException {
         var iterator = andFilters.iterator();
         while (iterator.hasNext()) {
             var maybe = iterator.next();
@@ -875,12 +931,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 // If we have equals filter and name matches, extract value and remove it from list
                 // for further processing
                 if (EQUAL.equals(filterName(filter)) && path.equals(filter.path().getText())) {
-                    iterator.remove();
-                    return extractValue(valueType, filter.subfilterOrValue());
+                    return true;
                 }
             }
         }
-        return null;
+        return false;
     }
 
     public static PrismQueryLanguageParserImpl create(PrismContext prismContext) {

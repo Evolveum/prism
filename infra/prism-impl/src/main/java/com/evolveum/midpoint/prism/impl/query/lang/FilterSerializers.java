@@ -320,10 +320,18 @@ public class FilterSerializers {
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
         for (PrismReferenceValue value : source.getValues()) {
-            var oidEmitted = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
-            var targetEmitted = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
-                    oidEmitted);
-            writeProperty(target, "relation", value.getRelation(), true, targetEmitted);
+            var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
+            notFirst = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
+                    notFirst);
+            notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst);
+            if (source.getFilter() != null) {
+                if (notFirst) {
+                    target.writeFilterName(AND);
+                }
+                target.writePath("@");
+                target.writeFilterName(MATCHES);
+                target.writeNestedFilter(source.getFilter());
+            }
         }
         target.endNestedFilter();
     }
@@ -335,7 +343,7 @@ public class FilterSerializers {
     private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
             boolean emitAnd) {
         if (skipNull && value == null) {
-            return false;
+            return emitAnd;
         }
         if (emitAnd) {
             target.writeFilterName(AND);

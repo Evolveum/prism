@@ -172,6 +172,18 @@
             </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
+
+
+    <xsd:complexType name="RefFilterClauseType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:PropertySimpleValueFilterClauseType">
+            <xsd:sequence>
+              <xsd:element ref="tns:filter" />
+            </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:element name="filterClause" type="tns:FilterClauseType"/>
 
     <!-- individual clauses -->
@@ -190,7 +202,8 @@
     <xsd:element name="lessOrEqual" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="substring" substitutionGroup="tns:filterClause" type="tns:SubstringFilterClauseType"/>
 
-    <xsd:element name="ref" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
+    <xsd:element name="ref" substitutionGroup="tns:filterClause" type="tns:RefFilterClauseType"/>
+
     <xsd:element name="org" substitutionGroup="tns:filterClause" type="tns:OrgFilterClauseType"/>
     <xsd:element name="inOid" substitutionGroup="tns:filterClause" type="tns:InOidFilterClauseType"/>
     <xsd:element name="fullText" substitutionGroup="tns:filterClause" type="tns:FullTextFilterClauseType"/>
