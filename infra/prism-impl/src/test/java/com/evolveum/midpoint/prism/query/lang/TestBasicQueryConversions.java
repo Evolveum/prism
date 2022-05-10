@@ -50,6 +50,7 @@ import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
+import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -60,6 +61,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     private static final MatchingRuleRegistry MATCHING_RULE_REGISTRY =
             MatchingRuleRegistryFactory.createRegistry();
+
+    private static final QName A_RELATION = new QName("a-relation");
 
     private PrismObject<UserType> parseUserJacky() throws SchemaException, IOException {
         return PrismTestUtil.parseObject(FILE_USER_JACK_FILTERS);
@@ -85,9 +88,12 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify(query, original, user, true);
     }
 
-    private void verify(Class<? extends Containerable> type, String query, ObjectFilter filter) throws SchemaException {
+    private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException {
         ObjectFilter dslFilter = parser().parseQuery(type, query);
-        assertEquals(dslFilter, filter);
+        assertEquals(dslFilter, expectedFilter);
+        MapXNode xnodes = getPrismContext().getQueryConverter().serializeFilter(expectedFilter);
+        ObjectFilter xnodeFilter = getPrismContext().getQueryConverter().parseFilter(xnodes, type);
+        assertEquals(xnodeFilter, expectedFilter);
     }
 
 
@@ -370,17 +376,20 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
         @NotNull
         var innerFilter = LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext());
-        ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
+        ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, A_RELATION);
 
 
         ObjectFilter javaFilter = getPrismContext().queryFor(AccountType.class)
-            .referencedBy(UserType.class, UserType.F_ACCOUNT_REF)
+            .referencedBy(UserType.class, UserType.F_ACCOUNT_REF, A_RELATION)
                 .item(validToPath).lt(earlier)
             .buildFilter();
 
         assertEquals(filter, javaFilter);
 
-        verify(AccountType.class, ". referencedBy (@type = UserType and @path = accountRef and activation/validTo < '2020-07-06T00:00:00.000+02:00')", filter);
+        verify(AccountType.class, ". referencedBy (@type = UserType"
+                + " and @path = accountRef"
+                + " and @relation = a-relation"
+                + " and activation/validTo < '2020-07-06T00:00:00.000+02:00')", filter);
     }
 
     @Test

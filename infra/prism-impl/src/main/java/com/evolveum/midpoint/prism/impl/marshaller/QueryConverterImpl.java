@@ -67,6 +67,8 @@ public class QueryConverterImpl implements QueryConverter {
     private static final QName CLAUSE_NOT = new QName(NS_QUERY, "not");
 
     private static final QName CLAUSE_TYPE = new QName(NS_QUERY, "type");
+    private static final QName CLAUSE_REFERENCED_BY = new QName(NS_QUERY, "referencedBy");
+    private static final QName CLAUSE_OWNED_BY = new QName(NS_QUERY, "ownedBy");
     private static final QName CLAUSE_EXISTS = new QName(NS_QUERY, "exists");
 
     // common elements
@@ -91,6 +93,10 @@ public class QueryConverterImpl implements QueryConverter {
     // type and exists
     private static final QName ELEMENT_TYPE = new QName(NS_QUERY, "type");
     private static final QName ELEMENT_FILTER = new QName(NS_QUERY, "filter");
+
+
+    private static final QName ELEMENT_RELATION = new QName(NS_QUERY, "relation");
+
 
     @NotNull
     private final PrismContext prismContext;
@@ -204,6 +210,11 @@ public class QueryConverterImpl implements QueryConverter {
             return parseExistsFilter(clauseXMap, pcd, preliminaryParsingOnly, pc);
         }
 
+        if (QNameUtil.match(clauseQName, CLAUSE_REFERENCED_BY)) {
+            return parseReferencedByFilter(clauseXMap, preliminaryParsingOnly, pc);
+        } else if (QNameUtil.match(clauseQName, CLAUSE_OWNED_BY)) {
+            return parseOwnedByFilter(clauseXMap, preliminaryParsingOnly, pc);
+        }
         throw new UnsupportedOperationException("Unsupported query filter " + clauseQName);
 
     }
@@ -458,6 +469,60 @@ public class QueryConverterImpl implements QueryConverter {
             return null;
         } else {
             return TypeFilterImpl.createType(type, subFilter);
+        }
+    }
+
+    private ReferencedByFilter parseReferencedByFilter(MapXNodeImpl clauseXMap, boolean preliminaryParsingOnly,
+            ParsingContext pc) throws SchemaException {
+        QName type = clauseXMap.getParsedPrimitiveValue(ELEMENT_TYPE, DOMUtil.XSD_QNAME);
+        ItemPath path = getPath(clauseXMap);
+        PrismContainerDefinition<?> def = prismContext.getSchemaRegistry().findContainerDefinitionByType(type);
+
+        QName relation = clauseXMap.getParsedPrimitiveValue(ELEMENT_RELATION, DOMUtil.XSD_QNAME);
+
+
+        ObjectFilter subFilter;
+        XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
+
+        if (subXFilter instanceof MapXNodeImpl) {
+            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, def, preliminaryParsingOnly, pc);
+        } else {
+            subFilter = null;
+        }
+        if (!preliminaryParsingOnly || pc == null || pc.isStrict()) {
+            // MID-3614: we want to be strict when importing but forgiving when reading from the repository
+            checkExtraElements(clauseXMap, ELEMENT_TYPE, ELEMENT_FILTER, ELEMENT_PATH, ELEMENT_RELATION);
+        }
+        if (preliminaryParsingOnly) {
+            return null;
+        } else {
+            return ReferencedByFilterImpl.create(def.getComplexTypeDefinition(), path, subFilter, relation);
+        }
+    }
+
+    private OwnedByFilter parseOwnedByFilter(MapXNodeImpl clauseXMap, boolean preliminaryParsingOnly,
+            ParsingContext pc) throws SchemaException {
+        QName type = clauseXMap.getParsedPrimitiveValue(ELEMENT_TYPE, DOMUtil.XSD_QNAME);
+        ItemPath path = getPath(clauseXMap);
+        PrismContainerDefinition<?> def = prismContext.getSchemaRegistry().findContainerDefinitionByType(type);
+
+
+        ObjectFilter subFilter;
+        XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
+
+        if (subXFilter instanceof MapXNodeImpl) {
+            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, def, preliminaryParsingOnly, pc);
+        } else {
+            subFilter = null;
+        }
+        if (!preliminaryParsingOnly || pc == null || pc.isStrict()) {
+            // MID-3614: we want to be strict when importing but forgiving when reading from the repository
+            checkExtraElements(clauseXMap, ELEMENT_TYPE, ELEMENT_FILTER, ELEMENT_PATH);
+        }
+        if (preliminaryParsingOnly) {
+            return null;
+        } else {
+            return OwnedByFilterImpl.create(def.getComplexTypeDefinition(), path, subFilter);
         }
     }
 
@@ -734,6 +799,11 @@ public class QueryConverterImpl implements QueryConverter {
         } else if (filter instanceof ExistsFilter) {
             return serializeExistsFilter((ExistsFilter) filter, xnodeSerializer);
         }
+        if (filter instanceof ReferencedByFilter) {
+            return serializeReferencedByFilter((ReferencedByFilter) filter, xnodeSerializer);
+        } else if (filter instanceof OwnedByFilter) {
+            return serializeOwnedByFilter((OwnedByFilter) filter, xnodeSerializer);
+        }
 
         throw new UnsupportedOperationException("Unsupported filter type: " + filter);
     }
@@ -885,6 +955,31 @@ public class QueryConverterImpl implements QueryConverter {
             content.put(ELEMENT_FILTER, serializeFilter(filter.getFilter(), xnodeSerializer));
         }
         return createFilter(CLAUSE_TYPE, content);
+    }
+
+    private MapXNodeImpl serializeReferencedByFilter(ReferencedByFilter filter, PrismSerializer<RootXNode> xnodeSerializer) throws SchemaException {
+        MapXNodeImpl content = new MapXNodeImpl();
+        content.put(ELEMENT_TYPE, createPrimitiveXNode(filter.getType().getTypeName(), DOMUtil.XSD_QNAME));
+        serializePath(content, filter.getPath(), filter);
+        if (filter.getFilter() != null) {
+            content.put(ELEMENT_FILTER, serializeFilter(filter.getFilter(), xnodeSerializer));
+        }
+        if (filter.getRelation() != null) {
+            content.put(ELEMENT_RELATION, createPrimitiveXNode(filter.getRelation(), DOMUtil.XSD_QNAME));
+        }
+        return createFilter(CLAUSE_REFERENCED_BY, content);
+    }
+
+    private MapXNodeImpl serializeOwnedByFilter(OwnedByFilter filter, PrismSerializer<RootXNode> xnodeSerializer) throws SchemaException {
+        MapXNodeImpl content = new MapXNodeImpl();
+        content.put(ELEMENT_TYPE, createPrimitiveXNode(filter.getType().getTypeName(), DOMUtil.XSD_QNAME));
+        if (filter.getPath() != null) {
+            serializePath(content, filter.getPath(), filter);
+        }
+        if (filter.getFilter() != null) {
+            content.put(ELEMENT_FILTER, serializeFilter(filter.getFilter(), xnodeSerializer));
+        }
+        return createFilter(CLAUSE_OWNED_BY, content);
     }
 
     private MapXNodeImpl serializeExistsFilter(ExistsFilter filter, PrismSerializer<RootXNode> xnodeSerializer) throws SchemaException {
