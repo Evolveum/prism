@@ -12,19 +12,28 @@ import java.util.function.BiFunction;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.AbstractPrismTest;
+import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.MutablePrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismInternalTestUtil;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
+import com.evolveum.midpoint.prism.foo.AccountType;
+import com.evolveum.midpoint.prism.foo.ActivationType;
 import com.evolveum.midpoint.prism.foo.AssignmentType;
 import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryFactory;
+import com.evolveum.midpoint.prism.impl.query.AndFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.FullTextFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.GreaterFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.LessFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.OrFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.ReferencedByFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQuerySerializerImpl;
 
 import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
@@ -33,10 +42,12 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.query.FullTextFilter;
+import com.evolveum.midpoint.prism.query.LessFilter;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
+import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -73,6 +84,12 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     private void verify(String query, ObjectFilter original, PrismObject<?> user) throws SchemaException {
         verify(query, original, user, true);
     }
+
+    private void verify(Class<? extends Containerable> type, String query, ObjectFilter filter) throws SchemaException {
+        ObjectFilter dslFilter = parser().parseQuery(type, query);
+        assertEquals(dslFilter, filter);
+    }
+
 
     private void verify(String query, ObjectFilter original, PrismObject<?> user, boolean checkToString) throws SchemaException {
         ObjectFilter dslFilter = parse(query);
@@ -343,6 +360,97 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
 
     }
+
+    @Test
+    public void testRefBy() throws Exception {
+        XMLGregorianCalendar earlier = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
+        var validToPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_TO);
+        var validToDef = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(UserType.COMPLEX_TYPE)
+                .findPropertyDefinition(validToPath);
+
+        @NotNull
+        var innerFilter = LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext());
+        ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
+
+
+        ObjectFilter javaFilter = getPrismContext().queryFor(AccountType.class)
+            .referencedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .item(validToPath).lt(earlier)
+            .buildFilter();
+
+        assertEquals(filter, javaFilter);
+
+        verify(AccountType.class, ". referencedBy (@type = UserType and @path = accountRef and activation/validTo < '2020-07-06T00:00:00.000+02:00')", filter);
+    }
+
+    @Test
+    public void testRefByMultipleConditions() throws Exception {
+        XMLGregorianCalendar earlier = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
+        var validFromPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_FROM);
+        var validToPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_TO);
+        var validToDef = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(UserType.COMPLEX_TYPE)
+                .findPropertyDefinition(validToPath);
+        var validFromDef = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(UserType.COMPLEX_TYPE)
+                .findPropertyDefinition(validFromPath);
+
+        @NotNull
+        var innerFilter = AndFilterImpl.createAnd(
+                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext()),
+                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false, getPrismContext())
+                );
+        ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
+
+
+        ObjectFilter javaFilter = getPrismContext().queryFor(AccountType.class)
+            .referencedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .block()
+                    .item(validToPath).lt(earlier)
+                    .and().item(validFromPath).gt(earlier)
+                .endBlock()
+            .buildFilter();
+
+        assertEquals(filter, javaFilter);
+
+        verify(AccountType.class, ". referencedBy (@type = UserType and @path = accountRef"
+                + " and activation/validTo < '2020-07-06T00:00:00.000+02:00'"
+                + " and activation/validFrom > '2020-07-06T00:00:00.000+02:00')"
+                , filter);
+    }
+
+    @Test
+    public void testRefByOrConditions() throws Exception {
+        XMLGregorianCalendar earlier = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
+        var validFromPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_FROM);
+        var validToPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_TO);
+        var validToDef = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(UserType.COMPLEX_TYPE)
+                .findPropertyDefinition(validToPath);
+        var validFromDef = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(UserType.COMPLEX_TYPE)
+                .findPropertyDefinition(validFromPath);
+
+        @NotNull
+        var innerFilter = OrFilterImpl.createOr(
+                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext()),
+                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false, getPrismContext())
+                );
+        ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
+
+
+        ObjectFilter javaFilter = getPrismContext().queryFor(AccountType.class)
+            .referencedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .block()
+                    .item(validToPath).lt(earlier)
+                    .or().item(validFromPath).gt(earlier)
+                .endBlock()
+            .buildFilter();
+
+        assertEquals(filter, javaFilter);
+
+        verify(AccountType.class, ". referencedBy (@type = UserType and @path = accountRef"
+                + " and (activation/validTo < '2020-07-06T00:00:00.000+02:00'"
+                + " or activation/validFrom > '2020-07-06T00:00:00.000+02:00'))"
+                , filter);
+    }
+
 
     @Test   // MID-4217
     public void testRefNegative() throws Exception {

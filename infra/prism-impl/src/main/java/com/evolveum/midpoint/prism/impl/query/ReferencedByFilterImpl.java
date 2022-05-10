@@ -11,27 +11,32 @@ import javax.xml.namespace.QName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.Freezable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ReferencedByFilter;
+import com.evolveum.midpoint.util.Checks;
 import com.evolveum.midpoint.util.DebugUtil;
+import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.google.common.base.Preconditions;
 
 public class ReferencedByFilterImpl extends ObjectFilterImpl implements ReferencedByFilter {
 
     private static final long serialVersionUID = 1L;
 
-    private @NotNull QName type;
+    private @NotNull ComplexTypeDefinition type;
     private ObjectFilter filter;
 
     private @Nullable QName relation;
     private @NotNull ItemPath path;
 
-    private ReferencedByFilterImpl(@NotNull QName type, @NotNull ItemPath path, ObjectFilter filter,
+    private ReferencedByFilterImpl(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path, ObjectFilter filter,
             @Nullable QName relation) {
         super();
         this.type = type;
@@ -40,13 +45,20 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
         this.relation = relation;
     }
 
-    public static ReferencedByFilter create(@NotNull QName type, @NotNull ItemPath path, ObjectFilter filter,
+    public static ReferencedByFilter create(@NotNull QName typeName, @NotNull ItemPath path, ObjectFilter filter,
+            @Nullable QName relation) {
+        var type = PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(typeName);
+        Preconditions.checkArgument(type != null, "Type %s does not have complex type definition", typeName);
+        return new ReferencedByFilterImpl(type, path, filter, relation);
+    }
+
+    public static ReferencedByFilter create(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path, ObjectFilter filter,
             @Nullable QName relation) {
         return new ReferencedByFilterImpl(type, path, filter, relation);
     }
 
     @Override
-    public @NotNull QName getType() {
+    public @NotNull ComplexTypeDefinition getType() {
         return type;
     }
 
@@ -81,7 +93,7 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
     public boolean equals(Object o, boolean exact) {
         if (o instanceof ReferencedByFilter) {
             var other = (ReferencedByFilter) o;
-            if (!QNameUtil.match(getType(), other.getType()))  {
+            if (!QNameUtil.match(getType().getTypeName(), other.getType().getTypeName()))  {
                 return false;
             }
             if (!QNameUtil.match(getRelation(), other.getRelation())) {
@@ -105,12 +117,36 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
         return false;
     }
 
+ // Just to make checkstyle happy
+    @Override
+    public boolean equals(Object o) {
+        return equals(o, false);
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("REFERENCEDBY(");
+        sb.append(PrettyPrinter.prettyPrint(type));
+        sb.append(",");
+        sb.append(path);
+        sb.append(",");
+        sb.append(filter);
+        sb.append(")");
+        return sb.toString();
+    }
+
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
         sb.append("ReferencedBy: type: ");
-        sb.append(type.getLocalPart());
+        sb.append(type.getTypeName().getLocalPart());
         sb.append(" path: ");
         sb.append(path);
         sb.append('\n');

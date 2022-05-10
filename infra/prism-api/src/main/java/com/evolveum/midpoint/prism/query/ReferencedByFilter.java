@@ -10,12 +10,13 @@ import javax.xml.namespace.QName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 public interface ReferencedByFilter extends ObjectFilter {
 
     @NotNull
-    QName getType();
+    ComplexTypeDefinition getType();
 
     @NotNull
     ItemPath getPath();

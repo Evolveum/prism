@@ -32,7 +32,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     private final OrFilter currentFilter;
     private final LogicalSymbol lastLogicalSymbol;
     private final boolean isNegated;
-    private final R_Filter parentFilter;
+    protected final R_Filter parentFilter;
     private final QName typeRestriction;
     private final ItemPath existsRestriction;
     private final List<ObjectOrdering> orderingList;
@@ -283,6 +283,16 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
+    public RefByEntry referencedBy(Class<? extends Containerable> type, ItemPath path, QName relation) {
+        ComplexTypeDefinition ctd = queryBuilder.getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(type);
+        if (ctd == null) {
+            throw new IllegalArgumentException("Unknown type: " + type);
+        }
+
+        return new RefByEntry(queryBuilder,this, ctd, type, path, relation);
+    }
+
+    @Override
     public S_FilterEntryOrEmpty type(@NotNull QName typeName) {
         ComplexTypeDefinition ctd = queryBuilder.getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(typeName);
         if (ctd == null) {
@@ -520,5 +530,27 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
 
     public PrismContext getPrismContext() {
         return queryBuilder.getPrismContext();
+    }
+
+    private static class RefByEntry extends R_Filter {
+
+        private ComplexTypeDefinition definition;
+        private Class<? extends Containerable> type;
+        private ItemPath path;
+        private QName relation;
+
+        public RefByEntry(QueryBuilder queryBuilder, R_Filter parent, ComplexTypeDefinition ctd, Class<? extends Containerable> type, ItemPath path, QName relation) {
+            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            this.definition = ctd;
+            this.type = type;
+            this.path = path;
+            this.relation = relation;
+        }
+        @Override
+        R_Filter addSubfilter(ObjectFilter subfilter) {
+            var filter = ReferencedByFilterImpl.create(definition, path, subfilter, relation);
+            return this.parentFilter.addSubfilter(filter);
+        }
+
     }
 }

@@ -772,7 +772,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return (T) XmlTypeConverter.toJavaValue(path.getText(), new HashMap<>(), QName.class);
 
         }
-        LiteralValueContext literalContext = subfilterOrValue.singleValue().literalValue();
+        var singleValue = subfilterOrValue.singleValue();
+        schemaCheck(singleValue != null, "Single value is required.");
+
+        if (ItemPath.class.equals(type)) {
+            var pathContext = singleValue.path();
+            schemaCheck(pathContext != null, "path is required");
+            return (T) path(null, pathContext);
+        }
+
+        LiteralValueContext literalContext = singleValue.literalValue();
         schemaCheck(literalContext != null, "Literal value required");
         return type.cast(parseLiteral(type, literalContext));
     }
