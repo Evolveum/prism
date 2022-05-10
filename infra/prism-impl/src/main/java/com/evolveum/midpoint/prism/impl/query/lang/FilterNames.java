@@ -53,6 +53,10 @@ class FilterNames {
 
     static final Map<QName, String> NAME_TO_ALIAS = ALIAS_TO_NAME.inverse();
 
+    public static final String META_TYPE = "@type";
+    public static final String META_PATH = "@path";
+    public static final String META_RELATION = "@relation";
+
     private FilterNames() {
         throw new UnsupportedOperationException("Utility class");
     }

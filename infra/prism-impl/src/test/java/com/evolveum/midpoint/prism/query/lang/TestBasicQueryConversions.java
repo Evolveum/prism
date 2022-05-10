@@ -21,6 +21,7 @@ import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.MutablePrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismInternalTestUtil;
+import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.foo.AccountType;
@@ -47,6 +48,7 @@ import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
+import com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
@@ -88,9 +90,12 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify(query, original, user, true);
     }
 
-    private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException {
+    private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException, NotSupportedException {
         ObjectFilter dslFilter = parser().parseQuery(type, query);
         assertEquals(dslFilter, expectedFilter);
+
+        PrismQuerySerialization toAxiom = getPrismContext().querySerializer().serialize(dslFilter, PrismNamespaceContext.of(UserType.COMPLEX_TYPE.getNamespaceURI()));
+        assertEquals(toAxiom.filterText(), query);
         MapXNode xnodes = getPrismContext().getQueryConverter().serializeFilter(expectedFilter);
         ObjectFilter xnodeFilter = getPrismContext().getQueryConverter().parseFilter(xnodes, type);
         assertEquals(xnodeFilter, expectedFilter);

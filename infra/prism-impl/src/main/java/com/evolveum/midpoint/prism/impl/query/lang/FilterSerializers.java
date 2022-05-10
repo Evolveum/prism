@@ -20,6 +20,7 @@ import com.evolveum.midpoint.prism.impl.query.OrFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.OrgFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.PropertyValueFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.RefFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.ReferencedByFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.SubstringFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.TypeFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.UndefinedFilterImpl;
@@ -72,6 +73,7 @@ public class FilterSerializers {
             .put(mapping(SubstringFilterImpl.class, FilterSerializers::substringFilter))
             .put(mapping(RefFilterImpl.class, FilterSerializers::refFilter))
             .put(mapping(NotFilterImpl.class, FilterSerializers::notFilter))
+            .put(mapping(ReferencedByFilterImpl.class, FilterSerializers::referencedByFilter))
             .put(mapping(OrgFilterImpl.class, FilterSerializers::orgFilter)).build();
 
     static void write(ObjectFilter filter, QueryWriter output) throws NotSupportedException {
@@ -192,6 +194,57 @@ public class FilterSerializers {
                 target.writeFilter(nested);
             }
         }
+    }
+
+
+    static void referencedByFilter(ReferencedByFilterImpl source, QueryWriter target) throws NotSupportedException {
+        target.writeSelf();
+        target.writeFilterName(REFERENCED_BY);
+        target.startNestedFilter();
+
+        // @type = QName
+
+        writeProperty(target, META_TYPE, source.getType().getTypeName(), false, false);
+        // and @path = ItemPath
+        writeProperty(target, META_PATH, source.getPath(), false, true);
+
+        // and @relation =
+        writeProperty(target, META_RELATION, source.getRelation(), true, true);
+        var nested = source.getFilter();
+        if(nested != null) {
+            target.writeFilterName(AND);
+            if (nested instanceof OrFilter) {
+                target.writeNestedFilter(nested);
+            } else {
+                target.writeFilter(nested);
+            }
+        }
+        target.endNestedFilter();
+    }
+
+    static void ownedByFilter(ReferencedByFilterImpl source, QueryWriter target) throws NotSupportedException {
+        target.writeSelf();
+        target.writeFilterName(OWNED_BY);
+        target.startNestedFilter();
+
+        // @type = QName
+
+        boolean notFirst = writeProperty(target, META_TYPE, source.getType().getTypeName(), true, false);
+        // and @path = ItemPath
+        notFirst = writeProperty(target, META_PATH, source.getPath(), true, notFirst);
+
+        var nested = source.getFilter();
+        if(nested != null) {
+            if (notFirst) {
+                target.writeFilterName(AND);
+            }
+            if (nested instanceof OrFilter) {
+                target.writeNestedFilter(nested);
+            } else {
+                target.writeFilter(nested);
+            }
+        }
+        target.endNestedFilter();
     }
 
     static void undefinedFilter(UndefinedFilterImpl source, QueryWriter target)
