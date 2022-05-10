@@ -108,7 +108,6 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
     public void setFilterClauseXNode(MapXNode filterClauseXNode) {
         checkMutable();
         this.filterClauseXNode = filterClauseXNode;
-        this.filterClauseXNode = filterClauseXNode;
     }
 
     public void setFilterClauseXNode(RootXNode filterClauseNode) {
@@ -156,7 +155,10 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
             Map<QName, XNode> filterMap = new HashMap<>();
             for (QName key : xmap.keySet()) {
                 if (!QNameUtil.match(key, SearchFilterType.F_DESCRIPTION) && !QNameUtil.match(key, new QName("condition"))) {
-                    filterMap.put(key, xmap.get(key));
+                    if (text == null || QNameUtil.match(key, F_TEXT)) {
+                        // Add elements if Axiom is null, or add only axiom variant to filterMap
+                        filterMap.put(key, xmap.get(key));
+                    }
                 }
             }
             if (filterMap.size() > 1) {
