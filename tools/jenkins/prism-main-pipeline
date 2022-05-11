@@ -4,24 +4,26 @@ try {
 } catch (Exception e) { /* ignored */ }
 
 podTemplate(
-        activeDeadlineSeconds: 7200,
+        activeDeadlineSeconds: 600,
         idleMinutes: 1,
         // Secret volume with maven settings.xml for deploy, see also sim-link in "build" stage.
         volumes: [secretVolume(secretName: "jenkins-nexus",mountPath: "/root/jenkins-nexus")],
-        workspaceVolume: dynamicPVC(requestsSize: "20Gi"),
+        workspaceVolume: dynamicPVC(requestsSize: "5Gi"),
         containers: [
                 containerTemplate(name: 'jnlp',
                         image: 'jenkins/inbound-agent:4.13-2-alpine',
+                        runAsUser: '0',
                         resourceRequestCpu: '1',
                         resourceLimitCpu: '1',
                         resourceRequestMemory: '1Gi',
                         resourceLimitMemory: '1Gi'),
                 containerTemplate(name: 'maven',
                         image: "${params.BUILDER_IMAGE ?: 'maven:3.8.5-openjdk-11-slim'}",
+                        runAsUser: '0',
                         ttyEnabled: true,
                         command: 'cat',
-                        resourceRequestCpu: '2',
-                        resourceLimitCpu: '2',
+                        resourceRequestCpu: "${params.BUILDER_CPU ?: '2'}",
+                        resourceLimitCpu: "${params.BUILDER_CPU ?: '2'}",
                         // For tests we use -Xmx512m (see the POM file) so 1GB RAM is enough.
                         resourceRequestMemory: '1Gi',
                         resourceLimitMemory: '1Gi')
