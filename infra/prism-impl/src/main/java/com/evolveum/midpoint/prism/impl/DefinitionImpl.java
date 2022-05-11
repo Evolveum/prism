@@ -261,13 +261,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
-    public Class getTypeClassIfKnown() {
-        return XsdTypeMapper.toJavaTypeIfKnown(getTypeName());
-    }
-
-    @Override
     public Class getTypeClass() {
-        return XsdTypeMapper.toJavaType(getTypeName());
+        // This would be perhaps more appropriate on PrismPropertyDefinition, not here
+        return XsdTypeMapper.toJavaTypeIfKnown(getTypeName());
     }
 
     @Override

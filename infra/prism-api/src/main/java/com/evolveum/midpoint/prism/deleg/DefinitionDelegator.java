@@ -150,11 +150,6 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
-    default Class<?> getTypeClassIfKnown() {
-        return delegate().getTypeClassIfKnown();
-    }
-
-    @Override
     default Class<?> getTypeClass() {
         return delegate().getTypeClass();
     }

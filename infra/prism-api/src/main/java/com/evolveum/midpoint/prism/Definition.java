@@ -179,9 +179,6 @@ public interface Definition
         return prismContext != null ? prismContext.getSchemaRegistry() : null;
     }
 
-    // TODO fix this!
-    Class<?> getTypeClassIfKnown();
-
     /**
      * Returns a compile-time class that is used to represent items.
      * E.g. returns String, Integer, subclasses of Objectable and Containerable and so on.

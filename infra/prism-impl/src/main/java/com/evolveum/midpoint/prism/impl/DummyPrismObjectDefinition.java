@@ -301,11 +301,6 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public Class<?> getTypeClassIfKnown() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Class<Objectable> getTypeClass() {
         throw new UnsupportedOperationException();
     }
