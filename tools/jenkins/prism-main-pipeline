@@ -12,17 +12,18 @@ podTemplate(
         containers: [
                 containerTemplate(name: 'jnlp',
                         image: 'jenkins/inbound-agent:4.13-2-alpine',
-                        runAsUser: '0',
-                        resourceLimitCpu: '900m',
-                        resourceLimitMemory: '1Gi',
-                        resourceRequestCpu: '900m',
-                        resourceRequestMemory: '1Gi'),
+                        resourceRequestCpu: '1',
+                        resourceLimitCpu: '1',
+                        resourceRequestMemory: '1Gi',
+                        resourceLimitMemory: '1Gi'),
                 containerTemplate(name: 'maven',
                         image: "${params.BUILDER_IMAGE ?: 'maven:3.8.5-openjdk-11-slim'}",
                         ttyEnabled: true,
                         command: 'cat',
-                        resourceLimitCpu: '1',
+                        resourceRequestCpu: '2',
+                        resourceLimitCpu: '2',
                         // For tests we use -Xmx512m (see the POM file) so 1GB RAM is enough.
+                        resourceRequestMemory: '1Gi',
                         resourceLimitMemory: '1Gi')
         ]
 ) {
@@ -30,11 +31,10 @@ podTemplate(
         stage("checkout") {
             git branch: "${params.BRANCH ?: 'master'}",
                     url: 'https://github.com/Evolveum/prism.git'
-            echo "git checkout done..."
         }
         stage("build") {
             container('maven') {
-                sh """#!/bin/bash
+                sh """#!/bin/bash -ex
                     # .m2 is mutable and short-term, we just sym-link the settings.xml there.
                     mkdir -p /root/.m2
                     ln -s ../jenkins-nexus/settings.xml /root/.m2/settings.xml
