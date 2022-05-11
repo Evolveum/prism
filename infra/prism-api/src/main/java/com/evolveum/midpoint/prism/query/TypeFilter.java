@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.query;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 import javax.xml.namespace.QName;
 
 /**
@@ -27,5 +29,10 @@ public interface TypeFilter extends ObjectFilter {
     TypeFilter clone();
 
     TypeFilter cloneEmpty();
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        return  getFilter() == null || getFilter().matchesOnly(paths);
+    }
 
 }

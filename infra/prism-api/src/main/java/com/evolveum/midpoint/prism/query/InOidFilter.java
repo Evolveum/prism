@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.midpoint.prism.ExpressionWrapper;
+import com.evolveum.midpoint.prism.path.ItemPath;
 
 import java.util.Collection;
 
@@ -28,5 +29,16 @@ public interface InOidFilter extends ObjectFilter {
 
     @Override
     InOidFilter clone();
+
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        for (ItemPath path : paths) {
+            if (ItemPath.EMPTY_PATH.equals(path, false)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
