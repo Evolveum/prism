@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 
 import com.evolveum.midpoint.prism.impl.query.AllFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.AndFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.AnyInFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.ExistsFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.FullTextFilterImpl;
@@ -74,6 +75,7 @@ public class FilterSerializers {
             .put(mapping(RefFilterImpl.class, FilterSerializers::refFilter))
             .put(mapping(NotFilterImpl.class, FilterSerializers::notFilter))
             .put(mapping(ReferencedByFilterImpl.class, FilterSerializers::referencedByFilter))
+            .put(mapping(AnyInFilterImpl.class, FilterSerializers::anyInFilter))
             .put(mapping(OrgFilterImpl.class, FilterSerializers::orgFilter)).build();
 
     static void write(ObjectFilter filter, QueryWriter output) throws NotSupportedException {
@@ -271,6 +273,10 @@ public class FilterSerializers {
         } else {
             valueFilter(EQUAL, source, target);
         }
+    }
+
+    static void anyInFilter(AnyInFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
+        valueFilter(ANY_IN, source, target);
     }
 
     private static void polystringMatchesFilter(EqualFilterImpl<?> source, QueryWriter target) {

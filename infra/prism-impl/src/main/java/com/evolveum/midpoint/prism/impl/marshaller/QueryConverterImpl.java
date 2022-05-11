@@ -51,6 +51,8 @@ public class QueryConverterImpl implements QueryConverter {
     private static final QName CLAUSE_TEXT = new QName(NS_QUERY, "text");
 
     private static final QName CLAUSE_EQUAL = new QName(NS_QUERY, "equal");
+    private static final QName CLAUSE_ANY_IN = new QName(NS_QUERY, "anyIn");
+
     private static final QName CLAUSE_GREATER = new QName(NS_QUERY, "greater");
     private static final QName CLAUSE_GREATER_OR_EQUAL = new QName(NS_QUERY, "greaterOrEqual");
     private static final QName CLAUSE_LESS = new QName(NS_QUERY, "less");
@@ -180,7 +182,8 @@ public class QueryConverterImpl implements QueryConverter {
                 || QNameUtil.match(clauseQName, CLAUSE_GREATER_OR_EQUAL)
                 || QNameUtil.match(clauseQName, CLAUSE_LESS)
                 || QNameUtil.match(clauseQName, CLAUSE_LESS_OR_EQUAL)
-                || QNameUtil.match(clauseQName, CLAUSE_SUBSTRING)) {
+                || QNameUtil.match(clauseQName, CLAUSE_SUBSTRING)
+                || QNameUtil.match(clauseQName, CLAUSE_ANY_IN)) {
             return parseComparisonFilter(clauseQName, clauseXMap, pcd, preliminaryParsingOnly);
         } else if (QNameUtil.match(clauseQName, CLAUSE_REF)) {
             return parseRefFilter(clauseXMap, pcd, preliminaryParsingOnly, pc);
@@ -289,6 +292,7 @@ public class QueryConverterImpl implements QueryConverter {
             PrismContainerDefinition<C> pcd, boolean preliminaryParsingOnly) throws SchemaException {
 
         boolean isEq = QNameUtil.match(clauseQName, CLAUSE_EQUAL);
+        boolean isAnyIn = QNameUtil.match(clauseQName, CLAUSE_ANY_IN);
         boolean isGt = QNameUtil.match(clauseQName, CLAUSE_GREATER);
         boolean isGtEq = QNameUtil.match(clauseQName, CLAUSE_GREATER_OR_EQUAL);
         //boolean isLt = QNameUtil.match(clauseQName, CLAUSE_LESS);
@@ -318,14 +322,17 @@ public class QueryConverterImpl implements QueryConverter {
                 RootXNodeImpl valueRoot = new RootXNodeImpl(ELEMENT_VALUE, valueXnode);
                 //noinspection rawtypes
                 Item item = parseItem(valueRoot, itemName, itemDefinition);
-                if (!isEq && item.getValues().size() != 1) {
+                if (!isEq && !isAnyIn && item.getValues().size() != 1) {
                     throw new SchemaException("Expected exactly one value, got " + item.getValues().size() + " instead");
                 }
-                if (isEq) {
+                if (isEq || isAnyIn) {
                     //noinspection unchecked
                     List<PrismPropertyValue<T>> values = item.getValues();
                     PrismValueCollectionsUtil.clearParent(values);
                     //noinspection unchecked
+                    if (isAnyIn) {
+                        return AnyInFilterImpl.createAnyIn(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, prismContext, values);
+                    }
                     return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, prismContext, values);
                 } else if (isSubstring) {
                     return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition, prismContext, matchingRule, item.getAnyValue(), getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
@@ -784,7 +791,8 @@ public class QueryConverterImpl implements QueryConverter {
         } else if (filter instanceof EqualFilter
                 || filter instanceof GreaterFilter
                 || filter instanceof LessFilter
-                || filter instanceof SubstringFilter) {
+                || filter instanceof SubstringFilter
+                || filter instanceof AnyInFilter) {
             return serializeComparisonFilter((PropertyValueFilter<?>) filter, xnodeSerializer);
         } else if (filter instanceof RefFilter) {
             return serializeRefFilter((RefFilter) filter, xnodeSerializer);
@@ -897,6 +905,8 @@ public class QueryConverterImpl implements QueryConverter {
             clause = ((LessFilter<?>) filter).isEquals() ? CLAUSE_LESS_OR_EQUAL : CLAUSE_LESS;
         } else if (filter instanceof SubstringFilter) {
             clause = CLAUSE_SUBSTRING;
+        } else if (filter instanceof AnyInFilter) {
+            clause = CLAUSE_ANY_IN;
         } else {
             throw new IllegalStateException();
         }

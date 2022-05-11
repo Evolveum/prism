@@ -22,6 +22,7 @@ import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.ItemFactoryImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.query.*;
@@ -48,7 +49,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String REF_TYPE = "targetType";
     private static final String REF_REL = "relation";
     private static final String REF_TARGET_ALIAS = "@";
-    private static final String REF_TARGET = "@";
+    private static final String REF_TARGET = "target";
 
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
@@ -234,6 +235,32 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private final Map<QName, ItemFilterFactory> filterFactories = ImmutableMap.<QName, ItemFilterFactory>builder()
             .put(EQUAL, equalFilter)
+            .put(ANY_IN, new PropertyFilterFactory() {
+
+                @Override
+                public ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path,
+                        QName matchingRule, Object value) {
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, context, value);
+                }
+
+                @Override
+                public ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path,
+                        QName matchingRule, ExpressionWrapper value) {
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, value);
+                }
+
+                @Override
+                public ObjectFilter propertyFilter(PrismPropertyDefinition<?> definition, ItemPath path,
+                        QName matchingRule, ItemPath rightPath, PrismPropertyDefinition<?> rightDef) {
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, rightPath, rightDef);
+                }
+
+                @Override
+                protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
+                        ArrayList<Object> values) throws SchemaException {
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, context, values.toArray());
+                }
+            })
             .put(NOT_EQUAL, new ItemFilterFactory() {
 
                 @Override

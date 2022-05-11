@@ -196,6 +196,7 @@
 
     <!-- A2: value filters -->
     <xsd:element name="equal" substitutionGroup="tns:filterClause" type="tns:PropertyComplexValueFilterClauseType"/>
+    <xsd:element name="anyIn" substitutionGroup="tns:filterClause" type="tns:PropertyComplexValueFilterClauseType"/>
     <xsd:element name="greater" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="greaterOrEqual" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="less" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
