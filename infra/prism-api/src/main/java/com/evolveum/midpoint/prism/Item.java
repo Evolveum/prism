@@ -20,7 +20,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.util.MiscUtil;
 
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

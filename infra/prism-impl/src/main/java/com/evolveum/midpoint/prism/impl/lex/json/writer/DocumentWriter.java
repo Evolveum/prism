@@ -16,7 +16,7 @@ import javax.xml.namespace.QName;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Strings;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 

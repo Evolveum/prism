@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.match.MatchingRule;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.util.DOMUtil;

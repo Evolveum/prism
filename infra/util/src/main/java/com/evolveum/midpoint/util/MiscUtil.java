@@ -41,7 +41,7 @@ import com.evolveum.midpoint.util.exception.*;
 
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;

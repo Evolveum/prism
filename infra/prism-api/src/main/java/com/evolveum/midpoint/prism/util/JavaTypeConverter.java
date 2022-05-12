@@ -14,8 +14,8 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.PrismPropertyValue;

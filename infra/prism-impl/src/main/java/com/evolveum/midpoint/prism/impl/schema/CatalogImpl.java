@@ -9,7 +9,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.resolver.Catalog;
 
 import java.net.URI;

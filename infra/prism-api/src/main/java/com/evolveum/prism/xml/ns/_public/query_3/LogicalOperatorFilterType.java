@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 

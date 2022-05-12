@@ -9,7 +9,7 @@ package com.evolveum.midpoint.prism.impl.match;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.util.DOMUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
 import java.util.regex.Pattern;

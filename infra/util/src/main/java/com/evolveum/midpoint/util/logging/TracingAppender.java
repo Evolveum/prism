@@ -9,7 +9,7 @@ package com.evolveum.midpoint.util.logging;
 
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.Layout;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Collects log entries e.g. for tracing purposes in midPoint.

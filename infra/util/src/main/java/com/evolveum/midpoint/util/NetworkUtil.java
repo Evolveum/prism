@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;

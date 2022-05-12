@@ -14,7 +14,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.*;

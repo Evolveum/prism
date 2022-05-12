@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.util.histogram;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 

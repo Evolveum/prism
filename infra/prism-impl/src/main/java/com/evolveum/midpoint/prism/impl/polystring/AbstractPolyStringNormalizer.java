@@ -10,7 +10,7 @@ import java.text.Normalizer;
 import java.util.regex.Pattern;
 
 import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurationType;
 

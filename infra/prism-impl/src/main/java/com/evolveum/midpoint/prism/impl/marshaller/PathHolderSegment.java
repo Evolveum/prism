@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.marshaller;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
 

@@ -12,7 +12,7 @@ import java.util.List;
 import javax.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;

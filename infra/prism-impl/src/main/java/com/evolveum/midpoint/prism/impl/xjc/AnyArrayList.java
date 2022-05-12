@@ -15,7 +15,7 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.impl.ItemImpl;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.util.PrismList;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.Item;

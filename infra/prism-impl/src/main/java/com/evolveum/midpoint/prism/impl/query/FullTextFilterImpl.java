@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.ExpressionWrapper;

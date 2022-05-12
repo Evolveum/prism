@@ -8,13 +8,10 @@
 package com.evolveum.midpoint.prism.util;
 
 import com.evolveum.midpoint.util.QNameUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.namespace.QName;
 
-/**
- *
- */
 public class DefinitionUtil {
     public static final String MULTIPLICITY_UNBOUNDED = "unbounded";
 
