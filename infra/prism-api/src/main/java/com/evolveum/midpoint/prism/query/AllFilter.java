@@ -7,8 +7,15 @@
 
 package com.evolveum.midpoint.prism.query;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 /**
  *
  */
 public interface AllFilter extends ObjectFilter {
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        return true;
+    }
 }

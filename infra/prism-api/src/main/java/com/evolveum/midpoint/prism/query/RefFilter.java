@@ -26,6 +26,12 @@ public interface RefFilter extends ValueFilter<PrismReferenceValue, PrismReferen
 
     boolean isTargetTypeNullAsAny();
 
+
+    /**
+     * Returns filter, which reference target must match.
+     *
+     * @return null or target filter if specified
+     */
     @Nullable
     default ObjectFilter getFilter() {
         throw new UnsupportedOperationException("Not implemented");

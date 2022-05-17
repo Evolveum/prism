@@ -5,6 +5,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.EXTENSION_NUM_EL
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+
 import java.io.File;
 import java.io.IOException;
 import java.util.function.BiFunction;
@@ -34,6 +35,7 @@ import com.evolveum.midpoint.prism.impl.query.FullTextFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.GreaterFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.LessFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.OrFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.RefFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.ReferencedByFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQuerySerializerImpl;
 
@@ -92,15 +94,21 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException, NotSupportedException {
         ObjectFilter dslFilter = parser().parseQuery(type, query);
-        assertEquals(dslFilter, expectedFilter);
+        assertFilterEquals(dslFilter,expectedFilter);
 
         PrismQuerySerialization toAxiom = getPrismContext().querySerializer().serialize(dslFilter, PrismNamespaceContext.of(UserType.COMPLEX_TYPE.getNamespaceURI()));
         assertEquals(toAxiom.filterText(), query);
         MapXNode xnodes = getPrismContext().getQueryConverter().serializeFilter(expectedFilter);
         ObjectFilter xnodeFilter = getPrismContext().getQueryConverter().parseFilter(xnodes, type);
-        assertEquals(xnodeFilter, expectedFilter);
+        assertFilterEquals(xnodeFilter, expectedFilter);
     }
 
+
+    private void assertFilterEquals(ObjectFilter actual, ObjectFilter expectedFilter) {
+        if (!expectedFilter.equals(actual, false)) {
+            throw new AssertionError("Filters not equal. Expected: " + expectedFilter + " Actual: " + actual);
+        }
+    }
 
     private void verify(String query, ObjectFilter original, PrismObject<?> user, boolean checkToString) throws SchemaException {
         ObjectFilter dslFilter = parse(query);
@@ -128,6 +136,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         PrismQuerySerialization serialization;
         try {
             serialization = new PrismQuerySerializerImpl().serialize(original);
+            display(serialization.filterText());
             return serialization.filterText();
         } catch (NotSupportedException e) {
             throw new AssertionError(e);
@@ -472,6 +481,16 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_ACCOUNT_REF).ref("xxxxxxxxxxxxxx")
                 .buildFilter();
         verify("accountRef matches (oid = 'xxxxxxxxxxxxxx')",filter);
+    }
+
+    @Test
+    public void testRefWithNested() throws Exception {
+        RefFilterImpl filter = (RefFilterImpl) getPrismContext().queryFor(UserType.class)
+                .item(UserType.F_ACCOUNT_REF).refRelation(new QName("a-relation"))
+                .buildFilter();
+        filter.setFilter(getPrismContext().queryFor(AccountType.class).exists(AccountType.F_ATTRIBUTES).buildFilter());
+
+        verify(UserType.class, "accountRef matches (relation = a-relation and @ matches (attributes exists))", filter);
     }
 
     @Test

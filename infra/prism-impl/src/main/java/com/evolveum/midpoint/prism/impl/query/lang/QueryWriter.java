@@ -126,6 +126,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
             target.emit(rawValue.toString());
             return;
         }
+        // FIXME: Common utility should also detect enums, ideally staticly (not programaticly)
         writeString(rawValue);
     }
 

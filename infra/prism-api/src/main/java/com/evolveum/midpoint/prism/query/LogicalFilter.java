@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.query;
 
 import java.util.List;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 /**
  *
  */
@@ -33,6 +35,16 @@ public interface LogicalFilter extends ObjectFilter {
 
     @Override
     void accept(Visitor visitor);
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        for (ObjectFilter condition : getConditions()) {
+            if (!condition.matchesOnly(paths)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     //String getDebugDumpOperationName();
 }

@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.midpoint.prism.PrismReferenceValue;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
@@ -30,4 +31,8 @@ public interface OrgFilter extends ObjectFilter {
     @Override
     OrgFilter clone();
 
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        return false;
+    }
 }

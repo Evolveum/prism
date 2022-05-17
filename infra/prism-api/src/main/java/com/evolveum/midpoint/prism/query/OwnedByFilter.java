@@ -21,4 +21,6 @@ public interface OwnedByFilter extends ObjectFilter {
     ItemPath getPath();
 
     ObjectFilter getFilter();
+
+
 }

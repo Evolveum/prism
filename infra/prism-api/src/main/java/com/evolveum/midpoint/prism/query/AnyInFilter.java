@@ -4,18 +4,17 @@
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.query;
 
-import com.evolveum.midpoint.prism.path.ItemPath;
+import javax.xml.namespace.QName;
 
-/**
- *
- */
-public interface NoneFilter extends ObjectFilter {
+import com.evolveum.midpoint.prism.PrismConstants;
+
+public interface AnyInFilter<T> extends PropertyValueFilter<T> {
+
+    QName ELEMENT_NAME = new QName(PrismConstants.NS_QUERY, "anyIn");
 
     @Override
-    default boolean matchesOnly(ItemPath... paths) {
-        return true;
-    }
+    AnyInFilter<T> clone();
+
 }

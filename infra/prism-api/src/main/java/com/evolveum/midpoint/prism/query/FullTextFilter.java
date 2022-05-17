@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.midpoint.prism.ExpressionWrapper;
+import com.evolveum.midpoint.prism.path.ItemPath;
 
 import java.util.Collection;
 
@@ -26,5 +27,10 @@ public interface FullTextFilter extends ObjectFilter {
 
     @Override
     FullTextFilter clone();
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        return false;
+    }
 
 }

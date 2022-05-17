@@ -28,9 +28,11 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
     @NotNull
     ItemPath getParentPath();
 
+    @Override
     @NotNull
     ItemName getElementName();
 
+    @Override
     @Nullable
     D getDefinition();
 
@@ -100,4 +102,14 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     @Override
     void checkConsistence(boolean requireDefinitions);
+
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        for (ItemPath path : paths) {
+            if (path.equals(getFullPath(), false)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 
 import com.evolveum.midpoint.prism.impl.query.AllFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.AndFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.AnyInFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.ExistsFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.FullTextFilterImpl;
@@ -74,6 +75,7 @@ public class FilterSerializers {
             .put(mapping(RefFilterImpl.class, FilterSerializers::refFilter))
             .put(mapping(NotFilterImpl.class, FilterSerializers::notFilter))
             .put(mapping(ReferencedByFilterImpl.class, FilterSerializers::referencedByFilter))
+            .put(mapping(AnyInFilterImpl.class, FilterSerializers::anyInFilter))
             .put(mapping(OrgFilterImpl.class, FilterSerializers::orgFilter)).build();
 
     static void write(ObjectFilter filter, QueryWriter output) throws NotSupportedException {
@@ -273,6 +275,10 @@ public class FilterSerializers {
         }
     }
 
+    static void anyInFilter(AnyInFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
+        valueFilter(ANY_IN, source, target);
+    }
+
     private static void polystringMatchesFilter(EqualFilterImpl<?> source, QueryWriter target) {
         var poly = (PolyString) source.getValues().get(0).getValue();
         QName matchingRule = source.getMatchingRule();
@@ -320,10 +326,18 @@ public class FilterSerializers {
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
         for (PrismReferenceValue value : source.getValues()) {
-            var oidEmitted = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
-            var targetEmitted = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
-                    oidEmitted);
-            writeProperty(target, "relation", value.getRelation(), true, targetEmitted);
+            var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
+            notFirst = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
+                    notFirst);
+            notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst);
+            if (source.getFilter() != null) {
+                if (notFirst) {
+                    target.writeFilterName(AND);
+                }
+                target.writePath("@");
+                target.writeFilterName(MATCHES);
+                target.writeNestedFilter(source.getFilter());
+            }
         }
         target.endNestedFilter();
     }
@@ -335,7 +349,7 @@ public class FilterSerializers {
     private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
             boolean emitAnd) {
         if (skipNull && value == null) {
-            return false;
+            return emitAnd;
         }
         if (emitAnd) {
             target.writeFilterName(AND);

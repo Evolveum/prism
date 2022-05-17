@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.path.ItemPath;
 
 /**
  *
@@ -25,4 +26,13 @@ public interface ExistsFilter extends ObjectFilter, ItemFilter {
 
     ExistsFilter cloneEmpty();
 
+    @Override
+    default boolean matchesOnly(ItemPath... paths) {
+        for (ItemPath path : paths) {
+            if (path.equals(getFullPath(), false)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
