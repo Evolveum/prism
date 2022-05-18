@@ -153,7 +153,7 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
 
     @Override
     public OwnedByFilterImpl clone() {
-        return new OwnedByFilterImpl(type, path, filter.clone());
+        return new OwnedByFilterImpl(type, path, filter != null ? filter.clone() : null);
     }
 
 }

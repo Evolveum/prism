@@ -429,7 +429,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         return parentFilter;
     }
 
-    private boolean hasRestriction() {
+    protected boolean hasRestriction() {
         return existsRestriction != null || typeRestriction != null;
     }
 
@@ -555,12 +555,17 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
             this.path = path;
             this.relation = relation;
         }
+
         @Override
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = ReferencedByFilterImpl.create(definition, path, subfilter, relation);
             return this.parentFilter.addSubfilter(filter);
         }
 
+        @Override
+        protected boolean hasRestriction() {
+            return true;
+        }
     }
 
     private static class OwnedByEntry extends R_Filter {
@@ -579,6 +584,11 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = OwnedByFilterImpl.create(definition, path, subfilter);
             return this.parentFilter.addSubfilter(filter);
+        }
+
+        @Override
+        protected boolean hasRestriction() {
+            return true;
         }
 
     }
