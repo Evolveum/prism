@@ -83,5 +83,9 @@ public interface PrismSchema
 
     boolean isEmpty();
 
+    static boolean isNullOrEmpty(PrismSchema schema) {
+        return schema == null || schema.isEmpty();
+    }
+
     Multimap<QName, ItemDefinition<?>> getSubstitutions();
 }
