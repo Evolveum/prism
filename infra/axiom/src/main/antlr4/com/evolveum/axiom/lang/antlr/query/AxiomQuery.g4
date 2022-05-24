@@ -8,7 +8,7 @@ intLiteral: INT;
 floatLiteral: FLOAT;
 stringLiteral : STRING_SINGLEQUOTE #singleQuoteString 
     | STRING_DOUBLEQUOTE #doubleQuoteString
-    | STRING_MULTILINE_START (~('"""'))*'"""' # multilineString;
+    | STRING_MULTILINE # multilineString;
 
 
 literalValue: 
@@ -94,8 +94,7 @@ subfilterOrValue : subfilterSpec | expression | singleValue | valueSet;
 expression : script | constant;
 script: (language=IDENTIFIER)? (scriptSingleline | scriptMultiline);
 scriptSingleline : STRING_BACKTICK;
-scriptMultiline : (STRING_BACKTICK_START (~('```'|STRING_BACKTICK_START))*(STRING_BACKTICK_START|'```'));
-
+scriptMultiline : STRING_BACKTICK_TRIQOUTE;
 constant: '@' name=IDENTIFIER;
 
 
@@ -123,10 +122,16 @@ fragment ESC : '\\';
 
 STRING_SINGLEQUOTE: SQOUTE ((ESC SQOUTE) | ~[\n'])* SQOUTE;
 STRING_DOUBLEQUOTE: DQOUTE ((ESC DQOUTE) | ~[\n"])* DQOUTE;
-STRING_MULTILINE_START: '"""' ('\r')? '\n';
+
+STRING_MULTILINE: '"""' ('\r')? '\n' .*?  '"""';
+
+//STRING_MULTILINE_START: '"""' ('\r')? '\n';
 
 STRING_BACKTICK: BACKTICK ((ESC SQOUTE) | ~[\n'])* BACKTICK;
-STRING_BACKTICK_START: '```' ('\r')? '\n';
+
+
+STRING_BACKTICK_TRIQOUTE: '```' ('\r')? '\n' .*? '```';
+//STRING_BACKTICK_START: '```' ('\r')? '\n';
 
 fragment UNICODE: 'u' HEX HEX HEX HEX;
 fragment HEX: [0-9a-fA-F];
