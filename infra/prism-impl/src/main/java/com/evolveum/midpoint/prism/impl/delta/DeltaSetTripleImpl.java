@@ -266,7 +266,6 @@ public class DeltaSetTripleImpl<T> implements DeltaSetTriple<T> {
         allValues.addAll(set);
     }
 
-    @SuppressWarnings("unchecked")
     @NotNull
     public Collection<T> getNonNegativeValues() {
         return MiscUtil.union(zeroSet, plusSet);
