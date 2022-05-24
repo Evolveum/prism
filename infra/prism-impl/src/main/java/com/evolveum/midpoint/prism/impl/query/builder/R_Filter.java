@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.prism.impl.query.builder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.query.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
@@ -290,6 +292,29 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         }
 
         return new RefByEntry(queryBuilder,this, ctd, type, path, relation);
+    }
+
+    @Override
+    public S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation, String... oids) {
+        path = getPrismContext().toUniformPath(path);
+        var refDef = resolveItemPath(path, PrismReferenceDefinition.class);
+        List<PrismReferenceValue> prismRefValues = new ArrayList<>();
+        if (oids != null && oids.length > 0) {
+            for (String oid : oids) {
+                PrismReferenceValueImpl ref = new PrismReferenceValueImpl(oid);
+                ref.setTargetType(targetType);
+                ref.setRelation(relation);
+                prismRefValues.add(ref);
+            }
+        } else if (targetType != null || relation != null){
+            PrismReferenceValueImpl ref = new PrismReferenceValueImpl();
+            ref.setTargetType(targetType);
+            ref.setRelation(relation);
+            prismRefValues.add(ref);
+        }
+        targetType = targetType != null ? targetType : refDef.getTargetTypeName();
+        var targetClass = getPrismContext().getSchemaRegistry().getCompileTimeClassForObjectType(targetType);
+        return new RefFilterEntry(queryBuilder, this, refDef, targetClass, path, prismRefValues);
     }
 
     @Override
@@ -583,6 +608,32 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
         @Override
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = OwnedByFilterImpl.create(definition, path, subfilter);
+            return this.parentFilter.addSubfilter(filter);
+        }
+
+        @Override
+        protected boolean hasRestriction() {
+            return true;
+        }
+
+    }
+
+    private static class RefFilterEntry extends R_Filter {
+
+        private PrismReferenceDefinition definition;
+        private ItemPath path;
+        private Collection<PrismReferenceValue> values;
+
+        public RefFilterEntry(QueryBuilder queryBuilder, R_Filter parent, PrismReferenceDefinition def, Class<? extends Containerable> type, ItemPath path, Collection<PrismReferenceValue> values) {
+            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            this.definition = def;
+            this.path = path;
+            this.values = values;
+        }
+        @Override
+        R_Filter addSubfilter(ObjectFilter subfilter) {
+            var filter = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition, values);
+            filter.setFilter(subfilter);
             return this.parentFilter.addSubfilter(filter);
         }
 

@@ -593,8 +593,10 @@ public class QueryConverterImpl implements QueryConverter {
         XNodeImpl filterXnode = clauseXMap.get(ELEMENT_FILTER);
         ObjectFilter targetFilter = null;
         if (filterXnode instanceof MapXNodeImpl) {
-            var targetType = itemDefinition.getTargetTypeName();
-            var targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(targetType);
+            PrismContainerDefinition<?> targetSchema = null;
+            if (itemDefinition != null) {
+                targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(itemDefinition.getTargetTypeName());
+            }
             targetFilter = parseFilterInternal((MapXNodeImpl) filterXnode, targetSchema, preliminaryParsingOnly, pc);
         } else if (filterXnode != null) {
             throw new SchemaException("Unsupported type for element filter.");

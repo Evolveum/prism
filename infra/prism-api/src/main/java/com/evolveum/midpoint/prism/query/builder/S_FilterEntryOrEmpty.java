@@ -24,4 +24,11 @@ public interface S_FilterEntryOrEmpty extends S_FilterEntry, S_FilterExit {
 
     S_FilterEntryOrEmpty referencedBy(Class<? extends Containerable> clazz, ItemPath path, QName relation);
 
+
+    default S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation) {
+        return ref(path, targetType, relation, new String[] {});
+    }
+
+    S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation, String... oid);
+
 }
