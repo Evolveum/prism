@@ -475,27 +475,26 @@
             <id>evolveum</id>
             <name>Evolveum Public Releases</name>
             <url>https://nexus.evolveum.com/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>evolveum-snapshots</id>
             <name>Evolveum Snapshots</name>
             <url>https://nexus.evolveum.com/nexus/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </repository>
+
         <repository>
             <id>spring-milestone</id>
             <name>Spring Milestone Repository</name>
             <url>https://repo.spring.io/milestone</url>
-        </repository>
-
-        <!--
-        We need this for Sleepycat JE, version 5.0.73 is released OK, but newer versions
-        (like 5.0.103) is in Maven central plugin repository, which is obviously wrong.
-        So we need Oracle's repo too.
-        -->
-        <repository>
-            <id>oracle</id>
-            <name>Oracle</name>
-            <url>https://download.oracle.com/maven/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>
