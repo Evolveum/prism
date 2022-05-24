@@ -129,8 +129,13 @@ public class PrismTestUtil {
     // == Serializing
     // ==========================
 
+    @SuppressWarnings("unused") // In future?
     public static String serializeObjectToString(PrismObject<? extends Objectable> object, String language) throws SchemaException {
         return getPrismContext().serializerFor(language).serialize(object);
+    }
+
+    public static String serializeToXml(Objectable object) throws SchemaException {
+        return getPrismContext().xmlSerializer().serialize(object.asPrismObject());
     }
 
     public static String serializeObjectToString(PrismObject<? extends Objectable> object) throws SchemaException {

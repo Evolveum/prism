@@ -184,7 +184,11 @@ public interface MidpointTestMixin {
      * Displays expected exception without stacktrace (seeing it is rather confusing/disturbing).
      */
     default void displayExpectedException(Throwable e) {
-        String expectedExceptionWithClass = "Expected exception " + e.getClass();
+        displayExpectedException(null, e);
+    }
+
+    default void displayExpectedException(String message, Throwable e) {
+        String expectedExceptionWithClass = "Expected exception " + e.getClass() + (message != null ? "(" + message + ") " : "");
         println(DISPLAY_OUT_PREFIX + expectedExceptionWithClass + ":\n" + e.getMessage());
         logger().info(DISPLAY_LOG_FORMAT2, expectedExceptionWithClass, e.getMessage());
     }
