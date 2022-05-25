@@ -1049,8 +1049,8 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private void serializeMatchingRule(ValueFilter<?, ?> filter, MapXNodeImpl map) {
-        if (filter.getMatchingRule() != null) {
-            PrimitiveXNodeImpl<String> matchingNode = createPrimitiveXNode(filter.getMatchingRule().getLocalPart(), DOMUtil.XSD_STRING);
+        if (filter.getDeclaredMatchingRule() != null) {
+            PrimitiveXNodeImpl<String> matchingNode = createPrimitiveXNode(filter.getDeclaredMatchingRule().getLocalPart(), DOMUtil.XSD_STRING);
             map.put(ELEMENT_MATCHING, matchingNode);
         }
     }

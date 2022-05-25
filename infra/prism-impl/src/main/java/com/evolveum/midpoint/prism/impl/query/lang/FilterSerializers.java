@@ -281,7 +281,7 @@ public class FilterSerializers {
 
     private static void polystringMatchesFilter(EqualFilterImpl<?> source, QueryWriter target) {
         var poly = (PolyString) source.getValues().get(0).getValue();
-        QName matchingRule = source.getMatchingRule();
+        QName matchingRule = source.getDeclaredMatchingRule();
         target.writePath(source.getFullPath());
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
@@ -364,7 +364,7 @@ public class FilterSerializers {
         checkExpressionSupported(source.getExpression());
         target.writePath(source.getFullPath());
         target.writeFilterName(name);
-        target.writeMatchingRule(source.getMatchingRule());
+        target.writeMatchingRule(source.getDeclaredMatchingRule());
 
         @Nullable
         ItemPath right = source.getRightHandSidePath();
