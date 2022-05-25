@@ -34,6 +34,11 @@ public interface RefFilter extends ValueFilter<PrismReferenceValue, PrismReferen
         return getDeclaredMatchingRule();
     }
     
+    @Override
+    default @Nullable QName getDeclaredMatchingRule() {
+        return null;
+    }
+    
     /**
      * Returns filter, which reference target must match.
      *
