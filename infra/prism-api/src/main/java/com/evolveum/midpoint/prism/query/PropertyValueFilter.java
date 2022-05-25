@@ -23,8 +23,9 @@ public interface PropertyValueFilter<T> extends ValueFilter<PrismPropertyValue<T
     @Override
     PropertyValueFilter clone();
 
-    default @Nullable QName getMatchingRuleOrDefault() {
-        QName maybe = getMatchingRule();
+    @Override
+    default @Nullable QName getMatchingRule() {
+        QName maybe = getDeclaredMatchingRule();
         if (maybe != null) {
             return maybe;
         }
@@ -34,4 +35,6 @@ public interface PropertyValueFilter<T> extends ValueFilter<PrismPropertyValue<T
         }
         return null;
     }
+    
+    
 }

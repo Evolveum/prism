@@ -113,8 +113,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     }
 
     @Override
-    @Nullable
-    public QName getMatchingRule() {
+    public @Nullable QName getDeclaredMatchingRule() {
         return matchingRule;
     }
 

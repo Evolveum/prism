@@ -101,7 +101,10 @@ public class FilterSerializers {
         if (source.isRoot()) {
             target.writeFilterName(IS_ROOT);
         } else {
-            checkSupported(Scope.SUBTREE.equals(source.getScope()), "Only subtree scope is supported");
+            target.writeFilterName(IN_ORG);
+            if (!Scope.SUBTREE.equals(source.getScope())) {
+                target.writeMatchingRule(new QName(source.getScope().name()));
+            }
             PrismReferenceValue orgRef = source.getOrgRef();
             target.writeRawValue(orgRef.getOid());
         }
@@ -281,7 +284,7 @@ public class FilterSerializers {
 
     private static void polystringMatchesFilter(EqualFilterImpl<?> source, QueryWriter target) {
         var poly = (PolyString) source.getValues().get(0).getValue();
-        QName matchingRule = source.getMatchingRule();
+        QName matchingRule = source.getDeclaredMatchingRule();
         target.writePath(source.getFullPath());
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
@@ -364,7 +367,7 @@ public class FilterSerializers {
         checkExpressionSupported(source.getExpression());
         target.writePath(source.getFullPath());
         target.writeFilterName(name);
-        target.writeMatchingRule(source.getMatchingRule());
+        target.writeMatchingRule(source.getDeclaredMatchingRule());
 
         @Nullable
         ItemPath right = source.getRightHandSidePath();

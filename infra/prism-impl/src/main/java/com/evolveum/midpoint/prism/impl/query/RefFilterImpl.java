@@ -84,6 +84,11 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     }
 
     @Override
+    public @Nullable QName getMatchingRule() {
+        return getDeclaredMatchingRule();
+    }
+    
+    @Override
     protected String getFilterName() {
         return "REF";
     }

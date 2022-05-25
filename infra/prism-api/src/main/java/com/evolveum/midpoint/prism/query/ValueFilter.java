@@ -40,6 +40,9 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     @Nullable
     QName getMatchingRule();
+    
+    @Nullable
+    QName getDeclaredMatchingRule();
 
     void setMatchingRule(@Nullable QName matchingRule);
 

@@ -593,8 +593,10 @@ public class QueryConverterImpl implements QueryConverter {
         XNodeImpl filterXnode = clauseXMap.get(ELEMENT_FILTER);
         ObjectFilter targetFilter = null;
         if (filterXnode instanceof MapXNodeImpl) {
-            var targetType = itemDefinition.getTargetTypeName();
-            var targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(targetType);
+            PrismContainerDefinition<?> targetSchema = null;
+            if (itemDefinition != null) {
+                targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(itemDefinition.getTargetTypeName());
+            }
             targetFilter = parseFilterInternal((MapXNodeImpl) filterXnode, targetSchema, preliminaryParsingOnly, pc);
         } else if (filterXnode != null) {
             throw new SchemaException("Unsupported type for element filter.");
@@ -1047,8 +1049,8 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private void serializeMatchingRule(ValueFilter<?, ?> filter, MapXNodeImpl map) {
-        if (filter.getMatchingRule() != null) {
-            PrimitiveXNodeImpl<String> matchingNode = createPrimitiveXNode(filter.getMatchingRule().getLocalPart(), DOMUtil.XSD_STRING);
+        if (filter.getDeclaredMatchingRule() != null) {
+            PrimitiveXNodeImpl<String> matchingNode = createPrimitiveXNode(filter.getDeclaredMatchingRule().getLocalPart(), DOMUtil.XSD_STRING);
             map.put(ELEMENT_MATCHING, matchingNode);
         }
     }
