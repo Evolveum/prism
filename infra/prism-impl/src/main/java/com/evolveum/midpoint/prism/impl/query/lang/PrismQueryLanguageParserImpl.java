@@ -386,7 +386,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return OrgFilterImpl.createOrg(requireLiteral(String.class, filterName, subfilterOrValue.singleValue()), Scope.SUBTREE);
+                    Scope scope = Scope.SUBTREE;
+                    if (matchingRule != null) {
+                        scope = Scope.valueOf(matchingRule.getLocalPart());
+                    }
+                    return OrgFilterImpl.createOrg(requireLiteral(String.class, filterName, subfilterOrValue.singleValue()), scope);
                 }
             })
             .put(IS_ROOT, new SelfFilterFactory("isRoot") {
@@ -866,6 +870,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         ObjectFilter targetFilter = null;
         if (andChildren.size() == 1) {
             var targetCtx = consumeFromAnd(REF_TARGET_ALIAS, MATCHES, andChildren);
+            if (targetCtx == null) {
+                targetCtx = consumeFromAnd(REF_TARGET, MATCHES, andChildren);
+            }
+            if (targetCtx == null) {
+                throw new SchemaException("Additional unsupported filter specified: " + andChildren.get(0).getText());
+            }
             var targetSchema = context.getSchemaRegistry().findObjectDefinitionByType(targetType);
             targetFilter = parseFilter(targetSchema, targetSchema.getComplexTypeDefinition(), targetCtx.subfilterOrValue().subfilterSpec().filter());
         }

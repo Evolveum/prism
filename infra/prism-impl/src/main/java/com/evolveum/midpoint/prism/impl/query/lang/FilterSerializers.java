@@ -101,7 +101,10 @@ public class FilterSerializers {
         if (source.isRoot()) {
             target.writeFilterName(IS_ROOT);
         } else {
-            checkSupported(Scope.SUBTREE.equals(source.getScope()), "Only subtree scope is supported");
+            target.writeFilterName(IN_ORG);
+            if (!Scope.SUBTREE.equals(source.getScope())) {
+                target.writeMatchingRule(new QName(source.getScope().name()));
+            }
             PrismReferenceValue orgRef = source.getOrgRef();
             target.writeRawValue(orgRef.getOid());
         }
