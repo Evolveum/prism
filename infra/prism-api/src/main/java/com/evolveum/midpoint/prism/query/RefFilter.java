@@ -8,6 +8,8 @@ package com.evolveum.midpoint.prism.query;
 
 
 
+import javax.xml.namespace.QName;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
@@ -27,6 +29,11 @@ public interface RefFilter extends ValueFilter<PrismReferenceValue, PrismReferen
     boolean isTargetTypeNullAsAny();
 
 
+    @Override
+    default @Nullable QName getMatchingRule() {
+        return getDeclaredMatchingRule();
+    }
+    
     /**
      * Returns filter, which reference target must match.
      *
