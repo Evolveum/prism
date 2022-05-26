@@ -425,7 +425,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     QName relation = consumeFromAnd(QName.class, "@relation", andChildren);
 
                     var referrerSchema = context.getSchemaRegistry().findComplexTypeDefinitionByType(type);
-                    ObjectFilter filter = andFilter(null, referrerSchema, andChildren);
+                    var reffererCont = context.getSchemaRegistry().findContainerDefinitionByType(type);
+                    ObjectFilter filter = andFilter(reffererCont, referrerSchema, andChildren);
                     return ReferencedByFilterImpl.create(type, path, filter, relation);
                 }
 
