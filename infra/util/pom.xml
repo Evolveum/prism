@@ -14,7 +14,7 @@
         <relativePath>../..</relativePath>
         <artifactId>prism-parent</artifactId>
         <groupId>com.evolveum.prism</groupId>
-        <version>4.4.2-SNAPSHOT</version>
+        <version>4.4.2</version>
     </parent>
 
     <groupId>com.evolveum.commons</groupId>
