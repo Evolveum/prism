@@ -981,6 +981,15 @@ public class MiscUtil {
         }
     }
 
+    // TODO better name?
+    public static <T> T configNonNull(T value, Supplier<String> messageSupplier) throws ConfigurationException {
+        if (value != null) {
+            return value;
+        } else {
+            throw new ConfigurationException(messageSupplier.get());
+        }
+    }
+
     public static boolean isSingleNull(Object[] values) {
         return values.length == 1 && values[0] == null;
     }
