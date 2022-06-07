@@ -20,6 +20,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.Referencable;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
@@ -52,11 +53,13 @@ public class StructuredCopy {
         }
         Object ret;
         if (value instanceof PlainStructured) {
-            ret =  of((PlainStructured) value);
+            ret = of((PlainStructured) value);
+        } else if (value instanceof PolyString) {
+            ret = of((PolyString) value);
         } else if (value instanceof Referencable) {
-            ret =  of((Referencable) value);
+            ret = of((Referencable) value);
         } else if (value instanceof Containerable) {
-            ret =  of((Containerable) value);
+            ret = of((Containerable) value);
         } else if (value instanceof String) {
             ret = of((String) value);
         } else if (value instanceof Integer) {
@@ -92,17 +95,16 @@ public class StructuredCopy {
         } else if (value instanceof Enum<?>) {
             ret = value;
         } else {
-            throw new IllegalArgumentException("Value '" + value + "' of type " +value.getClass().getName() + "is not supported for structured copy");
+            throw new IllegalArgumentException("Value '" + value + "' of type " + value.getClass().getName()
+                    + " is not supported for structured copy");
         }
+        //noinspection unchecked
         return (T) ret;
     }
 
     private static <T extends Cloneable> T clone(T value) {
         return CloneUtil.clone(value);
     }
-
-
-
 
     @SuppressWarnings("unchecked")
     public static <T extends PlainStructured> T of(T value) {
@@ -119,7 +121,6 @@ public class StructuredCopy {
         return Arrays.copyOf(array, array.length);
     }
 
-
     @SuppressWarnings("unchecked")
     public static <T extends Containerable> T of(T value) {
         if (value == null) {
@@ -127,7 +128,6 @@ public class StructuredCopy {
         }
         return (T) value.asPrismContainerValue().clone().asContainerable();
     }
-
 
     @SuppressWarnings("unchecked")
     public static <T extends Referencable> T of(T value) {
@@ -137,7 +137,12 @@ public class StructuredCopy {
         return (T) value.clone();
     }
 
-
+    public static PolyString of(PolyString value) {
+        if (value == null) {
+            return null;
+        }
+        return value.copy();
+    }
 
     public static Duration of(Duration value) {
         if (value == null) {
@@ -146,20 +151,17 @@ public class StructuredCopy {
         return XmlTypeConverter.createDuration(value);
     }
 
-
     public static <T> JAXBElement<T> of(JAXBElement<T> value) {
         if(value == null) {
             return null;
         }
-        return new JAXBElement<T>(of(value.getName()), value.getDeclaredType(), dispatch(value.getValue()));
+        return new JAXBElement<>(of(value.getName()), value.getDeclaredType(), dispatch(value.getValue()));
     }
-
 
     public static QName of(QName name) {
         // Should we copy QNames also?
         return name;
     }
-
 
     public static XMLGregorianCalendar of(XMLGregorianCalendar value) {
         if (value == null) {
@@ -167,9 +169,6 @@ public class StructuredCopy {
         }
         return XmlTypeConverter.createXMLGregorianCalendar(value);
     }
-
-
-
 
     // Known immutables
 

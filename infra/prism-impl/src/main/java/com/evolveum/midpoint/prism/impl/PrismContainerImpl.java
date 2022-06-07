@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**

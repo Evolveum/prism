@@ -24,6 +24,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -423,4 +424,11 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         return new PolyString(orig);
     }
 
+    public PolyString copy() {
+        return new PolyString(
+                orig,
+                norm,
+                translation != null ? translation.clone() : null,
+                lang != null ? new HashMap<>(lang) : null);
+    }
 }

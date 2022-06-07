@@ -990,6 +990,23 @@ public class MiscUtil {
         }
     }
 
+    // TODO better name?
+    public static <T> T argNonNull(T value, Supplier<String> messageSupplier) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new IllegalArgumentException(messageSupplier.get());
+        }
+    }
+
+    public static <T> T stateNonNull(T value, Supplier<String> messageSupplier) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new IllegalStateException(messageSupplier.get());
+        }
+    }
+
     public static boolean isSingleNull(Object[] values) {
         return values.length == 1 && values[0] == null;
     }

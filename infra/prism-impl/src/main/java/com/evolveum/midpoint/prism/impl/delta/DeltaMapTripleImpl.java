@@ -13,6 +13,8 @@ import com.evolveum.midpoint.util.Cloner;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,47 +26,28 @@ import java.util.Map.Entry;
  */
 public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
 
-    /**
-     * Collection of values that were not changed.
-     */
-    protected Map<K,V> zeroMap;
+    /** Collection of values that were not changed. */
+    @NotNull private final Map<K,V> zeroMap = new HashMap<>();
 
-    /**
-     * Collection of values that were added.
-     */
-    protected Map<K,V> plusMap;
+    /** Collection of values that were added. */
+    @NotNull private final Map<K,V> plusMap = new HashMap<>();
 
-    /**
-     * Collection of values that were deleted.
-     */
-    protected Map<K,V> minusMap;
+    /** Collection of values that were deleted. */
+    @NotNull private final Map<K,V> minusMap = new HashMap<>();
 
-    public DeltaMapTripleImpl() {
-        zeroMap = createMap();
-        plusMap = createMap();
-        minusMap = createMap();
-    }
-
-    // TODO consider removing this unused method and declare plus/minus/zero map not null
-    public DeltaMapTripleImpl(Map<K,V> zeroMap, Map<K,V> plusMap, Map<K,V> minusMap) {
-        this.zeroMap = zeroMap;
-        this.plusMap = plusMap;
-        this.minusMap = minusMap;
-    }
-
-    protected Map<K,V> createMap() {
+    private Map<K,V> createMap() {
         return new HashMap<>();
     }
 
-    public Map<K,V> getZeroMap() {
+    public @NotNull Map<K,V> getZeroMap() {
         return zeroMap;
     }
 
-    public Map<K,V> getPlusMap() {
+    public @NotNull Map<K,V> getPlusMap() {
         return plusMap;
     }
 
-    public Map<K,V> getMinusMap() {
+    public @NotNull Map<K,V> getMinusMap() {
         return minusMap;
     }
 
@@ -77,20 +60,19 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
             case MINUS: return minusMap;
             case ZERO: return zeroMap;
         }
-        // notreached
-        throw new IllegalStateException();
+        throw new IllegalStateException("not reached");
     }
 
     public boolean hasPlusMap() {
-        return (plusMap != null && !plusMap.isEmpty());
+        return !plusMap.isEmpty();
     }
 
     public boolean hasZeroMap() {
-        return (zeroMap != null && !zeroMap.isEmpty());
+        return !zeroMap.isEmpty();
     }
 
     public boolean hasMinusMap() {
-        return (minusMap != null && !minusMap.isEmpty());
+        return !minusMap.isEmpty();
     }
 
     public boolean isZeroOnly() {
@@ -124,7 +106,7 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
 
     public void addAllToMap(PlusMinusZero destination, Map<K,V> map) {
         if (destination == null) {
-            return;
+            // no-op
         } else if (destination == PlusMinusZero.PLUS) {
             addAllToMap(plusMap, map);
         } else if (destination == PlusMinusZero.MINUS) {
@@ -199,21 +181,19 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
     }
 
     protected void copyValues(DeltaMapTripleImpl<K,V> clone, Cloner<Entry<K, V>> cloner) {
-        clone.zeroMap = cloneSet(this.zeroMap, cloner);
-        clone.plusMap = cloneSet(this.plusMap, cloner);
-        clone.minusMap = cloneSet(this.minusMap, cloner);
+        cloneSet(clone.zeroMap, this.zeroMap, cloner);
+        cloneSet(clone.plusMap, this.plusMap, cloner);
+        cloneSet(clone.minusMap, this.minusMap, cloner);
     }
 
-    private Map<K,V> cloneSet(Map<K,V> origSet, Cloner<Entry<K, V>> cloner) {
-        if (origSet == null) {
-            return null;
-        }
-        Map<K,V> clonedSet = createMap();
+    private void cloneSet(
+            @NotNull Map<K,V> cloneSet,
+            @NotNull Map<K,V> origSet,
+            @NotNull Cloner<Entry<K, V>> cloner) {
         for (Entry<K, V> origVal: origSet.entrySet()) {
             Entry<K, V> clonedVal = cloner.clone(origVal);
-            clonedSet.put(clonedVal.getKey(), clonedVal.getValue());
+            cloneSet.put(clonedVal.getKey(), clonedVal.getValue());
         }
-        return clonedSet;
     }
 
     public boolean isEmpty() {
@@ -254,7 +234,7 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
         return sb.toString();
     }
 
-    protected String debugName() {
+    private String debugName() {
         return "DeltaMapTriple";
     }
 
@@ -262,9 +242,6 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
         sb.append(label).append(": ").append(set).append("; ");
     }
 
-    /* (non-Javadoc)
-     * @see com.evolveum.midpoint.util.DebugDumpable#debugDump(int)
-     */
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
@@ -283,5 +260,4 @@ public class DeltaMapTripleImpl<K,V> implements DeltaMapTriple<K,V> {
         sb.append("\n");
         DebugUtil.debugDumpMapMultiLine(sb, set, indent + 1);
     }
-
 }

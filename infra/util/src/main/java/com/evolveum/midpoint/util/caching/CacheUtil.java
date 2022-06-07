@@ -21,16 +21,12 @@ public class CacheUtil {
             logger.info(message, params);
             performanceLogger.debug(message, params);
         } else {
-            if (logger.isTraceEnabled()) {
-                logger.trace(message, params);
-            }
-            if (performanceLogger.isTraceEnabled()) {
-                performanceLogger.trace(message, params);
-            }
+            logger.trace(message, params);
+            performanceLogger.trace(message, params);
         }
     }
 
-    public static void formatPerformanceData(StringBuilder sb, int hits, int weakHits, int misses, int passes,
+    static void formatPerformanceData(StringBuilder sb, int hits, int weakHits, int misses, int passes,
             int notAvailable, int sum) {
         sb.append(String.format(Locale.US,
                 "hits: %6d (%5.1f%%), weak hits: %6d (%.1f%%), misses: %6d, passes: %6d, not available: %6d",

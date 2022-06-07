@@ -68,6 +68,18 @@ public class PrettyPrinter {
         };
     }
 
+    public static Object prettyPrintLazily(Object object) {
+        if (object == null) {
+            return null;
+        }
+        return new Object() {
+            @Override
+            public String toString() {
+                return prettyPrint(object);
+            }
+        };
+    }
+
     public static String prettyPrint(Collection<?> collection) {
         return prettyPrint(collection, 0);
     }
