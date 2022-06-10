@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -319,7 +319,6 @@ public class TestQueryBuilder extends AbstractPrismTest {
                         SubstringFilterImpl.createSubstring(
                                 AssignmentType.F_DESCRIPTION,
                                 assCtd.findPropertyDefinition(AssignmentType.F_DESCRIPTION),
-                                getPrismContext(),
                                 null, "desc1", true, false)));
         compare(actual, expected);
     }
@@ -341,7 +340,6 @@ public class TestQueryBuilder extends AbstractPrismTest {
                         SubstringFilterImpl.createSubstring(
                                 AssignmentType.F_NOTE,
                                 assCtd.findPropertyDefinition(AssignmentType.F_NOTE),
-                                getPrismContext(),
                                 null, "DONE.", false, true)));
         compare(actual, expected);
     }
@@ -365,7 +363,6 @@ public class TestQueryBuilder extends AbstractPrismTest {
                         SubstringFilterImpl.createSubstring(
                                 AssignmentType.F_NOTE,
                                 assCtd.findPropertyDefinition(AssignmentType.F_NOTE),
-                                getPrismContext(),
                                 null, "DONE.", false, true)));
         compare(actual, expected);
     }
@@ -391,7 +388,6 @@ public class TestQueryBuilder extends AbstractPrismTest {
                                 SubstringFilterImpl.createSubstring(
                                         AssignmentType.F_NOTE,
                                         assCtd.findPropertyDefinition(AssignmentType.F_NOTE),
-                                        getPrismContext(),
                                         null, "DONE.", false, true),
                                 AllFilterImpl.createAll())));
         compare(actual, expected);
@@ -492,6 +488,6 @@ public class TestQueryBuilder extends AbstractPrismTest {
         PrismPropertyDefinition<T> propertyDefinition = (PrismPropertyDefinition<T>)
                 FilterImplUtil.findItemDefinition(propertyPath, type, getPrismContext());
         return EqualFilterImpl.createEqual(
-                propertyPath, propertyDefinition, matchingRule, getPrismContext(), realValue);
+                propertyPath, propertyDefinition, matchingRule, realValue);
     }
 }

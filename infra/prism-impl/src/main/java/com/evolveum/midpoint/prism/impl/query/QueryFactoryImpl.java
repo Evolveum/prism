@@ -52,7 +52,7 @@ public class QueryFactoryImpl implements QueryFactory {
     @Override
     public <T> EqualFilter<T> createEqual(@NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition,
             @Nullable QName matchingRule, @NotNull PrismContext prismContext, Object... values) {
-        return EqualFilterImpl.createEqual(path, definition, matchingRule, prismContext, values);
+        return EqualFilterImpl.createEqual(path, definition, matchingRule, values);
     }
 
     // expression-related

@@ -1,29 +1,28 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query;
+
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
+
+import java.util.Collection;
+import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AnyInFilter;
-import com.evolveum.midpoint.prism.query.EqualFilter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.namespace.QName;
-import java.util.Collection;
-import java.util.List;
-
-import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements AnyInFilter<T> {
     private static final long serialVersionUID = 3284478412180258355L;
@@ -56,7 +55,7 @@ public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements An
             @Nullable QName matchingRule,
             @Nullable List<PrismPropertyValue<T>> prismPropertyValues,
             @Nullable ExpressionWrapper expression, @Nullable ItemPath rightHandSidePath,
-            @Nullable ItemDefinition rightHandSideDefinition) {
+            @Nullable ItemDefinition<?> rightHandSideDefinition) {
         super(path, definition, matchingRule, prismPropertyValues, expression, rightHandSidePath, rightHandSideDefinition);
     }
 
@@ -64,16 +63,16 @@ public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements An
 
     // empty (different from values as it generates filter with null 'values' attribute)
     @NotNull
-    public static <T> AnyInFilter<T> createAnyIn(@NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition,
-            @Nullable QName matchingRule) {
+    public static <T> AnyInFilter<T> createAnyIn(
+            @NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition, @Nullable QName matchingRule) {
         return new AnyInFilterImpl<>(path, definition, matchingRule, null, null, null, null);
     }
 
     // values
     @NotNull
     public static <T> AnyInFilter<T> createAnyIn(@NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition,
-            @Nullable QName matchingRule, @NotNull PrismContext prismContext, Object... values) {
-        List<PrismPropertyValue<T>> propertyValues = anyArrayToPropertyValueList(prismContext, values);
+            @Nullable QName matchingRule, Object... values) {
+        List<PrismPropertyValue<T>> propertyValues = anyArrayToPropertyValueList(values);
         return new AnyInFilterImpl<>(path, definition, matchingRule, propertyValues, null, null, null);
     }
 
@@ -87,7 +86,7 @@ public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements An
     // right-side-related; right side can be supplied later (therefore it's nullable)
     @NotNull
     public static <T> AnyInFilter<T> createAnyIn(@NotNull ItemPath propertyPath, PrismPropertyDefinition<T> propertyDefinition,
-            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition rightSideDefinition) {
+            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition<?> rightSideDefinition) {
         return new AnyInFilterImpl<>(propertyPath, propertyDefinition, matchingRule, null, null, rightSidePath, rightSideDefinition);
     }
 
@@ -104,7 +103,7 @@ public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements An
     }
 
     @Override
-    public boolean match(PrismContainerValue objectValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> objectValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         Collection<PrismValue> objectItemValues = getObjectItemValues(objectValue);
         Collection<? extends PrismValue> filterValues = emptyIfNull(getValues());
         if (objectItemValues.isEmpty()) {
