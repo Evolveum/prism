@@ -100,13 +100,13 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
                 ? (PrismPropertyDefinition<T>) this.propertyDefinition
                 : property.getDefinition();
         return new R_AtomicFilter(this, EqualFilterImpl
-                .createEqual(itemPath, definition, null, owner.getPrismContext(), clonedValues));
+                .createEqual(itemPath, definition, null, clonedValues));
     }
 
     @Override
     public S_MatchingRuleEntry eq(Object... values) {
         return new R_AtomicFilter(this, EqualFilterImpl.createEqual(
-                itemPath, propertyDefinition, null, owner.getPrismContext(), values));
+                itemPath, propertyDefinition, null, values));
     }
 
     @Override
@@ -311,8 +311,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     public S_AtomicFilterExit isNull() {
         if (propertyDefinition != null) {
             return new R_AtomicFilter(this,
-                    EqualFilterImpl.createEqual(
-                            itemPath, propertyDefinition, null, owner.getPrismContext()));
+                    EqualFilterImpl.createEqual(itemPath, propertyDefinition, null));
         } else if (referenceDefinition != null) {
             RefFilterImpl refFilter = (RefFilterImpl) RefFilterImpl.createReferenceEqual(
                     itemPath, referenceDefinition, Collections.emptyList());
