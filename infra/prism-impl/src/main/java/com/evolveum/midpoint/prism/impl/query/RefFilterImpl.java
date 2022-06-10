@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.RefFilter;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -55,7 +54,6 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         this.filter = filter;
     }
 
-
     public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, Collection<PrismReferenceValue> values,
             ObjectFilter targetFilter) {
         return new RefFilterImpl(path, definition, values != null ? new ArrayList<>(values) : null, null, targetFilter);
@@ -87,14 +85,14 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     public @Nullable QName getMatchingRule() {
         return getDeclaredMatchingRule();
     }
-    
+
     @Override
     protected String getFilterName() {
         return "REF";
     }
 
     @Override
-    public boolean match(PrismContainerValue objectValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> objectValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         Collection<PrismValue> objectItemValues = getObjectItemValues(objectValue);
         Collection<? extends PrismValue> filterValues = emptyIfNull(getValues());
         if (objectItemValues.isEmpty()) {
@@ -146,15 +144,6 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         return matchTargetType(filterValue.getTargetType(), objectValue.getTargetType());
     }
 
-    private boolean matchTargetName(PolyString filterName, PolyString valueName) {
-        if (filterName == null) {
-            return true;
-        }
-        // Norm Match
-        return valueName != null && filterName.match(valueName);
-    }
-
-
     private boolean matchOid(String filterOid, String objectOid) {
         return oidNullAsAny && filterOid == null || Objects.equals(objectOid, filterOid);
     }
@@ -180,7 +169,7 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
 
     @Override
     public String toString() {
-        return super.toString() +", targetFilter=" + filter;
+        return super.toString() + ", targetFilter=" + filter;
     }
 
     @Override
@@ -219,11 +208,8 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         // relationNullAsAny is currently ignored anyway
     }
 
-
     public void setFilter(ObjectFilter buildFilter) {
         checkMutable();
         filter = buildFilter;
     }
-
-
 }

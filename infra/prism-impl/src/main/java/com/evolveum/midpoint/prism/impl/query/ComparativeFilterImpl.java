@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query;
+
+import static com.evolveum.midpoint.prism.PrismConstants.*;
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,6 +15,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRule;
@@ -23,16 +31,6 @@ import com.evolveum.midpoint.prism.query.PropertyValueFilter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-
-import static com.evolveum.midpoint.prism.PrismConstants.*;
-import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
-
 public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T> implements PropertyValueFilter<T> {
 
     private boolean equals;
@@ -42,7 +40,7 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
             @Nullable QName matchingRule,
             @Nullable PrismPropertyValue<T> value,
             @Nullable ExpressionWrapper expression, @Nullable ItemPath rightHandSidePath,
-            @Nullable ItemDefinition rightHandSideDefinition, boolean equals) {
+            @Nullable ItemDefinition<?> rightHandSideDefinition, boolean equals) {
         super(path, definition, matchingRule,
                 value != null ? Collections.singletonList(value) : null,
                 expression, rightHandSidePath, rightHandSideDefinition);
@@ -60,7 +58,7 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
 
     @Nullable
     static <T> PrismPropertyValue<T> anyValueToPropertyValue(@NotNull PrismContext prismContext, Object value) {
-        List<PrismPropertyValue<T>> values = anyValueToPropertyValueList(prismContext, value);
+        List<PrismPropertyValue<T>> values = anyValueToPropertyValueList(value);
         if (values.isEmpty()) {
             return null;
         } else if (values.size() > 1) {
@@ -72,9 +70,15 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
 
     @Override
     public boolean equals(Object o, boolean exact) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o, exact)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o, exact)) {
+            return false;
+        }
         ComparativeFilterImpl<?> that = (ComparativeFilterImpl<?>) o;
         return equals == that.equals;
     }
@@ -86,7 +90,7 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
     }
 
     @Override
-    public boolean match(PrismContainerValue object, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> object, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         Collection<PrismValue> objectItemValues = getObjectItemValues(object);
         Collection<? extends PrismValue> filterItemValues = emptyIfNull(getValues());
         if (filterItemValues.isEmpty()) {
@@ -249,5 +253,5 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
     }
 
     @Override
-    abstract public PropertyValueFilterImpl clone();
+    abstract public PropertyValueFilterImpl<T> clone();
 }

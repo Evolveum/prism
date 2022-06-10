@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2020-2021 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 
 import java.util.*;
 import java.util.function.Function;
-
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
@@ -22,7 +22,6 @@ import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.ItemFactoryImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.query.*;
@@ -30,12 +29,13 @@ import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
+import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
+import com.evolveum.midpoint.prism.query.TypeFilter;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 
 public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
@@ -51,13 +51,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String REF_TARGET_ALIAS = "@";
     private static final String REF_TARGET = "target";
 
-
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
-
-    private static final Map<String, Class<?>> REF_PROPS = ImmutableMap.<String, Class<?>>builder()
-            .put(REF_OID, String.class).put(REF_TYPE, QName.class).put(REF_REL, QName.class).build();
-
 
     public interface ItemFilterFactory {
         ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -84,7 +79,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             if (valueSet != null) {
 
                 ArrayList<Object> values = new ArrayList<>();
-                for(SingleValueContext value : valueSet.values) {
+                for (SingleValueContext value : valueSet.values) {
                     schemaCheck(value.literalValue() != null, "Only literal value is supported if multiple values are enumerated");
                     values.add(parseLiteral(propDef, value.literalValue()));
                 }
@@ -167,9 +162,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         @Override
-        ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
-                Object value) {
-            return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, value, anchorStart,
+        ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule, Object value) {
+            return SubstringFilterImpl.createSubstring(path, definition, matchingRule, value, anchorStart,
                     anchorEnd);
         }
 
@@ -196,22 +190,20 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             if (definition instanceof PrismReferenceDefinition) {
                 var refDef = (PrismReferenceDefinition) definition;
                 if (subfilterOrValue.expression() != null) {
-                    return RefFilterImpl.createReferenceEqual(path,refDef, parseExpression(subfilterOrValue.expression()));
+                    return RefFilterImpl.createReferenceEqual(path, refDef, parseExpression(subfilterOrValue.expression()));
                 } else if (isVariablePath(subfilterOrValue.singleValue())) {
                     var rightPath = path(parentDef, subfilterOrValue.singleValue().path());
                     return RefFilterImpl.createReferenceEqual(path, refDef, parseExpression(rightPath));
                 }
             }
 
-
             return super.create(parentDef, typeDef, path, definition, matchingRule, subfilterOrValue);
         }
-
 
         @Override
         public ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                 QName matchingRule, Object value) {
-            return EqualFilterImpl.createEqual(path, definition, matchingRule, context, value);
+            return EqualFilterImpl.createEqual(path, definition, matchingRule, value);
         }
 
         @Override
@@ -229,7 +221,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         @Override
         protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                 ArrayList<Object> values) throws SchemaException {
-            return EqualFilterImpl.createEqual(path, definition, matchingRule, context, values.toArray());
+            return EqualFilterImpl.createEqual(path, definition, matchingRule, values.toArray());
         }
     };
 
@@ -240,7 +232,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 public ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path,
                         QName matchingRule, Object value) {
-                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, context, value);
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, value);
                 }
 
                 @Override
@@ -258,7 +250,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         ArrayList<Object> values) throws SchemaException {
-                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, context, values.toArray());
+                    return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, values.toArray());
                 }
             })
             .put(NOT_EQUAL, new ItemFilterFactory() {
@@ -401,12 +393,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     return OrgFilterImpl.createRootOrg();
                 }
             })
-            .put(TYPE, new SelfFilterFactory("type" ) {
+            .put(TYPE, new SelfFilterFactory("type") {
 
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    QName type = requireLiteral(QName.class, filterName,subfilterOrValue.singleValue());
+                    QName type = requireLiteral(QName.class, filterName, subfilterOrValue.singleValue());
                     return TypeFilterImpl.createType(type, null);
                 }
             })
@@ -417,7 +409,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     var subfilter = subfilterOrValue.subfilterSpec().filter();
 
                     List<FilterContext> andChildren = new ArrayList<>();
-                    expand(andChildren,AndFilterContext.class,AndFilterContext::filter, Collections.singletonList(subfilter));
+                    expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
                     QName type = consumeFromAnd(QName.class, "@type", andChildren);
                     ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
@@ -438,7 +430,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     var subfilter = subfilterOrValue.subfilterSpec().filter();
 
                     List<FilterContext> andChildren = new ArrayList<>();
-                    expand(andChildren,AndFilterContext.class,AndFilterContext::filter, Collections.singletonList(subfilter));
+                    expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
                     QName type = consumeFromAnd(QName.class, "@type", andChildren);
                     ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
@@ -473,11 +465,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         this(context, ImmutableMap.of(), null);
     }
 
-
     protected boolean isVariablePath(SingleValueContext singleValue) {
         return singleValue != null && isVariablePath(singleValue.path());
     }
-
 
     public boolean isVariablePath(PathContext path) {
         return path.getText().contains("$");
@@ -509,7 +499,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         if (expression.script() == null) {
-            throw new SchemaException("Expression '" + expression.getText() +"' must contain script");
+            throw new SchemaException("Expression '" + expression.getText() + "' must contain script");
         }
         return parseScript(expression.script());
     }
@@ -517,7 +507,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ExpressionWrapper parseConstant(ConstantContext constant) {
         return expressionParser.parseScript(namespaceContext, "const", constant.name.getText());
     }
-
 
     private ExpressionWrapper parseScript(ScriptContext script) {
         String scriptLang = script.language != null ? script.language.getText() : null;
@@ -533,7 +522,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     public Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
-        if(propDef.getTypeClass() != null) {
+        if (propDef.getTypeClass() != null) {
             // shortcut
             return parseLiteral(propDef.getTypeClass(), literalValue);
         }
@@ -569,8 +558,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return parseLiteral(type, value);
     }
 
-
-
     @Override
     public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {
         return parseQuery(typeClass, AxiomQuerySource.from(query));
@@ -596,7 +583,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return parseFilter(definition, definition.getComplexTypeDefinition(), source.root());
     }
 
-    private ObjectFilter parseFilter(PrismContainerDefinition<?> container, ComplexTypeDefinition typeDef,  FilterContext root)
+    private ObjectFilter parseFilter(PrismContainerDefinition<?> container, ComplexTypeDefinition typeDef, FilterContext root)
             throws SchemaException {
         if (root instanceof AndFilterContext) {
             return andFilter(container, typeDef, (AndFilterContext) root);
@@ -614,7 +601,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
 
-        expand(unparsed, AndFilterContext.class,AndFilterContext::filter, root.filter());
+        expand(unparsed, AndFilterContext.class, AndFilterContext::filter, root.filter());
         return andFilter(complexType, typeDef, unparsed);
     }
 
@@ -649,7 +636,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return andFilter;
     }
 
-    private <E extends FilterContext> void expand(List<FilterContext> expanded, Class<E> expandable, Function<E,List<FilterContext>> expander, List<FilterContext> notExpanded) {
+    private <E extends FilterContext> void expand(List<FilterContext> expanded, Class<E> expandable, Function<E, List<FilterContext>> expander, List<FilterContext> notExpanded) {
         for (FilterContext filterContext : notExpanded) {
             if (filterContext instanceof SubFilterContext) {
                 var subfilter = (SubFilterContext) filterContext;
@@ -670,7 +657,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter orFilter(PrismContainerDefinition<?> complexType, ComplexTypeDefinition typeDef, OrFilterContext root)
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
-        expand(unparsed,OrFilterContext.class,OrFilterContext::filter, root.filter());
+        expand(unparsed, OrFilterContext.class, OrFilterContext::filter, root.filter());
 
         Builder<ObjectFilter> filters = ImmutableList.builder();
         for (FilterContext filterContext : unparsed) {
@@ -790,14 +777,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
      * name matches (orig = "foo")
      * name matches (norm = "bar")
      * name matches (orig = "foo" and norm = "bar")
-     *
      * </code>
-     *
-     * @param path
-     * @param definition
-     * @param filter
-     * @return
-     * @throws SchemaException
      */
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
             FilterContext filter) throws SchemaException {
@@ -806,12 +786,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         String norm = (String) props.get(POLYSTRING_NORM);
         schemaCheck(orig != null || norm != null, "orig or norm must be defined in matches polystring filter.");
         if (orig != null && norm != null) {
-            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME, context, new PolyString(orig, norm));
+            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME, new PolyString(orig, norm));
         }
         if (orig != null) {
-            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME, context, new PolyString(orig));
+            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME, new PolyString(orig));
         } else if (norm != null) {
-            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME, context, new PolyString(norm, norm));
+            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME, new PolyString(norm, norm));
         }
         throw new SchemaException("Incorrect syntax for matches polystring");
     }
@@ -851,7 +831,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter matchesReferenceFilter(ItemPath path, PrismReferenceDefinition definition,
             FilterContext filter) throws SchemaException {
         List<FilterContext> andChildren = new ArrayList<>();
-        expand(andChildren,AndFilterContext.class,AndFilterContext::filter, Collections.singletonList(filter));
+        expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(filter));
 
         boolean oidNullAsAny = !andContains(REF_OID, andChildren);
         boolean typeNullAsAny = !andContains(REF_TYPE, andChildren);
@@ -859,7 +839,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         String oid = consumeFromAnd(String.class, REF_OID, andChildren);
         QName relation = consumeFromAnd(QName.class, REF_REL, andChildren);
         QName type = consumeFromAnd(QName.class, REF_TYPE, andChildren);
-
 
         QName targetType = definition.getTargetTypeName();
         if (targetType == null) {
@@ -887,9 +866,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 Collections.singletonList(value), targetFilter);
         result.setOidNullAsAny(oidNullAsAny);
         result.setTargetTypeNullAsAny(typeNullAsAny);
-
-
-
 
         return result;
     }

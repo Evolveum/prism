@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -27,8 +27,9 @@ import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition>
+public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition<?>>
         extends ObjectFilterImpl implements ValueFilter<V, D> {
+
     private static final long serialVersionUID = 1L;
 
     @NotNull private final ItemPath fullPath;
@@ -46,14 +47,14 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Nullable private ItemPath rightHandSidePath;
 
     /** Optional (needed only if path points to dynamically defined item). */
-    @Nullable private ItemDefinition rightHandSideDefinition;
+    @Nullable private ItemDefinition<?> rightHandSideDefinition;
 
     // At most one of values, expression, rightHandSidePath can be non-null.
     // It is a responsibility of the client to ensure it.
 
     protected ValueFilterImpl(@NotNull ItemPath fullPath, @Nullable D definition, @Nullable QName matchingRule,
             @Nullable List<V> values, @Nullable ExpressionWrapper expression,
-            @Nullable ItemPath rightHandSidePath, @Nullable ItemDefinition rightHandSideDefinition) {
+            @Nullable ItemPath rightHandSidePath, @Nullable ItemDefinition<?> rightHandSideDefinition) {
         Validate.isTrue(!ItemPath.isEmpty(fullPath), "path in filter is null or empty");
         this.fullPath = fullPath;
         this.definition = definition;
@@ -218,12 +219,12 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
 
     @Override
     @Nullable
-    public ItemDefinition getRightHandSideDefinition() {
+    public ItemDefinition<?> getRightHandSideDefinition() {
         return rightHandSideDefinition;
     }
 
     @Override
-    public void setRightHandSideDefinition(@Nullable ItemDefinition rightHandSideDefinition) {
+    public void setRightHandSideDefinition(@Nullable ItemDefinition<?> rightHandSideDefinition) {
         this.rightHandSideDefinition = rightHandSideDefinition;
     }
 
@@ -250,10 +251,10 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     }
 
     @Override
-    public abstract boolean match(PrismContainerValue cvalue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException;
+    public abstract boolean match(PrismContainerValue<?> cvalue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException;
 
     @NotNull
-    Collection<PrismValue> getObjectItemValues(PrismContainerValue value) {
+    Collection<PrismValue> getObjectItemValues(PrismContainerValue<?> value) {
         return value.getAllValues(fullPath);
     }
 
@@ -392,7 +393,10 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Override
     protected void performFreeze() {
         values = freezeNullableList(values);
-        freezeAll(values);
+        // Values can be null if there is an expression that was not executed yet.
+        if (values != null) {
+            freezeAll(values);
+        }
         freeze(definition);
         freeze(rightHandSideDefinition);
         freeze(expression);

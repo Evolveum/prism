@@ -96,9 +96,7 @@ public class QueryConverterImpl implements QueryConverter {
     private static final QName ELEMENT_TYPE = new QName(NS_QUERY, "type");
     private static final QName ELEMENT_FILTER = new QName(NS_QUERY, "filter");
 
-
     private static final QName ELEMENT_RELATION = new QName(NS_QUERY, "relation");
-
 
     @NotNull
     private final PrismContext prismContext;
@@ -329,13 +327,15 @@ public class QueryConverterImpl implements QueryConverter {
                     //noinspection unchecked
                     List<PrismPropertyValue<T>> values = item.getValues();
                     PrismValueCollectionsUtil.clearParent(values);
-                    //noinspection unchecked
                     if (isAnyIn) {
-                        return AnyInFilterImpl.createAnyIn(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, prismContext, values);
+                        //noinspection unchecked
+                        return AnyInFilterImpl.createAnyIn(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, values);
                     }
-                    return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, prismContext, values);
+                    //noinspection unchecked
+                    return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, values);
                 } else if (isSubstring) {
-                    return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition, prismContext, matchingRule, item.getAnyValue(), getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
+                    return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition,
+                            matchingRule, item.getAnyValue(), getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
                 }
                 //noinspection unchecked
                 PrismPropertyValue<T> propertyValue = (PrismPropertyValue<T>) item.getAnyValue();
@@ -487,7 +487,6 @@ public class QueryConverterImpl implements QueryConverter {
 
         QName relation = clauseXMap.getParsedPrimitiveValue(ELEMENT_RELATION, DOMUtil.XSD_QNAME);
 
-
         ObjectFilter subFilter;
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
 
@@ -512,7 +511,6 @@ public class QueryConverterImpl implements QueryConverter {
         QName type = clauseXMap.getParsedPrimitiveValue(ELEMENT_TYPE, DOMUtil.XSD_QNAME);
         ItemPath path = getPath(clauseXMap);
         PrismContainerDefinition<?> def = prismContext.getSchemaRegistry().findContainerDefinitionByType(type);
-
 
         ObjectFilter subFilter;
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
@@ -601,7 +599,6 @@ public class QueryConverterImpl implements QueryConverter {
         } else if (filterXnode != null) {
             throw new SchemaException("Unsupported type for element filter.");
         }
-
 
         XNodeImpl valueXnode = clauseXMap.get(ELEMENT_VALUE);
         if (valueXnode != null && (!(valueXnode instanceof ListXNode) || !((ListXNode) valueXnode).isEmpty())) {

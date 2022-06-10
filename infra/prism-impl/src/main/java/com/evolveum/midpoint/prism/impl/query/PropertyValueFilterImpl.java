@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.ArrayList;
@@ -32,34 +31,34 @@ public abstract class PropertyValueFilterImpl<T>
     }
 
     @NotNull
-    static <T> List<PrismPropertyValue<T>> anyArrayToPropertyValueList(PrismContext prismContext, Object[] values) {
+    static <T> List<PrismPropertyValue<T>> anyArrayToPropertyValueList(Object[] values) {
         List<PrismPropertyValue<T>> pVals = new ArrayList<>();
         if (values != null) {
             for (Object value : values) {
                 //noinspection unchecked
-                addToPrismValues((List) pVals, prismContext, value);
+                addToPrismValues((List) pVals, value);
             }
         }
         return pVals;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @NotNull
-    static <T> List<PrismPropertyValue<T>> anyValueToPropertyValueList(PrismContext prismContext, Object value) {
+    static <T> List<PrismPropertyValue<T>> anyValueToPropertyValueList(Object value) {
         List<PrismPropertyValue<T>> pVals = new ArrayList<>();
         if (value != null) {
-            //noinspection unchecked
-            addToPrismValues((List) pVals, prismContext, value);
+            addToPrismValues((List) pVals, value);
         }
         return pVals;
     }
 
-    private static void addToPrismValues(List<PrismPropertyValue<?>> pVals, PrismContext prismContext, Object value) {
+    private static void addToPrismValues(List<PrismPropertyValue<?>> pVals, Object value) {
         if (value == null) {
             return;
         }
         if (value instanceof Collection) {
-            for (Object o : (Collection) value) {
-                addToPrismValues(pVals, PrismContext.get(), o);
+            for (Object o : (Collection<?>) value) {
+                addToPrismValues(pVals, o);
             }
             return;
         }
@@ -83,7 +82,7 @@ public abstract class PropertyValueFilterImpl<T>
     // TODO cleanup this mess - how values are cloned, that expression is not cloned in LT/GT filter etc
 
     @Override
-    public abstract PropertyValueFilterImpl clone();
+    public abstract PropertyValueFilterImpl<T> clone();
 
     void checkPrismPropertyValue(Object value) {
         if (!(value instanceof PrismPropertyValue)) {

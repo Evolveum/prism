@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -18,7 +18,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
+public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
         extends ObjectFilter, ItemFilter, Itemable {
 
     @NotNull
@@ -40,7 +40,7 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     @Nullable
     QName getMatchingRule();
-    
+
     @Nullable
     QName getDeclaredMatchingRule();
 
@@ -48,6 +48,15 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     @Nullable
     List<V> getValues();
+
+    /**
+     * Returns true if there are no values (list is null or empty).
+     * If false is returned, then {@link #getValues()} is definitely not null.
+     */
+    default boolean hasNoValue() {
+        List<V> values = getValues();
+        return values == null || values.isEmpty();
+    }
 
     /**
      * Returns single value or {@code null}, throws exception if multiple values are present.
@@ -71,9 +80,9 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
     void setRightHandSidePath(@Nullable ItemPath rightHandSidePath);
 
     @Nullable
-    ItemDefinition getRightHandSideDefinition();
+    ItemDefinition<?> getRightHandSideDefinition();
 
-    void setRightHandSideDefinition(@Nullable ItemDefinition rightHandSideDefinition);
+    void setRightHandSideDefinition(@Nullable ItemDefinition<?> rightHandSideDefinition);
 
     @Override
     ItemPath getPath();
@@ -82,26 +91,13 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     // TODO revise
     @Override
-    boolean match(PrismContainerValue cvalue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException;
-
-    //@NotNull
-    //Collection<PrismValue> getObjectItemValues(PrismContainerValue value);
-
-    // TODO revise
-//    @NotNull
-//    Item getFilterItem() throws SchemaException;
+    boolean match(PrismContainerValue<?> cvalue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException;
 
     @Override
     ValueFilter<V, D> clone();
 
     @Override
     boolean equals(Object o, boolean exact);
-
-    //String getFilterName();
-
-    //void debugDump(int indent, StringBuilder sb);
-
-    //String toString(StringBuilder sb){
 
     @Override
     void checkConsistence(boolean requireDefinitions);

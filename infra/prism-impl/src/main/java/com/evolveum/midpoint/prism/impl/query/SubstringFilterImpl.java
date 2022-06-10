@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -46,9 +46,9 @@ public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
      */
     public static <T> SubstringFilter<T> createSubstring(
             @NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> itemDefinition,
-            @NotNull PrismContext prismContext, @Nullable QName matchingRule, Object anyValue,
+            @Nullable QName matchingRule, Object anyValue,
             boolean anchorStart, boolean anchorEnd) {
-        List<PrismPropertyValue<T>> values = anyValueToPropertyValueList(prismContext, anyValue);
+        List<PrismPropertyValue<T>> values = anyValueToPropertyValueList(anyValue);
         return new SubstringFilterImpl<>(path, itemDefinition, matchingRule, values, null, anchorStart, anchorEnd);
     }
 
@@ -83,14 +83,14 @@ public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
     }
 
     @Override
-    public boolean match(PrismContainerValue containerValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> containerValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         Collection<PrismValue> objectItemValues = getObjectItemValues(containerValue);
 
         MatchingRule<Object> matching = getMatchingRuleFromRegistry(matchingRuleRegistry);
 
         for (Object val : objectItemValues) {
             if (val instanceof PrismPropertyValue) {
-                Object value = ((PrismPropertyValue) val).getValue();
+                Object value = ((PrismPropertyValue<?>) val).getValue();
                 for (Object o : toRealValues()) {
                     if (o == null) {
                         continue;            // shouldn't occur
