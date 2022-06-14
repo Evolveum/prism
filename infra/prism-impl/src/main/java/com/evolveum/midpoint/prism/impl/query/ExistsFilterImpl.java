@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -20,11 +20,6 @@ import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-/**
- * TODO think about creating abstract ItemFilter (ItemRelatedFilter) for this filter and ValueFilter.
- *
- * @author lazyman
- */
 public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFilter {
 
     @NotNull private final ItemPath fullPath;
@@ -45,7 +40,7 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
     }
 
     @Override
-    public ItemDefinition getDefinition() {
+    public ItemDefinition<?> getDefinition() {
         return definition;
     }
 
@@ -65,14 +60,14 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
         freeze(filter);
     }
 
-    public static <C extends Containerable> ExistsFilter createExists(ItemPath itemPath, PrismContainerDefinition<C> containerDef,
-            ObjectFilter filter) throws SchemaException {
+    public static <C extends Containerable> ExistsFilter createExists(
+            ItemPath itemPath, PrismContainerDefinition<C> containerDef, ObjectFilter filter) {
         ItemDefinition<?> itemDefinition = FilterImplUtil.findItemDefinition(itemPath, containerDef);
         return new ExistsFilterImpl(itemPath, itemDefinition, filter);
     }
 
-    public static <C extends Containerable> ExistsFilter createExists(ItemPath itemPath, Class<C> clazz, PrismContext prismContext,
-            ObjectFilter filter) {
+    public static <C extends Containerable> ExistsFilter createExists(
+            ItemPath itemPath, Class<C> clazz, PrismContext prismContext, ObjectFilter filter) {
         ItemDefinition<?> itemDefinition = FilterImplUtil.findItemDefinition(itemPath, clazz, prismContext);
         return new ExistsFilterImpl(itemPath, itemDefinition, filter);
     }
@@ -89,8 +84,8 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
     }
 
     @Override
-    public boolean match(PrismContainerValue value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
-        Item itemToFind = value.findItem(fullPath);
+    public boolean match(PrismContainerValue<?> value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+        Item<?, ?> itemToFind = value.findItem(fullPath);
         if (itemToFind == null || itemToFind.getValues().isEmpty()) {
             return false;
         }

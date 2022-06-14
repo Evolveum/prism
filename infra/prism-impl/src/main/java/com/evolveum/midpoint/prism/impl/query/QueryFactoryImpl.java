@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.xnode.XNode;
@@ -67,7 +66,7 @@ public class QueryFactoryImpl implements QueryFactory {
     @NotNull
     @Override
     public <T> EqualFilter<T> createEqual(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition rightSideDefinition) {
+            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition<?> rightSideDefinition) {
         return EqualFilterImpl.createEqual(path, definition, matchingRule, rightSidePath, rightSideDefinition);
     }
 
@@ -111,7 +110,7 @@ public class QueryFactoryImpl implements QueryFactory {
     @NotNull
     @Override
     public <T> GreaterFilter<T> createGreater(@NotNull ItemPath path, PrismPropertyDefinition<T> definition, QName matchingRule,
-            @NotNull ItemPath rightSidePath, ItemDefinition rightSideDefinition, boolean equals) {
+            @NotNull ItemPath rightSidePath, ItemDefinition<?> rightSideDefinition, boolean equals) {
         return GreaterFilterImpl.createGreater(path, definition, matchingRule, rightSidePath, rightSideDefinition, equals);
     }
 
@@ -142,7 +141,7 @@ public class QueryFactoryImpl implements QueryFactory {
     @Override
     @NotNull
     public <T> LessFilter<T> createLess(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition rightSideDefinition, boolean equals) {
+            QName matchingRule, @NotNull ItemPath rightSidePath, ItemDefinition<?> rightSideDefinition, boolean equals) {
         return LessFilterImpl.createLess(path, definition, matchingRule, rightSidePath, rightSideDefinition, equals);
     }
 
@@ -178,8 +177,8 @@ public class QueryFactoryImpl implements QueryFactory {
 
     @NotNull
     @Override
-    public <C extends Containerable> ExistsFilter createExists(ItemName path, Class<C> containerType, PrismContext prismContext,
-            ObjectFilter inner) {
+    public <C extends Containerable> ExistsFilter createExists(
+            ItemPath path, Class<C> containerType, PrismContext prismContext, ObjectFilter inner) {
         return ExistsFilterImpl.createExists(path, containerType, prismContext, inner);
     }
 
