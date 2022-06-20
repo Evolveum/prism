@@ -7,6 +7,7 @@
   ~ and European Union Public License. See LICENSE file for details.
   -->
 
+<!--suppress XmlUnusedNamespaceDeclaration -->
 <xsd:schema targetNamespace="http://prism.evolveum.com/xml/ns/public/query-3"
         xmlns:tns="http://prism.evolveum.com/xml/ns/public/query-3"
         xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
@@ -20,9 +21,17 @@
 
     <xsd:annotation>
         <xsd:documentation>
-            TODO
+            MidPoint works with objects of various types, which can be part
+            of the running process (in memory), stored persistently in midPoint Repository,
+            or can represent objects on the Resources.
 
-            Version: 4.0
+            MidPoint query allows us to select only the objects that match specified criteria.
+            These criteria are formulated as a filter and are part of the query.
+            Both query and filter are part of the midPoint Query API described in this document.
+
+            For more see: https://docs.evolveum.com/midpoint/reference/concepts/query/query-api/
+
+            Version: 4.6
             Recommended namespace prefix: q
         </xsd:documentation>
         <xsd:appinfo>
@@ -147,7 +156,7 @@
             <xsd:element ref="tns:filterClause" minOccurs="0" maxOccurs="1">
                 <xsd:annotation>
                     <xsd:appinfo>
-                        <jaxb:dom/>                 <!-- this is necessary for the model-client -->
+                        <jaxb:dom/> <!-- this is necessary for the model-client -->
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
@@ -158,11 +167,12 @@
     <xsd:complexType name="FilterClauseType">
         <xsd:annotation>
             <xsd:appinfo>
-                <jaxb:dom/>            <!-- this is necessary for the model-client -->
+                <jaxb:dom/> <!-- this is necessary for the model-client -->
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element name="matching" type="xsd:string" minOccurs="0">           <!-- TODO move only to relevant clauses (not all support matching) -->
+            <!-- TODO move only to relevant clauses (not all support matching) -->
+            <xsd:element name="matching" type="xsd:string" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
                         Property which specifies matching rules. E.g. for polyString,
@@ -173,13 +183,12 @@
         </xsd:sequence>
     </xsd:complexType>
 
-
     <xsd:complexType name="RefFilterClauseType">
         <xsd:complexContent>
             <xsd:extension base="tns:PropertySimpleValueFilterClauseType">
-            <xsd:sequence>
-              <xsd:element ref="tns:filter" />
-            </xsd:sequence>
+                <xsd:sequence>
+                    <xsd:element ref="tns:filter"/>
+                </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -208,12 +217,6 @@
     <xsd:element name="org" substitutionGroup="tns:filterClause" type="tns:OrgFilterClauseType"/>
     <xsd:element name="inOid" substitutionGroup="tns:filterClause" type="tns:InOidFilterClauseType"/>
     <xsd:element name="fullText" substitutionGroup="tns:filterClause" type="tns:FullTextFilterClauseType"/>
-
-    <!-- currently not supported -->
-    <!--
-    <xsd:element name="present" substitutionGroup="tns:filterClause" type="tns:PropertyNoValueFilterClauseType"/>
-    <xsd:element name="true" substitutionGroup="tns:filterClause" type="tns:PropertyNoValueFilterClauseType"/>
-    -->
 
     <!-- B: complex filters -->
     <!-- B1: logical filters -->
@@ -434,7 +437,7 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    
+
     <xsd:complexType name="OwnedByFilterClauseType">
         <xsd:complexContent>
             <xsd:extension base="tns:FilterClauseType">
@@ -453,7 +456,7 @@
                 <xsd:sequence>
                     <xsd:element name="type" type="xsd:QName"/>
                     <xsd:element name="path" type="t:ItemPathType"/>
-                    <xsd:element name="relation" type="xsd:QName" minOccurs="0" />
+                    <xsd:element name="relation" type="xsd:QName" minOccurs="0"/>
                     <xsd:element ref="tns:filter" minOccurs="0"/>
                 </xsd:sequence>
             </xsd:extension>
@@ -470,8 +473,6 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    
-    
 
     <xsd:element name="path" type="t:ItemPathType">
         <xsd:annotation>
@@ -481,7 +482,8 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="value" type="xsd:anyType"/>      <!-- parsed as RawType; anyType is here for schema compliance when using xsi:type attribute -->
+    <!-- parsed as RawType; anyType is here for schema compliance when using xsi:type attribute -->
+    <xsd:element name="value" type="xsd:anyType"/>
 
     <xsd:complexType name="LogicalOperatorFilterClauseType" abstract="true">
         <xsd:complexContent>
@@ -520,4 +522,3 @@
     </xsd:complexType>
 
 </xsd:schema>
-

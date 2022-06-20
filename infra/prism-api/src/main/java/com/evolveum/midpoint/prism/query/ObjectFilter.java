@@ -8,6 +8,8 @@ package com.evolveum.midpoint.prism.query;
 
 import java.io.Serializable;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -32,6 +34,13 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
     void checkConsistence(boolean requireDefinitions);
 
     boolean equals(Object o, boolean exact);
+
+    /** Utility method performing {@link #equals(Object, boolean)} on two nullable objects. */
+    static boolean equals(@Nullable ObjectFilter filter, @Nullable Object other, boolean exact) {
+        return filter != null
+                ? filter.equals(other, exact)
+                : other == null;
+    }
 
     /**
      * Returns true, if filter processes only enumerated item paths and does not use referencedBy,

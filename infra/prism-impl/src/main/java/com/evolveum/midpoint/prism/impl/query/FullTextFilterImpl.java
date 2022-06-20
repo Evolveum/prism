@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -125,7 +125,7 @@ public final class FullTextFilterImpl extends ObjectFilterImpl implements FullTe
     }
 
     @Override
-    public boolean match(PrismContainerValue value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         throw new UnsupportedOperationException("match is not supported for " + this);
     }
 
@@ -142,7 +142,6 @@ public final class FullTextFilterImpl extends ObjectFilterImpl implements FullTe
                 Objects.equals(expression, that.expression);
     }
 
-    // Just to make checkstyle happy
     @Override
     public boolean equals(Object o) {
         return super.equals(o);
@@ -150,6 +149,6 @@ public final class FullTextFilterImpl extends ObjectFilterImpl implements FullTe
 
     @Override
     public int hashCode() {
-        return Objects.hash(values);
+        return Objects.hash(values, expression);
     }
 }

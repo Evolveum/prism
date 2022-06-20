@@ -6,41 +6,38 @@
  */
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.Freezable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ReferencedByFilter;
-import com.evolveum.midpoint.util.Checks;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.google.common.base.Preconditions;
 
 public class ReferencedByFilterImpl extends ObjectFilterImpl implements ReferencedByFilter {
 
     private static final long serialVersionUID = 1L;
 
-    private @NotNull ComplexTypeDefinition type;
-    private ObjectFilter filter;
+    private final @NotNull ComplexTypeDefinition type;
+    private final @NotNull ItemPath path;
+    private final @Nullable ObjectFilter filter;
+    private final @Nullable QName relation;
 
-    private @Nullable QName relation;
-    private @NotNull ItemPath path;
-
-    private ReferencedByFilterImpl(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path, ObjectFilter filter,
-            @Nullable QName relation) {
-        super();
-        this.type = type;
-        this.path = path;
+    private ReferencedByFilterImpl(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path,
+            @Nullable ObjectFilter filter, @Nullable QName relation) {
+        this.type = Objects.requireNonNull(type);
+        this.path = Objects.requireNonNull(path);
         this.filter = filter;
         this.relation = relation;
     }
@@ -78,7 +75,7 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
     }
 
     @Override
-    public boolean match(PrismContainerValue value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         throw new UnsupportedOperationException("ReferencedBy is not supported for in-memory");
     }
 
@@ -91,33 +88,24 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
 
     @Override
     public boolean equals(Object o, boolean exact) {
-        if (o instanceof ReferencedByFilter) {
-            var other = (ReferencedByFilter) o;
-            if (!QNameUtil.match(getType().getTypeName(), other.getType().getTypeName()))  {
-                return false;
-            }
-            if (!QNameUtil.match(getRelation(), other.getRelation())) {
-                return false;
-            }
-            // Replace with Nullables?
-            if (path == null && other.getPath() != null) {
-                return false;
-            }
-            if (path != null && !path.equals(other.getPath(), exact)) {
-                return false;
-            }
-            if (filter == null && other.getFilter() != null) {
-                return false;
-            }
-            if (filter != null && !filter.equals(other.getFilter(), exact)) {
-                return false;
-            }
-            return true;
+        if (!(o instanceof ReferencedByFilter)) {
+            return false;
         }
-        return false;
+
+        var other = (ReferencedByFilter) o;
+        if (!QNameUtil.match(getType().getTypeName(), other.getType().getTypeName())) {
+            return false;
+        }
+        if (!QNameUtil.match(getRelation(), other.getRelation())) {
+            return false;
+        }
+        if (!path.equals(other.getPath(), exact)) {
+            return false;
+        }
+        return ObjectFilter.equals(filter, other.getFilter(), exact);
     }
 
- // Just to make checkstyle happy
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     @Override
     public boolean equals(Object o) {
         return equals(o, false);
@@ -125,20 +113,18 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
 
     @Override
     public int hashCode() {
-        return type.hashCode();
+        return Objects.hash(type, path, filter);
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("REFERENCEDBY(");
-        sb.append(PrettyPrinter.prettyPrint(type));
-        sb.append(",");
-        sb.append(path);
-        sb.append(",");
-        sb.append(filter);
-        sb.append(")");
-        return sb.toString();
+        return "REFERENCED-BY("
+                + PrettyPrinter.prettyPrint(type)
+                + ","
+                + path
+                + ","
+                + filter
+                + ")";
     }
 
     @Override
@@ -158,14 +144,15 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
 
     @Override
     protected void performFreeze() {
-        if (filter instanceof Freezable) {
+        if (filter != null) {
             filter.freeze();
         }
     }
 
     @Override
     public ReferencedByFilterImpl clone() {
-        return new ReferencedByFilterImpl(type, path, filter.clone(), relation);
+        return new ReferencedByFilterImpl(type, path,
+                filter != null ? filter.clone() : null,
+                relation);
     }
-
 }

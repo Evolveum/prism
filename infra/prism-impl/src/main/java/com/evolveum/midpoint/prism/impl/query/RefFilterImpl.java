@@ -156,13 +156,7 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     @Override
     public boolean equals(Object obj, boolean exact) {
         if (obj instanceof RefFilter && super.equals(obj, exact)) {
-            RefFilter other = (RefFilter) obj;
-            if (filter != null) {
-                return filter.equals(other.getFilter(), exact);
-            } else if (other.getFilter() != null) {
-                return false;
-            }
-            return true;
+            return ObjectFilter.equals(filter, ((RefFilter) obj).getFilter(), exact);
         }
         return false;
     }

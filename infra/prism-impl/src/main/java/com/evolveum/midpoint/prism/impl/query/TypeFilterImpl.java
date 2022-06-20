@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,7 +7,14 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
-import com.evolveum.midpoint.prism.*;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.PrismContainer;
+import com.evolveum.midpoint.prism.PrismContainerDefinition;
+import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.TypeFilter;
@@ -18,9 +25,6 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import org.jetbrains.annotations.NotNull;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author lazyman
@@ -75,7 +79,7 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
 
     // untested; TODO test this method
     @Override
-    public boolean match(PrismContainerValue value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
+    public boolean match(PrismContainerValue<?> value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         if (value == null) {
             return false;           // just for safety
         }
@@ -112,7 +116,7 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
     @Override
     public void checkConsistence(boolean requireDefinitions) {
         if (type == null) {
-            throw new IllegalArgumentException("Null type in "+this);
+            throw new IllegalArgumentException("Null type in " + this);
         }
         // null subfilter is legal. It means "ALL".
         if (filter != null) {
@@ -136,15 +140,18 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
 
     @Override
     public boolean equals(Object o, boolean exact) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         TypeFilterImpl that = (TypeFilterImpl) o;
-
-        if (!type.equals(that.type)) return false;
-        if (filter != null ? !filter.equals(that.filter, exact) : that.filter != null) return false;
-
-        return true;
+        if (!type.equals(that.type)) {
+            return false;
+        }
+        return ObjectFilter.equals(filter, that.filter, exact);
     }
 
     // Just to make checkstyle happy
@@ -160,13 +167,11 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("TYPE(");
-        sb.append(PrettyPrinter.prettyPrint(type));
-        sb.append(",");
-        sb.append(filter);
-        sb.append(")");
-        return sb.toString();
+        return "TYPE("
+                + PrettyPrinter.prettyPrint(type)
+                + ","
+                + filter
+                + ")";
     }
 
     @Override
