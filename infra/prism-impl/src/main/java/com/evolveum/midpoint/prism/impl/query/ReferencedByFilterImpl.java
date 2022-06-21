@@ -93,16 +93,10 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
         }
 
         var other = (ReferencedByFilter) o;
-        if (!QNameUtil.match(getType().getTypeName(), other.getType().getTypeName())) {
-            return false;
-        }
-        if (!QNameUtil.match(getRelation(), other.getRelation())) {
-            return false;
-        }
-        if (!path.equals(other.getPath(), exact)) {
-            return false;
-        }
-        return ObjectFilter.equals(filter, other.getFilter(), exact);
+        return QNameUtil.match(getType().getTypeName(), other.getType().getTypeName())
+                && QNameUtil.match(getRelation(), other.getRelation())
+                && ItemPath.equals(path, other.getPath(), exact)
+                && ObjectFilter.equals(filter, other.getFilter(), exact);
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
