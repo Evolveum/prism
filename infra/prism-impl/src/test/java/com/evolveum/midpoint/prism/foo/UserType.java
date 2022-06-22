@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-
+import javax.xml.namespace.QName;
 
 /**
  * <p>Java class for UserType complex type.
@@ -92,6 +92,7 @@ public class UserType
     public static final ItemName F_MULTI_CONSTRUCTION = new ItemName(NS_FOO, "multiConstruction");
     public static final ItemName F_MULTI_CONSTRUCTION_COPY = new ItemName(NS_FOO, "multiConstructionCopy");
     public static final ItemName F_PASSWORD = new ItemName(NS_FOO, "password");
+    public static final QName COMPLEX_TYPE = new QName(NS_FOO, "UserType");
 
     private static final long serialVersionUID = 201202081233L;
     @XmlElement(required = true)

@@ -222,7 +222,7 @@ public class FilterSerializers {
 
     private static void polystringMatchesFilter(EqualFilterImpl<?> source, QueryWriter target) {
         var poly = (PolyString) source.getValues().get(0).getValue();
-        QName matchingRule = source.getMatchingRule();
+        QName matchingRule = source.getDeclaredMatchingRule();
         target.writePath(source.getFullPath());
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
@@ -267,10 +267,18 @@ public class FilterSerializers {
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
         for (PrismReferenceValue value : source.getValues()) {
-            var oidEmitted = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
-            var targetEmitted = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
-                    oidEmitted);
-            writeProperty(target, "relation", value.getRelation(), true, targetEmitted);
+            var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
+            notFirst = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
+                    notFirst);
+            notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst);
+            if (source.getFilter() != null) {
+                if (notFirst) {
+                    target.writeFilterName(AND);
+                }
+                target.writePath("@");
+                target.writeFilterName(MATCHES);
+                target.writeNestedFilter(source.getFilter());
+            }
         }
         target.endNestedFilter();
     }
@@ -282,7 +290,7 @@ public class FilterSerializers {
     private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
             boolean emitAnd) {
         if (skipNull && value == null) {
-            return false;
+            return emitAnd;
         }
         if (emitAnd) {
             target.writeFilterName(AND);
@@ -297,7 +305,7 @@ public class FilterSerializers {
         checkExpressionSupported(source.getExpression());
         target.writePath(source.getFullPath());
         target.writeFilterName(name);
-        target.writeMatchingRule(source.getMatchingRule());
+        target.writeMatchingRule(source.getDeclaredMatchingRule());
 
         @Nullable
         ItemPath right = source.getRightHandSidePath();

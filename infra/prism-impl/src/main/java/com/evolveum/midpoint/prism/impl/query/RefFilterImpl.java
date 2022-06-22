@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.RefFilter;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
@@ -42,22 +43,39 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
      */
     private boolean targetTypeNullAsAny = true;
 
+    /**
+     * Target filter
+     */
+    private ObjectFilter filter;
+
     private RefFilterImpl(@NotNull ItemPath fullPath, @Nullable PrismReferenceDefinition definition,
-            @Nullable List<PrismReferenceValue> values, @Nullable ExpressionWrapper expression) {
+            @Nullable List<PrismReferenceValue> values, @Nullable ExpressionWrapper expression, @Nullable ObjectFilter filter) {
         super(fullPath, definition, null, values, expression, null, null);
+        this.filter = filter;
+    }
+
+    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, Collection<PrismReferenceValue> values,
+            ObjectFilter targetFilter) {
+        return new RefFilterImpl(path, definition, values != null ? new ArrayList<>(values) : null, null, targetFilter);
+    }
+
+    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, ExpressionWrapper expression,
+            ObjectFilter targetFilter) {
+        return new RefFilterImpl(path, definition, null, expression, targetFilter);
     }
 
     public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, Collection<PrismReferenceValue> values) {
-        return new RefFilterImpl(path, definition, values != null ? new ArrayList<>(values) : null, null);
+        return createReferenceEqual(path, definition, values, null);
     }
 
     public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, ExpressionWrapper expression) {
-        return new RefFilterImpl(path, definition, null, expression);
+        return createReferenceEqual(path, definition, expression, null);
     }
 
     @Override
     public RefFilterImpl clone() {
-        RefFilterImpl ret = new RefFilterImpl(getFullPath(), getDefinition(), getClonedValues(), getExpression());
+        ObjectFilter targetFilter = filter != null ? filter.clone() : null;
+        RefFilterImpl ret = new RefFilterImpl(getFullPath(), getDefinition(), getClonedValues(), getExpression(), targetFilter);
         ret.setOidNullAsAny(oidNullAsAny);
         ret.setTargetTypeNullAsAny(targetTypeNullAsAny);
         return ret;
@@ -95,6 +113,9 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     }
 
     private boolean valuesMatch(PrismReferenceValue filterValue, PrismReferenceValue objectValue) {
+        if (filter != null) {
+            throw new UnsupportedOperationException("Target filter not supported in in-memory processing");
+        }
         if (!matchOid(filterValue.getOid(), objectValue.getOid())) {
             return false;
         }
@@ -129,7 +150,15 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
 
     @Override
     public boolean equals(Object obj, boolean exact) {
-        return obj instanceof RefFilter && super.equals(obj, exact);
+        if (obj instanceof RefFilter && super.equals(obj, exact)) {
+            return ObjectFilter.equals(filter, ((RefFilter) obj).getFilter(), exact);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", targetFilter=" + filter;
     }
 
     @Override
@@ -155,11 +184,21 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     }
 
     @Override
+    public ObjectFilter getFilter() {
+        return filter;
+    }
+
+    @Override
     protected void debugDump(int indent, StringBuilder sb) {
         super.debugDump(indent, sb);
         sb.append("\n");
         DebugUtil.debugDumpWithLabelLn(sb, "Null OID means any", oidNullAsAny, indent + 1);
         DebugUtil.debugDumpWithLabel(sb, "Null target type means any", targetTypeNullAsAny, indent + 1);
         // relationNullAsAny is currently ignored anyway
+    }
+
+    public void setFilter(ObjectFilter buildFilter) {
+        checkMutable();
+        filter = buildFilter;
     }
 }

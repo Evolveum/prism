@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,16 +7,14 @@
 
 package com.evolveum.midpoint.prism.query;
 
-import com.evolveum.midpoint.prism.Freezable;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismContextSensitive;
-import com.evolveum.midpoint.prism.Revivable;
+import java.io.Serializable;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import java.io.Serializable;
 
 public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Freezable, PrismContextSensitive {
 
@@ -35,4 +33,11 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
     void checkConsistence(boolean requireDefinitions);
 
     boolean equals(Object o, boolean exact);
+
+    /** Utility method performing {@link #equals(Object, boolean)} on two nullable objects. */
+    static boolean equals(@Nullable ObjectFilter filter, @Nullable Object other, boolean exact) {
+        return filter != null
+                ? filter.equals(other, exact)
+                : other == null;
+    }
 }

@@ -29,6 +29,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition>
         extends ObjectFilterImpl implements ValueFilter<V, D> {
+
     private static final long serialVersionUID = 1L;
 
     @NotNull private final ItemPath fullPath;
@@ -113,8 +114,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     }
 
     @Override
-    @Nullable
-    public QName getMatchingRule() {
+    public @Nullable QName getDeclaredMatchingRule() {
         return matchingRule;
     }
 
@@ -393,7 +393,10 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Override
     protected void performFreeze() {
         values = freezeNullableList(values);
-        freezeAll(values);
+        // Values can be null if there is an expression that was not executed yet.
+        if (values != null) {
+            freezeAll(values);
+        }
         freeze(definition);
         freeze(rightHandSideDefinition);
         freeze(expression);

@@ -7,6 +7,10 @@
 
 package com.evolveum.midpoint.prism.query;
 
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.Nullable;
+
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismPropertyValue;
 
@@ -17,4 +21,17 @@ public interface PropertyValueFilter<T> extends ValueFilter<PrismPropertyValue<T
 
     // TODO cleanup this mess - how values are cloned, that expression is not cloned in LT/GT filter etc
     PropertyValueFilter clone();
+
+    @Override
+    default @Nullable QName getMatchingRule() {
+        QName maybe = getDeclaredMatchingRule();
+        if (maybe != null) {
+            return maybe;
+        }
+        var definition = getDefinition();
+        if (definition != null) {
+            return definition.getMatchingRuleQName();
+        }
+        return null;
+    }
 }

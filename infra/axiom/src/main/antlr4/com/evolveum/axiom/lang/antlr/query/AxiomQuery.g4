@@ -6,12 +6,12 @@ booleanLiteral: 'true' | 'false';
 
 intLiteral: INT;
 floatLiteral: FLOAT;
-stringLiteral : STRING_SINGLEQUOTE #singleQuoteString 
+stringLiteral : STRING_SINGLEQUOTE #singleQuoteString
     | STRING_DOUBLEQUOTE #doubleQuoteString
-    | STRING_MULTILINE_START (~('"""'))*'"""' # multilineString;
+    | STRING_MULTILINE # multilineString;
 
 
-literalValue: 
+literalValue:
       value=('true' | 'false') #booleanValue
     | value=INT #intValue
     | value=FLOAT #floatValue
@@ -51,7 +51,7 @@ itemPathComponent: '#' #IdentifierComponent
 path: '.' #SelfPath
     | parent ( '/' parent)* ( '/' itemPathComponent)* #ParentPath
     | itemPathComponent ( '/' itemPathComponent)* #DescendantPath
-    ;
+    | axiomPath #PathAxiomPath;
 
 
 
@@ -75,6 +75,8 @@ valueSet: '(' SEP* values+=singleValue SEP* (',' SEP* values+=singleValue SEP*)*
 negation: NOT_KEYWORD;
 // Filter could be Value filter or Logic Filter
 
+
+root: SEP* filter SEP*; // Needed for trailing spaces if multiline
 filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
            | left=filter (SEP+ OR_KEYWORD SEP+ right=filter) #orFilter
            | itemFilter #genFilter
@@ -82,13 +84,11 @@ filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
 
 
 subfilterSpec: '(' SEP* filter SEP* ')';
-itemFilter: path (SEP+ negation)? SEP+ filterName (matchingRule)? (SEP+ (subfilterOrValue))?;
+
+itemFilter: (path SEP* usedAlias=filterNameAlias (matchingRule)? SEP* (subfilterOrValue))
+    | (path (SEP+ negation)? SEP+ usedFilter=filterName (matchingRule)? (SEP+ (subfilterOrValue))?);
+
 subfilterOrValue : subfilterSpec | singleValue | valueSet;
-
-
-
-
-
 
 // grammar AxiomLiterals;
 
@@ -107,13 +107,23 @@ IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
 
 fragment SQOUTE : '\'';
 fragment DQOUTE : '"';
+fragment BACKTICK : '`';
 
 fragment ESC : '\\';
 //fragment ESC: '\\' ( ["\\/bfnrt] | UNICODE);
 
 STRING_SINGLEQUOTE: SQOUTE ((ESC SQOUTE) | ~[\n'])* SQOUTE;
 STRING_DOUBLEQUOTE: DQOUTE ((ESC DQOUTE) | ~[\n"])* DQOUTE;
-STRING_MULTILINE_START: '"""' ('\r')? '\n';
+
+STRING_MULTILINE: '"""' ('\r')? '\n' .*?  '"""';
+
+//STRING_MULTILINE_START: '"""' ('\r')? '\n';
+
+STRING_BACKTICK: BACKTICK ((ESC SQOUTE) | ~[\n'])* BACKTICK;
+
+
+STRING_BACKTICK_TRIQOUTE: '```' ('\r')? '\n' .*? '```';
+//STRING_BACKTICK_START: '```' ('\r')? '\n';
 
 fragment UNICODE: 'u' HEX HEX HEX HEX;
 fragment HEX: [0-9a-fA-F];

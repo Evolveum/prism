@@ -1,16 +1,16 @@
 /*
- * Copyright (C) 2020-2021 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 
 import java.util.*;
 import java.util.function.Function;
-
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
@@ -28,12 +28,12 @@ import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
+import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
+import com.evolveum.midpoint.prism.query.TypeFilter;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 
 public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
@@ -46,6 +46,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String REF_OID = "oid";
     private static final String REF_TYPE = "targetType";
     private static final String REF_REL = "relation";
+    private static final String REF_TARGET_ALIAS = "@";
+    private static final String REF_TARGET = "target";
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
@@ -72,7 +74,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             if (valueSet != null) {
 
                 ArrayList<Object> values = new ArrayList<>();
-                for(SingleValueContext value : valueSet.values) {
+                for (SingleValueContext value : valueSet.values) {
                     schemaCheck(value.literalValue() != null, "Only literal value is supported if multiple values are enumerated");
                     values.add(parseLiteral(propDef, value.literalValue()));
                 }
@@ -111,6 +113,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         protected final String filterName;
 
+        public SelfFilterFactory(QName filterName) {
+            this(filterName.getLocalPart());
+        }
+
         public SelfFilterFactory(String filterName) {
             this.filterName = filterName;
         }
@@ -144,8 +150,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         @Override
-        ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
-                Object value) {
+        ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule, Object value) {
             return SubstringFilterImpl.createSubstring(path, definition, context, matchingRule, value, anchorStart,
                     anchorEnd);
         }
@@ -166,7 +171,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         @Override
         protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
-                ArrayList<Object> values) throws SchemaException {
+                ArrayList<Object> values) {
             return EqualFilterImpl.createEqual(path, definition, matchingRule, context, values.toArray());
         }
     };
@@ -285,13 +290,28 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     return OrgFilterImpl.createRootOrg();
                 }
             })
-            .put(TYPE, new SelfFilterFactory("type" ) {
+            .put(TYPE, new SelfFilterFactory("type") {
 
                 @Override
                 protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    QName type = requireLiteral(QName.class, filterName,subfilterOrValue.singleValue());
+                    QName type = requireLiteral(QName.class, filterName, subfilterOrValue.singleValue());
                     return TypeFilterImpl.createType(type, null);
+                }
+            })
+            .put(OWNED_BY, new SelfFilterFactory(OWNED_BY) {
+                @Override
+                protected ObjectFilter create(PrismContainerDefinition<?> parentDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+                    var subfilter = subfilterOrValue.subfilterSpec().filter();
+
+                    List<FilterContext> andChildren = new ArrayList<>();
+                    expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
+
+                    QName type = consumeFromAnd(QName.class, "@type", andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
+                    var referrerSchema = context.getSchemaRegistry().findComplexTypeDefinitionByType(type);
+                    ObjectFilter filter = andFilter(null, referrerSchema, andChildren);
+                    return OwnedByFilterImpl.create(type, path, filter);
                 }
             })
             .build();
@@ -318,8 +338,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         this(context, ImmutableMap.of());
     }
 
+    protected boolean isVariablePath(SingleValueContext singleValue) {
+        return singleValue != null && isVariablePath(singleValue.path());
+    }
+
+    public boolean isVariablePath(PathContext path) {
+        return path.getText().contains("$");
+    }
+
     public Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
-        if(propDef.getTypeClass() != null) {
+        if (propDef.getTypeClass() != null) {
             // shortcut
             return parseLiteral(propDef.getTypeClass(), literalValue);
         }
@@ -385,7 +413,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return parseFilter(definition, definition.getComplexTypeDefinition(), source.root());
     }
 
-    private ObjectFilter parseFilter(PrismContainerDefinition<?> container, ComplexTypeDefinition typeDef,  FilterContext root)
+    private ObjectFilter parseFilter(PrismContainerDefinition<?> container, ComplexTypeDefinition typeDef, FilterContext root)
             throws SchemaException {
         if (root instanceof AndFilterContext) {
             return andFilter(container, typeDef, (AndFilterContext) root);
@@ -403,8 +431,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
 
-        expand(unparsed,AndFilterContext.class,AndFilterContext::filter, root.filter());
+        expand(unparsed, AndFilterContext.class, AndFilterContext::filter, root.filter());
+        return andFilter(complexType, typeDef, unparsed);
+    }
 
+    private ObjectFilter andFilter(PrismContainerDefinition<?> complexType, ComplexTypeDefinition typeDef, List<FilterContext> unparsed) throws SchemaException {
         ImmutableList.Builder<ObjectFilter> filters = ImmutableList.builder();
 
         TypeFilter typeFilter = null;
@@ -415,7 +446,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 ItemFilterContext itemFilter = ((GenFilterContext) next).itemFilter();
                 // If AND contains type filter, we extract it out in order to determine
                 // more specific type
-                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter.filterName()))) {
+                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter))) {
                     typeFilter = (TypeFilter) itemFilter(complexType, typeDef, itemFilter);
                     iterator.remove(); // We remove it from subfilters, since we are moving it u
                 }
@@ -435,7 +466,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return andFilter;
     }
 
-    private <E extends FilterContext> void expand(List<FilterContext> expanded, Class<E> expandable, Function<E,List<FilterContext>> expander, List<FilterContext> notExpanded) {
+    private <E extends FilterContext> void expand(List<FilterContext> expanded, Class<E> expandable, Function<E, List<FilterContext>> expander, List<FilterContext> notExpanded) {
         for (FilterContext filterContext : notExpanded) {
             if (filterContext instanceof SubFilterContext) {
                 var subfilter = (SubFilterContext) filterContext;
@@ -456,7 +487,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter orFilter(PrismContainerDefinition<?> complexType, ComplexTypeDefinition typeDef, OrFilterContext root)
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
-        expand(unparsed,OrFilterContext.class,OrFilterContext::filter, root.filter());
+        expand(unparsed, OrFilterContext.class, OrFilterContext::filter, root.filter());
 
         Builder<ObjectFilter> filters = ImmutableList.builder();
         for (FilterContext filterContext : unparsed) {
@@ -467,12 +498,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private ObjectFilter itemFilter(PrismContainerDefinition<?> parent, ComplexTypeDefinition typeDef, ItemFilterContext itemFilter)
             throws SchemaException {
-        QName filterName = filterName(itemFilter.filterName());
+        QName filterName = filterName(itemFilter);
         QName matchingRule = itemFilter.matchingRule() != null
                 ? toFilterName(MATCHING_RULE_NS, itemFilter.matchingRule().prefixedName())
                 : null;
         ItemPath path = path(parent, itemFilter.path());
         ItemDefinition<?> itemDefinition = findDefinition(parent, typeDef, path, ItemDefinition.class);
+        schemaCheck(itemDefinition != null, "Path %s is not present in type %", path, typeDef.getTypeName());
         ItemFilterFactory factory = filterFactories.get(filterName);
         schemaCheck(factory != null, "Unknown filter %s", filterName);
 
@@ -510,7 +542,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return ItemPathHolder.parseFromString(path.getText(), namespaceContext);
     }
 
-    private QName filterName(FilterNameContext filterName) {
+    private QName filterName(ItemFilterContext filter) {
+        if (filter.filterNameAlias() != null) {
+            return FilterNames.fromAlias(filter.filterNameAlias().getText()).orElseThrow();
+        }
+        FilterNameContext filterName = filter.filterName();
         if (filterName.filterNameAlias() != null) {
             return FilterNames.fromAlias(filterName.filterNameAlias().getText()).orElseThrow();
         }
@@ -582,7 +618,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
      */
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
             FilterContext filter) throws SchemaException {
-        Map<String, Object> props = valuesFromFilter("PolyString", POLYSTRING_PROPS, filter, new HashMap<>());
+        Map<String, Object> props = valuesFromFilter("PolyString", POLYSTRING_PROPS, filter, new HashMap<>(), true);
         String orig = (String) props.get(POLYSTRING_ORIG);
         String norm = (String) props.get(POLYSTRING_NORM);
         schemaCheck(orig != null || norm != null, "orig or norm must be defined in matches polystring filter.");
@@ -606,54 +642,125 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return (T) XmlTypeConverter.toJavaValue(path.getText(), new HashMap<>(), QName.class);
 
         }
-        LiteralValueContext literalContext = subfilterOrValue.singleValue().literalValue();
+        var singleValue = subfilterOrValue.singleValue();
+        schemaCheck(singleValue != null, "Single value is required.");
+
+        if (ItemPath.class.equals(type)) {
+            var pathContext = singleValue.path();
+            schemaCheck(pathContext != null, "path is required");
+            return (T) path(null, pathContext);
+        }
+
+        LiteralValueContext literalContext = singleValue.literalValue();
         schemaCheck(literalContext != null, "Literal value required");
         return type.cast(parseLiteral(type, literalContext));
     }
 
     /**
      * oidAsAny targetAsAny relationshipAsAny
-     *
-     * @param path
-     * @param definition
-     * @param filter
-     * @return
-     * @throws SchemaException
      */
     private ObjectFilter matchesReferenceFilter(ItemPath path, PrismReferenceDefinition definition,
             FilterContext filter) throws SchemaException {
-        Map<String, Object> props = valuesFromFilter("ObjectReference", REF_PROPS, filter, new HashMap<>());
-        PrismReferenceValue value = new PrismReferenceValueImpl((String) props.get(REF_OID),
-                (QName) props.get(REF_TYPE));
-        value.setRelation((QName) props.get(REF_REL));
+        List<FilterContext> andChildren = new ArrayList<>();
+        expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(filter));
 
+        boolean oidNullAsAny = !andContains(REF_OID, andChildren);
+        boolean typeNullAsAny = !andContains(REF_TYPE, andChildren);
+
+        String oid = consumeFromAnd(String.class, REF_OID, andChildren);
+        QName relation = consumeFromAnd(QName.class, REF_REL, andChildren);
+        QName type = consumeFromAnd(QName.class, REF_TYPE, andChildren);
+
+        QName targetType = definition.getTargetTypeName();
+        if (targetType == null) {
+            targetType = type;
+        } else {
+            targetType = context.getSchemaRegistry().selectMoreSpecific(type, targetType);
+        }
+
+        ObjectFilter targetFilter = null;
+        if (andChildren.size() == 1) {
+            var targetCtx = consumeFromAnd(REF_TARGET_ALIAS, MATCHES, andChildren);
+            if (targetCtx == null) {
+                targetCtx = consumeFromAnd(REF_TARGET, MATCHES, andChildren);
+            }
+            if (targetCtx == null) {
+                throw new SchemaException("Additional unsupported filter specified: " + andChildren.get(0).getText());
+            }
+            var targetSchema = context.getSchemaRegistry().findObjectDefinitionByType(targetType);
+            targetFilter = parseFilter(targetSchema, targetSchema.getComplexTypeDefinition(), targetCtx.subfilterOrValue().subfilterSpec().filter());
+        }
+
+        PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
+        value.setRelation(relation);
         RefFilterImpl result = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition,
-                Collections.singletonList(value));
+                Collections.singletonList(value), targetFilter);
+        result.setOidNullAsAny(oidNullAsAny);
+        result.setTargetTypeNullAsAny(typeNullAsAny);
 
-        result.setOidNullAsAny(!props.containsKey(REF_OID));
-        result.setTargetTypeNullAsAny(!props.containsKey(REF_TYPE));
         return result;
     }
 
     private Map<String, Object> valuesFromFilter(String typeName, Map<String, Class<?>> props, FilterContext child,
-            Map<String, Object> result) throws SchemaException {
+            Map<String, Object> result, boolean strict) throws SchemaException {
         if (child instanceof GenFilterContext) {
             ItemFilterContext filter = ((GenFilterContext) child).itemFilter();
-            if (EQUAL.equals(filterName(filter.filterName()))) {
+            if (EQUAL.equals(filterName(filter))) {
                 String name = filter.path().getText();
                 Class<?> propType = props.get(name);
                 schemaCheck(propType != null, "Unknown property %s for %s", name, typeName);
                 if (name.equals(filter.path().getText())) {
                     result.put(name, extractValue(propType, filter.subfilterOrValue()));
                 }
+            } else if (strict) {
+                throw new SchemaException("Only 'equals' and 'and' filters are supported.");
             }
         } else if (child instanceof AndFilterContext) {
-            valuesFromFilter(typeName, props, ((AndFilterContext) child).left, result);
-            valuesFromFilter(typeName, props, ((AndFilterContext) child).right, result);
-        } else {
+            valuesFromFilter(typeName, props, ((AndFilterContext) child).left, result, strict);
+            valuesFromFilter(typeName, props, ((AndFilterContext) child).right, result, strict);
+        } else if (strict) {
             throw new SchemaException("Only 'equals' and 'and' filters are supported.");
         }
         return result;
+    }
+
+    private <T> T consumeFromAnd(Class<T> valueType, String path, Collection<FilterContext> andFilters) throws SchemaException {
+        ItemFilterContext maybe = consumeFromAnd(path, EQUAL, andFilters);
+        if (maybe != null) {
+            return extractValue(valueType, maybe.subfilterOrValue());
+        }
+        return null;
+    }
+
+    private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) {
+        var iterator = andFilters.iterator();
+        while (iterator.hasNext()) {
+            var maybe = iterator.next();
+            if (maybe instanceof GenFilterContext) {
+                ItemFilterContext filter = ((GenFilterContext) maybe).itemFilter();
+                // If we have equals filter and name matches, extract value and remove it from list
+                // for further processing
+                if (path.equals(filter.path().getText()) && (filterName == null || filterName.equals(filterName(filter)))) {
+                    iterator.remove();
+                    return filter;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean andContains(String path, Collection<FilterContext> andFilters) {
+        for (FilterContext maybe : andFilters) {
+            if (maybe instanceof GenFilterContext) {
+                ItemFilterContext filter = ((GenFilterContext) maybe).itemFilter();
+                // If we have equals filter and name matches, extract value and remove it from list
+                // for further processing
+                if (EQUAL.equals(filterName(filter)) && path.equals(filter.path().getText())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static PrismQueryLanguageParserImpl create(PrismContext prismContext) {
