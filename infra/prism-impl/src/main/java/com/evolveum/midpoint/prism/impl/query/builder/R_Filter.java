@@ -27,7 +27,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  */
 // FIXME: Add better names
 @Experimental
-public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
+public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
 
     private final QueryBuilder queryBuilder;
     private final Class<? extends Containerable> currentClass; // object we are working on (changes on Exists filter)
@@ -167,32 +167,32 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
-    public S_AtomicFilterExit all() {
+    public S_FilterExit all() {
         return addSubfilter(AllFilterImpl.createAll());
     }
 
     @Override
-    public S_AtomicFilterExit none() {
+    public S_FilterExit none() {
         return addSubfilter(NoneFilterImpl.createNone());
     }
 
     @Override
-    public S_AtomicFilterExit undefined() {
+    public S_FilterExit undefined() {
         return addSubfilter(UndefinedFilterImpl.createUndefined());
     }
 
     @Override
-    public S_AtomicFilterExit filter(ObjectFilter filter) {
+    public S_FilterExit filter(ObjectFilter filter) {
         return addSubfilter(filter);
     }
 
     @Override
-    public S_AtomicFilterExit id(String... identifiers) {
+    public S_FilterExit id(String... identifiers) {
         return addSubfilter(InOidFilterImpl.createInOid(identifiers));
     }
 
     @Override
-    public S_AtomicFilterExit id(long... identifiers) {
+    public S_FilterExit id(long... identifiers) {
         List<String> ids = longsToStrings(identifiers);
         return addSubfilter(InOidFilterImpl.createInOid(ids));
     }
@@ -206,69 +206,69 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
-    public S_AtomicFilterExit ownerId(String... identifiers) {
+    public S_FilterExit ownerId(String... identifiers) {
         return addSubfilter(InOidFilterImpl.createOwnerHasOidIn(identifiers));
     }
 
     @Override
-    public S_AtomicFilterExit ownerId(long... identifiers) {
+    public S_FilterExit ownerId(long... identifiers) {
         return addSubfilter(InOidFilterImpl.createOwnerHasOidIn(longsToStrings(identifiers)));
     }
 
     @Override
-    public S_AtomicFilterExit isDirectChildOf(PrismReferenceValue value) {
+    public S_FilterExit isDirectChildOf(PrismReferenceValue value) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(value, OrgFilter.Scope.ONE_LEVEL);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isChildOf(PrismReferenceValue value) {
+    public S_FilterExit isChildOf(PrismReferenceValue value) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(value, OrgFilter.Scope.SUBTREE);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isParentOf(PrismReferenceValue value) {
+    public S_FilterExit isParentOf(PrismReferenceValue value) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(value, OrgFilter.Scope.ANCESTORS);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isDirectChildOf(String oid) {
+    public S_FilterExit isDirectChildOf(String oid) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(oid, OrgFilter.Scope.ONE_LEVEL);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isChildOf(String oid) {
+    public S_FilterExit isChildOf(String oid) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(oid, OrgFilter.Scope.SUBTREE);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isInScopeOf(String oid, OrgFilter.Scope scope) {
+    public S_FilterExit isInScopeOf(String oid, OrgFilter.Scope scope) {
         return addSubfilter(OrgFilterImpl.createOrg(oid, scope));
     }
 
     @Override
-    public S_AtomicFilterExit isInScopeOf(PrismReferenceValue value, OrgFilter.Scope scope) {
+    public S_FilterExit isInScopeOf(PrismReferenceValue value, OrgFilter.Scope scope) {
         return addSubfilter(OrgFilterImpl.createOrg(value, scope));
     }
 
     @Override
-    public S_AtomicFilterExit isParentOf(String oid) {
+    public S_FilterExit isParentOf(String oid) {
         OrgFilter orgFilter = OrgFilterImpl.createOrg(oid, OrgFilter.Scope.ANCESTORS);
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit isRoot() {
+    public S_FilterExit isRoot() {
         OrgFilter orgFilter = OrgFilterImpl.createRootOrg();
         return addSubfilter(orgFilter);
     }
 
     @Override
-    public S_AtomicFilterExit fullText(String... words) {
+    public S_FilterExit fullText(String... words) {
         FullTextFilter fullTextFilter = FullTextFilterImpl.createFullText(words);
         return addSubfilter(fullTextFilter);
     }
@@ -295,7 +295,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
-    public RefByEntry referencedBy(
+    public S_FilterEntryOrEmpty referencedBy(
             @NotNull Class<? extends Containerable> type,
             @NotNull ItemPath path,
             QName relation) {
@@ -402,7 +402,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
-    public S_AtomicFilterEntry not() {
+    public S_FilterEntry not() {
         return setNegated();
     }
 
@@ -458,7 +458,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_AtomicFilterExit {
     }
 
     @Override
-    public S_AtomicFilterExit endBlock() {
+    public S_FilterExit endBlock() {
         if (parentFilter == null) {
             throw new IllegalStateException("endBlock() call without preceding block() one");
         }

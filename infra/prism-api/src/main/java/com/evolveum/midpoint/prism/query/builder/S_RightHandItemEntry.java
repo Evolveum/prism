@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -11,9 +11,12 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
+/**
+ * See the grammar in Javadoc for {@code QueryBuilder}.
+ */
 public interface S_RightHandItemEntry {
 
     // TODO add support for matching rules
-    S_AtomicFilterExit item(QName... names);
-    S_AtomicFilterExit item(ItemPath itemPath, ItemDefinition<?> itemDefinition);
+    S_FilterExit item(QName... names);
+    S_FilterExit item(ItemPath itemPath, ItemDefinition<?> itemDefinition);
 }

@@ -73,12 +73,12 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit item(QName... names) {
+    public S_FilterExit item(QName... names) {
         return item(ItemPath.create((Object[]) names), null);
     }
 
     @Override
-    public S_AtomicFilterExit item(ItemPath itemPath, ItemDefinition<?> itemDefinition) {
+    public S_FilterExit item(ItemPath itemPath, ItemDefinition<?> itemDefinition) {
         if (!expectingRightSide) {
             throw new IllegalStateException("Unexpected item() call");
         }
@@ -230,7 +230,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit refRelation(QName... relations) {
+    public S_FilterExit refRelation(QName... relations) {
         List<PrismReferenceValue> values = new ArrayList<>();
         for (QName relation : relations) {
             PrismReferenceValue ref = new PrismReferenceValueImpl();
@@ -241,7 +241,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit refType(QName... targetTypeNames) {
+    public S_FilterExit refType(QName... targetTypeNames) {
         List<PrismReferenceValue> values = new ArrayList<>();
         for (QName targetTypeName : targetTypeNames) {
             PrismReferenceValue ref = new PrismReferenceValueImpl();
@@ -252,22 +252,22 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit ref(PrismReferenceValue... values) {
+    public S_FilterExit ref(PrismReferenceValue... values) {
         return ref(MiscUtil.asListTreatingNull(values));
     }
 
     @Override
-    public S_AtomicFilterExit ref(Collection<PrismReferenceValue> values) {
+    public S_FilterExit ref(Collection<PrismReferenceValue> values) {
         return ref(values, true, true);
     }
 
     @Override
-    public S_AtomicFilterExit ref(Collection<PrismReferenceValue> values, boolean nullTypeAsAny) {
+    public S_FilterExit ref(Collection<PrismReferenceValue> values, boolean nullTypeAsAny) {
         return ref(values, true, nullTypeAsAny);
     }
 
     @Override
-    public S_AtomicFilterExit ref(
+    public S_FilterExit ref(
             Collection<PrismReferenceValue> values, boolean nullOidAsAny, boolean nullTypeAsAny) {
         RefFilter filter = RefFilterImpl.createReferenceEqual(itemPath, referenceDefinition, values);
         filter.setOidNullAsAny(nullOidAsAny);
@@ -276,18 +276,18 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit ref(RefFilter filter) {
+    public S_FilterExit ref(RefFilter filter) {
         return new R_AtomicFilter(this, filter);
     }
 
     @Override
-    public S_AtomicFilterExit ref(ExpressionWrapper expression) {
+    public S_FilterExit ref(ExpressionWrapper expression) {
         RefFilter filter = RefFilterImpl.createReferenceEqual(itemPath, referenceDefinition, expression);
         return ref(filter);
     }
 
     @Override
-    public S_AtomicFilterExit ref(String... oids) {
+    public S_FilterExit ref(String... oids) {
         if (oids.length == 0 || oids.length == 1 && oids[0] == null) {
             return isNull();
         } else {
@@ -297,7 +297,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit ref(@Nullable String oid, @Nullable QName targetTypeName, @Nullable QName relation) {
+    public S_FilterExit ref(@Nullable String oid, @Nullable QName targetTypeName, @Nullable QName relation) {
         if (oid == null && targetTypeName == null && relation == null) {
             return isNull();
         } else {
@@ -308,7 +308,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit isNull() {
+    public S_FilterExit isNull() {
         if (propertyDefinition != null) {
             return new R_AtomicFilter(this,
                     EqualFilterImpl.createEqual(itemPath, propertyDefinition, null));
@@ -323,29 +323,29 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit matching(QName matchingRuleName) {
+    public S_FilterExit matching(QName matchingRuleName) {
         ValueFilter<?, ?> clone = filter.clone();
         clone.setMatchingRule(matchingRuleName);
         return new R_AtomicFilter(this, clone);
     }
 
     @Override
-    public S_AtomicFilterExit matchingOrig() {
+    public S_FilterExit matchingOrig() {
         return matching(PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME);
     }
 
     @Override
-    public S_AtomicFilterExit matchingNorm() {
+    public S_FilterExit matchingNorm() {
         return matching(PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME);
     }
 
     @Override
-    public S_AtomicFilterExit matchingStrict() {
+    public S_FilterExit matchingStrict() {
         return matching(PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME);
     }
 
     @Override
-    public S_AtomicFilterExit matchingCaseIgnore() {
+    public S_FilterExit matchingCaseIgnore() {
         return matching(PrismConstants.STRING_IGNORE_CASE_MATCHING_RULE_NAME);
     }
 
@@ -403,7 +403,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_AtomicFilterExit endBlock() {
+    public S_FilterExit endBlock() {
         return finish().endBlock();
     }
 
