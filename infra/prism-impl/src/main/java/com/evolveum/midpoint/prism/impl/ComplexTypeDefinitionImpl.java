@@ -293,26 +293,30 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public <ID extends ItemDefinition> ID findNamedItemDefinition(@NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
         ID found = null;
-        for (ItemDefinition def : getDefinitions()) {
-            if (def.isValidFor(firstName, clazz, false)) {
+        for (ItemDefinition<?> def : getDefinitions()) {
+            if (QNameUtil.match(def.getItemName(), firstName, false)) {
                 if (found != null) {
                     throw new IllegalStateException("More definitions found for " + firstName + "/" + rest + " in " + this);
                 }
-                found = (ID) def.findItemDefinition(rest, clazz);
+                found = def.findItemDefinition(rest, clazz);
                 if (QNameUtil.hasNamespace(firstName)) {
-                    return found;            // if qualified then there's no risk of matching more entries
+                    break;            // if qualified then there's no risk of matching more entries
                 }
             }
         }
         if (found != null) {
+            if (clazz.isInstance(found)) {
             return found;
+            } else {
+                return null;
+            }
         }
         if (isXsdAnyMarker()) {
             SchemaRegistry schemaRegistry = getSchemaRegistry();
             if (schemaRegistry != null) {
-                ItemDefinition def = schemaRegistry.findItemDefinitionByElementName(firstName);
+                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
                 if (def != null) {
-                    return (ID) def.findItemDefinition(rest, clazz);
+                    return def.findItemDefinition(rest, clazz);
                 }
             }
         }

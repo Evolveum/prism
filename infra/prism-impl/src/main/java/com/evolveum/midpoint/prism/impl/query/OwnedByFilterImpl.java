@@ -30,22 +30,25 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
     private static final long serialVersionUID = 1L;
 
     private final @NotNull ComplexTypeDefinition type;
-    private final @NotNull ItemPath path;
-    private final ObjectFilter filter;
+    private final @Nullable ItemPath path;
+    private final @Nullable ObjectFilter filter;
 
-    private OwnedByFilterImpl(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path, ObjectFilter filter) {
+    private OwnedByFilterImpl(@NotNull ComplexTypeDefinition type,
+            @Nullable ItemPath path, @Nullable ObjectFilter filter) {
         this.type = Objects.requireNonNull(type);
-        this.path = Objects.requireNonNull(path);
+        this.path = path;
         this.filter = filter;
     }
 
-    public static OwnedByFilter create(@NotNull QName typeName, @NotNull ItemPath path, ObjectFilter filter) {
+    public static OwnedByFilter create(@NotNull QName typeName,
+            @Nullable ItemPath path, @Nullable ObjectFilter filter) {
         var type = PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(typeName);
         Preconditions.checkArgument(type != null, "Type %s does not have complex type definition", typeName);
         return new OwnedByFilterImpl(type, path, filter);
     }
 
-    public static OwnedByFilter create(@NotNull ComplexTypeDefinition type, @NotNull ItemPath path, ObjectFilter filter) {
+    public static OwnedByFilter create(@NotNull ComplexTypeDefinition type,
+            @Nullable ItemPath path, @Nullable ObjectFilter filter) {
         return new OwnedByFilterImpl(type, path, filter);
     }
 
@@ -78,20 +81,14 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
 
     @Override
     public boolean equals(Object o, boolean exact) {
-        if (o instanceof OwnedByFilterImpl) {
-            var other = (OwnedByFilterImpl) o;
-            if (!QNameUtil.match(type.getTypeName(), other.type.getTypeName())) {
+        if (!(o instanceof OwnedByFilterImpl)) {
                 return false;
             }
-            if (!path.equals(other.getPath(), exact)) {
-                return false;
-            }
-            if (filter == null && other.getFilter() != null) {
-                return false;
-            }
-            return filter == null || filter.equals(other.getFilter(), exact);
-        }
-        return false;
+
+        var other = (OwnedByFilterImpl) o;
+        return QNameUtil.match(type.getTypeName(), other.type.getTypeName())
+                && ItemPath.equals(path, other.getPath(), exact)
+                && ObjectFilter.equals(filter, other.getFilter(), exact);
     }
 
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")

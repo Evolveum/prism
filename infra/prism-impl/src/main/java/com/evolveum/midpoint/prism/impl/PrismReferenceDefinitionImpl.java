@@ -117,7 +117,8 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
             return super.findItemDefinition(path, clazz);
         } else {
             ItemPath rest = path.rest();
-            PrismObjectDefinition referencedObjectDefinition = getSchemaRegistry().determineReferencedObjectDefinition(targetTypeName, rest);
+            PrismObjectDefinition referencedObjectDefinition =
+                    getSchemaRegistry().determineReferencedObjectDefinition(targetTypeName, rest);
             return (T) ((ItemDefinition) referencedObjectDefinition).findItemDefinition(rest, clazz);
         }
     }
