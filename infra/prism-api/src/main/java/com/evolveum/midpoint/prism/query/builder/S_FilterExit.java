@@ -6,17 +6,11 @@
  */
 package com.evolveum.midpoint.prism.query.builder;
 
-import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.path.ItemPath;
-
+/**
+ * See the grammar in Javadoc for {@code QueryBuilder}.
+ */
 public interface S_FilterExit extends S_QueryExit {
 
-    S_AtomicFilterExit endBlock();
-    S_FilterExit asc(QName... names);
-    S_FilterExit asc(ItemPath path);
-    S_FilterExit desc(QName... names);
-    S_FilterExit desc(ItemPath path);
-    S_FilterExit offset(Integer n);
-    S_FilterExit maxSize(Integer n);
+    S_FilterEntry or();
+    S_FilterEntry and();
 }

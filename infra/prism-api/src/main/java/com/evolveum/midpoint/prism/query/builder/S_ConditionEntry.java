@@ -16,6 +16,9 @@ import com.evolveum.midpoint.prism.PrismProperty;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.query.RefFilter;
 
+/**
+ * See the grammar in Javadoc for {@code QueryBuilder}.
+ */
 public interface S_ConditionEntry {
 
     /**
@@ -48,28 +51,28 @@ public interface S_ConditionEntry {
     S_MatchingRuleEntry contains(Object value);
     S_MatchingRuleEntry containsPoly(String orig, String norm);
     S_MatchingRuleEntry containsPoly(String orig);
-    S_AtomicFilterExit refRelation(QName... relations);
-    S_AtomicFilterExit refType(QName... targetTypeName);
-    S_AtomicFilterExit ref(PrismReferenceValue... value);
-    S_AtomicFilterExit ref(Collection<PrismReferenceValue> values);
-    S_AtomicFilterExit ref(Collection<PrismReferenceValue> values, boolean nullTypeAsAny);                          // beware, nullTypeAsAny=false is supported only by built-in match(..) method
-    S_AtomicFilterExit ref(Collection<PrismReferenceValue> values, boolean nullOidAsAny, boolean nullTypeAsAny);    // beware, nullTypeAsAny=false and nullOidAsAny=false are supported only by built-in match(..) method
-    S_AtomicFilterExit ref(ExpressionWrapper expression);
-    S_AtomicFilterExit ref(RefFilter filter);
+    S_FilterExit refRelation(QName... relations);
+    S_FilterExit refType(QName... targetTypeName);
+    S_FilterExit ref(PrismReferenceValue... value);
+    S_FilterExit ref(Collection<PrismReferenceValue> values);
+    S_FilterExit ref(Collection<PrismReferenceValue> values, boolean nullTypeAsAny);                          // beware, nullTypeAsAny=false is supported only by built-in match(..) method
+    S_FilterExit ref(Collection<PrismReferenceValue> values, boolean nullOidAsAny, boolean nullTypeAsAny);    // beware, nullTypeAsAny=false and nullOidAsAny=false are supported only by built-in match(..) method
+    S_FilterExit ref(ExpressionWrapper expression);
+    S_FilterExit ref(RefFilter filter);
 
     /**
      * Creates filter matching any of provided OIDs; works like oid is Any with no/null OID.
      */
-    S_AtomicFilterExit ref(String... oid);
+    S_FilterExit ref(String... oid);
 
     /**
      * Creates filter matching oid and/or targetTypeName, any of them optional.
      * If both are null the result is the same as {@link #isNull()} (null ref OID matches).
      */
-    default S_AtomicFilterExit ref(@Nullable String oid, @Nullable QName targetTypeName) {
+    default S_FilterExit ref(@Nullable String oid, @Nullable QName targetTypeName) {
         return ref(oid, targetTypeName, null);
     }
 
-    S_AtomicFilterExit ref(@Nullable String oid, @Nullable QName targetTypeName, @Nullable QName relation);
-    S_AtomicFilterExit isNull();
+    S_FilterExit ref(@Nullable String oid, @Nullable QName targetTypeName, @Nullable QName relation);
+    S_FilterExit isNull();
 }

@@ -220,7 +220,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         @Override
         protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
-                ArrayList<Object> values) throws SchemaException {
+                ArrayList<Object> values) {
             return EqualFilterImpl.createEqual(path, definition, matchingRule, values.toArray());
         }
     };
@@ -249,7 +249,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
                 @Override
                 protected ObjectFilter valuesFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
-                        ArrayList<Object> values) throws SchemaException {
+                        ArrayList<Object> values) {
                     return AnyInFilterImpl.createAnyIn(path, definition, matchingRule, values.toArray());
                 }
             })
@@ -344,8 +344,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(EXISTS, new ItemFilterFactory() {
                 @Override
                 public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath,
-                        ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
-                        throws SchemaException {
+                        ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) {
                     return ExistsFilterImpl.createExists(itemPath, parentDef, null);
                 }
             })
@@ -446,8 +445,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(EXISTS, new ItemFilterFactory() {
                 @Override
                 public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath,
-                        ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
-                        throws SchemaException {
+                        ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) {
                     if (itemDef instanceof PrismPropertyDefinition<?>) {
                         return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<?>) itemDef,
                                 matchingRule);
@@ -459,7 +457,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private final PrismContext context;
     private final Map<String, String> namespaceContext;
-    private PrismQueryExpressionFactory expressionParser;
+    private final PrismQueryExpressionFactory expressionParser;
 
     public PrismQueryLanguageParserImpl(PrismContext context) {
         this(context, ImmutableMap.of(), null);
@@ -919,7 +917,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return null;
     }
 
-    private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) throws SchemaException {
+    private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) {
         var iterator = andFilters.iterator();
         while (iterator.hasNext()) {
             var maybe = iterator.next();
@@ -936,10 +934,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return null;
     }
 
-    private boolean andContains(String path, Collection<FilterContext> andFilters) throws SchemaException {
-        var iterator = andFilters.iterator();
-        while (iterator.hasNext()) {
-            var maybe = iterator.next();
+    private boolean andContains(String path, Collection<FilterContext> andFilters) {
+        for (FilterContext maybe : andFilters) {
             if (maybe instanceof GenFilterContext) {
                 ItemFilterContext filter = ((GenFilterContext) maybe).itemFilter();
                 // If we have equals filter and name matches, extract value and remove it from list

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -14,31 +14,49 @@ import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 
 /**
  * Here is the language structure:
-
- Query ::= Filter? ('ASC(path)' | 'DESC(path)')*
-
- Filter ::= 'NOT'? SimpleFilter ( ('AND'|'OR') 'NOT'? SimpleFilter )*
-
- SimpleFilter ::= PrimitiveFilter |
-                  'BLOCK' Filter 'END-BLOCK' |
-                  'TYPE(type)' Filter |
-                  'EXISTS(path)' Filter
-
- PrimitiveFilter ::= 'ALL' | 'NONE' | 'UNDEFINED' |
-                     ('ITEM(path)' ( ValueComparisonCondition | 'IS-NULL' | ( ItemComparisonCondition 'ITEM(path)') ) ) |
-                     ('ID(values)') | ('OWNER-ID(values)')
-
- ValueComparisonCondition ::= 'EQ(value)' | 'GT(value)' | 'GE(value)' | 'LT(value)' | 'LE(value)' | 'STARTSWITH(value)' | 'ENDSWITH(value)' | 'CONTAINS(value)' | 'REF(value)' | 'ORG(value)'
- ItemComparisonCondition ::= 'EQ' | 'GT' | 'GE' | 'LT' | 'LE'
-
+ * <pre>
+ * Query ::= Filter? ('ASC(path)' | 'DESC(path)')* 'OFFSET(n)'? 'MAX-SIZE(n)'?
  *
- * It can be visualized e.g. using http://www.bottlecaps.de/rr/ui
- * <p>
+ * Filter ::= 'ALL'
+ * | 'NONE'
+ * | 'UNDEFINED'
+ * | 'NOT' Filter
+ * | Filter ('AND'|'OR') Filter
+ * | 'BLOCK' Filter? 'END-BLOCK'
+ * | 'TYPE(type)' Filter?
+ * | 'EXISTS(path)' Filter?
+ * | 'REF(path, values*?)' Filter?
+ * | 'REFERENCED-BY(class, path, relation?)' Filter?
+ * | 'OWNED-BY(class, path?)' Filter?
+ * | 'FULLTEXT(value)'
+ * | 'ITEM(path)' ValueComparisonCondition
+ * | 'ITEM(path)' ItemComparisonCondition 'ITEM(path)'
+ * | 'ITEM(path)' 'IS-NULL'
+ * | 'ID(values)'
+ * | 'OWNER-ID(values)'
+ * | OrgFilter
+ *
+ * ValueComparisonCondition ::= 'EQ(value)' | 'GT(value)' | 'GE(value)' | 'LT(value)' | 'LE(value)'
+ * | 'STARTS-WITH(value)' | 'ENDS-WITH(value)' | 'CONTAINS(value)'
+ * | 'REF(value)'
+ * | 'ORG(value)'
+ *
+ * ItemComparisonCondition ::= 'EQ' | 'GT' | 'GE' | 'LT' | 'LE'
+ *
+ * OrgFilter ::= 'IS-ROOT'
+ * | 'IS-DIRECT-CHILD-OF(value)'
+ * | 'IS-CHILD-OF(value)'
+ * | 'IS-PARENT-OF(value)'
+ * | 'IS-IN-SCOPE-OF(value, scope)'
+ * </pre>
+ *
+ * It can be visualized e.g. using https://www.bottlecaps.de/rr/ui
+ * <p/>
  * Individual keywords ('AND', 'OR', 'BLOCK', ...) are mapped to methods.
  * Connections between these keywords are mapped to interfaces.
  * It can be viewed as interfaces = states, keywords = transitions. (Or vice versa, but this is more natural.)
  * The interfaces have names starting with S_ (for "state").
- * <p>
+ * <p/>
  * Interfaces are implemented by classes that aggregate state of the query being created.
  * This is quite hacked for now... to be implemented more seriously.
  */
