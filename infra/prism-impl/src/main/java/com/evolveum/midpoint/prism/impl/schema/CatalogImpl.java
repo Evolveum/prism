@@ -7,16 +7,13 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
+import java.net.URI;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.resolver.Catalog;
 
-import java.net.URI;
-
-/**
- *
- */
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 
 @SuppressWarnings("unused")     // Referenced in MidPointSpringApplication by name.
 public class CatalogImpl extends Catalog {
@@ -24,6 +21,8 @@ public class CatalogImpl extends Catalog {
     private static final Trace LOGGER = TraceManager.getTrace(CatalogImpl.class);
 
     /**
+     * TODO: reconsider after removing WAR.
+     *
      * This fixes catalog items. When launched as spring boot fat jar, catalog by default resolve URIs like
      * <p>
      * jar:file:/SOME_ABSOLUTE_PATH/midpoint.war!/WEB-INF/lib/schema-3.7-SNAPSHOT.jar!/META-INF/../xml/ns/public/common/common-core-3.xsd

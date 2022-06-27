@@ -541,7 +541,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
                 <configuration>
                     <skipIfEmpty>true</skipIfEmpty>
                     <archive>
@@ -555,26 +554,6 @@
                             <License-URL>https://www.apache.org/licenses/LICENSE-2.0.txt and https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</License-URL>
                         </manifestEntries>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>3.2.3</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Version-Number>${project.version}</Version-Number>
-                            <SCM-Revision>${git.describe}</SCM-Revision>
-                            <Organization>Evolveum</Organization>
-                            <Organization-URL>https://www.evolveum.com</Organization-URL>
-                            <Bugtracking-System>https://jira.evolveum.com</Bugtracking-System>
-                            <License>dual-licensed under the Apache License 2.0 and European Union Public License</License>
-                            <License-URL>https://www.apache.org/licenses/LICENSE-2.0.txt and https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</License-URL>
-                        </manifestEntries>
-                    </archive>
-                    <attachClasses>true</attachClasses>
-                    <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
             </plugin>
 

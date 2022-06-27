@@ -162,6 +162,7 @@ public class ClassPathUtil {
         }
         URI srcUrl = src.toURI();
 
+        // TODO: reconsider after removing WAR.
         String[] parts = srcUrl.toString().split("!/");
         if (parts.length == 3
                 && parts[1].equals("WEB-INF/classes")) {
