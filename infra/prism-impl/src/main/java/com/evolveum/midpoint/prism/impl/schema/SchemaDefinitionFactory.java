@@ -67,7 +67,9 @@ public class SchemaDefinitionFactory {
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
             PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) throws SchemaException {
         var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
-        return new PrismPropertyDefinitionImpl<>(elementName, typeName, allowedValues, defaultValue, definedInType);
+        PrismPropertyDefinitionImpl def = new PrismPropertyDefinitionImpl<>(elementName, typeName, defaultValue, definedInType);
+        def.setAllowedValues(allowedValues);
+        return def;
     }
 
     public PrismReferenceDefinition createReferenceDefinition(QName primaryElementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,

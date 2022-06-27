@@ -48,6 +48,8 @@ public class DefinitionFactoryImpl implements DefinitionFactory {
     @Override
     public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName,
             Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        return new PrismPropertyDefinitionImpl<>(name, typeName, allowedValues, defaultValue);
+        PrismPropertyDefinitionImpl def = new PrismPropertyDefinitionImpl<>(name, typeName, defaultValue);
+        def.setAllowedValues(allowedValues);
+        return def;
     }
 }

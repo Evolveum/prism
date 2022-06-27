@@ -22,6 +22,7 @@ import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.DisplayableValue;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Property Definition.
@@ -58,6 +59,8 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     // TODO some documentation
     private static final long serialVersionUID = 7259761997904371009L;
     private Collection<? extends DisplayableValue<T>> allowedValues;
+
+    private Collection<? extends DisplayableValue<T>> suggestedValues;
     private Boolean indexed = null;
     private T defaultValue;
     private QName matchingRuleQName = null;
@@ -65,7 +68,7 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName) {
-        this(elementName, typeName, null);
+        this(elementName, typeName, (QName) null);
     }
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
@@ -75,19 +78,35 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
         );
     }
 
-    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        this(elementName, typeName, allowedValues, defaultValue, null);
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, T defaultValue) {
+        this(elementName, typeName, defaultValue, null);
     }
 
-    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue, QName definedInType) {
+    public PrismPropertyDefinitionImpl(QName elementName, QName typeName, T defaultValue, QName definedInType) {
         this(elementName, typeName, definedInType);
-        this.allowedValues = allowedValues;
         this.defaultValue = defaultValue;
     }
 
+    @Nullable
     @Override
     public Collection<? extends DisplayableValue<T>> getAllowedValues() {
         return allowedValues;
+    }
+
+    @Override
+    public void setAllowedValues(Collection<? extends DisplayableValue<T>> allowedValues) {
+        this.allowedValues = allowedValues;
+    }
+
+    @Nullable
+    @Override
+    public Collection<? extends DisplayableValue<T>> getSuggestedValues() {
+        return suggestedValues;
+    }
+
+    @Override
+    public void setSuggestedValues(Collection<? extends DisplayableValue<T>> suggestedValues) {
+        this.suggestedValues = suggestedValues;
     }
 
     @Override
@@ -167,6 +186,7 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     protected void copyDefinitionDataFrom(PrismPropertyDefinition<T> source) {
         super.copyDefinitionDataFrom(source);
         allowedValues = source.getAllowedValues(); // todo new collection?
+        suggestedValues = source.getSuggestedValues();
         indexed = source.isIndexed();
         defaultValue = source.defaultValue();
         matchingRuleQName = source.getMatchingRuleQName();

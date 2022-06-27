@@ -18,16 +18,24 @@ import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DisplayableValue;
 
+import org.jetbrains.annotations.Nullable;
+
 public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<PrismProperty<T>>, PrismPropertyDefinition<T> {
 
     @Override
     PrismPropertyDefinition<T> delegate();
 
     @Override
+    @Nullable
     default Collection<? extends DisplayableValue<T>> getAllowedValues() {
         return delegate().getAllowedValues();
     }
 
+    @Override
+    @Nullable
+    default Collection<? extends DisplayableValue<T>> getSuggestedValues() {
+        return delegate().getSuggestedValues();
+    }
     @Override
     default T defaultValue() {
         return delegate().defaultValue();

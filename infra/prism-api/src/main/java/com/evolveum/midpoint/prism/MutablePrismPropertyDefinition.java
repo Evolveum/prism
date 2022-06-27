@@ -7,9 +7,12 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.util.DisplayableValue;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.util.Collection;
 
 /**
  *
@@ -25,4 +28,8 @@ public interface MutablePrismPropertyDefinition<T> extends PrismPropertyDefiniti
     PrismPropertyDefinition<T> clone();
 
     void setInherited(boolean value);
+
+    void setAllowedValues(Collection<? extends DisplayableValue<T>> allowedValues);
+
+    void setSuggestedValues(Collection<? extends DisplayableValue<T>> suggestedValues);
 }
