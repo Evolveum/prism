@@ -17,9 +17,9 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>2.7.0</version>
+        <version>2.7.1</version>
         <!-- This parent also declares dependencies listed here:
-        https://docs.spring.io/spring-boot/docs/2.7.0/reference/html/dependency-versions.html#dependency-versions
+        https://docs.spring.io/spring-boot/docs/2.7.1/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
         https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html
         -->
@@ -73,7 +73,6 @@
         </snapshotRepository>
     </distributionManagement>
 
-
     <properties>
         <!-- Build system options -->
         <!-- Encoding for both sources and resources -->
@@ -95,18 +94,12 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- Dependencies global versions -->
-        <commons.io.version>2.9.0</commons.io.version>
-        <slf4j.version>1.7.30</slf4j.version>
+        <commons.io.version>2.11.0</commons.io.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.11</logback.version>
-        <!--
-        TODO versions 7.4.0 and 7.5 rely on jquery 3.5.1 webjar, but we want to use 3.6.0 after AdminLTE upgrade.
-         7.6 should be fine but is not released yet, see this commit: https://github.com/cbeust/testng/commit/e3fe52af2a42faba6823da4ab3d5aa68ad493a61
-         We worked around this by adding 3.5.1. jquery.min.js to the place expected by TestNG to our tools/test-ng.
-         This can (and should) be removed after the upgrade of TestNG, which will by then (hopefully) have the JS embedded.
-        -->
-        <testng.version>7.4.0</testng.version>
+        <testng.version>7.6.1</testng.version>
         <xml.resolver.version>1.2</xml.resolver.version>
-        <classgraph.version>4.8.146</classgraph.version>
+        <classgraph.version>4.8.147</classgraph.version>
         <!-- 5.1.0 does not have no_aop classifier version -->
         <guice.version>4.2.1</guice.version>
         <guava.version>31.1-jre</guava.version>
@@ -280,12 +273,6 @@
                 </exclusions>
             </dependency>
 
-            <dependency>
-                <!-- this replaces commons-logging and spring-jcl (or other JARs with org.apache.commons.logging.Log) -->
-                <groupId>org.slf4j</groupId>
-                <artifactId>jcl-over-slf4j</artifactId>
-                <version>${slf4j.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>log4j-over-slf4j</artifactId>
@@ -715,7 +702,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.10.1</version>
                     <configuration>
                         <source>${project.source.version}</source>
                         <target>${project.source.version}</target>
