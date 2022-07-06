@@ -756,7 +756,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         if (definition instanceof PrismContainerDefinition<?>) {
             PrismContainerDefinition<?> containerDef = (PrismContainerDefinition<?>) definition;
             FilterContext subfilterTree = subfilterOrValue.subfilterSpec().filter();
-            ObjectFilter subfilter = parseFilter(containerDef, typeDef, subfilterTree);
+            ObjectFilter subfilter = parseFilter(containerDef, containerDef.getComplexTypeDefinition(), subfilterTree);
             return ExistsFilterImpl.createExists(path, (PrismContainerDefinition<?>) parent, subfilter);
         } else if (definition instanceof PrismReferenceDefinition) {
             return matchesReferenceFilter(path, (PrismReferenceDefinition) definition,
