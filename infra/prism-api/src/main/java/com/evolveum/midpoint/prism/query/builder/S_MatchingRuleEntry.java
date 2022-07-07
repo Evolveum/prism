@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism.query.builder;
 
+import static com.evolveum.midpoint.prism.PrismConstants.NS_MATCHING_RULE;
+
 import javax.xml.namespace.QName;
 
 /**
@@ -17,4 +19,8 @@ public interface S_MatchingRuleEntry extends S_FilterExit {
     S_FilterExit matchingStrict();
     S_FilterExit matchingCaseIgnore();
     S_FilterExit matching(QName matchingRuleName);
+
+    default S_FilterExit matching(String matchingRuleNameLocalPart) {
+        return matching(new QName(NS_MATCHING_RULE, matchingRuleNameLocalPart));
+    }
 }
