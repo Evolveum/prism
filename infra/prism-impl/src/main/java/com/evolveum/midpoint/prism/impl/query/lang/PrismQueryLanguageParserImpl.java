@@ -672,7 +672,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 : null;
         ItemPath path = path(parent, itemFilter.path());
         ItemDefinition<?> itemDefinition = findDefinition(parent, typeDef, path, ItemDefinition.class);
-        schemaCheck(itemDefinition != null, "Path %s is not present in type %", path, typeDef.getTypeName());
+        schemaCheck(itemDefinition != null, "Path %s is not present in type %s", path, typeDef.getTypeName());
         ItemFilterFactory factory = filterFactories.get(filterName);
         schemaCheck(factory != null, "Unknown filter %s", filterName);
 
@@ -722,9 +722,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     private QName toFilterName(String defaultNs, PrefixedNameContext itemName) {
-        String ns = defaultNs;
         // FIXME: Add namespace detection
-        return new QName(ns, itemName.localName.getText());
+        return new QName(defaultNs, itemName.localName.getText());
     }
 
     private <T> T parseLiteral(Class<T> targetType, LiteralValueContext string) {
@@ -819,12 +818,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     /**
      * oidAsAny targetAsAny relationshipAsAny
-     *
-     * @param path
-     * @param definition
-     * @param filter
-     * @return
-     * @throws SchemaException
      */
     private ObjectFilter matchesReferenceFilter(ItemPath path, PrismReferenceDefinition definition,
             FilterContext filter) throws SchemaException {
