@@ -1,17 +1,23 @@
 /*
- * Copyright (c) 2010-2019 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
-import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
@@ -19,11 +25,6 @@ import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import javax.xml.namespace.QName;
-
-import org.jetbrains.annotations.NotNull;
-import java.util.*;
 
 /**
  * Definition of a property container.
@@ -146,7 +147,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
-        for (;;) {
+        for (; ; ) {
             if (path.isEmpty()) {
                 if (clazz.isAssignableFrom(PrismContainerDefinition.class)) {
                     //noinspection unchecked
@@ -172,6 +173,19 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
                 }
             } else if (ItemPath.isObjectReference(first)) {
                 throw new IllegalStateException("Couldn't use '@' path segment in this context. PCD=" + getTypeName() + ", path=" + path);
+            } else if (ItemPath.isIdentifier(first)) {
+                if (!clazz.isAssignableFrom(PrismPropertyDefinition.class)) {
+                    return null;
+                }
+                PrismPropertyDefinitionImpl<?> oidDefinition;
+                if (this instanceof PrismObjectDefinition) {
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_STRING);
+                } else {
+                    oidDefinition = new PrismPropertyDefinitionImpl<>(PrismConstants.T_ID, DOMUtil.XSD_INTEGER);
+                }
+                oidDefinition.setMaxOccurs(1);
+                //noinspection unchecked
+                return (ID) oidDefinition;
             } else {
                 throw new IllegalStateException("Unexpected path segment: " + first + " in " + path);
             }
@@ -249,7 +263,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public PrismContainer<C> instantiate(QName elementName) throws SchemaException {
         if (isAbstract()) {
-            throw new SchemaException("Cannot instantiate abstract definition "+this);
+            throw new SchemaException("Cannot instantiate abstract definition " + this);
         }
         elementName = DefinitionUtil.addNamespaceIfApplicable(elementName, this.itemName);
         return new PrismContainerImpl<>(elementName, this, getPrismContext());
@@ -321,7 +335,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * <p>
      * This is the preferred method of creating a new definition.
      *
-     * @param name     name of the property (element name)
+     * @param name name of the property (element name)
      * @param typeName XSD type of the property
      * @return created property definition
      */
@@ -348,8 +362,8 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * <p>
      * This is the preferred method of creating a new definition.
      *
-     * @param name      name of the property (element name)
-     * @param typeName  XSD type of the property
+     * @param name name of the property (element name)
+     * @param typeName XSD type of the property
      * @param minOccurs minimal number of occurrences
      * @param maxOccurs maximal number of occurrences (-1 means unbounded)
      * @return created property definition
@@ -379,7 +393,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * This is the preferred method of creating a new definition.
      *
      * @param localName name of the property (element name) relative to the schema namespace
-     * @param typeName  XSD type of the property
+     * @param typeName XSD type of the property
      * @return created property definition
      */
     @Override
@@ -393,7 +407,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * <p>
      * This is the preferred method of creating a new definition.
      *
-     * @param localName     name of the property (element name) relative to the schema namespace
+     * @param localName name of the property (element name) relative to the schema namespace
      * @param localTypeName XSD type of the property
      * @return created property definition
      */
@@ -408,10 +422,10 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * <p>
      * This is the preferred method of creating a new definition.
      *
-     * @param localName     name of the property (element name) relative to the schema namespace
+     * @param localName name of the property (element name) relative to the schema namespace
      * @param localTypeName XSD type of the property
-     * @param minOccurs     minimal number of occurrences
-     * @param maxOccurs     maximal number of occurrences (-1 means unbounded)
+     * @param minOccurs minimal number of occurrences
+     * @param maxOccurs maximal number of occurrences (-1 means unbounded)
      * @return created property definition
      */
     public PrismPropertyDefinition<?> createPropertyDefinition(String localName, String localTypeName,
@@ -433,11 +447,11 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
             int minOccurs, int maxOccurs) {
         PrismSchema typeSchema = getPrismContext().getSchemaRegistry().findSchemaByNamespace(typeName.getNamespaceURI());
         if (typeSchema == null) {
-            throw new IllegalArgumentException("Schema for namespace "+typeName.getNamespaceURI()+" is not known in the prism context");
+            throw new IllegalArgumentException("Schema for namespace " + typeName.getNamespaceURI() + " is not known in the prism context");
         }
         ComplexTypeDefinition typeDefinition = typeSchema.findComplexTypeDefinitionByType(typeName);
         if (typeDefinition == null) {
-            throw new IllegalArgumentException("Type "+typeName+" is not known in the schema");
+            throw new IllegalArgumentException("Type " + typeName + " is not known in the schema");
         }
         return createContainerDefinition(name, typeDefinition, minOccurs, maxOccurs);
     }
@@ -466,7 +480,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
                 return false;
             }
             //noinspection unchecked
-            return canBeDefinitionOf((PrismContainer<C>)parent);
+            return canBeDefinitionOf((PrismContainer<C>) parent);
         } else {
             // TODO: maybe look at the subitems?
             return true;

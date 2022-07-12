@@ -301,7 +301,6 @@ public class QueryConverterImpl implements QueryConverter {
         if (itemPath == null || itemPath.isEmpty()) {
             throw new SchemaException("Could not convert query, because query does not contain item path.");
         }
-        QName itemName = ItemPath.toName(itemPath.last());
 
         QName matchingRule = getMatchingRule(clauseXMap);
 
@@ -309,15 +308,15 @@ public class QueryConverterImpl implements QueryConverter {
         ItemPath rightSidePath = getPath(clauseXMap, ELEMENT_RIGHT_HAND_SIDE_PATH);
 
         ItemDefinition<?> itemDefinition = locateItemDefinition(valueXnode, itemPath, pcd);
-        if (itemDefinition != null) {
-            itemName = itemDefinition.getItemName();
-        }
 
         if (valueXnode != null) {
             if (preliminaryParsingOnly) {
                 return null;
             } else {
                 RootXNodeImpl valueRoot = new RootXNodeImpl(ELEMENT_VALUE, valueXnode);
+                QName itemName = itemDefinition != null
+                        ? itemDefinition.getItemName()
+                        : ItemPath.toName(itemPath.last());
                 //noinspection rawtypes
                 Item item = parseItem(valueRoot, itemName, itemDefinition);
                 if (!isEq && !isAnyIn && item.getValues().size() != 1) {
