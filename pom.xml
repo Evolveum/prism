@@ -85,8 +85,6 @@
 
         <!--suppress UnresolvedMavenProperty (for IDE development) -->
         <git.describe>${describe}</git.describe>
-        <timestamp>${maven.build.timestamp}</timestamp>
-        <maven.build.timestamp.format>EEE, d MMM yyyy HH:mm:ss Z</maven.build.timestamp.format>
 
         <!-- JVM args for testing plugins, can be used to add profiling, etc. -->
         <surefire.args>-Xms512m -Xmx512m</surefire.args>
