@@ -14,10 +14,14 @@ import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.query.*;
+import com.evolveum.midpoint.prism.impl.query.builder.R_AtomicFilter.FuzzyStringBuilderImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.RefFilter;
@@ -26,6 +30,8 @@ import com.evolveum.midpoint.prism.query.builder.*;
 import com.evolveum.midpoint.util.MiscUtil;
 
 public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_RightHandItemEntry {
+
+
 
     private final ItemPath itemPath;
     private final PrismPropertyDefinition<?> propertyDefinition;
@@ -308,6 +314,15 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
+    public FuzzyStringBuilder fuzzyString(String... values) {
+        var builder = new FuzzyStringBuilderImpl();
+        for (String value : values) {
+            builder.value(value);
+        }
+        return builder;
+    }
+
+    @Override
     public S_FilterExit isNull() {
         if (propertyDefinition != null) {
             return new R_AtomicFilter(this,
@@ -412,5 +427,24 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
             throw new IllegalStateException("Filter is not yet created!");
         }
         return owner.addSubfilter(filter);
+    }
+
+    public class FuzzyStringBuilderImpl implements FuzzyStringBuilder {
+
+        private List<PrismPropertyValue<String>> values = new ArrayList<>();
+
+        @Override
+        public FuzzyStringBuilder value(String value) {
+            values.add(new PrismPropertyValueImpl<String>(value));
+            return this;
+        }
+
+        @Override
+        public S_FilterExit method(FuzzyMatchingMethod method) {
+            var list = new ArrayList<PrismPropertyValue<String>>(values);
+            ValueFilter<?, ?> fuzzyFilter = FuzzyStringMatchFilterImpl.<String>create(itemPath, (PrismPropertyDefinition<String>) propertyDefinition, method, list);
+            return new R_AtomicFilter(R_AtomicFilter.this, fuzzyFilter);
+        }
+
     }
 }

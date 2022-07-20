@@ -14,6 +14,9 @@ import org.jetbrains.annotations.Nullable;
 import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.PrismProperty;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.Similarity;
 import com.evolveum.midpoint.prism.query.RefFilter;
 
 /**
@@ -75,4 +78,25 @@ public interface S_ConditionEntry {
 
     S_FilterExit ref(@Nullable String oid, @Nullable QName targetTypeName, @Nullable QName relation);
     S_FilterExit isNull();
+
+    default S_FilterExit fuzzyString(String value, FuzzyMatchingMethod method) {
+        return fuzzyString(value).method(method);
+    }
+
+    FuzzyStringBuilder fuzzyString(String... values);
+
+    interface FuzzyStringBuilder {
+        FuzzyStringBuilder value(String value);
+
+        S_FilterExit method(FuzzyMatchingMethod method);
+
+        default S_FilterExit levenstein(int threshold, boolean inclusive) {
+            return method(FuzzyStringMatchFilter.levenstein(threshold, inclusive));
+        }
+
+        default S_FilterExit similarity(float threshold, boolean inclusive) {
+            return method(FuzzyStringMatchFilter.similarity(threshold, inclusive));
+        }
+
+    }
 }
