@@ -2,6 +2,7 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
@@ -29,6 +30,7 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
             @Nullable ExpressionWrapper expression, @Nullable ItemPath rightHandSidePath,
             @Nullable ItemDefinition rightHandSideDefinition) {
         super(path, definition, matchingRule, values, expression, rightHandSidePath, rightHandSideDefinition);
+        this.matchingMethod = matchingMethod;
     }
 
     @Override
@@ -38,8 +40,9 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
 
     @Override
     public PropertyValueFilterImpl<T> clone() {
+        var valuesClone = getValues().stream().map(PrismPropertyValue::clone).collect(Collectors.toList());
         return new FuzzyStringMatchFilterImpl<>(getFullPath(), matchingMethod, getDefinition(), getDeclaredMatchingRule(),
-                getValues(), getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
+                valuesClone, getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
     }
 
     @Override
@@ -51,6 +54,9 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
 
     @Override
     protected String getFilterName() {
+        if (matchingMethod == null) {
+            return "fuzzyStringMatch";
+        }
         return getMatchingMethod().getMethodName().getLocalPart();
     }
 

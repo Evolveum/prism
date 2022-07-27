@@ -11,7 +11,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
     public static final QName THRESHOLD = new QName(PrismConstants.NS_QUERY, "threshold");
     public static final QName INCLUSIVE = new QName(PrismConstants.NS_QUERY, "inclusive");
-    public static final QName LEVENSTEIN = new QName(PrismConstants.NS_QUERY, "levenstein");
+    public static final QName LEVENSHTEIN = new QName(PrismConstants.NS_QUERY, "levenshtein");
     public static final QName SIMILARITY = new QName(PrismConstants.NS_QUERY, "similarity");
 
 
@@ -35,7 +35,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
             this.inclusive = inclusive;
         }
 
-        T geThreshold() {
+        public T getThreshold() {
             return threshold;
         }
 
@@ -49,17 +49,17 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         }
     }
 
-    public class Levenstein extends ThresholdMatchingMethod<Integer> {
+    public class Levenshtein extends ThresholdMatchingMethod<Integer> {
 
         private static final long serialVersionUID = 1L;
 
-        public Levenstein(Integer threshold, boolean inclusive) {
+        public Levenshtein(Integer threshold, boolean inclusive) {
             super(threshold, inclusive);
         }
 
         @Override
         public QName getMethodName() {
-            return LEVENSTEIN;
+            return LEVENSHTEIN;
         }
     }
 
@@ -82,8 +82,8 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         }
     }
 
-    static Levenstein levenstein(int threshold, boolean inclusive) {
-        return new Levenstein(threshold, inclusive);
+    static Levenshtein levenshtein(int threshold, boolean inclusive) {
+        return new Levenshtein(threshold, inclusive);
     }
 
     static Similarity similarity(float threshold, boolean inclusive) {

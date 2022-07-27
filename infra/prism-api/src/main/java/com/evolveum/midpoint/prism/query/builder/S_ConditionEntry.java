@@ -90,13 +90,14 @@ public interface S_ConditionEntry {
 
         S_FilterExit method(FuzzyMatchingMethod method);
 
-        default S_FilterExit levenstein(int threshold, boolean inclusive) {
-            return method(FuzzyStringMatchFilter.levenstein(threshold, inclusive));
+        default S_FilterExit levenshtein(int threshold, boolean inclusive) {
+            return method(FuzzyStringMatchFilter.levenshtein(threshold, inclusive));
         }
 
         default S_FilterExit similarity(float threshold, boolean inclusive) {
             return method(FuzzyStringMatchFilter.similarity(threshold, inclusive));
         }
+
 
     }
 }
