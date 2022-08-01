@@ -733,6 +733,10 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
     @Override
     public boolean isEmpty() {
+        return isEmpty(valuesToAdd, valuesToDelete, valuesToReplace);
+    }
+
+    boolean isEmpty(Collection<?> valuesToAdd, Collection<?> valuesToDelete, Collection<?> valuesToReplace) {
         return CollectionUtils.isEmpty(valuesToAdd) && CollectionUtils.isEmpty(valuesToDelete) && valuesToReplace == null;
     }
 

@@ -18,6 +18,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.util.*;
@@ -133,22 +134,38 @@ public class ContainerDeltaImpl<V extends Containerable> extends ItemDeltaImpl<P
         if (path.isEmpty()) {
             return this;
         }
-        Long id = null;
         if (path.startsWithId()) {
-            id = path.firstToIdOrNull();
-            path = path.rest();
+            return createSubDelta(path.rest(), path.firstToIdOrNull());
+        } else {
+            return createSubDelta(path, null);
         }
-        ItemDefinition itemDefinition = getDefinition().findItemDefinition(path);
+    }
+
+    /** V1, D1 correspond to the type of the sub-item. */
+    @Nullable
+    private <V1 extends PrismValue, D1 extends ItemDefinition<?>> ItemDelta<V1, D1> createSubDelta(ItemPath path, Long id) {
+        //noinspection unchecked
+        Collection<V1> subValuesToAdd = findItemValues(id, path, getValuesToAdd());
+        //noinspection unchecked
+        Collection<V1> subValuesToDelete = findItemValues(id, path, getValuesToDelete());
+        //noinspection unchecked
+        Collection<V1> subValuesToReplace = findItemValues(id, path, getValuesToReplace());
+
+        // We intentionally check the emptiness of the (future) delta before creating it,
+        // to avoid problems if there's no definition.
+        if (isEmpty(subValuesToAdd, subValuesToDelete, subValuesToReplace)) {
+            return null;
+        }
+
+        D1 itemDefinition = getDefinition().findItemDefinition(path);
         if (itemDefinition == null) {
             throw new IllegalStateException("No definition of " + path + " in " + getDefinition());
         }
-        ItemDelta<?,?> itemDelta = itemDefinition.createEmptyDelta(getPath().append(path));
-        itemDelta.addValuesToAdd(findItemValues(id, path, getValuesToAdd()));
-        itemDelta.addValuesToDelete(findItemValues(id, path, getValuesToDelete()));
-        itemDelta.setValuesToReplace(findItemValues(id, path, getValuesToReplace()));
-        if (itemDelta.isEmpty()) {
-            return null;
-        }
+        //noinspection unchecked
+        ItemDelta<V1, D1> itemDelta = (ItemDelta<V1, D1>) itemDefinition.createEmptyDelta(getPath().append(path));
+        itemDelta.addValuesToAdd(subValuesToAdd);
+        itemDelta.addValuesToDelete(subValuesToDelete);
+        itemDelta.setValuesToReplace(subValuesToReplace);
         return itemDelta;
     }
 

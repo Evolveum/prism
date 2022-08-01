@@ -220,11 +220,21 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition> implem
             itemNew = delta.getItemNewMatchingPath(itemOld);
         }
         if (subItemDeltas != null && !subItemDeltas.isEmpty()) {
-            if (itemNew == null) {
-                // Subitem deltas on an non-existing container. This should be fine to create an empty container here.
-                itemNew = definition.getPrismContext().itemFactory().createDummyItem(itemOld, definition, resolvePath);
+            // TODO fix these ugly hacks
+            if (itemNew != null && itemOld.getPath().size() == 1) {
+                // The path for itemNew will be OK in this case.
+            } else {
+                // We need to have itemNew with the correct path. Currently, the only way how to ensure this is to
+                // create a new one.
+                Item<V,D> dummyItemNew =
+                        definition.getPrismContext().itemFactory().createDummyItem(itemOld, definition, resolvePath);
+                if (itemNew != null) {
+                    dummyItemNew.addAll(
+                            itemNew.getClonedValues());
+                }
+                itemNew = dummyItemNew;
             }
-            for (ItemDelta<?,?> subItemDelta: subItemDeltas) {
+            for (ItemDelta<?,?> subItemDelta : subItemDeltas) {
                 subItemDelta.applyTo(itemNew);
             }
         }
