@@ -16,12 +16,13 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
+
 import org.apache.commons.codec.binary.Base64;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerializerTemp;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -130,7 +131,7 @@ public class XmlTypeConverterInternal {
         } else if (Duration.class.isAssignableFrom(type)) {
             return val.toString();
         } else if (type.equals(UniformItemPath.class) || type.equals(ItemPath.class)) {
-            return ItemPathSerializerTemp.serializeWithDeclarations((ItemPath) val);
+            return ItemPathHolder.serializeWithDeclarations((ItemPath) val);
         } else {
             throw new IllegalArgumentException("Unknown type for conversion: " + type + "(element " + elementName + ")");
         }

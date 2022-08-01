@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.PrismContext;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -711,6 +713,10 @@ public interface ItemPath extends ShortDumpable, Serializable {
         return ItemPathComparatorUtil.segmentsEquivalent(segment1, segment2);
     }
 
+    /** Returns the standalone representation of this path, i.e. the one with all the namespaces explicitly declared. */
+    default String toStringStandalone() {
+        return PrismContext.get().itemPathSerializer().serializeStandalone(this);
+    }
     //endregion
 
     //region Diagnostics

@@ -210,7 +210,7 @@ public final class ItemPathHolder {
         return new ItemPathHolder(UniformItemPath.from(itemPath)).getXPathWithDeclarations();
     }
 
-    static String serializeWithForcedDeclarations(@NotNull ItemPath itemPath) {
+    public static String serializeWithForcedDeclarations(@NotNull ItemPath itemPath) {
         return new ItemPathHolder(UniformItemPath.from(itemPath), true).getXPathWithDeclarations();
     }
 

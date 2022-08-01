@@ -7,11 +7,12 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 /**
- *
+ * Parses string representation of {@link ItemPath} and {@link ItemPathType} objects.
  */
 public interface ItemPathParser {
 

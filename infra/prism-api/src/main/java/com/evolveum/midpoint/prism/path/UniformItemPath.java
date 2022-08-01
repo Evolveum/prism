@@ -7,6 +7,8 @@
 package com.evolveum.midpoint.prism.path;
 
 import com.evolveum.midpoint.util.ShortDumpable;
+import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -87,8 +89,7 @@ public interface UniformItemPath extends Serializable, Cloneable, ShortDumpable,
 
     UniformItemPath clone();
 
-    // TEMPORARY TYPED AS OBJECT (TODO FIXME)
-    Object asItemPathType();
+    ItemPathType asItemPathType();
 
     ItemPathSegment getSegment(int i);
 

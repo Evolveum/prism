@@ -90,6 +90,7 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull private final ItemFactory itemFactory;
     @NotNull private final DefinitionFactory definitionFactory;
     @NotNull private final ItemPathParser itemPathParser;
+    @NotNull private final ItemPathSerializer itemPathSerializer;
     @NotNull private final SchemaFactory schemaFactory;
 
     @Experimental private ValueMetadataFactory valueMetadataFactory;
@@ -142,6 +143,7 @@ public final class PrismContextImpl implements PrismContext {
         this.itemFactory = new ItemFactoryImpl(this);
         this.definitionFactory = new DefinitionFactoryImpl(this);
         this.itemPathParser = new ItemPathParserImpl(this);
+        this.itemPathSerializer = new ItemPathSerializerImpl();
         this.schemaFactory = new SchemaFactoryImpl(this);
         this.defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
 
@@ -676,6 +678,11 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public ItemPathParser itemPathParser() {
         return itemPathParser;
+    }
+
+    @Override
+    public @NotNull ItemPathSerializer itemPathSerializer() {
+        return itemPathSerializer;
     }
 
     // This is instance method to allow calling it via PrismContext interface

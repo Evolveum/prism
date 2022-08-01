@@ -13,9 +13,6 @@ import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- */
 public class ItemPathParserImpl implements ItemPathParser {
 
     @NotNull private final PrismContextImpl prismContext;
