@@ -199,9 +199,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     @SuppressWarnings("unchecked")
     public <D extends ItemDelta> D addModification(D itemDelta) {
         checkMutable();
-        if (getChangeType() != ChangeType.MODIFY) {
-            throw new IllegalStateException("Cannot add modifications to " + getChangeType() + " delta");
-        }
+        checkModifyDelta();
         ItemPath itemPath = itemDelta.getPath();
         // We use 'strict' finding mode because of MID-4690 (TODO)
         D existingModification = (D) findModification(itemPath, itemDelta.getClass(), true);
@@ -212,6 +210,19 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             ((Collection) modifications).add(itemDelta);
             return itemDelta;
         }
+    }
+
+    private void checkModifyDelta() {
+        if (getChangeType() != ChangeType.MODIFY) {
+            throw new IllegalStateException("Cannot add/delete modifications to " + getChangeType() + " delta");
+        }
+    }
+
+    @Override
+    public boolean deleteModification(ItemDelta<?, ?> itemDelta) {
+        checkMutable();
+        checkModifyDelta();
+        return modifications.remove(itemDelta);
     }
 
     @Override

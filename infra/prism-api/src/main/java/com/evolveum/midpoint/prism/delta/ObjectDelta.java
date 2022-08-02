@@ -89,6 +89,14 @@ public interface ObjectDelta<O extends Objectable>
      */
     <D extends ItemDelta> D addModification(D itemDelta);
 
+    /**
+     * Deletes a modification, if it exists in a given MODIFY delta. (Throws an exception if the delta is not a MODIFY one.)
+     *
+     * @return true if the modification was found and removed
+     */
+    @Experimental
+    boolean deleteModification(ItemDelta<?, ?> itemDelta);
+
     boolean containsModification(ItemDelta itemDelta, EquivalenceStrategy strategy);
 
     boolean containsAllModifications(Collection<? extends ItemDelta<?, ?>> itemDeltas, EquivalenceStrategy strategy);
