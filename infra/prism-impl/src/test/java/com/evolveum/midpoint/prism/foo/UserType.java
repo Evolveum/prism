@@ -117,7 +117,7 @@ public class UserType
     protected ProtectedStringType password;
 
     @XmlElement(name = "special")
-    protected String specialWithInternalizedName;               // internal name here differs from the one in serialized form
+    protected String specialWithInternalizedName; // internal name here differs from the one in serialized form
 
     /**
      * Gets the value of the fullName property.

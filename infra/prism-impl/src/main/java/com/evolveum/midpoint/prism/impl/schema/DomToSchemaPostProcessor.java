@@ -405,12 +405,17 @@ class DomToSchemaPostProcessor {
 
                 XSType xsType = elementDecl.getType();
 
+                boolean embeddedObject =
+                        isObjectDefinition(xsType)
+                                && SchemaProcessorUtil.getAnnotationElement(annotation, A_EMBEDDED_OBJECT) != null;
+
                 if (isObjectReference(xsType, annotation)) {
 
                     processObjectReferenceDefinition(
                             xsType, elementName, annotation, ctd, particle, particleInherited);
 
-                } else if (ctd.isContainerMarker() && isObjectDefinition(xsType)) {
+                } else if (ctd.isContainerMarker() && isObjectDefinition(xsType) && !embeddedObject) {
+
                     // We can not skip properties with object type in case of non-containers complex types
                     // (this should not affect normal container behaviour, where we skip them in favour of *Ref)
 
@@ -423,8 +428,14 @@ class DomToSchemaPostProcessor {
                     if (isAny(xsType, Optional.empty())) {
                         if (isPropertyContainer(elementDecl)) {
                             XSAnnotation containerAnnotation = xsType.getAnnotation();
-                            PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                                    xsType, particle, null, containerAnnotation, ctd.getTypeName(), ctd.isContainerMarker());
+                            PrismContainerDefinition<?> containerDefinition = createContainerOrObjectDefinition(
+                                    xsType,
+                                    particle,
+                                    null,
+                                    containerAnnotation,
+                                    ctd.getTypeName(),
+                                    ctd.isContainerMarker()
+                            );
                             containerDefinition.toMutable().setInherited(particleInherited);
                             ctd.add(containerDefinition);
                         } else {
@@ -435,10 +446,11 @@ class DomToSchemaPostProcessor {
                         }
                     }
 
-                } else if (isPropertyContainer(elementDecl)) {
+                } else if (isPropertyContainer(elementDecl) || embeddedObject) {
 
-                    // Create an inner PropertyContainer. It is assumed that
-                    // this is a XSD complex type
+                    // Create an inner PrismContainerDefinition (never PrismObjectDefinition - unless we aren't a container!).
+                    // It is assumed that this is a XSD complex type.
+
                     XSComplexType complexType = (XSComplexType) xsType;
                     ComplexTypeDefinition complexTypeDefinition;
                     if (typeFromAnnotation != null && !typeFromAnnotation.equals(getType(xsType))) {
@@ -460,12 +472,14 @@ class DomToSchemaPostProcessor {
                         complexTypeDefinition = processComplexTypeDefinition(complexType);
                     }
                     XSAnnotation containerAnnotation = complexType.getAnnotation();
-                    PrismContainerDefinition<?> containerDefinition = createPropertyContainerDefinition(
-                            xsType, particle, complexTypeDefinition, containerAnnotation, ctd.getTypeName(), ctd.isContainerMarker());
-//                    if (isAny(xsType)) {
-//                        ((PrismContainerDefinitionImpl) containerDefinition).setRuntimeSchema(true);
-//                        ((PrismContainerDefinitionImpl) containerDefinition).setDynamic(true);
-//                    }
+                    PrismContainerDefinition<?> containerDefinition = createContainerOrObjectDefinition(
+                            xsType,
+                            particle,
+                            complexTypeDefinition,
+                            containerAnnotation,
+                            ctd.getTypeName(),
+                            ctd.isContainerMarker()
+                    );
                     containerDefinition.toMutable().setInherited(particleInherited);
                     ctd.add(containerDefinition);
 
@@ -543,21 +557,18 @@ class DomToSchemaPostProcessor {
         return definition;
     }
 
-    private void setMultiplicity(MutableItemDefinition itemDef, XSParticle particle, XSAnnotation annotation,
-            boolean topLevel) {
+    private void setMultiplicity(MutableItemDefinition itemDef, XSParticle particle, XSAnnotation annotation, boolean topLevel) {
         if (topLevel || particle == null) {
             itemDef.setMinOccurs(0);
             Element maxOccursAnnotation = SchemaProcessorUtil.getAnnotationElement(annotation, A_MAX_OCCURS);
             if (maxOccursAnnotation != null) {
-                String maxOccursString = maxOccursAnnotation.getTextContent();
-                int maxOccurs = XsdTypeMapper.multiplicityToInteger(maxOccursString);
-                itemDef.setMaxOccurs(maxOccurs);
+                itemDef.setMaxOccurs(
+                        XsdTypeMapper.multiplicityToInteger(
+                                maxOccursAnnotation.getTextContent()));
             } else {
                 itemDef.setMaxOccurs(-1);
             }
         } else {
-            // itemDef.setMinOccurs(particle.getMinOccurs());
-            // itemDef.setMaxOccurs(particle.getMaxOccurs());
             itemDef.setMinOccurs(particle.getMinOccurs().intValue());
             itemDef.setMaxOccurs(particle.getMaxOccurs().intValue());
         }
@@ -575,7 +586,6 @@ class DomToSchemaPostProcessor {
      *
      * @param set
      *            XS Schema Set
-     * @throws SchemaException
      */
     private void createDefinitionsFromElements(XSSchemaSet set) throws SchemaException {
         Iterator<XSElementDecl> iterator = set.iterateElementDecls();
@@ -617,11 +627,12 @@ class DomToSchemaPostProcessor {
                         schema.addDelayedItemDefinition(() -> {
                             ComplexTypeDefinition ctd = findComplexTypeDefinition(typeQName);
                             // here we take the risk that ctd is null
-                            return createPropertyContainerDefinition(xsType, xsElementDecl, ctd, annotation, null, PrismConstants.VIRTUAL_SCHEMA_ROOT, true);
+                            return createContainerOrObjectDefinition(
+                                    xsType, xsElementDecl, ctd, annotation, null, PrismConstants.VIRTUAL_SCHEMA_ROOT, false, true);
                         });
                     } else {
-                        definition = createPropertyContainerDefinition(
-                                xsType, xsElementDecl, complexTypeDefinition, annotation, null, PrismConstants.VIRTUAL_SCHEMA_ROOT, true);
+                        definition = createContainerOrObjectDefinition(
+                                xsType, xsElementDecl, complexTypeDefinition, annotation, null, PrismConstants.VIRTUAL_SCHEMA_ROOT, false, true);
                     }
                 } else if (isObjectReference(xsElementDecl, xsType)) {
                     definition = processObjectReferenceDefinition(xsType, elementName,
@@ -788,12 +799,8 @@ class DomToSchemaPostProcessor {
     }
 
     private boolean isPropertyContainer(XSElementDecl xsElementDecl) {
-        Element annoElement = SchemaProcessorUtil.getAnnotationElement(xsElementDecl.getAnnotation(),
-                A_PROPERTY_CONTAINER);
-        if (annoElement != null) {
-            return true;
-        }
-        return isPropertyContainer(xsElementDecl.getType());
+        return SchemaProcessorUtil.getAnnotationElement(xsElementDecl.getAnnotation(), A_CONTAINER) != null
+                || isPropertyContainer(xsElementDecl.getType());
     }
 
     /**
@@ -801,9 +808,7 @@ class DomToSchemaPostProcessor {
      * annotations.
      */
     private boolean isPropertyContainer(XSType xsType) {
-        Element annoElement = SchemaProcessorUtil.getAnnotationElement(xsType.getAnnotation(),
-                A_PROPERTY_CONTAINER);
-        if (annoElement != null) {
+        if (SchemaProcessorUtil.getAnnotationElement(xsType.getAnnotation(), A_CONTAINER) != null) {
             return true;
         }
         if (xsType.getBaseType() != null && !xsType.getBaseType().equals(xsType)) {
@@ -842,16 +847,11 @@ class DomToSchemaPostProcessor {
     }
 
     private boolean isObjectReference(XSType xsType, XSAnnotation annotation) {
-        if (isObjectReference(annotation)) {
-            return true;
-        }
-        return isObjectReference(xsType);
+        return isObjectReference(annotation) || isObjectReference(xsType);
     }
 
     private boolean isObjectReference(XSAnnotation annotation) {
-        Element objRefAnnotationElement = SchemaProcessorUtil.getAnnotationElement(annotation,
-                A_OBJECT_REFERENCE);
-        return (objRefAnnotationElement != null);
+        return SchemaProcessorUtil.getAnnotationElement(annotation, A_OBJECT_REFERENCE) != null;
     }
 
     private boolean isObjectReference(XSType xsType) {
@@ -866,49 +866,66 @@ class DomToSchemaPostProcessor {
     }
 
     /**
-     * Creates appropriate instance of PropertyContainerDefinition. It may be
-     * PropertyContainerDefinition itself or one of its subclasses
-     * (ResourceObjectDefinition). This method also takes care of parsing all
-     * the annotations and similar fancy stuff.
+     * Creates appropriate instance of {@link PrismContainerDefinition} or {@link PrismObjectDefinition}.
+     * This method also takes care of parsing all the annotations and similar fancy stuff.
      *
-     * We need to pass createResourceObject flag explicitly here. Because even
-     * if we are in resource schema, we want PropertyContainers inside
-     * ResourceObjects, not ResourceObjects inside ResouceObjects.
-     * @param parentIsContainer
+     * @param containerInsteadOfObject If true, we never create a {@link PrismObjectDefinition} (mainly because we
+     * cannot have object inside a container)
      */
-    private PrismContainerDefinition<?> createPropertyContainerDefinition(XSType xsType,
-            XSParticle elementParticle, ComplexTypeDefinition complexTypeDefinition, XSAnnotation annotation,
-            QName declaredInType, boolean parentIsContainer) throws SchemaException {
+    private PrismContainerDefinition<?> createContainerOrObjectDefinition(
+            XSType xsType,
+            XSParticle elementParticle,
+            ComplexTypeDefinition complexTypeDefinition,
+            XSAnnotation annotation,
+            QName declaredInType,
+            boolean containerInsteadOfObject) throws SchemaException {
         XSTerm elementTerm = elementParticle.getTerm();
         XSElementDecl elementDecl = elementTerm.asElementDecl();
 
-        PrismContainerDefinition<?> pcd = createPropertyContainerDefinition(xsType, elementDecl,
-                complexTypeDefinition, annotation, elementParticle, declaredInType, parentIsContainer);
-        return pcd;
+        return createContainerOrObjectDefinition(
+                xsType,
+                elementDecl,
+                complexTypeDefinition,
+                annotation,
+                elementParticle,
+                declaredInType,
+                containerInsteadOfObject,
+                false);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private MutablePrismContainerDefinition<?> createPropertyContainerDefinition(XSType xsType,
-            XSElementDecl elementDecl, ComplexTypeDefinition complexTypeDefinition,
-            XSAnnotation annotation, XSParticle elementParticle, QName definedInType, boolean parentIsContainer)
-                    throws SchemaException {
+    private MutablePrismContainerDefinition<?> createContainerOrObjectDefinition(
+            XSType xsType,
+            XSElementDecl elementDecl,
+            ComplexTypeDefinition complexTypeDefinition,
+            XSAnnotation annotation,
+            XSParticle elementParticle,
+            QName definedInType,
+            boolean containerInsteadOfObject,
+            boolean objectMultiplicityIsOne) throws SchemaException {
 
         QName elementName = new QName(elementDecl.getTargetNamespace(), elementDecl.getName());
         MutablePrismContainerDefinition<?> pcd;
 
         SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
 
-        Class compileTimeClass = null;
-        if (getSchemaRegistry() != null && complexTypeDefinition != null) {
+        Class compileTimeClass;
+        if (complexTypeDefinition != null) {
             compileTimeClass = getSchemaRegistry().determineCompileTimeClass(complexTypeDefinition.getTypeName());
+        } else {
+            compileTimeClass = null;
         }
-        if (parentIsContainer && isObjectDefinition(xsType)) {
+        boolean isObject = isObjectDefinition(xsType);
+        if (isObject && !containerInsteadOfObject) {
             pcd = definitionFactory.createObjectDefinition(elementName, complexTypeDefinition, compileTimeClass);
-            // Multiplicity is fixed to a single-value here
+        } else {
+            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, compileTimeClass, definedInType);
+        }
+
+        if (isObject && objectMultiplicityIsOne) {
             pcd.setMinOccurs(1);
             pcd.setMaxOccurs(1);
         } else {
-            pcd = definitionFactory.createContainerDefinition(elementName, complexTypeDefinition, compileTimeClass, definedInType);
             setMultiplicity(pcd, elementParticle, elementDecl.getAnnotation(), PrismConstants.VIRTUAL_SCHEMA_ROOT.equals(definedInType));
         }
 
@@ -1282,8 +1299,7 @@ class DomToSchemaPostProcessor {
     }
 
     private boolean hasAnnotationAppinfo(XSAnnotation annotation) {
-        Element appinfo = SchemaProcessorUtil.getAnnotationElement(annotation, SCHEMA_APP_INFO);
-        return appinfo != null;
+        return SchemaProcessorUtil.getAnnotationElement(annotation, SCHEMA_APP_INFO) != null;
     }
 
     private void markRuntime(Definition def) {

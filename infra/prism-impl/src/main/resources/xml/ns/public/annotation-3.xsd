@@ -302,6 +302,17 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="embeddedObject">
+        <xsd:annotation>
+            <xsd:documentation>
+                To be used on an item definition: marks the item as "embedded object", i.e. full object stored
+                in a PrismContainer.
+
+                The difference to "composite" is that the latter one is applicable only to object references.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="deprecated" type="xsd:boolean">
         <xsd:annotation>
             <xsd:documentation>
