@@ -21,12 +21,10 @@ import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 
 public abstract class AbstractMutableObjectable extends ObjectType implements ContainerablePrismBinding, Objectable {
 
-    // FIXME the following are just wild hacks to allow storing container values (connected to Objectables) in prism containers
-
-    /** Set up only if we are really residing in a {@link PrismObject} / {@link PrismObjectValue}. */
-    private PrismObject<?> object;
-
-    /** Always set up if we are connected to a value. May be {@link PrismObjectValue} or "only" {@link PrismContainerValue}. */
+    /**
+     * Always set up if we are connected to a value.
+     *  May be {@link PrismObjectValue} or "only" {@link PrismContainerValue}.
+     **/
     private PrismContainerValue<?> value;
 
     public AbstractMutableObjectable() {
@@ -35,11 +33,16 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @SuppressWarnings("rawtypes")
     public PrismObject asPrismContainer() {
-        if (object == null && !isContainerValueOnly()) {
-            object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
-            value = object.getValue();
+        if (value instanceof PrismObjectValue) {
+            // Assume value is prism object
+            return ((PrismObjectValue) value).asPrismObject();
         }
-        return object;
+        if (value == null) {
+            var object =new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
+            value = object.getValue();
+            return object;
+        }
+        return null;
     }
 
     private boolean isContainerValueOnly() {
@@ -61,7 +64,7 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     public void setupContainerValue(PrismContainerValue value) {
         this.value = value;
         if (!isContainerValueOnly()) {
-            object = PrismForJAXBUtil.setupContainerValue(asPrismContainer(), value);
+            PrismForJAXBUtil.setupContainerValue(asPrismContainer(), value);
         }
     }
 
@@ -91,7 +94,6 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @Override
     public void setupContainer(PrismObject object) {
-        this.object = object;
         this.value = object != null ? object.getValue() : null;
     }
 
