@@ -293,6 +293,10 @@ public class QueryConverterImpl implements QueryConverter {
             return FuzzyStringMatchFilter.levenshtein(
                     requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_INTEGER, Integer.class),
                     requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
+        } else if (QNameUtil.match(FuzzyStringMatchFilter.SIMILARITY, method.getKey())) {
+            return FuzzyStringMatchFilter.similarity(
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_FLOAT, Float.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
         }
         throw new SchemaException("Fuzzy string match does not support method " + method.getKey());
     }

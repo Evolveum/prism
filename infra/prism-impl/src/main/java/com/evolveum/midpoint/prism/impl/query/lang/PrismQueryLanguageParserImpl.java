@@ -94,15 +94,22 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
 
-    private static final ValuesArgument<String> LEVENSHTEIN_VALUES = new ValuesArgument<>(String.class);
+    private static final ValuesArgument<String> STRING_VALUES = new ValuesArgument<>(String.class);
     private static final FilterArgumentSpec<Integer> LEVENSHTEIN_THRESHOLD = new FilterArgumentSpec<>(FuzzyStringMatchFilter.THRESHOLD, Integer.class);
-    private static final FilterArgumentSpec<Boolean> LEVENSHTEIN_INCLUSIVE = new FilterArgumentSpec<>(FuzzyStringMatchFilter.INCLUSIVE, Boolean.class, true);
+    private static final FilterArgumentSpec<Float> SIMILARITY_THRESHOLD = new FilterArgumentSpec<>(FuzzyStringMatchFilter.THRESHOLD, Float.class);
+    private static final FilterArgumentSpec<Boolean> INCLUSIVE = new FilterArgumentSpec<>(FuzzyStringMatchFilter.INCLUSIVE, Boolean.class, true);
 
 
     private static final List<FilterArgumentSpec<?>> LEVENSHTEIN_ARGUMENTS = ImmutableList.of(
-            LEVENSHTEIN_VALUES,
+            STRING_VALUES,
             LEVENSHTEIN_THRESHOLD,
-            LEVENSHTEIN_INCLUSIVE
+            INCLUSIVE
+    );
+
+    private static final List<FilterArgumentSpec<?>> SIMILARITY_ARGUMENTS = ImmutableList.of(
+            STRING_VALUES,
+            SIMILARITY_THRESHOLD,
+            INCLUSIVE
     );
 
     private abstract class PropertyFilterFactory implements ItemFilterFactory {
@@ -170,14 +177,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private abstract class FunctionLikeFilterFactory implements ItemFilterFactory {
 
         protected final String filterName;
+        private final List<FilterArgumentSpec<?>> argumentDef;
 
-        public FunctionLikeFilterFactory(QName filterName) {
-            this(filterName.getLocalPart());
+        public FunctionLikeFilterFactory(QName filterName, List<FilterArgumentSpec<?>> argumentDef) {
+            this.filterName = (filterName.getLocalPart());
+            this.argumentDef = argumentDef;
         }
 
-        public FunctionLikeFilterFactory(String filterName) {
-            this.filterName = filterName;
-        }
 
         @Override
         public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef,
@@ -185,7 +191,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 SubfilterOrValueContext subfilterOrValue) throws SchemaException {
             schemaCheck(subfilterOrValue.valueSet() != null, "Filter %s requires set of arguments", filterName);
 
-            Map<QName, Object> arguments = parsePositionalValueSet(LEVENSHTEIN_ARGUMENTS, subfilterOrValue.valueSet());
+            Map<QName, Object> arguments = parsePositionalValueSet(argumentDef, subfilterOrValue.valueSet());
 
             return createFromArguments(itemPath, itemDef, matchingRule, arguments);
         }
@@ -513,15 +519,31 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 }
 
             })
-            .put(LEVENSHTEIN, new FunctionLikeFilterFactory(LEVENSHTEIN) {
+            .put(LEVENSHTEIN, new FunctionLikeFilterFactory(LEVENSHTEIN, LEVENSHTEIN_ARGUMENTS) {
 
                 @Override
                 protected ObjectFilter createFromArguments(ItemPath itemPath, ItemDefinition<?> itemDef,
                         QName matchingRule, Map<QName, Object> arguments) {
                     int threshold = getArgument(LEVENSHTEIN_THRESHOLD, arguments);
-                    boolean inclusive = getArgument(LEVENSHTEIN_INCLUSIVE, arguments);
+                    boolean inclusive = getArgument(INCLUSIVE, arguments);
                     FuzzyMatchingMethod method = FuzzyStringMatchFilter.levenshtein(threshold, inclusive );
-                    var values = getValues(LEVENSHTEIN_VALUES,arguments);
+                    var values = getValues(STRING_VALUES,arguments);
+                    List<PrismPropertyValue<String>> prismValues = toPrismValues(values);
+                    var filter = FuzzyStringMatchFilterImpl.create(itemPath,
+                            (PrismPropertyDefinition<String>) itemDef, method, prismValues);
+                    filter.setMatchingRule(matchingRule);
+                    return filter;
+                }
+            })
+            .put(SIMILARITY, new FunctionLikeFilterFactory(SIMILARITY, SIMILARITY_ARGUMENTS) {
+
+                @Override
+                protected ObjectFilter createFromArguments(ItemPath itemPath, ItemDefinition<?> itemDef,
+                        QName matchingRule, Map<QName, Object> arguments) {
+                    float threshold = getArgument(SIMILARITY_THRESHOLD, arguments);
+                    boolean inclusive = getArgument(INCLUSIVE, arguments);
+                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.similarity(threshold, inclusive );
+                    var values = getValues(STRING_VALUES,arguments);
                     List<PrismPropertyValue<String>> prismValues = toPrismValues(values);
                     var filter = FuzzyStringMatchFilterImpl.create(itemPath,
                             (PrismPropertyDefinition<String>) itemDef, method, prismValues);
