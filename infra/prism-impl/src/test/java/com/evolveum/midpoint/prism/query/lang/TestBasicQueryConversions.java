@@ -381,6 +381,14 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 + " and activation/validTo < '2020-07-06T00:00:00.000+02:00')", filter);
     }
 
+    @Test void testFuzzyLevenshtein() throws Exception {
+        var filter = getPrismContext().queryFor(UserType.class)
+                .item(UserType.F_FAMILY_NAME)
+                    .fuzzyString("smith").levenshtein(2, true)
+                    .buildFilter();
+        verify(UserType.class, "familyName levenshtein ('smith', 2, true)" ,filter);
+    }
+
     @Test
     public void testRefByMultipleConditions() throws Exception {
         XMLGregorianCalendar earlier = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
