@@ -60,7 +60,7 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
         return getMatchingMethod().getMethodName().getLocalPart();
     }
 
-    public static <T> FuzzyStringMatchFilter<T> create(ItemPath itemPath, PrismPropertyDefinition<T> propertyDefinition,
+    public static <T> FuzzyStringMatchFilterImpl<T> create(ItemPath itemPath, PrismPropertyDefinition<T> propertyDefinition,
             FuzzyMatchingMethod method, List<PrismPropertyValue<T>> values) {
         return new FuzzyStringMatchFilterImpl<T>(itemPath, method, propertyDefinition, null, values,
                 null, null, null);

@@ -22,6 +22,7 @@ import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.query.*;
@@ -29,6 +30,8 @@ import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
 import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
@@ -50,6 +53,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String REF_REL = "relation";
     private static final String REF_TARGET_ALIAS = "@";
     private static final String REF_TARGET = "target";
+    private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
@@ -58,6 +62,48 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
                 QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException;
     }
+
+    public static class FilterArgumentSpec<T> {
+        public final QName name;
+        public final boolean required;
+        public final Class<T> type;
+        public final T defaultValue;
+
+        public FilterArgumentSpec(QName name, Class<T> type) {
+            super();
+            this.name = name;
+            this.type = type;
+            this.required = true;
+            this.defaultValue = null;
+        }
+
+        public FilterArgumentSpec(QName name, Class<T> type, T defaultValue) {
+            super();
+            this.name = name;
+            this.type = type;
+            this.required = false;
+            this.defaultValue = defaultValue;
+        }
+    }
+
+    public static class ValuesArgument<T> extends FilterArgumentSpec<T> {
+
+        public ValuesArgument(Class<T> type) {
+            super(VALUES, type);
+        }
+    }
+
+
+    private static final ValuesArgument<String> LEVENSHTEIN_VALUES = new ValuesArgument<>(String.class);
+    private static final FilterArgumentSpec<Integer> LEVENSHTEIN_THRESHOLD = new FilterArgumentSpec<>(FuzzyStringMatchFilter.THRESHOLD, Integer.class);
+    private static final FilterArgumentSpec<Boolean> LEVENSHTEIN_INCLUSIVE = new FilterArgumentSpec<>(FuzzyStringMatchFilter.INCLUSIVE, Boolean.class, true);
+
+
+    private static final List<FilterArgumentSpec<?>> LEVENSHTEIN_ARGUMENTS = ImmutableList.of(
+            LEVENSHTEIN_VALUES,
+            LEVENSHTEIN_THRESHOLD,
+            LEVENSHTEIN_INCLUSIVE
+    );
 
     private abstract class PropertyFilterFactory implements ItemFilterFactory {
 
@@ -118,6 +164,34 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         abstract ObjectFilter expressionFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                 ExpressionWrapper expression);
+
+    }
+
+    private abstract class FunctionLikeFilterFactory implements ItemFilterFactory {
+
+        protected final String filterName;
+
+        public FunctionLikeFilterFactory(QName filterName) {
+            this(filterName.getLocalPart());
+        }
+
+        public FunctionLikeFilterFactory(String filterName) {
+            this.filterName = filterName;
+        }
+
+        @Override
+        public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef,
+                ItemPath itemPath, ItemDefinition<?> itemDef, QName matchingRule,
+                SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+            schemaCheck(subfilterOrValue.valueSet() != null, "Filter %s requires set of arguments", filterName);
+
+            Map<QName, Object> arguments = parsePositionalValueSet(LEVENSHTEIN_ARGUMENTS, subfilterOrValue.valueSet());
+
+            return createFromArguments(itemPath, itemDef, matchingRule, arguments);
+        }
+
+        protected abstract ObjectFilter createFromArguments(ItemPath itemPath, ItemDefinition<?> itemDef,
+                QName matchingRule, Map<QName, Object> arguments);
 
     }
 
@@ -439,6 +513,22 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 }
 
             })
+            .put(LEVENSHTEIN, new FunctionLikeFilterFactory(LEVENSHTEIN) {
+
+                @Override
+                protected ObjectFilter createFromArguments(ItemPath itemPath, ItemDefinition<?> itemDef,
+                        QName matchingRule, Map<QName, Object> arguments) {
+                    int threshold = getArgument(LEVENSHTEIN_THRESHOLD, arguments);
+                    boolean inclusive = getArgument(LEVENSHTEIN_INCLUSIVE, arguments);
+                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.levenshtein(threshold, inclusive );
+                    var values = getValues(LEVENSHTEIN_VALUES,arguments);
+                    List<PrismPropertyValue<String>> prismValues = toPrismValues(values);
+                    var filter = FuzzyStringMatchFilterImpl.create(itemPath,
+                            (PrismPropertyDefinition<String>) itemDef, method, prismValues);
+                    filter.setMatchingRule(matchingRule);
+                    return filter;
+                }
+            })
             .build();
 
     private final Map<QName, ItemFilterFactory> notFilterFactories = ImmutableMap.<QName, ItemFilterFactory>builder()
@@ -461,6 +551,50 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     public PrismQueryLanguageParserImpl(PrismContext context) {
         this(context, ImmutableMap.of(), null);
+    }
+
+    private <T> List<PrismPropertyValue<T>> toPrismValues(List<T> rawValues) {
+        List<PrismPropertyValue<T>> ret = new ArrayList<>();
+        for (T raw : rawValues) {
+            ret.add(new PrismPropertyValueImpl<T>(raw));
+        }
+        return ret;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> List<T> getValues(ValuesArgument<T> def, Map<QName, Object> arguments) {
+        Object maybe = arguments.get(def.name);
+        if (maybe instanceof List<?>) {
+            return (List) maybe;
+        }
+        if (maybe == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(def.type.cast(maybe));
+    }
+
+    private <T> T getArgument(FilterArgumentSpec<T> spec, Map<QName, Object> arguments) {
+        Object maybe = arguments.get(spec.name);
+        return spec.type.cast(maybe);
+    }
+
+    private Map<QName, Object> parsePositionalValueSet(List<FilterArgumentSpec<?>> definitions,
+            ValueSetContext values) throws SchemaException {
+        var defIter = definitions.iterator();
+        var valueIter = values.values.iterator();
+        Map<QName, Object> ret = new HashMap<>();
+        while(defIter.hasNext()) {
+            var def = defIter.next();
+            schemaCheck(!def.required || valueIter.hasNext(), "Required argument %s is not specified", def.name.getLocalPart());
+            if (valueIter.hasNext()) {
+                var value = valueIter.next();
+                if (value.literalValue() != null) {
+                    ret.put(def.name, parseLiteral(def.type, value));
+                }
+                // TODO Add parsing path
+            }
+        }
+        return ret;
     }
 
     protected boolean isVariablePath(SingleValueContext singleValue) {

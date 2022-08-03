@@ -39,7 +39,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
             return threshold;
         }
 
-        boolean isInclusive() {
+        public boolean isInclusive() {
             return inclusive;
         }
 
