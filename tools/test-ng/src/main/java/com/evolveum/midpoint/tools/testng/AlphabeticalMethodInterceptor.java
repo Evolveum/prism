@@ -1,5 +1,5 @@
-/*
- * Copyright (c) 2014-2015 Evolveum and contributors
+/**
+ * Copyright (C) 2014-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -26,7 +26,7 @@ public class AlphabeticalMethodInterceptor implements IMethodInterceptor {
         for (IMethodInstance mi : methods) {
             Object instance = mi.getInstance();
             if (!instanceList.contains(instance)) {
-              instanceList.add(instance);
+                instanceList.add(instance);
             }
             List<IMethodInstance> l = map.computeIfAbsent(instance, k -> Lists.newArrayList());
             l.add(mi);
@@ -35,13 +35,11 @@ public class AlphabeticalMethodInterceptor implements IMethodInterceptor {
         Comparator<IMethodInstance> comparator = Comparator.comparing(o -> o.getMethod().getMethodName());
         List<IMethodInstance> result = Lists.newArrayList();
         for (Object instance : instanceList) {
-            List<IMethodInstance> methodlist = map.get(instance);
-            IMethodInstance[] array = methodlist.toArray(new IMethodInstance[methodlist.size()]);
+            List<IMethodInstance> methodList = map.get(instance);
+            IMethodInstance[] array = methodList.toArray(new IMethodInstance[0]);
             Arrays.sort(array, comparator);
             result.addAll(Arrays.asList(array));
         }
-
-        System.out.println("AlphabeticalMethodInterceptor: "+result);
 
         return result;
     }

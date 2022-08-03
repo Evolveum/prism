@@ -42,6 +42,9 @@ class FilterNames {
     public static final QName OWNED_BY = queryName("ownedBy");
     public static final QName REFERENCED_BY = queryName("referencedBy");
     public static final QName ANY_IN = queryName("anyIn");
+    public static final QName LEVENSHTEIN = queryName("levenshtein");
+    public static final QName SIMILARITY = queryName("similarity");
+
 
 
     static final BiMap<String, QName> ALIAS_TO_NAME = ImmutableBiMap.<String, QName>builder()
