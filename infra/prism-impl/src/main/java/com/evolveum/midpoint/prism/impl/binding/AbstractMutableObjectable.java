@@ -34,8 +34,16 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     @SuppressWarnings("rawtypes")
     public PrismObject asPrismContainer() {
         if (value instanceof PrismObjectValue) {
-            // Assume value is prism object
-            return ((PrismObjectValue) value).asPrismObject();
+            var objVal = (PrismObjectValue) value;
+            var parent = value.getParent();
+            if (parent instanceof PrismObject) {
+                return (PrismObject) parent;
+            }
+            if (parent == null) {
+                var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get(), objVal);
+                return object;
+            }
+
         }
         if (value == null) {
             var object =new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
