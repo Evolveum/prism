@@ -262,9 +262,6 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @NotNull
     @Override
     public PrismContainer<C> instantiate(QName elementName) throws SchemaException {
-        if (isAbstract()) {
-            throw new SchemaException("Cannot instantiate abstract definition " + this);
-        }
         elementName = DefinitionUtil.addNamespaceIfApplicable(elementName, this.itemName);
         return new PrismContainerImpl<>(elementName, this, getPrismContext());
     }
