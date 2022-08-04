@@ -291,7 +291,7 @@ public class QueryConverterImpl implements QueryConverter {
 
         if (QNameUtil.match(FuzzyStringMatchFilter.LEVENSHTEIN,method.getKey())) {
             return FuzzyStringMatchFilter.levenshtein(
-                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_INTEGER, Integer.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_INT, Integer.class),
                     requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
         } else if (QNameUtil.match(FuzzyStringMatchFilter.SIMILARITY, method.getKey())) {
             return FuzzyStringMatchFilter.similarity(
