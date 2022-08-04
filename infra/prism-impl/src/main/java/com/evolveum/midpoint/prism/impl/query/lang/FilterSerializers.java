@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.impl.query.AnyInFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.EqualFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.ExistsFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.FullTextFilterImpl;
+import com.evolveum.midpoint.prism.impl.query.FuzzyStringMatchFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.GreaterFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.InOidFilterImpl;
 import com.evolveum.midpoint.prism.impl.query.LessFilterImpl;
@@ -28,10 +29,13 @@ import com.evolveum.midpoint.prism.impl.query.UndefinedFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.query.AndFilter;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.ThresholdMatchingMethod;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 
@@ -41,6 +45,7 @@ import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
@@ -76,13 +81,17 @@ public class FilterSerializers {
             .put(mapping(NotFilterImpl.class, FilterSerializers::notFilter))
             .put(mapping(ReferencedByFilterImpl.class, FilterSerializers::referencedByFilter))
             .put(mapping(AnyInFilterImpl.class, FilterSerializers::anyInFilter))
-            .put(mapping(OrgFilterImpl.class, FilterSerializers::orgFilter)).build();
+            .put(mapping(OrgFilterImpl.class, FilterSerializers::orgFilter))
+            .put(mapping(FuzzyStringMatchFilterImpl.class, FilterSerializers::fuzzyMatchFilter))
+            .build();
+
 
     static void write(ObjectFilter filter, QueryWriter output) throws NotSupportedException {
         FilterSerializer<?> maybeSerializer = SERIALIZERS.get(filter.getClass());
         checkSupported(maybeSerializer != null, "Serialization of %s is not supported", filter.getClass());
         maybeSerializer.castAndWrite(filter, output);
     }
+
 
     private static <T extends ObjectFilter> Entry<Class<T>, FilterSerializer<T>> mapping(Class<T> clazz,
             FilterSerializer<T> serializer) {
@@ -343,6 +352,22 @@ public class FilterSerializers {
             }
         }
         target.endNestedFilter();
+    }
+
+    static void fuzzyMatchFilter(FuzzyStringMatchFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
+        checkSupported(source.getValues().size() == 1, "Only one reference is supported");
+        target.writePath(source.getFullPath());
+
+        var method = (source.getMatchingMethod());
+        target.writeFilterName(method.getMethodName());
+
+        var args = new ArrayList<>();
+        args.add(source.getValues().get(0).getValue());
+        if (method instanceof ThresholdMatchingMethod) {
+            args.add(((ThresholdMatchingMethod<?>) method).getThreshold());
+            args.add(((ThresholdMatchingMethod<?>) method).isInclusive());
+        }
+        target.writeRawValues(args);
     }
 
     private static void checkExpressionSupported(@Nullable ExpressionWrapper expression) throws NotSupportedException {

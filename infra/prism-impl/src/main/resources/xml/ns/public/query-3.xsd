@@ -211,6 +211,7 @@
     <xsd:element name="less" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="lessOrEqual" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="substring" substitutionGroup="tns:filterClause" type="tns:SubstringFilterClauseType"/>
+    <xsd:element name="fuzzyStringMatch" substitutionGroup="tns:filterClause" type="tns:FuzzyStringMatchClauseType" />
 
     <xsd:element name="ref" substitutionGroup="tns:filterClause" type="tns:RefFilterClauseType"/>
 
@@ -448,6 +449,23 @@
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="FuzzyStringMatchClauseType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:PropertySimpleValueFilterClauseType">
+                 <xsd:sequence>
+                     <xsd:element name="method" type="tns:FuzzyStringMatchMethodClauseType" minOccurs="1" maxOccurs="1" />
+                 </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="FuzzyStringMatchMethodClauseType" >
+          <xsd:sequence>
+            <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="lax">
+            </xsd:any>
+          </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="ReferencedByFilterClauseType">
