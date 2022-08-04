@@ -212,16 +212,6 @@ public class PrismUnmarshaller {
     private <C extends Containerable> PrismContainer<C> parseContainer(@NotNull XNodeImpl node, @NotNull QName itemName,
             @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc) throws SchemaException {
 
-        // A hack to parse container items defined as abstract types; we expect actual container values to be instances
-        // of concrete types.
-        //
-        // TODO - for the future - will this work for multi-value abstract containers? (because xsi:type would not be on the
-        //  list element itself)
-        if (node.getTypeQName() != null) {
-            //noinspection unchecked
-            containerDef = (PrismContainerDefinition<C>) refineContainerDefinitionFromXsiType(containerDef, node, pc);
-        }
-
         PrismContainer<C> container = containerDef.instantiate(itemName);
         if (node instanceof ListXNodeImpl) {
             ListXNodeImpl list = (ListXNodeImpl) node;
@@ -376,33 +366,6 @@ public class PrismUnmarshaller {
             }
         }
         return containerTypeDef;
-    }
-
-    /**
-     * A variant of {@link #refineContainerTypeDefinitionFromXsiType(ComplexTypeDefinition, XNodeImpl, ParsingContext)} but
-     * working at the level of container definitions.
-     */
-    @Experimental
-    private PrismContainerDefinition<?> refineContainerDefinitionFromXsiType(
-            @NotNull PrismContainerDefinition<?> originalDef, @NotNull XNodeImpl xnode, @NotNull ParsingContext pc) throws SchemaException {
-        if (xnode.getTypeQName() != null) {
-            ComplexTypeDefinition explicitTypeDef = schemaRegistry.findComplexTypeDefinitionByType(xnode.getTypeQName());
-            ComplexTypeDefinition originalTypeDef = originalDef.getComplexTypeDefinition();
-
-            if (originalTypeDef == null || !explicitTypeDef.isAssignableFrom(originalTypeDef, schemaRegistry)) {
-                //noinspection unchecked
-                PrismContainerDefinitionImpl<Containerable> explicitContainerDef = new PrismContainerDefinitionImpl<>(
-                        originalDef.getItemName(),
-                        explicitTypeDef,
-                        (Class<Containerable>) explicitTypeDef.getCompileTimeClass());
-                explicitContainerDef.setDynamic(true);
-                return explicitContainerDef;
-            } else {
-                LOGGER.trace("Ignoring explicit type definition {} because equal or even more specific one is present: {}",
-                        explicitTypeDef, originalDef);
-            }
-        }
-        return originalDef;
     }
 
     private void parseContainerChildren(PrismContainerValue<?> cval, MapXNodeImpl map, PrismContainerDefinition<?> containerDef, ComplexTypeDefinition complexTypeDefinition, ParsingContext pc) throws SchemaException {
