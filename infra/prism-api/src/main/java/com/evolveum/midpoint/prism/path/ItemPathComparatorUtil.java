@@ -1,22 +1,19 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.path;
-
-import com.evolveum.midpoint.util.QNameUtil;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-/**
- *
- */
+import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.util.QNameUtil;
+
 public class ItemPathComparatorUtil {
 
     /**
@@ -53,7 +50,7 @@ public class ItemPathComparatorUtil {
             } else {
                 Object rv = components.get(i++);
                 if (!ItemPath.isId(rv) && !(ItemPath.isId(components.get(i)))) {
-                    nextIsArtificialId = true;            // next one returned will be artificial id segment
+                    nextIsArtificialId = true; // next one returned will be artificial id segment
                 }
                 return rv;
             }
@@ -75,10 +72,10 @@ public class ItemPathComparatorUtil {
             }
         }
         if (iterator1.hasNext()) {
-            return ItemPath.CompareResult.SUPERPATH;                // "this" is longer than "other"
+            return ItemPath.CompareResult.SUPERPATH; // path1 is longer than path2
         }
         if (iterator2.hasNext()) {
-            return ItemPath.CompareResult.SUBPATH;                // "this" is shorter than "other"
+            return ItemPath.CompareResult.SUBPATH; // path1 is shorter than path2
         }
         return ItemPath.CompareResult.EQUIVALENT;
     }
@@ -124,17 +121,16 @@ public class ItemPathComparatorUtil {
         ItemPathNormalizingIterator prefixIterator = normalizingIterator(prefix);
         while (prefixIterator.hasNext()) {
             if (!mainIterator.hasNext()) {
-                throw new IllegalArgumentException("Cannot subtract '"+prefix+"' from path '"+main+
+                throw new IllegalArgumentException("Cannot subtract '" + prefix + "' from path '" + main +
                         "' because it is not a prefix (subpath): it is a superpath instead.");
             }
             Object mainSegment = mainIterator.next();
             Object prefixSegment = prefixIterator.next();
             if (!segmentsEquivalent(mainSegment, prefixSegment)) {
-                throw new IllegalArgumentException("Cannot subtract segment '"+prefixSegment+"' from path '"+main+
-                        "' because it does not contain corresponding segment; it has '"+mainSegment+"' instead.");
+                throw new IllegalArgumentException("Cannot subtract segment '" + prefixSegment + "' from path '" + main +
+                        "' because it does not contain corresponding segment; it has '" + mainSegment + "' instead.");
             }
         }
         return ItemPathImpl.createFromIterator(mainIterator);
     }
-
 }
