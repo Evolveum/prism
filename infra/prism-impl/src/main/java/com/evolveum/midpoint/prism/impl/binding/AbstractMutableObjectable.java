@@ -108,7 +108,7 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     @Override
     public String toString() {
         return isContainerValueOnly() ?
-                asPrismContainer().toString() : value.toString();
+                value.toString() : asPrismContainer().toString();
     }
 
     @Override
