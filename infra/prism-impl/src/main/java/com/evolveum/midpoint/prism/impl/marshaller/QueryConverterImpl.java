@@ -27,8 +27,11 @@ import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.util.Checks;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -37,6 +40,7 @@ import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
+
 
 /**
  * Note that expressions are not serialized yet.
@@ -215,9 +219,96 @@ public class QueryConverterImpl implements QueryConverter {
             return parseReferencedByFilter(clauseXMap, preliminaryParsingOnly, pc);
         } else if (QNameUtil.match(clauseQName, CLAUSE_OWNED_BY)) {
             return parseOwnedByFilter(clauseXMap, preliminaryParsingOnly, pc);
+        } else if (QNameUtil.match(clauseQName, PrismConstants.Q_FUZZY_STRING_MATCH)) {
+            return parseFuzzyStringMatchFilter(clauseXMap, pcd, preliminaryParsingOnly, pc);
         }
         throw new UnsupportedOperationException("Unsupported query filter " + clauseQName);
 
+    }
+
+    private ObjectFilter parseFuzzyStringMatchFilter(MapXNodeImpl clauseXMap, PrismContainerDefinition<?> pcd,
+            boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
+
+        ItemPath itemPath = getPath(clauseXMap);
+        if (itemPath == null || itemPath.isEmpty()) {
+            throw new SchemaException("Could not convert query, because query does not contain item path.");
+        }
+
+        QName matchingRule = getMatchingRule(clauseXMap);
+
+        XNodeImpl valueXnode = clauseXMap.get(ELEMENT_VALUE);
+        ItemPath rightSidePath = getPath(clauseXMap, ELEMENT_RIGHT_HAND_SIDE_PATH);
+
+
+        FuzzyMatchingMethod method = parseFuzzyMatchingMethod(clauseXMap.get(PrismConstants.Q_METHOD));
+        ItemDefinition<?> itemDefinition = locateItemDefinition(valueXnode, itemPath, pcd);
+
+        if (valueXnode != null) {
+            if (preliminaryParsingOnly) {
+                return null;
+            } else {
+                RootXNodeImpl valueRoot = new RootXNodeImpl(ELEMENT_VALUE, valueXnode);
+                QName itemName = itemDefinition != null
+                        ? itemDefinition.getItemName()
+                        : ItemPath.toName(itemPath.last());
+                //noinspection rawtypes
+                Item item = parseItem(valueRoot, itemName, itemDefinition);
+                var values = item.getValues();
+                PrismValueCollectionsUtil.clearParent(values);
+                return FuzzyStringMatchFilterImpl.create(itemPath, (PrismPropertyDefinition) itemDefinition, method, values);
+            }
+        } else if (rightSidePath != null) {
+            if (preliminaryParsingOnly) {
+                return null;
+            } else {
+                ItemDefinition<?> rightSideDefinition = pcd != null ? pcd.findItemDefinition(rightSidePath) : null;
+                // return right side
+                throw new SchemaException("Right hand side not yet supported");
+            }
+        } else {
+            Entry<QName, XNodeImpl> expressionEntry = clauseXMap.getSingleEntryThatDoesNotMatch(
+                    ELEMENT_VALUE, ELEMENT_MATCHING, ELEMENT_PATH, ELEMENT_ANCHOR_START, ELEMENT_ANCHOR_END);
+            if (expressionEntry != null) {
+                if (preliminaryParsingOnly) {
+                    return null;
+                } else {
+                    RootXNodeImpl expressionRoot = clauseXMap.getEntryAsRoot(expressionEntry.getKey());
+                    PrismPropertyValue<?> expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
+                    ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
+                    // Return expression
+                }
+            } else {
+                throw new SchemaException("Expression must be provided");
+            }
+        }
+        throw new SchemaException();
+    }
+
+    private FuzzyMatchingMethod parseFuzzyMatchingMethod(XNodeImpl node) throws SchemaException {
+        Checks.checkSchema(node instanceof MapXNodeImpl, "method must be specified.");
+        var root = (MapXNodeImpl) node;
+        var method = root.getSingleEntryThatDoesNotMatch();
+
+        if (QNameUtil.match(FuzzyStringMatchFilter.LEVENSHTEIN,method.getKey())) {
+            return FuzzyStringMatchFilter.levenshtein(
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_INT, Integer.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
+        } else if (QNameUtil.match(FuzzyStringMatchFilter.SIMILARITY, method.getKey())) {
+            return FuzzyStringMatchFilter.similarity(
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_FLOAT, Float.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
+        }
+        throw new SchemaException("Fuzzy string match does not support method " + method.getKey());
+    }
+
+    private <T> T requireValue(XNodeImpl map, QName name, QName typeName, Class<T> valueType) throws SchemaException {
+        Checks.checkSchema(map instanceof MapXNodeImpl, "Node must be map node.");
+        XNode maybe = ((MapXNode) map).get(name);
+        Checks.checkSchema(maybe != null, "Missing property %s", name);
+        Checks.checkSchema(maybe instanceof PrimitiveXNode<?>, "Node % must contain simple value", name);
+        T value = ((PrimitiveXNode<T>) maybe).getParsedValue(typeName, valueType);
+        Checks.checkSchema(value != null, "Value must be specified for %", name);
+        return value;
     }
 
     private ObjectFilter parseTextFilter(XNodeImpl clauseContent, PrismContainerDefinition<?> pcd, boolean preliminaryParsingOnly) throws SchemaException {
@@ -820,9 +911,32 @@ public class QueryConverterImpl implements QueryConverter {
             return serializeReferencedByFilter((ReferencedByFilter) filter, xnodeSerializer);
         } else if (filter instanceof OwnedByFilter) {
             return serializeOwnedByFilter((OwnedByFilter) filter, xnodeSerializer);
+        } else if (filter instanceof FuzzyStringMatchFilter<?>) {
+            return serializeFuzzyStringMatchFilter((FuzzyStringMatchFilter<?>) filter, xnodeSerializer);
         }
 
         throw new UnsupportedOperationException("Unsupported filter type: " + filter);
+    }
+
+    private MapXNodeImpl serializeFuzzyStringMatchFilter(FuzzyStringMatchFilter<?> filter,
+            PrismSerializer<RootXNode> xnodeSerializer) throws SchemaException {
+        MapXNodeImpl content = serializeValueFilter(filter, xnodeSerializer);
+
+        content.put(PrismConstants.Q_METHOD, serializeFuzzyMatchMethod(filter.getMatchingMethod()));
+
+        MapXNodeImpl map = new MapXNodeImpl();
+        map.put(PrismConstants.Q_FUZZY_STRING_MATCH, content);
+        return map;
+    }
+
+    private @NotNull XNodeImpl serializeFuzzyMatchMethod(FuzzyMatchingMethod matchingMethod) {
+        MapXNodeImpl parameters = new MapXNodeImpl();
+        for (Entry<QName, Object> entry : matchingMethod.getAttributes().entrySet()) {
+            parameters.put(entry.getKey(), createPrimitiveXNode(entry.getValue(), XsdTypeMapper.toXsdType(entry.getValue().getClass())));
+        }
+        MapXNodeImpl map = new MapXNodeImpl();
+        map.put(matchingMethod.getMethodName(), parameters);
+        return map;
     }
 
     private MapXNodeImpl serializeAndFilter(AndFilter filter, PrismSerializer<RootXNode> xnodeSerializer) throws SchemaException {

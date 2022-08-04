@@ -14,27 +14,48 @@ import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.PrismObjectValue;
 import com.evolveum.midpoint.prism.impl.PrismObjectImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 
 public abstract class AbstractMutableObjectable extends ObjectType implements ContainerablePrismBinding, Objectable {
 
-    private PrismObject<?> object;
+    /**
+     * Always set up if we are connected to a value.
+     *  May be {@link PrismObjectValue} or "only" {@link PrismContainerValue}.
+     **/
+    private PrismContainerValue<?> value;
 
     public AbstractMutableObjectable() {
         asPrismContainer();
     }
 
-
     @SuppressWarnings("rawtypes")
     public PrismObject asPrismContainer() {
-        if (object == null) {
-            object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
+        if (value instanceof PrismObjectValue) {
+            var objVal = (PrismObjectValue) value;
+            var parent = value.getParent();
+            if (parent instanceof PrismObject) {
+                return (PrismObject) parent;
+            }
+            if (parent == null) {
+                var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get(), objVal);
+                return object;
+            }
+
         }
-        return object;
+        if (value == null) {
+            var object =new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
+            value = object.getValue();
+            return object;
+        }
+        return null;
     }
 
+    private boolean isContainerValueOnly() {
+        return value != null && !(value instanceof PrismObjectValue);
+    }
 
     @Override
     @XmlAttribute(name = "oid")
@@ -48,8 +69,11 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     }
 
     @Override
-    public void setupContainerValue(PrismContainerValue container) {
-        object = PrismForJAXBUtil.setupContainerValue(asPrismContainer(), container);
+    public void setupContainerValue(PrismContainerValue value) {
+        this.value = value;
+        if (!isContainerValueOnly()) {
+            PrismForJAXBUtil.setupContainerValue(asPrismContainer(), value);
+        }
     }
 
     @Override
@@ -59,7 +83,7 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @Override
     public PrismContainerValue asPrismContainerValue() {
-        return asPrismContainer().getValue();
+        return value;
     }
 
     protected abstract QName prismGetContainerName();
@@ -68,7 +92,6 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @Override
     public String getVersion() {
-
         return asPrismContainer().getVersion();
     }
 
@@ -79,12 +102,13 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @Override
     public void setupContainer(PrismObject object) {
-        this.object = object;
+        this.value = object != null ? object.getValue() : null;
     }
 
     @Override
     public String toString() {
-        return asPrismContainer().toString();
+        return isContainerValueOnly() ?
+                value.toString() : asPrismContainer().toString();
     }
 
     @Override
@@ -93,12 +117,12 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
             return false;
         }
         AbstractMutableObjectable other = ((AbstractMutableObjectable) object);
-        return asPrismContainer().equivalent(other.asPrismContainer());
+        return value.equivalent(other.value);
     }
 
     @Override
     public int hashCode() {
-        return asPrismContainer().hashCode();
+        return value.hashCode();
     }
 
     @Override
@@ -112,17 +136,19 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     public String toDebugName() {
         StringBuilder builder = new StringBuilder();
         builder.append(getClass().getSimpleName());
-        builder.append("[");
-        builder.append(getOid());
-        builder.append(", ");
-        builder.append(getName());
-        builder.append("]");
+        if (!isContainerValueOnly()) {
+            builder.append("[");
+            builder.append(getOid());
+            builder.append(", ");
+            builder.append(getName());
+            builder.append("]");
+        }
         return builder.toString();
     }
 
     @Override
     protected Object clone() {
-        return asPrismObject().clone().asObjectable();
+        return value.clone().asContainerable();
     }
 }
 

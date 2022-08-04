@@ -182,7 +182,7 @@ public class SchemaToDomProcessor {
 
         if (complexTypeDefinition == null || !complexTypeDefinition.isContainerMarker()) {
             // Need to add a:container annotation to the element as the complex type does not have it
-            addAnnotationToDefinition(elementElement, A_PROPERTY_CONTAINER);
+            addAnnotationToDefinition(elementElement, A_CONTAINER);
         }
     }
 
@@ -439,7 +439,7 @@ public class SchemaToDomProcessor {
             addAnnotation(A_OBJECT, definition.getDisplayName(), appinfo);
         } else if (definition.isContainerMarker()) {
             // annotation: propertyContainer
-            addAnnotation(A_PROPERTY_CONTAINER, definition.getDisplayName(), appinfo);
+            addAnnotation(A_CONTAINER, definition.getDisplayName(), appinfo);
         }
 
         addCommonDefinitionAnnotations(definition, appinfo);

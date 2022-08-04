@@ -479,7 +479,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         } else if (!extensionForType.equals(other.extensionForType)) {
             return false;
         }
-        if (!itemDefinitions.equals(other.itemDefinitions)) {
+        // itemDefinitions may be null during Java object deserialization, hence "Objects.equals"
+        if (!Objects.equals(itemDefinitions, other.itemDefinitions)) {
             return false;
         }
         if (objectMarker != other.objectMarker) {

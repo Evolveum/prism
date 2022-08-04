@@ -121,7 +121,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
             writeQName((QName) rawValue);
             return;
         }
-        if (rawValue instanceof Number) {
+        if (rawValue instanceof Number || rawValue instanceof Boolean) {
             // FIXME: we should have some common serialization utility
             target.emit(rawValue.toString());
             return;

@@ -62,8 +62,28 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         super(name, compileTimeClass, prismContext);
     }
 
+    public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismContext prismContext, PrismObjectValue<O> value) {
+        super(name, compileTimeClass, prismContext);
+        try {
+            addIgnoringEquivalents(value);
+        } catch (SchemaException e) {
+            // This should not happen
+            throw new SystemException("Internal Error: " + e.getMessage(), e);
+        }
+    }
+
     public PrismObjectImpl(QName name, PrismObjectDefinition<O> definition, PrismContext prismContext) {
         super(name, definition, prismContext);
+    }
+
+    public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismObjectValue<O> value) {
+        super(name, compileTimeClass);
+        try {
+            addIgnoringEquivalents(value);
+        } catch (SchemaException e) {
+            // This should not happen
+            throw new SystemException("Internal Error: " + e.getMessage(), e);
+        }
     }
 
     @Override

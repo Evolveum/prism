@@ -21,6 +21,8 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.*;
 import com.evolveum.midpoint.prism.xnode.*;
 
+import com.evolveum.midpoint.util.annotation.Experimental;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Contract;
@@ -209,6 +211,7 @@ public class PrismUnmarshaller {
     @NotNull
     private <C extends Containerable> PrismContainer<C> parseContainer(@NotNull XNodeImpl node, @NotNull QName itemName,
             @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc) throws SchemaException {
+
         PrismContainer<C> container = containerDef.instantiate(itemName);
         if (node instanceof ListXNodeImpl) {
             ListXNodeImpl list = (ListXNodeImpl) node;
@@ -231,7 +234,8 @@ public class PrismUnmarshaller {
         if (node instanceof IncompleteMarkerXNodeImpl) {
             container.setIncomplete(true);
         } else {
-            container.add(parseContainerValue(node, container.getDefinition(), pc));
+            container.add(
+                    parseContainerValue(node, container.getDefinition(), pc));
             if (node instanceof MapXNodeImpl && container instanceof PrismObject) {
                 MapXNodeImpl map = (MapXNodeImpl) node;
                 PrismObject<?> object = (PrismObject<?>) container;
@@ -327,35 +331,41 @@ public class PrismUnmarshaller {
             @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc) throws SchemaException {
         ComplexTypeDefinition containerTypeDef = containerDef.getComplexTypeDefinition();
 
-        PrismContainerValue<C> cval;
         if (containerDef instanceof PrismObjectDefinition) {
             //noinspection unchecked,rawtypes
             return new ValueWithDefinition<>(((PrismObjectDefinition) containerDef).createValue(), containerTypeDef);
         } else {
             Long id = xnode instanceof MapXNodeImpl ? getContainerId(((MapXNodeImpl) xnode), containerDef) : null;
             // override container definition, if explicit type is specified
-            if (xnode.getTypeQName() != null) {
-                ComplexTypeDefinition explicitTypeDef = schemaRegistry.findComplexTypeDefinitionByType(xnode.getTypeQName());
-                if (explicitTypeDef != null) {
-                    if (containerTypeDef != null && explicitTypeDef.isAssignableFrom(containerTypeDef, schemaRegistry)) {
-                        // Existing definition (CTD for PCD) is equal or more specific than the explicitly provided one.
-                        // Let's then keep using the existing definition. It is not quite clean solution
-                        // but there seem to exist serialized objects with generic xsi:type="c:ExtensionType" (MID-6474)
-                        // or xsi:type="c:ShadowAttributesType" (MID-6394). Such abstract definitions could lead to
-                        // parsing failures because of undefined items.
-                        LOGGER.trace("Ignoring explicit type definition {} because equal or even more specific one is present: {}",
-                                explicitTypeDef, containerTypeDef);
-                    } else {
-                        containerTypeDef = explicitTypeDef;
-                    }
-                } else {
-                    pc.warnOrThrow(LOGGER, "Unknown type " + xnode.getTypeQName() + " in " + xnode);
-                }
-            }
+            containerTypeDef = refineContainerTypeDefinitionFromXsiType(containerTypeDef, xnode, pc);
             return new ValueWithDefinition<>(
                     new PrismContainerValueImpl<>(null, null, null, id, containerTypeDef, prismContext),
                     containerTypeDef);
         }
+    }
+
+    private ComplexTypeDefinition refineContainerTypeDefinitionFromXsiType(
+            ComplexTypeDefinition containerTypeDef, @NotNull XNodeImpl xnode, @NotNull ParsingContext pc) throws SchemaException {
+        if (xnode.getTypeQName() != null) {
+            ComplexTypeDefinition explicitTypeDef = schemaRegistry.findComplexTypeDefinitionByType(xnode.getTypeQName());
+            if (explicitTypeDef != null) {
+                if (containerTypeDef == null
+                        || !explicitTypeDef.isAssignableFrom(containerTypeDef, schemaRegistry)) {
+                    return explicitTypeDef;
+                } else {
+                    // Existing definition (CTD for PCD) is equal or more specific than the explicitly provided one.
+                    // Let's then keep using the existing definition. It is not quite clean solution
+                    // but there seem to exist serialized objects with generic xsi:type="c:ExtensionType" (MID-6474)
+                    // or xsi:type="c:ShadowAttributesType" (MID-6394). Such abstract definitions could lead to
+                    // parsing failures because of undefined items.
+                    LOGGER.trace("Ignoring explicit type definition {} because equal or even more specific one is present: {}",
+                            explicitTypeDef, containerTypeDef);
+                }
+            } else {
+                pc.warnOrThrow(LOGGER, "Unknown type " + xnode.getTypeQName() + " in " + xnode);
+            }
+        }
+        return containerTypeDef;
     }
 
     private void parseContainerChildren(PrismContainerValue<?> cval, MapXNodeImpl map, PrismContainerDefinition<?> containerDef, ComplexTypeDefinition complexTypeDefinition, ParsingContext pc) throws SchemaException {

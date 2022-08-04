@@ -70,7 +70,7 @@ public class PrismConstants {
 
     // Annotations
 
-    public static final QName A_PROPERTY_CONTAINER = new QName(NS_ANNOTATION, "container");
+    public static final QName A_CONTAINER = new QName(NS_ANNOTATION, "container");
     public static final QName A_OBJECT = new QName(NS_ANNOTATION, "object");
     public static final QName A_INSTANTIATION_ORDER = new QName(NS_ANNOTATION, "instantiationOrder");
 
@@ -95,6 +95,7 @@ public class PrismConstants {
     public static final QName A_OBJECT_REFERENCE = new QName(NS_ANNOTATION, "objectReference");
     public static final QName A_OBJECT_REFERENCE_TARGET_TYPE = new QName(NS_ANNOTATION, "objectReferenceTargetType");
     public static final QName A_COMPOSITE = new QName(NS_ANNOTATION, "composite");
+    public static final QName A_EMBEDDED_OBJECT = new QName(NS_ANNOTATION, "embeddedObject");
     public static final QName A_DEPRECATED = new QName(NS_ANNOTATION, "deprecated");
     public static final QName A_DEPRECATED_SINCE = new QName(NS_ANNOTATION, "deprecatedSince");
     public static final QName A_EXPERIMENTAL = new QName(NS_ANNOTATION, "experimental");
@@ -167,5 +168,7 @@ public class PrismConstants {
     public static final QName VALUE_METADATA_CONTAINER_NAME = new QName(NS_METADATA, "valueMetadata");
 
     public static final QName VIRTUAL_SCHEMA_ROOT = new QName(NS_TYPES, "virtualSchemaRoot");
+    public static final QName Q_FUZZY_STRING_MATCH = new QName(NS_QUERY, "fuzzyStringMatch");
+    public static final QName Q_METHOD = new QName(NS_QUERY, "method");
 
 }
