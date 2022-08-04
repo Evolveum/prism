@@ -99,6 +99,11 @@ public interface ItemPath extends ShortDumpable, Serializable {
         return ItemPathImpl.createFromListReverse(components);
     }
 
+    /** {@link PrismContext} must be already initialized in order to call this method. */
+    static ItemPath fromString(@NotNull String value) {
+        return PrismContext.get().itemPathParser().asItemPath(value);
+    }
+
     /**
      * Returns true if the path is empty i.e. has no components.
      */
