@@ -173,21 +173,27 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        this.defaultPolyStringNormalizer = createConfiguredPolyStringNormalizer(configuration);
+    }
+
+    @Override
+    public @NotNull PolyStringNormalizer createConfiguredPolyStringNormalizer(PolyStringNormalizerConfigurationType configuration)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         if (configuration == null) {
-            defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
-            return;
+            return new AlphanumericPolyStringNormalizer();
         }
 
+        PolyStringNormalizer normalizer;
         String className = configuration.getClassName();
         if (className == null) {
-            defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
+            normalizer = new AlphanumericPolyStringNormalizer();
         } else {
             String fullClassName = getNormalizerFullClassName(className);
             Class<?> normalizerClass;
             try {
                 normalizerClass = Class.forName(fullClassName);
                 Constructor<?> constructor = normalizerClass.getConstructor();
-                defaultPolyStringNormalizer = (PolyStringNormalizer) constructor.newInstance();
+                normalizer = (PolyStringNormalizer) constructor.newInstance();
             } catch (ClassNotFoundException e) {
                 throw new ClassNotFoundException("Cannot find class " + fullClassName + ": "
                         + e.getMessage(), e);
@@ -200,9 +206,10 @@ public final class PrismContextImpl implements PrismContext {
             }
         }
 
-        if (defaultPolyStringNormalizer instanceof ConfigurableNormalizer) {
-            ((ConfigurableNormalizer) defaultPolyStringNormalizer).configure(configuration);
+        if (normalizer instanceof ConfigurableNormalizer) {
+            ((ConfigurableNormalizer) normalizer).configure(configuration);
         }
+        return normalizer;
     }
 
     private String getNormalizerFullClassName(String shortClassName) {

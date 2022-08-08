@@ -67,6 +67,10 @@ public interface PrismContext extends ProtectorCreator {
 
     void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
 
+    /** Creates a configured poly string normalizer for the use by the client. Does not set anything in {@link PrismContext}. */
+    @NotNull PolyStringNormalizer createConfiguredPolyStringNormalizer(PolyStringNormalizerConfigurationType configuration)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException;
+
     /**
      * Returns the schema registry.
      */
