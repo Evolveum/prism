@@ -143,6 +143,9 @@ public class JavaTypeConverter {
         if (expectedType == double.class && rawValue instanceof String) {
             return Double.parseDouble(((String) rawValue).trim());
         }
+        if ((expectedType == double.class || expectedType == Double.class) && rawValue instanceof Number) {
+            return ((Number) rawValue).doubleValue();
+        }
         if (expectedType == String.class && rawValue instanceof Double) {
             return rawValue.toString();
         }
