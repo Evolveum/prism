@@ -713,16 +713,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     @Override
-    public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {
-        return parseQuery(typeClass, AxiomQuerySource.from(query));
+    public <C extends Containerable> ObjectFilter parseFilter(Class<C> typeClass, String query) throws SchemaException {
+        return parseFilter(typeClass, AxiomQuerySource.from(query));
     }
 
     @Override
-    public ObjectFilter parseQuery(PrismContainerDefinition<?> definition, String query) throws SchemaException {
+    public ObjectFilter parseFilter(PrismContainerDefinition<?> definition, String query) throws SchemaException {
         return parseQuery(definition, AxiomQuerySource.from(query));
     }
 
-    public <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, AxiomQuerySource source)
+    public <C extends Containerable> ObjectFilter parseFilter(Class<C> typeClass, AxiomQuerySource source)
             throws SchemaException {
         PrismContainerDefinition<?> complexType = context.getSchemaRegistry()
                 .findContainerDefinitionByCompileTimeClass(typeClass);

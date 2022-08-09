@@ -12,8 +12,26 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface PrismQueryLanguageParser {
 
-    <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException;
+    <C extends Containerable> ObjectFilter parseFilter(Class<C> typeClass, String query) throws SchemaException;
 
-    ObjectFilter parseQuery(PrismContainerDefinition<?> definition, String query) throws SchemaException;
+    ObjectFilter parseFilter(PrismContainerDefinition<?> definition, String query) throws SchemaException;
+
+    /**
+     *
+     * @deprecated Use {@link #parseFilter(Class, String)} instead
+     */
+    @Deprecated
+    default <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {
+        return parseFilter(typeClass, query);
+    }
+
+    /**
+     *
+     * @deprecated Use {@link #parseFilter(PrismContainerDefinition, String)} instead
+     */
+    @Deprecated
+    default ObjectFilter parseQuery(PrismContainerDefinition<?> definition, String query) throws SchemaException {
+        return parseFilter(definition, query);
+    }
 
 }
