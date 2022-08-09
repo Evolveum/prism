@@ -21,13 +21,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.util.annotation.Experimental;
-
+import org.jetbrains.annotations.NotNull;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 /**
  *
@@ -818,25 +820,13 @@ public class DebugUtil {
         dumpInnerCauses(sb, innerCause.getCause(), indent);
     }
 
-    @Experimental
-    public static class LazilyDumpable {
-        private final Supplier<Object> supplier;
-        private String stringified;
+    public static @NotNull String toStringCollection(Collection<?> values, int indent) {
+        return emptyIfNull(values).stream()
+                .map(v -> DebugDumpable.INDENT_STRING.repeat(indent) + v)
+                .collect(Collectors.joining("\n"));
+    }
 
-        private LazilyDumpable(Supplier<Object> supplier) {
-            this.supplier = supplier;
-        }
-
-        public static LazilyDumpable of(Supplier<Object> supplier) {
-            return new LazilyDumpable(supplier);
-        }
-
-        @Override
-        public String toString() {
-            if (stringified == null) {
-                stringified = supplier.toString();
-            }
-            return stringified;
-        }
+    public static @NotNull Object toStringCollectionLazy(Collection<?> values, int indent) {
+        return lazy(() -> toStringCollection(values, indent));
     }
 }
