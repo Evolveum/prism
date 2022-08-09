@@ -342,7 +342,8 @@ public class DOMUtilTest extends AbstractUnitTest {
 
     @Test
     public void testSerializationDeserializationWithSurrogates() {
-        String surrogateText = "𠀋😁";
+        String surrogateText = "𠀋 are composed of surrogate pairs. Emoji like 😁";
+        DOMUtil.checkValidXmlChars(surrogateText);
         Document original = DOMUtil.parseFile(SURROGATES_FILENAME);
         var kanjiText = DOMUtil.findElementRecursive(original.getDocumentElement(), new QName("kanji")).getTextContent();
         display("kanji: " + kanjiText);

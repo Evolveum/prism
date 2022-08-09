@@ -495,6 +495,15 @@ public class DOMUtil {
         if (qnameStringRepresentation == null) {
             return null;
         }
+        if (qnameStringRepresentation.contains("/")) {
+            // XML QNames can not contain slash, but URIs can
+            // Somehow we got QName URI (this could happen if parsed JSON was serialized (QName was in RawType)
+            // then deserialized (RawType was not materialized), and serialized to XML (in this case the URI
+            // form was not converted)
+            return QNameUtil.uriToQName(qnameStringRepresentation);
+
+
+        }
         int colonIndex = qnameStringRepresentation.indexOf(':');
         if (colonIndex < 0) {
             if (StringUtils.isBlank(qnameStringRepresentation)) {
@@ -1458,11 +1467,13 @@ public class DOMUtil {
             return;
         }
         int codepointCount = stringValue.codePointCount(0, stringValue.length());
-
-        for (int i = 0; i < codepointCount; i++) {
-            if (!XMLChar.isValid(stringValue.codePointAt(i))) {
+        int i = 0;
+        while (i < codepointCount) {
+            int codePoint = stringValue.codePointAt(i);
+            if (!XMLChar.isValid(codePoint)) {
                 throw new IllegalStateException("Invalid character with regards to XML (code " + ((int) stringValue.charAt(i)) + ") in '" + makeSafelyPrintable(stringValue, 200) + "'");
             }
+            i += Character.charCount(codePoint);
         }
     }
 
