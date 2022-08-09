@@ -153,6 +153,7 @@ public class DOMUtil {
                 documentBuilderFactory.setFeature("http://xml.org/sax/features/namespaces", true);
                 // voodoo to turn off reading of DTDs during parsing. This is needed e.g. to pre-parse schemas
                 documentBuilderFactory.setValidating(false);
+
                 documentBuilderFactory.setFeature("http://xml.org/sax/features/validation", false);
                 documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
                 documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
@@ -188,13 +189,10 @@ public class DOMUtil {
     }
 
     public static TransformerFactory setupTransformerFactory() {
-        // too many whitespaces in Java11
-        //setTransformerFactoryIfPresent("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
-        // too few whitespaces
-        //setTransformerFactoryIfPresent("org.apache.xalan.xsltc.trax.TransformerFactoryImpl");
-        // a bit slower
-        setTransformerFactoryIfPresent("org.apache.xalan.processor.TransformerFactoryImpl");
-
+        // MID-7959: Use java native transformer, Xalan has problem with surrogates
+        // whitespace issue for schema elements is solved by adding xml:space=preserve attribute
+        // xnodes does not have problem with additional spaces.
+        setTransformerFactoryIfPresent("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
         return TransformerFactory.newInstance();
     }
 
@@ -471,6 +469,21 @@ public class DOMUtil {
         } else {
             throw new SchemaException("Schema does not have targetNamespace specification");
         }
+    }
+
+    public static void preserveFormattingIfPresent(Element xsdSchema) {
+        var maybeChild = xsdSchema.getFirstChild();
+        while (maybeChild != null) {
+            if (maybeChild.getNodeType() == Node.TEXT_NODE) {
+                Text textNode = (Text) maybeChild;
+                if (textNode.getTextContent().isBlank()) {
+                    xsdSchema.setAttributeNS(DOMUtil.W3C_XML_XML_URI, "xml:space", "preserve");
+                    return;
+                }
+            }
+            maybeChild = maybeChild.getNextSibling();
+        }
+
     }
 
     @FunctionalInterface
