@@ -14,7 +14,6 @@ public interface PrismQuerySerializer {
 
     PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context) throws PrismQuerySerialization.NotSupportedException;
 
-
     default PrismQuerySerialization serialize(ObjectFilter filter) throws PrismQuerySerialization.NotSupportedException {
         return serialize(filter, PrismNamespaceContext.EMPTY);
     }

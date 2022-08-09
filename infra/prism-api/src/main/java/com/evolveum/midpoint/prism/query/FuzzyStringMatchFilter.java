@@ -9,28 +9,27 @@ import com.google.common.collect.ImmutableMap;
 
 public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
-    public static final QName THRESHOLD = new QName(PrismConstants.NS_QUERY, "threshold");
-    public static final QName INCLUSIVE = new QName(PrismConstants.NS_QUERY, "inclusive");
-    public static final QName LEVENSHTEIN = new QName(PrismConstants.NS_QUERY, "levenshtein");
-    public static final QName SIMILARITY = new QName(PrismConstants.NS_QUERY, "similarity");
-
+    QName THRESHOLD = new QName(PrismConstants.NS_QUERY, "threshold");
+    QName INCLUSIVE = new QName(PrismConstants.NS_QUERY, "inclusive");
+    QName LEVENSHTEIN = new QName(PrismConstants.NS_QUERY, "levenshtein");
+    QName SIMILARITY = new QName(PrismConstants.NS_QUERY, "similarity");
 
     FuzzyMatchingMethod getMatchingMethod();
 
-    public interface FuzzyMatchingMethod extends Serializable {
+    interface FuzzyMatchingMethod extends Serializable {
 
-        public abstract QName getMethodName();
+        QName getMethodName();
 
-        public abstract Map<QName, Object> getAttributes();
+        Map<QName, Object> getAttributes();
     }
 
-    public abstract class ThresholdMatchingMethod<T extends Number> implements FuzzyMatchingMethod {
+    abstract class ThresholdMatchingMethod<T extends Number> implements FuzzyMatchingMethod {
 
         private static final long serialVersionUID = 1L;
         private final T threshold;
         private final boolean inclusive;
 
-        public ThresholdMatchingMethod(T threshold, boolean inclusive) {
+        ThresholdMatchingMethod(T threshold, boolean inclusive) {
             this.threshold = threshold;
             this.inclusive = inclusive;
         }
@@ -47,9 +46,17 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         public Map<QName, Object> getAttributes() {
             return ImmutableMap.of(THRESHOLD, threshold, INCLUSIVE, inclusive);
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "{" +
+                    "threshold=" + threshold +
+                    ", inclusive=" + inclusive +
+                    '}';
+        }
     }
 
-    public class Levenshtein extends ThresholdMatchingMethod<Integer> {
+    class Levenshtein extends ThresholdMatchingMethod<Integer> {
 
         private static final long serialVersionUID = 1L;
 
@@ -64,11 +71,9 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
     }
 
     /**
-     *
-     * Trigram Similarity
-     *
+     * Trigram similarity
      */
-    public class Similarity extends ThresholdMatchingMethod<Float> {
+    class Similarity extends ThresholdMatchingMethod<Float> {
 
         private static final long serialVersionUID = 1L;
 

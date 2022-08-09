@@ -387,7 +387,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_FAMILY_NAME)
                     .fuzzyString("smith").levenshtein(2, true)
                     .buildFilter();
-        verify(UserType.class, "familyName levenshtein ('smith', 2, true)" ,filter);
+        verify(UserType.class, "familyName levenshtein ('smith', 2, true)", filter);
     }
 
     @Test
@@ -396,7 +396,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_FAMILY_NAME)
                     .fuzzyString("smith").similarity(0.8f, true)
                     .buildFilter();
-        verify(UserType.class, "familyName similarity ('smith', 0.8, true)" ,filter);
+        verify(UserType.class, "familyName similarity ('smith', 0.8, true)", filter);
     }
 
     @Test
