@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <!--
-  ~ Copyright (c) 2010-2018 Evolveum and contributors
+  ~ Copyright (C) 2010-2022 Evolveum and contributors
   ~
   ~ This work is dual-licensed under the Apache License 2.0
   ~ and European Union Public License. See LICENSE file for details.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.evolveum.commons</groupId>
             <artifactId>util</artifactId>
-            <version>4.6-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -43,20 +43,20 @@
             <artifactId>annotations</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.springframework</groupId>
-          <artifactId>spring-core</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
         </dependency>
         <dependency>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
         </dependency>
         <dependency>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jvnet.jaxb2_commons</groupId>
-          <artifactId>jaxb2-basics-runtime</artifactId>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics-runtime</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.activation</groupId>
@@ -67,7 +67,7 @@
             <artifactId>guava</artifactId>
         </dependency>
 
-         <!-- TEST -->
+        <!-- TEST -->
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -122,26 +122,26 @@
              This plugin is not really needed during normal build.
              The classes that we need are hard-copied into the prism test source tree.
              Disabling this plugin speeds up the compilation. -->
-             <!--
-            <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.8.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <verbose>true</verbose>
-                            <catalog>src/main/resources/META-INF/catalog.xml</catalog>
-                            <extension>true</extension>
-                            <schemaDirectory>src/main/resources/xml/ns/test</schemaDirectory>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>  -->
+            <!--
+           <plugin>
+               <groupId>org.jvnet.jaxb2.maven2</groupId>
+               <artifactId>maven-jaxb2-plugin</artifactId>
+               <version>0.8.0</version>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>generate</goal>
+                       </goals>
+                       <configuration>
+                           <verbose>true</verbose>
+                           <catalog>src/main/resources/META-INF/catalog.xml</catalog>
+                           <extension>true</extension>
+                           <schemaDirectory>src/main/resources/xml/ns/test</schemaDirectory>
+                           <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+                       </configuration>
+                   </execution>
+               </executions>
+           </plugin>  -->
         </plugins>
     </build>
 </project>
