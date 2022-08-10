@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.ShortDumpable;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
@@ -144,4 +145,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     @Nullable
     @Override
     Referencable getRealValue();
+
+    @Experimental
+    <I extends Item<?, ?>> I  findReferencedItem(ItemPath path, Class<I> type);
 }

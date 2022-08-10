@@ -298,4 +298,12 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     protected String getDebugDumpClassName() {
         return "PR";
     }
+
+    @Override
+    public <I extends Item<?, ?>> I findReferencedItem(ItemPath path, Class<I> type) {
+        if (isSingleValue()) {
+            return getAnyValue().findReferencedItem(path, type);
+        }
+        return null;
+    }
 }

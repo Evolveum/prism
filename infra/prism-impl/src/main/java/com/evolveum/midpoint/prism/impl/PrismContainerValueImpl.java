@@ -32,6 +32,8 @@ import com.evolveum.midpoint.prism.marshaller.JaxbDomHack;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathCollectionsUtil;
+import com.evolveum.midpoint.prism.path.ItemPathSegment;
+import com.evolveum.midpoint.prism.path.ObjectReferencePathSegment;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -708,6 +710,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                         // Return the item for non-container even if the path is non-empty
                         // FIXME: This is not the best solution but it is needed to be able to look inside properties
                         // such as PolyString
+
+                        if (item instanceof PrismReference && rest.startsWithObjectReference()) {
+                            var ref = ((PrismReference) item);
+                            return ref.findReferencedItem(rest, type);
+                        }
                         if (type.isAssignableFrom(item.getClass())) {
                             return item;
                         } else {
