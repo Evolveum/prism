@@ -108,7 +108,8 @@ public class PrismMarshaller {
         QName realItemTypeName = itemInfo.getTypeName();
 
         if (realItemName == null) {
-            throw new IllegalArgumentException("Couldn't determine item name from the prism value; cannot marshal to RootXNode");
+            throw new IllegalArgumentException(
+                    "Couldn't determine item name from the prism value; cannot marshal to RootXNode: " + itemInfo);
         }
 
         XNodeImpl valueNode = marshalItemValue(value, realItemDefinition, realItemTypeName, context, itemsToSkip);

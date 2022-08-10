@@ -293,4 +293,14 @@ public class ItemInfo<ID extends ItemDefinition> {
 
         return info;
     }
+
+    @Override
+    public String toString() {
+        return "ItemInfo{" +
+                "itemName=" + itemName +
+                ", itemDefinition=" + itemDefinition +
+                ", typeName=" + typeName +
+                ", complexTypeDefinition=" + complexTypeDefinition +
+                '}';
+    }
 }

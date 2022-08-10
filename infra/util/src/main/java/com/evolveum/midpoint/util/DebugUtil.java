@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
@@ -820,10 +819,23 @@ public class DebugUtil {
         dumpInnerCauses(sb, innerCause.getCause(), indent);
     }
 
+    public static void toStringCollection(StringBuilder sb, Collection<?> values, int indent) {
+        boolean first = true;
+        for (Object value : emptyIfNull(values)) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append('\n');
+            }
+            indentDebugDump(sb, indent);
+            sb.append(value);
+        }
+    }
+
     public static @NotNull String toStringCollection(Collection<?> values, int indent) {
-        return emptyIfNull(values).stream()
-                .map(v -> DebugDumpable.INDENT_STRING.repeat(indent) + v)
-                .collect(Collectors.joining("\n"));
+        StringBuilder sb = new StringBuilder();
+        toStringCollection(sb, values, indent);
+        return sb.toString();
     }
 
     public static @NotNull Object toStringCollectionLazy(Collection<?> values, int indent) {
