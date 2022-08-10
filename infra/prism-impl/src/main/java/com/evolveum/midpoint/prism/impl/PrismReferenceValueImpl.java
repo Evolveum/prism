@@ -740,4 +740,13 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             ItemDefinitionTransformer transformation) {
         // NOOP
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <I extends Item<?, ?>> I findReferencedItem(ItemPath path, Class<I> type) {
+        if (path.startsWithObjectReference() && getObject() != null) {
+            return (I) getObject().findItem(path.rest(), type);
+        }
+        return null;
+    }
 }

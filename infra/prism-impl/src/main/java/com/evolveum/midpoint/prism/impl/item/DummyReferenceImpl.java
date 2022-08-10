@@ -29,6 +29,7 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
         super(realReference, path);
     }
 
+    @Override
     public Referencable getRealValue() {
         return delegate().getRealValue();
     }
@@ -43,6 +44,7 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
         return delegate().getRealValuesArray(type);
     }
 
+    @Override
     @NotNull
     public Collection<Referencable> getRealValues() {
         return delegate().getRealValues();
@@ -53,35 +55,43 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
         delegate().addIgnoringEquivalents(newValue);
     }
 
+    @Override
     public boolean merge(PrismReferenceValue value) {
         return delegate().merge(value);
     }
 
+    @Override
     public String getOid() {
         return delegate().getOid();
     }
 
+    @Override
     public PolyString getTargetName() {
         return delegate().getTargetName();
     }
 
+    @Override
     public PrismReferenceValue findValueByOid(String oid) {
         return delegate().findValueByOid(oid);
     }
 
+    @Override
     public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(
             ItemPath path) {
         return delegate().findPartial(path);
     }
 
+    @Override
     public ReferenceDelta createDelta() {
         return delegate().createDelta();
     }
 
+    @Override
     public ReferenceDelta createDelta(ItemPath path) {
         return delegate().createDelta(path);
     }
 
+    @Override
     public PrismReference clone() {
         return delegate().clone();
     }
@@ -91,10 +101,12 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
         return delegate().createImmutableClone();
     }
 
+    @Override
     public PrismReference cloneComplex(CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 
+    @Override
     public PrismReferenceValue getValue() {
         return delegate().getValue();
     }
@@ -102,6 +114,11 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
     @Override
     public String getHelp() {
         return delegate().getHelp();
+    }
+
+    @Override
+    public <I extends Item<?, ?>> I findReferencedItem(ItemPath dereferencePath, Class<I> type) {
+        return delegate().findReferencedItem(dereferencePath, type);
     }
 
 }

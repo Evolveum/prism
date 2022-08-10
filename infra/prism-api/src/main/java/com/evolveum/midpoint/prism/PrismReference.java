@@ -12,6 +12,8 @@ import java.util.Collection;
 import com.evolveum.midpoint.prism.delta.ReferenceDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.util.annotation.Experimental;
+
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -34,6 +36,7 @@ public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceD
 //    PrismReference(QName name, PrismReferenceDefinition definition, PrismContext prismContext) {
 //        super(name, definition, prismContext);
 //    }
+
 
     @Override
     Referencable getRealValue();
@@ -73,5 +76,16 @@ public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceD
 
     @Override
     String debugDump(int indent);
+
+    /**
+     * Tries to find referenced path (path starting with object derefence)
+     * in-memory.
+     *
+     * This works only for single-value references, whose value also contains embedded object.
+     * The search is performed on embedded object.
+     *
+     */
+    @Experimental
+    <I extends Item<?,?>> I findReferencedItem(ItemPath path, Class<I> type);
 
 }
