@@ -452,4 +452,18 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
             // todo check consistence for ID-based filters
         }
     }
+
+    @Override
+    public boolean canNestInsideExists(ItemPath existsPath) {
+        if (!fullPath.startsWith(existsPath)) {
+            return false;
+        }
+        if (getRightHandSidePath() != null) {
+            return false;
+        }
+        if (getExpression() != null) {
+            return false;
+        }
+        return true;
+    }
 }

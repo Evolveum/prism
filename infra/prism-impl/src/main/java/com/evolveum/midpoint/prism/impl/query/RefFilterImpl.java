@@ -201,4 +201,13 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         checkMutable();
         filter = buildFilter;
     }
+
+    @Override
+    public RefFilterImpl nested(ItemPath prefix) {
+        ObjectFilter targetFilter = filter != null ? filter.clone() : null;
+        RefFilterImpl ret = new RefFilterImpl(getFullPath().rest(prefix.size()), getDefinition(), getClonedValues(), getExpression(), targetFilter);
+        ret.setOidNullAsAny(oidNullAsAny);
+        ret.setTargetTypeNullAsAny(targetTypeNullAsAny);
+        return ret;
+    }
 }

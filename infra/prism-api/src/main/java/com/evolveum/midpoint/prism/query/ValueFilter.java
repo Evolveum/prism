@@ -16,6 +16,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
@@ -111,4 +112,18 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
         }
         return false;
     }
+
+    /**
+     * Returns true, if current filter can be rewritten to be nested inside exists filter with prefix path
+     *
+     * This means filter with path prefix/item will become prefix exists (item)
+     *
+     * @param potential exists path
+     * @return true if filter can be rewritten and nested inside exists
+     */
+    @Experimental
+    boolean canNestInsideExists(ItemPath existsPath);
+
+    @Experimental
+    ValueFilter<V, D> nested(ItemPath existsPath);
 }

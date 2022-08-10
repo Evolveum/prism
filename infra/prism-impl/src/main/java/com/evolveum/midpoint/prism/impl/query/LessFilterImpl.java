@@ -65,6 +65,12 @@ public final class LessFilterImpl<T> extends ComparativeFilterImpl<T> implements
     }
 
     @Override
+    public LessFilterImpl<T> nested(ItemPath prefix) {
+        return new LessFilterImpl<>(getFullPath().rest(prefix.size()), getDefinition(), getMatchingRule(), getClonedValue(), getExpression(),
+                getRightHandSidePath(), getRightHandSideDefinition(), isEquals());
+    }
+
+    @Override
     protected String getFilterName() {
         return isEquals() ? "LESS-OR-EQUAL" : "LESS";
     }
