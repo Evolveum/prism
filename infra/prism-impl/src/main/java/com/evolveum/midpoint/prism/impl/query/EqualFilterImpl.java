@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.EqualFilter;
+import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
@@ -94,6 +95,12 @@ public class EqualFilterImpl<T> extends PropertyValueFilterImpl<T> implements Eq
     @Override
     public EqualFilterImpl<T> clone() {
         return new EqualFilterImpl<>(getFullPath(), getDefinition(), getMatchingRule(), getClonedValues(),
+                getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
+    }
+
+    @Override
+    public ValueFilter<PrismPropertyValue<T>, PrismPropertyDefinition<T>> nested(ItemPath prefix) {
+        return new EqualFilterImpl<>(getFullPath().rest(prefix.size()), getDefinition(), getMatchingRule(), getClonedValues(),
                 getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
     }
 

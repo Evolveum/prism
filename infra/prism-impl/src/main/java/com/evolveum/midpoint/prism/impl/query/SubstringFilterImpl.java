@@ -21,6 +21,7 @@ import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.SubstringFilter;
+import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
@@ -59,10 +60,12 @@ public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
         return new SubstringFilterImpl<>(path, itemDefinition, matchingRule, null, expressionWrapper, anchorStart, anchorEnd);
     }
 
+    @Override
     public boolean isAnchorStart() {
         return anchorStart;
     }
 
+    @Override
     public boolean isAnchorEnd() {
         return anchorEnd;
     }
@@ -145,5 +148,11 @@ public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), anchorStart, anchorEnd);
+    }
+
+    @Override
+    public ValueFilter<PrismPropertyValue<T>, PrismPropertyDefinition<T>> nested(ItemPath existsPath) {
+        return new SubstringFilterImpl<>(getFullPath().rest(existsPath.size()), getDefinition(), getMatchingRule(), getClonedValues(),
+                getExpression(), anchorStart, anchorEnd);
     }
 }

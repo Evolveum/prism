@@ -66,6 +66,12 @@ public class GreaterFilterImpl<T> extends ComparativeFilterImpl<T> implements Gr
     }
 
     @Override
+    public GreaterFilterImpl<T> nested(ItemPath prefix) {
+        return new GreaterFilterImpl<>(getFullPath().rest(prefix.size()), getDefinition(), getMatchingRule(), getClonedValue(), getExpression(),
+            getRightHandSidePath(), getRightHandSideDefinition(), isEquals());
+    }
+
+    @Override
     protected String getFilterName() {
         return isEquals() ? "GREATER-OR-EQUAL" : "GREATER";
     }
