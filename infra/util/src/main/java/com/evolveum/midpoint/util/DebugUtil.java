@@ -276,24 +276,13 @@ public class DebugUtil {
         sb.append("\n");
     }
 
-    public static void debugDumpWithLabel(StringBuilder sb, String label, Integer val, int indent) {
+    public static void debugDumpWithLabel(StringBuilder sb, String label, Number val, int indent) {
         debugDumpLabel(sb, label, indent);
         sb.append(" ");
         sb.append(val);
     }
 
-    public static void debugDumpWithLabelLn(StringBuilder sb, String label, Integer val, int indent) {
-        debugDumpWithLabel(sb, label, val, indent);
-        sb.append("\n");
-    }
-
-    public static void debugDumpWithLabel(StringBuilder sb, String label, Long val, int indent) {
-        debugDumpLabel(sb, label, indent);
-        sb.append(" ");
-        sb.append(val);
-    }
-
-    public static void debugDumpWithLabelLn(StringBuilder sb, String label, Long val, int indent) {
+    public static void debugDumpWithLabelLn(StringBuilder sb, String label, Number val, int indent) {
         debugDumpWithLabel(sb, label, val, indent);
         sb.append("\n");
     }
