@@ -90,7 +90,8 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
             return false;
         }
         if (!(itemToFind instanceof PrismContainer)) {
-            throw new SchemaException("Couldn't use exists query to search for items other than containers: " + itemToFind);
+            throw new UnsupportedOperationException(
+                    "Using exists query to search for items other than containers is not supported in-memory: " + itemToFind);
         }
         if (filter == null) {
             return true;
