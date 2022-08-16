@@ -41,7 +41,6 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
 
-
 /**
  * Note that expressions are not serialized yet.
  */
@@ -145,8 +144,10 @@ public class QueryConverterImpl implements QueryConverter {
         return parseFilter(filter.getFilterClauseXNode(), def);
     }
 
-    private ObjectFilter parseTextFilter(@NotNull String filter, PrismNamespaceContext context, @NotNull PrismContainerDefinition<?> def) throws SchemaException {
-        return prismContext.createQueryParser(context.allPrefixes()).parseQuery(def, filter);
+    private ObjectFilter parseTextFilter(
+            @NotNull String filter, PrismNamespaceContext context, @NotNull PrismContainerDefinition<?> def)
+            throws SchemaException {
+        return prismContext.createQueryParser(context.allPrefixes()).parseFilter(def, filter);
     }
 
     private <C extends Containerable> ObjectFilter parseFilterInternal(
@@ -235,10 +236,10 @@ public class QueryConverterImpl implements QueryConverter {
         }
 
         QName matchingRule = getMatchingRule(clauseXMap);
+        // TODO any plans with matching rules?
 
         XNodeImpl valueXnode = clauseXMap.get(ELEMENT_VALUE);
         ItemPath rightSidePath = getPath(clauseXMap, ELEMENT_RIGHT_HAND_SIDE_PATH);
-
 
         FuzzyMatchingMethod method = parseFuzzyMatchingMethod(clauseXMap.get(PrismConstants.Q_METHOD));
         ItemDefinition<?> itemDefinition = locateItemDefinition(valueXnode, itemPath, pcd);
@@ -289,13 +290,13 @@ public class QueryConverterImpl implements QueryConverter {
         var root = (MapXNodeImpl) node;
         var method = root.getSingleEntryThatDoesNotMatch();
 
-        if (QNameUtil.match(FuzzyStringMatchFilter.LEVENSHTEIN,method.getKey())) {
+        if (QNameUtil.match(FuzzyStringMatchFilter.LEVENSHTEIN, method.getKey())) {
             return FuzzyStringMatchFilter.levenshtein(
-                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_INT, Integer.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD, DOMUtil.XSD_INT, Integer.class),
                     requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
         } else if (QNameUtil.match(FuzzyStringMatchFilter.SIMILARITY, method.getKey())) {
             return FuzzyStringMatchFilter.similarity(
-                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD,DOMUtil.XSD_FLOAT, Float.class),
+                    requireValue(method.getValue(), FuzzyStringMatchFilter.THRESHOLD, DOMUtil.XSD_FLOAT, Float.class),
                     requireValue(method.getValue(), FuzzyStringMatchFilter.INCLUSIVE, DOMUtil.XSD_BOOLEAN, Boolean.class));
         }
         throw new SchemaException("Fuzzy string match does not support method " + method.getKey());
@@ -477,12 +478,11 @@ public class QueryConverterImpl implements QueryConverter {
                 }
             } else {
                 if (!isEq && !isSubstring) {
-                    throw new SchemaException("Comparison filter (greater, less) requires at least one value expression.");
+                    throw new SchemaException("Comparison filter (greater, less) requires exactly one value expression.");
                 }
                 if (preliminaryParsingOnly) {
                     return null;
                 } else {
-
                     if (isSubstring) {
                         return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition, matchingRule, null, getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
                     } else {
