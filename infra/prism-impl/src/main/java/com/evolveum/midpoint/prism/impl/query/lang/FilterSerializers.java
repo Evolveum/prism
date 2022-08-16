@@ -355,7 +355,7 @@ public class FilterSerializers {
     }
 
     static void fuzzyMatchFilter(FuzzyStringMatchFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
-        checkSupported(source.getValues().size() == 1, "Only one reference is supported");
+        checkSupported(source.getValues().size() == 1, "A single value is required");
         target.writePath(source.getFullPath());
 
         var method = (source.getMatchingMethod());

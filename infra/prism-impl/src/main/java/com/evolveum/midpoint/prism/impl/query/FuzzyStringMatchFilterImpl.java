@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 
@@ -54,13 +55,17 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
     }
 
     @Override
+    public @NotNull PrismPropertyValue<T> getSingleValue() {
+        return MiscUtil.requireNonNull(
+                super.getSingleValue(),
+                () -> new IllegalArgumentException(
+                        "Filter '" + this + "' should contain exactly one value, but it contains none."));
+    }
+
+    @Override
     public boolean match(PrismContainerValue<?> cValue, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         Collection<PrismValue> objectItemValues = getObjectItemValues(cValue);
         PrismPropertyValue<T> filterPropValue = getSingleValue();
-        if (filterPropValue == null) {
-            // TODO Is this OK? What does PostgreSQL in such a case?
-            return objectItemValues.isEmpty();
-        }
         for (PrismValue objectItemValue : objectItemValues) {
             checkPrismPropertyValue(objectItemValue);
             if (matches(filterPropValue, (PrismPropertyValue<?>) objectItemValue)) {
@@ -95,7 +100,7 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
     }
 
     private boolean matches(Object filterValue, Object objectValue) {
-        // TODO is this treatment ok?
+        // The situation with null real value is not OK, anyway. So it's quite safe to throw an exception here.
         argCheck(filterValue != null, "Filter real value must not be null in %s", this);
         argCheck(objectValue != null, "Object real value must not be null in %s", this);
         String filterStringValue = String.valueOf(filterValue);
