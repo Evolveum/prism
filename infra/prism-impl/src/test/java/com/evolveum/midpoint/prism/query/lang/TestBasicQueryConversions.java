@@ -61,7 +61,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     }
 
     private ObjectFilter parse(String query) throws SchemaException {
-        return parser().parseQuery(UserType.class, query);
+        return parser().parseFilter(UserType.class, query);
     }
 
     private void verify(String query, ObjectFilter original) throws SchemaException, IOException {
@@ -77,7 +77,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     }
 
     private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException, NotSupportedException {
-        ObjectFilter dslFilter = parser().parseQuery(type, query);
+        ObjectFilter dslFilter = parser().parseFilter(type, query);
         assertFilterEquals(dslFilter, expectedFilter);
 
         PrismQuerySerialization toAxiom = getPrismContext().querySerializer().serialize(dslFilter, PrismNamespaceContext.of(UserType.COMPLEX_TYPE.getNamespaceURI()));
@@ -385,8 +385,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     public void testFuzzyLevenshtein() throws Exception {
         var filter = getPrismContext().queryFor(UserType.class)
                 .item(UserType.F_FAMILY_NAME)
-                    .fuzzyString("smith").levenshtein(2, true)
-                    .buildFilter();
+                .fuzzyString("smith").levenshteinInclusive(2)
+                .buildFilter();
         verify(UserType.class, "familyName levenshtein ('smith', 2, true)", filter);
     }
 
@@ -394,8 +394,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     public void testFuzzySimilarity() throws Exception {
         var filter = getPrismContext().queryFor(UserType.class)
                 .item(UserType.F_FAMILY_NAME)
-                    .fuzzyString("smith").similarity(0.8f, true)
-                    .buildFilter();
+                .fuzzyString("smith").similarityInclusive(0.8f)
+                .buildFilter();
         verify(UserType.class, "familyName similarity ('smith', 0.8, true)", filter);
     }
 
@@ -513,38 +513,36 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     @Test // MID-6487
     public void testNumericFilters() throws Exception {
-        PrismObject<UserType> user = parseUserJacky();
-        assertNumGeFilter(user, 42, true);
-        assertNumGeFilter(user, 44, false);
-        assertNumGeFilter(user, 40, true);
+        assertNumGeFilter(42);
+        assertNumGeFilter(44);
+        assertNumGeFilter(40);
 
-        assertNumLtFilter(user, 42, false);
-        assertNumLtFilter(user, 44, true);
-        assertNumLtFilter(user, 40, false);
+        assertNumLtFilter(42);
+        assertNumLtFilter(44);
+        assertNumLtFilter(40);
     }
 
     @Test // MID-6577
     public void testDateTimeFilters() throws Exception {
-        PrismObject<UserType> user = parseUserJacky();
         XMLGregorianCalendar equal = XmlTypeConverter.createXMLGregorianCalendar("2020-07-07T00:00:00.000+02:00");
         XMLGregorianCalendar earlier = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
         XMLGregorianCalendar later = XmlTypeConverter.createXMLGregorianCalendar("2020-07-08T00:00:00.000+02:00");
 
-        assertDateTimeGeFilter(user, equal, true);
-        assertDateTimeGeFilter(user, later, false);
-        assertDateTimeGeFilter(user, earlier, true);
+        assertDateTimeGeFilter(equal);
+        assertDateTimeGeFilter(later);
+        assertDateTimeGeFilter(earlier);
 
-        assertDateTimeLeFilter(user, equal, true);
-        assertDateTimeLeFilter(user, later, true);
-        assertDateTimeLeFilter(user, earlier, false);
+        assertDateTimeLeFilter(equal);
+        assertDateTimeLeFilter(later);
+        assertDateTimeLeFilter(earlier);
 
-        assertDateTimeGtFilter(user, equal, false);
-        assertDateTimeGtFilter(user, later, false);
-        assertDateTimeGtFilter(user, earlier, true);
+        assertDateTimeGtFilter(equal);
+        assertDateTimeGtFilter(later);
+        assertDateTimeGtFilter(earlier);
 
-        assertDateTimeLtFilter(user, equal, false);
-        assertDateTimeLtFilter(user, later, true);
-        assertDateTimeLtFilter(user, earlier, false);
+        assertDateTimeLtFilter(equal);
+        assertDateTimeLtFilter(later);
+        assertDateTimeLtFilter(earlier);
     }
 
     @Test // MID-6601
@@ -567,28 +565,28 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         AssertJUnit.assertTrue("filter does not match object", match);
     }
 
-    private void assertNumGeFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertGeFilter(user, EXTENSION_NUM_ELEMENT, DOMUtil.XSD_INT, value, expected);
+    private void assertNumGeFilter(Object value) throws SchemaException, IOException {
+        assertGeFilter(EXTENSION_NUM_ELEMENT, DOMUtil.XSD_INT, value);
     }
 
-    private void assertNumLtFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertLtFilter(user, EXTENSION_NUM_ELEMENT, DOMUtil.XSD_INT, value, expected);
+    private void assertNumLtFilter(Object value) throws SchemaException, IOException {
+        assertLtFilter(EXTENSION_NUM_ELEMENT, DOMUtil.XSD_INT, value);
     }
 
-    private void assertDateTimeGeFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertGeFilter(user, EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value, expected);
+    private void assertDateTimeGeFilter(Object value) throws SchemaException, IOException {
+        assertGeFilter(EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value);
     }
 
-    private void assertDateTimeLeFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertLeFilter(user, EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value, expected);
+    private void assertDateTimeLeFilter(Object value) throws SchemaException, IOException {
+        assertLeFilter(EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value);
     }
 
-    private void assertDateTimeGtFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertGtFilter(user, EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value, expected);
+    private void assertDateTimeGtFilter(Object value) throws SchemaException, IOException {
+        assertGtFilter(EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value);
     }
 
-    private void assertDateTimeLtFilter(PrismObject<UserType> user, Object value, boolean expected) throws SchemaException, IOException {
-        assertLtFilter(user, EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value, expected);
+    private void assertDateTimeLtFilter(Object value) throws SchemaException, IOException {
+        assertLtFilter(EXTENSION_DATETIME_ELEMENT, DOMUtil.XSD_DATETIME, value);
     }
 
     private String toText(Object value) {
@@ -598,7 +596,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         return value.toString();
     }
 
-    private void assertGeFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException, IOException {
+    private void assertGeFilter(ItemName itemName, QName itemType, Object value) throws SchemaException, IOException {
         ObjectFilter filter = createExtensionFilter(itemName, itemType,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
                         .item(path, definition).ge(value)
@@ -606,7 +604,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify("extension/" + itemName.getLocalPart() + " >= " + toText(value), filter);
     }
 
-    private void assertLeFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException, IOException {
+    private void assertLeFilter(ItemName itemName, QName itemType, Object value) throws SchemaException, IOException {
         ObjectFilter filter = createExtensionFilter(itemName, itemType,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
                         .item(path, definition).le(value)
@@ -614,7 +612,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify("extension/" + itemName.getLocalPart() + " <= " + toText(value), filter);
     }
 
-    private void assertGtFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException, IOException {
+    private void assertGtFilter(ItemName itemName, QName itemType, Object value) throws SchemaException, IOException {
         ObjectFilter filter = createExtensionFilter(itemName, itemType,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
                         .item(path, definition).gt(value)
@@ -622,7 +620,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify("extension/" + itemName.getLocalPart() + " > " + toText(value), filter);
     }
 
-    private void assertLtFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException, IOException {
+    private void assertLtFilter(ItemName itemName, QName itemType, Object value) throws SchemaException, IOException {
         ObjectFilter filter = createExtensionFilter(itemName, itemType,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
                         .item(path, definition).lt(value)
@@ -630,7 +628,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify("extension/" + itemName.getLocalPart() + " < " + toText(value), filter);
     }
 
-    private ObjectFilter createExtensionFilter(ItemName itemName, QName itemType, BiFunction<ItemPath, PrismPropertyDefinition<Integer>, ObjectFilter> filterSupplier) {
+    private ObjectFilter createExtensionFilter(
+            ItemName itemName, QName itemType, BiFunction<ItemPath, PrismPropertyDefinition<Integer>, ObjectFilter> filterSupplier) {
         ItemPath path = ItemPath.create(UserType.F_EXTENSION, itemName);
         PrismPropertyDefinition<Integer> definition = getPrismContext().definitionFactory()
                 .createPropertyDefinition(itemName, itemType);
