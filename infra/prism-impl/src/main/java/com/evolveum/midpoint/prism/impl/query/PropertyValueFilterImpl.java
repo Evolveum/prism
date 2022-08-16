@@ -86,7 +86,8 @@ public abstract class PropertyValueFilterImpl<T>
 
     void checkPrismPropertyValue(Object value) {
         if (!(value instanceof PrismPropertyValue)) {
-            throw new IllegalArgumentException("Not supported prism value for equals filter. It must be an instance of PrismPropertyValue but it is " + value.getClass());
+            throw new IllegalArgumentException("Not supported prism value for this kind of filter. "
+                    + "It must be an instance of PrismPropertyValue but it is " + value.getClass());
         }
     }
 }

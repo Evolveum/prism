@@ -8,11 +8,18 @@ package com.evolveum.midpoint.prism.query;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.query.fuzzy.LevenshteinComputer;
+
+import com.evolveum.midpoint.prism.query.fuzzy.TriGramSimilarityComputer;
 
 import com.google.common.collect.ImmutableMap;
 
 import com.evolveum.midpoint.prism.PrismConstants;
+
+import org.jetbrains.annotations.NotNull;
 
 public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
@@ -28,6 +35,9 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         QName getMethodName();
 
         Map<QName, Object> getAttributes();
+
+        // TODO are string types ok here?
+        boolean matches(String lValue, String rValue);
     }
 
     abstract class ThresholdMatchingMethod<T extends Number> implements FuzzyMatchingMethod {
@@ -45,9 +55,22 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
             return threshold;
         }
 
+        public @NotNull T getThresholdRequired() {
+            return Objects.requireNonNull(getThreshold(), () -> "Threshold must be specified in " + this);
+        }
+
         public boolean isInclusive() {
             return inclusive;
         }
+
+        /**
+         * Computes the appropriate fuzzy match metric - the one that is being compared with the threshold.
+         * For example, Levenshtein edit distance (an integer value) or trigram similarity value (a float).
+         */
+        public abstract T computeMatchMetricValue(String lValue, String rValue);
+
+        /** Returns the Java type of the metric being used by this method (Integer, Float, ...). */
+        public abstract Class<T> getMetricValueClass();
 
         @Override
         public Map<QName, Object> getAttributes() {
@@ -75,6 +98,25 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         public QName getMethodName() {
             return LEVENSHTEIN;
         }
+
+        @Override
+        public Integer computeMatchMetricValue(String lValue, String rValue) {
+            return LevenshteinComputer.computeLevenshteinDistance(lValue, rValue);
+        }
+
+        @Override
+        public Class<Integer> getMetricValueClass() {
+            return Integer.class;
+        }
+
+        @Override
+        public boolean matches(String lValue, String rValue) {
+            if (isInclusive()) {
+                return computeMatchMetricValue(lValue, rValue) <= getThresholdRequired();
+            } else {
+                return computeMatchMetricValue(lValue, rValue) < getThresholdRequired();
+            }
+        }
     }
 
     /**
@@ -91,6 +133,25 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         @Override
         public QName getMethodName() {
             return SIMILARITY;
+        }
+
+        @Override
+        public Float computeMatchMetricValue(String lValue, String rValue) {
+            return (float) TriGramSimilarityComputer.getSimilarity(lValue, rValue);
+        }
+
+        @Override
+        public Class<Float> getMetricValueClass() {
+            return Float.class;
+        }
+
+        @Override
+        public boolean matches(String lValue, String rValue) {
+            if (isInclusive()) {
+                return computeMatchMetricValue(lValue, rValue) >= getThresholdRequired();
+            } else {
+                return computeMatchMetricValue(lValue, rValue) > getThresholdRequired();
+            }
         }
     }
 
