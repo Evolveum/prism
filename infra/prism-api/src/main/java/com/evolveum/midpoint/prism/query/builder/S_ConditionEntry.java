@@ -16,12 +16,12 @@ import com.evolveum.midpoint.prism.PrismProperty;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
-import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.Similarity;
 import com.evolveum.midpoint.prism.query.RefFilter;
 
 /**
  * See the grammar in Javadoc for {@code QueryBuilder}.
  */
+@SuppressWarnings("unused")
 public interface S_ConditionEntry {
 
     /**
@@ -94,10 +94,24 @@ public interface S_ConditionEntry {
             return method(FuzzyStringMatchFilter.levenshtein(threshold, inclusive));
         }
 
+        default S_FilterExit levenshteinInclusive(int threshold) {
+            return method(FuzzyStringMatchFilter.levenshtein(threshold, true));
+        }
+
+        default S_FilterExit levenshteinExclusive(int threshold) {
+            return method(FuzzyStringMatchFilter.levenshtein(threshold, false));
+        }
+
         default S_FilterExit similarity(float threshold, boolean inclusive) {
             return method(FuzzyStringMatchFilter.similarity(threshold, inclusive));
         }
 
+        default S_FilterExit similarityInclusive(float threshold) {
+            return method(FuzzyStringMatchFilter.similarity(threshold, true));
+        }
 
+        default S_FilterExit similarityExclusive(float threshold) {
+            return method(FuzzyStringMatchFilter.similarity(threshold, false));
+        }
     }
 }
