@@ -16,6 +16,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.impl.delta.ReferenceDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.ObjectReferencePathSegment;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
@@ -111,9 +112,17 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
         if (!path.startsWithObjectReference()) {
             return super.findItemDefinition(path, clazz);
         } else {
+            var first = path.first();
             ItemPath rest = path.rest();
+            var targetType = getTargetTypeName();
+            if (first instanceof ObjectReferencePathSegment) {
+                var typeHint = ((ObjectReferencePathSegment) first).typeHint();
+                if (typeHint.isPresent()) {
+                    targetType = typeHint.get();
+                }
+            }
             PrismObjectDefinition<?> referencedObjectDefinition =
-                    getSchemaRegistry().determineReferencedObjectDefinition(targetTypeName, rest);
+                    getSchemaRegistry().determineReferencedObjectDefinition(targetType, rest);
             return ((ItemDefinition<?>) referencedObjectDefinition).findItemDefinition(rest, clazz);
         }
     }
