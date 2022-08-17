@@ -67,9 +67,9 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
          * Computes the appropriate fuzzy match metric - the one that is being compared with the threshold.
          * For example, Levenshtein edit distance (an integer value) or trigram similarity value (a float).
          */
-        public abstract T computeMatchMetricValue(String lValue, String rValue);
+        public abstract @NotNull T computeMatchMetricValue(String lValue, String rValue);
 
-        /** Returns the Java type of the metric being used by this method (Integer, Float, ...). */
+        /** Returns the Java type of the metric being used by this method (Integer, Float, ...). TODO consider removal */
         public abstract Class<T> getMetricValueClass();
 
         @Override
@@ -100,7 +100,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         }
 
         @Override
-        public Integer computeMatchMetricValue(String lValue, String rValue) {
+        public @NotNull Integer computeMatchMetricValue(String lValue, String rValue) {
             return LevenshteinComputer.computeLevenshteinDistance(lValue, rValue);
         }
 
@@ -121,6 +121,8 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
     /**
      * Trigram similarity
+     *
+     * TODO consider using Double instead of Float
      */
     class Similarity extends ThresholdMatchingMethod<Float> {
 
@@ -136,7 +138,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
         }
 
         @Override
-        public Float computeMatchMetricValue(String lValue, String rValue) {
+        public @NotNull Float computeMatchMetricValue(String lValue, String rValue) {
             return (float) TriGramSimilarityComputer.getSimilarity(lValue, rValue);
         }
 
