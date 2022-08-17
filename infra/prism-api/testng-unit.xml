@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2010-2022 Evolveum and contributors
+  ~
+  ~ This work is dual-licensed under the Apache License 2.0
+  ~ and European Union Public License. See LICENSE file for details.
+  -->
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="unit" verbose="1">
+    <test name="Prism" preserve-order="false" verbose="1">
+        <classes>
+            <class name="com.evolveum.midpoint.prism.xml.TestPrismNamespaceContext"/>
+            <class name="com.evolveum.midpoint.prism.query.fuzzy.TriGramSimilarityComputerTest"/>
+        </classes>
+    </test>
+</suite>

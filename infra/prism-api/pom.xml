@@ -21,7 +21,7 @@
     <name>midPoint Infrastructure - prism-api</name>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <!--<maven.test.skip>true</maven.test.skip>-->
     </properties>
 
     <dependencies>
