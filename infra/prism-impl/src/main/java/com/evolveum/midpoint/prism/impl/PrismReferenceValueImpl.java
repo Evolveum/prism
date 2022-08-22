@@ -745,6 +745,10 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     @Override
     public <I extends Item<?, ?>> I findReferencedItem(ItemPath path, Class<I> type) {
         if (path.startsWithObjectReference() && getObject() != null) {
+            var rest = path.rest();
+            if (rest.isEmpty() && type.isInstance(getObject())) {
+                return type.cast(getObject());
+            }
             return (I) getObject().findItem(path.rest(), type);
         }
         return null;
