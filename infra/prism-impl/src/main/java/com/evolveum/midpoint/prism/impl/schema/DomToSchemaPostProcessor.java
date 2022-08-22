@@ -959,7 +959,7 @@ class DomToSchemaPostProcessor {
         Object defaultValue = parseDefaultValue(elementParticle, typeName);
 
         propDef = definitionFactory.createPropertyDefinition(elementName, typeName, ctd, prismContext,
-                annotation, elementParticle, allowedValues, null);
+                annotation, elementParticle, allowedValues, (T) defaultValue);
         setMultiplicity(propDef, elementParticle, annotation, ctd == null);
 
         // Process generic annotations

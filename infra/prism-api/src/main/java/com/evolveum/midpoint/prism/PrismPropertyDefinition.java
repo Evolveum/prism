@@ -32,9 +32,6 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
      */
     @Nullable Collection<? extends DisplayableValue<T>> getSuggestedValues();
 
-    /**
-     * TODO is this ever used?
-     */
     @Nullable T defaultValue();
 
     /**
