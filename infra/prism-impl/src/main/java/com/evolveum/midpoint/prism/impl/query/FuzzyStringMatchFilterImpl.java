@@ -22,6 +22,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
+import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -124,6 +125,15 @@ public class FuzzyStringMatchFilterImpl<T> extends PropertyValueFilterImpl<T> im
             FuzzyMatchingMethod method, List<PrismPropertyValue<T>> values) {
         return new FuzzyStringMatchFilterImpl<>(itemPath, method, propertyDefinition, null, values,
                 null, null, null);
+    }
+
+    @Override
+    public ValueFilter<PrismPropertyValue<T>, PrismPropertyDefinition<T>> nested(ItemPath existsPath) {
+        List<PrismPropertyValue<T>> values = getValues();
+        var valuesClone =
+                values != null ? values.stream().map(PrismPropertyValue::clone).collect(Collectors.toList()) : null;
+        return new FuzzyStringMatchFilterImpl<>(getFullPath().rest(existsPath.size()), matchingMethod, getDefinition(), getDeclaredMatchingRule(),
+                valuesClone, getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
     }
 
 }

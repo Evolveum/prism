@@ -122,8 +122,12 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
      * @return true if filter can be rewritten and nested inside exists
      */
     @Experimental
-    boolean canNestInsideExists(ItemPath existsPath);
+    default boolean canNestInsideExists(ItemPath existsPath) {
+        return false;
+    }
 
     @Experimental
-    ValueFilter<V, D> nested(ItemPath existsPath);
+    default ValueFilter<V, D> nested(ItemPath existsPath) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }

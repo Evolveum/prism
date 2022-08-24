@@ -20,6 +20,7 @@ import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AnyInFilter;
+import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
@@ -148,6 +149,12 @@ public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements An
     @Override
     public boolean equals(Object obj, boolean exact) {
         return obj instanceof AnyInFilter && super.equals(obj, exact);
+    }
+
+    @Override
+    public ValueFilter<PrismPropertyValue<T>, PrismPropertyDefinition<T>> nested(ItemPath existsPath) {
+        return new AnyInFilterImpl<>(getFullPath().rest(existsPath.size()), getDefinition(), getMatchingRule(), getClonedValues(),
+                getExpression(), getRightHandSidePath(), getRightHandSideDefinition());
     }
 
 }
