@@ -39,6 +39,7 @@ public class DOMUtilTest extends AbstractUnitTest {
     private static final String XSD_TYPE_FILENAME = "src/test/resources/domutil/xsi-type.xml";
     private static final String WHITESPACES_FILENAME = "src/test/resources/domutil/whitespaces.xml";
     private static final String QNAMES_FILENAME = "src/test/resources/domutil/qnames.xml";
+    private static final String SURROGATES_FILENAME = "src/test/resources/domutil/surrogates.xml";
     private static final String FIX_NAMESPACE_FILENAME = "src/test/resources/domutil/fix-namespace.xml";
 
     public static final String NS_W3C_XML_SCHEMA_PREFIX = "xsd";
@@ -340,6 +341,19 @@ public class DOMUtilTest extends AbstractUnitTest {
     }
 
     @Test
+    public void testSerializationDeserializationWithSurrogates() {
+        String surrogateText = "𠀋😁";
+        Document original = DOMUtil.parseFile(SURROGATES_FILENAME);
+        var kanjiText = DOMUtil.findElementRecursive(original.getDocumentElement(), new QName("kanji")).getTextContent();
+        display("kanji: " + kanjiText);
+        var asString = DOMUtil.serializeDOMToString(original);
+        display(asString);
+        Document fromString = DOMUtil.parseDocument(asString);
+        var asString2 = DOMUtil.serializeDOMToString(fromString);
+        display(asString2);
+    }
+
+    @Test
     public void testEscapeInvalidXmlChars() {
         String value = "A\u0006B\u0000C";
         try {
@@ -352,4 +366,5 @@ public class DOMUtilTest extends AbstractUnitTest {
         String fixed = DOMUtil.escapeInvalidXmlCharsIfPresent(value);
         assertThat(fixed).as("fixed string").isEqualTo("A[INVALID CODE POINT: 6]B[INVALID CODE POINT: 0]C");
     }
+
 }

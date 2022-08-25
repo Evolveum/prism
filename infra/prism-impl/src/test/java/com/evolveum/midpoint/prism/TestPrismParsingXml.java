@@ -50,13 +50,18 @@ public class TestPrismParsingXml extends TestPrismParsing {
         // WHEN
         PrismObject<UserType> user = prismContext.parserFor(userElement).parse();
 
+
         // THEN
         System.out.println("User:");
         System.out.println(user.debugDump());
         assertNotNull(user);
 
         assertUserJack(user, true, true);
+
+        var userSerialized = prismContext.xmlSerializer().serialize(user);
+        display("\n" + userSerialized);
     }
+
 
     @Test
     public void testPrismParseDomAdhoc() throws Exception {

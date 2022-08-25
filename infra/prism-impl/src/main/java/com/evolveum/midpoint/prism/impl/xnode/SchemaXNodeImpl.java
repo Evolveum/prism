@@ -28,8 +28,6 @@ import java.util.List;
  */
 public class SchemaXNodeImpl extends XNodeImpl implements SchemaXNode {
 
-
-
     private Element schemaElement;
 
     @NotNull private List<MapXNode> metadataNodes = new ArrayList<>();
@@ -48,6 +46,8 @@ public class SchemaXNodeImpl extends XNodeImpl implements SchemaXNode {
 
     public void setSchemaElement(Element schemaElement) {
         this.schemaElement = schemaElement;
+        DOMUtil.preserveFormattingIfPresent(schemaElement);
+        // Set space preserving if loaded from XML?
     }
 
     @Override
