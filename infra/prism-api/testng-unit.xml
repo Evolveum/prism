@@ -11,6 +11,7 @@
         <classes>
             <class name="com.evolveum.midpoint.prism.xml.TestPrismNamespaceContext"/>
             <class name="com.evolveum.midpoint.prism.query.fuzzy.TriGramSimilarityComputerTest"/>
+            <class name="com.evolveum.midpoint.prism.query.fuzzy.LevenshteinComputerTest"/>
         </classes>
     </test>
 </suite>

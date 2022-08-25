@@ -71,12 +71,8 @@ public class TriGramSimilarityComputer {
     }
 
     private static <T> List<T> intersection(List<T> list1, List<T> list2) {
-        List<T> list = new ArrayList<>();
-        for (T t : list1) {
-            if (list2.contains(t)) {
-                list.add(t);
-            }
-        }
+        List<T> list = new ArrayList<>(list1);
+        list.retainAll(list2);
         return list;
     }
 
