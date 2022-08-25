@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 
 import com.opencsv.CSVParser;
@@ -28,15 +29,22 @@ import com.evolveum.midpoint.tools.testng.AbstractUnitTest;
 
 public class TriGramSimilarityComputerTest extends AbstractUnitTest {
 
-    private static final DecimalFormat df = new DecimalFormat("0.000");
-
-    protected static final String TEST_RESOURCES_PATH = "src/test/resources";
-    protected static final File TEST_RESOURCES_DIR = new File(TEST_RESOURCES_PATH);
-    protected static final File TEST_DIR = new File(TEST_RESOURCES_DIR, "fuzzy-match-data.csv");
+    private static final String TEST_RESOURCES_PATH = "src/test/resources";
+    private static final File TEST_RESOURCES_DIR = new File(TEST_RESOURCES_PATH);
+    // TODO: definitely trim down to ~1000, just as indicated in the constant below
+    private static final File TEST_DIR = new File(TEST_RESOURCES_DIR, "fuzzy-match-data.csv");
     private static final int NUMBER_OF_OBJECTS = 1000;
     private static final String stringSplitter = ",";
+    private static final DecimalFormat DECIMAL_FORMAT;
 
     private static List<String[]> resourceData;
+
+    static {
+        // This must be explicit, so it doesn't depend on the locale on the machine.
+        DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+        decimalFormatSymbols.setDecimalSeparator(',');
+        DECIMAL_FORMAT = new DecimalFormat("0.000", decimalFormatSymbols);
+    }
 
     @BeforeClass
     public void initialize() throws IOException, CsvException {
@@ -45,12 +53,13 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
 
     @Test(dataProvider = "data-provider")
     private void computeTrigramSimilarityTest(String lObject, String rObject, String result) {
-        String trigramSimilarity = df.format(TriGramSimilarityComputer.getSimilarity(lObject, rObject));
+        String trigramSimilarity = DECIMAL_FORMAT.format(TriGramSimilarityComputer.getSimilarity(lObject, rObject));
         Assertions.assertThat(trigramSimilarity).isEqualTo(result);
     }
 
     @Test(dataProvider = "data-provider")
-    private void trigramGenerateTest(String lObject, String rObject, String result, String lTriGrams, String rTriGrams) {
+    public void trigramGenerateTest(String lObject, String rObject,
+            String ignoredResult, String lTriGrams, String rTriGrams) {
         List<String> sampleTriGramL = new ArrayList<>(Arrays.asList(lTriGrams.split(stringSplitter)));
         List<String> sampleTriGramR = new ArrayList<>(Arrays.asList(rTriGrams.split(stringSplitter)));
 
@@ -65,10 +74,10 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
     }
 
     @Test(dataProvider = "data-provider")
-    private void computeSimilarityFromTrigramTest(
+    public void computeSimilarityFromTrigramTest(
             String lObject, String rObject, String result, String lTriGrams, String rTriGrams) {
 
-        String trigramSimilarity = df.format(TriGramSimilarityComputer.getSimilarity(lObject, rObject));
+        String trigramSimilarity = DECIMAL_FORMAT.format(TriGramSimilarityComputer.getSimilarity(lObject, rObject));
 
         List<String> sampleTriGramL = new ArrayList<>(Arrays.asList(lTriGrams.split(stringSplitter)));
         List<String> sampleTriGramR = new ArrayList<>(Arrays.asList(rTriGrams.split(stringSplitter)));
@@ -76,7 +85,7 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
         double intersectionListSize = intersection(sampleTriGramL, sampleTriGramR).size();
         double unionListSize = union(sampleTriGramL, sampleTriGramR).size();
 
-        String similarity = df.format(intersectionListSize / unionListSize);
+        String similarity = DECIMAL_FORMAT.format(intersectionListSize / unionListSize);
 
         Assertions.assertThat(similarity).isEqualTo(result);
         Assertions.assertThat(similarity).isEqualTo(trigramSimilarity);
@@ -98,22 +107,20 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
             case "computeSimilarityFromTrigramTest":
                 csvDataObject = new Object[NUMBER_OF_OBJECTS][5];
                 for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-                    int iterator = i + 1;
-                    csvDataObject[i][0] = resourceData.get(iterator)[lObjectIterator];
-                    csvDataObject[i][1] = resourceData.get(iterator)[rObjectIterator];
-                    csvDataObject[i][2] = resourceData.get(iterator)[similarity];
-                    csvDataObject[i][3] = resourceData.get(iterator)[lTriGramIterator];
-                    csvDataObject[i][4] = resourceData.get(iterator)[rTriGramIterator];
+                    csvDataObject[i][0] = resourceData.get(i)[lObjectIterator];
+                    csvDataObject[i][1] = resourceData.get(i)[rObjectIterator];
+                    csvDataObject[i][2] = resourceData.get(i)[similarity];
+                    csvDataObject[i][3] = resourceData.get(i)[lTriGramIterator];
+                    csvDataObject[i][4] = resourceData.get(i)[rTriGramIterator];
                 }
                 return csvDataObject;
             case "computeTrigramSimilarityTest":
                 csvDataObject = new Object[NUMBER_OF_OBJECTS][3];
 
                 for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-                    int iterator = i + 1;
-                    csvDataObject[i][0] = resourceData.get(iterator)[lObjectIterator];
-                    csvDataObject[i][1] = resourceData.get(iterator)[rObjectIterator];
-                    csvDataObject[i][2] = resourceData.get(iterator)[similarity];
+                    csvDataObject[i][0] = resourceData.get(i)[lObjectIterator];
+                    csvDataObject[i][1] = resourceData.get(i)[rObjectIterator];
+                    csvDataObject[i][2] = resourceData.get(i)[similarity];
                 }
                 return csvDataObject;
         }
@@ -152,5 +159,4 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
         list.retainAll(list2);
         return list;
     }
-
 }
