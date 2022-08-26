@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (c) 2010-2018 Evolveum and contributors
+  ~ Copyright (C) 2010-2022 Evolveum and contributors
   ~
   ~ This work is dual-licensed under the Apache License 2.0
   ~ and European Union Public License. See LICENSE file for details.
@@ -21,7 +21,7 @@
         <xsd:documentation>
             Basic Prism types.
 
-            Version: 4.0-SNAPSHOT
+            Version: 4.6
             Recommended namespace prefix: t
         </xsd:documentation>
         <xsd:appinfo>
