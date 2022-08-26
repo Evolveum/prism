@@ -31,9 +31,7 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
 
     private static final String TEST_RESOURCES_PATH = "src/test/resources";
     private static final File TEST_RESOURCES_DIR = new File(TEST_RESOURCES_PATH);
-    // TODO: definitely trim down to ~1000, just as indicated in the constant below
     private static final File TEST_DIR = new File(TEST_RESOURCES_DIR, "fuzzy-match-data.csv");
-    private static final int NUMBER_OF_OBJECTS = 1000;
     private static final String stringSplitter = ",";
     private static final DecimalFormat DECIMAL_FORMAT;
 
@@ -101,12 +99,13 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
         int rTriGramIterator = 5;
 
         Object[][] csvDataObject;
+        int resourceDataSize = resourceData.size();
 
         switch (method.getName()) {
             case "trigramGenerateTest":
             case "computeSimilarityFromTrigramTest":
-                csvDataObject = new Object[NUMBER_OF_OBJECTS][5];
-                for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
+                csvDataObject = new Object[resourceDataSize][5];
+                for (int i = 0; i < resourceDataSize; i++) {
                     csvDataObject[i][0] = resourceData.get(i)[lObjectIterator];
                     csvDataObject[i][1] = resourceData.get(i)[rObjectIterator];
                     csvDataObject[i][2] = resourceData.get(i)[similarity];
@@ -115,9 +114,9 @@ public class TriGramSimilarityComputerTest extends AbstractUnitTest {
                 }
                 return csvDataObject;
             case "computeTrigramSimilarityTest":
-                csvDataObject = new Object[NUMBER_OF_OBJECTS][3];
+                csvDataObject = new Object[resourceDataSize][3];
 
-                for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
+                for (int i = 0; i < resourceDataSize; i++) {
                     csvDataObject[i][0] = resourceData.get(i)[lObjectIterator];
                     csvDataObject[i][1] = resourceData.get(i)[rObjectIterator];
                     csvDataObject[i][2] = resourceData.get(i)[similarity];

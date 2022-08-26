@@ -28,7 +28,6 @@ public class LevenshteinComputerTest extends AbstractUnitTest {
     protected static final String TEST_RESOURCES_PATH = "src/test/resources";
     protected static final File TEST_RESOURCES_DIR = new File(TEST_RESOURCES_PATH);
     protected static final File TEST_DIR = new File(TEST_RESOURCES_DIR, "fuzzy-match-data.csv");
-    private static final int NUMBER_OF_OBJECTS = 1000;
 
     private static List<String[]> resourceData;
 
@@ -39,17 +38,17 @@ public class LevenshteinComputerTest extends AbstractUnitTest {
 
     @DataProvider
     public static Object[][] loadObject() {
-        Object[][] csvDataObject = new Object[NUMBER_OF_OBJECTS][3];
+        int resourceDataSize = resourceData.size();
+        Object[][] csvDataObject = new Object[resourceDataSize][3];
 
         int lObjectIterator = 0;
         int rObjectIterator = 1;
         int distance = 3;
 
-        for (int i = 0; i < NUMBER_OF_OBJECTS; i++) {
-            int iterator = i + 1;
-            csvDataObject[i][0] = resourceData.get(iterator)[lObjectIterator];
-            csvDataObject[i][1] = resourceData.get(iterator)[rObjectIterator];
-            csvDataObject[i][2] = Integer.parseInt(resourceData.get(iterator)[distance]);
+        for (int i = 0; i < resourceDataSize; i++) {
+            csvDataObject[i][0] = resourceData.get(i)[lObjectIterator];
+            csvDataObject[i][1] = resourceData.get(i)[rObjectIterator];
+            csvDataObject[i][2] = Integer.parseInt(resourceData.get(i)[distance]);
         }
         return csvDataObject;
     }
