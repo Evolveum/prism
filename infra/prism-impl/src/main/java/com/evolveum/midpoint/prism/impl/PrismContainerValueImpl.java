@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -33,10 +34,6 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathCollectionsUtil;
 import com.evolveum.midpoint.prism.xnode.XNode;
-import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.MiscUtil;
-import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -758,8 +755,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
-            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException {
-        I newItem = createDetachedNewItemInternal(name, type, itemDefinition);
+            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException, RemovedItemDefinitionException {
+        I newItem = createDetachedNewItemInternal(name, type, itemDefinition, true);
         if (immutable) {
             newItem.freeze();
         }
@@ -768,17 +765,25 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createSubItem(QName name, Class<I> type, ID itemDefinition) throws SchemaException {
         checkMutable();
-        I newItem = createDetachedNewItemInternal(name, type, itemDefinition);
+        I newItem;
+        try {
+            newItem = createDetachedNewItemInternal(name, type, itemDefinition, false);
+        } catch (RemovedItemDefinitionException e) {
+            throw new SystemException("Unexpected exception: " + e.getMessage(), e);
+        }
         add(newItem);
         return newItem;
     }
 
     private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedNewItemInternal(
-            QName name, Class<I> type, ID itemDefinition) throws SchemaException {
+            QName name, Class<I> type, ID itemDefinition, boolean treatRemovedDefinitions) throws SchemaException, RemovedItemDefinitionException {
         I newItem;
         if (itemDefinition == null) {
             ComplexTypeDefinition ctd = getComplexTypeDefinition();
             itemDefinition = determineItemDefinition(name, ctd);
+            if (treatRemovedDefinitions && itemDefinition instanceof RemovedItemDefinition) {
+                throw new RemovedItemDefinitionException();
+            }
             if (ctd != null && itemDefinition == null || itemDefinition instanceof RemovedItemDefinition) {
                 throw new SchemaException("No definition for item " + name + " in " + getParent());
             }
@@ -1889,9 +1894,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     private static class RemovedItemDefinition<I extends Item> extends ItemDefinitionImpl<I> {
 
-        @SuppressWarnings("ConstantConditions")
         private RemovedItemDefinition(@NotNull QName itemName) {
-            super(itemName, null, null);
+            super(itemName, DOMUtil.XSD_ANYTYPE, PrismContext.get());
         }
 
         @Override

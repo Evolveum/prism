@@ -105,7 +105,14 @@ public final class PrismForJAXBUtil {
         try {
             property = container.findProperty(ItemName.fromQName(name));
             if (property == null) {
-                property = container.createDetachedSubItem(name, PrismPropertyImpl.class, null, container.isImmutable());
+                try {
+                    //noinspection unchecked
+                    property = container.createDetachedSubItem(name, PrismPropertyImpl.class, null, container.isImmutable());
+                } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+                    // A special case: if the definition has been removed, we don't want to fail here (MID-7968).
+                    // However, we cannot return fully-functional list either. So we return just an empty, unmodifiable list.
+                    return List.of();
+                }
             }
         } catch (SchemaException e) {
             // This should not happen. Code generator and compiler should take care of that.
@@ -167,7 +174,13 @@ public final class PrismForJAXBUtil {
             if (container != null) {
                 return (T) container;
             } else {
-                return (T) parentValue.createDetachedSubItem(name, PrismContainerImpl.class, null, parentValue.isImmutable());
+                try {
+                    return (T) parentValue.createDetachedSubItem(name, PrismContainerImpl.class, null, parentValue.isImmutable());
+                } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+                    // Temporary solution. We should perhaps return the empty, unmodifiable list, just like in case of properties.
+                    // But this would require a change to the generated code.
+                    throw new SchemaException("Cannot query container " + name + " whose definition was removed from " + parentValue);
+                }
             }
         } catch (SchemaException ex) {
             throw new SystemException(ex.getMessage(), ex);
@@ -335,7 +348,13 @@ public final class PrismForJAXBUtil {
             if (reference != null) {
                 return reference;
             } else {
-                return (PrismReference) parent.createDetachedSubItem(fieldName, PrismReferenceImpl.class, null, parent.isImmutable());
+                try {
+                    return (PrismReference) parent.createDetachedSubItem(fieldName, PrismReferenceImpl.class, null, parent.isImmutable());
+                } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+                    // Temporary solution. We should perhaps return the empty, unmodifiable list, just like in case of properties.
+                    // But this would require a change to the generated code.
+                    throw new SchemaException("Cannot query reference " + fieldName + " whose definition was removed from " + parent);
+                }
             }
         } catch (SchemaException e) {
             // This should not happen. Code generator and compiler should take care of that.
