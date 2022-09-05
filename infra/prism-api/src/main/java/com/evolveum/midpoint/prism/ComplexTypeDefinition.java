@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,17 +7,17 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.annotation.Experimental;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * Provides a definition for a complex type, i.e. type that prescribes inner items.
@@ -140,7 +140,6 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     @Experimental
     boolean hasSubstitutions();
 
-
     /**
      * Returns true if item has substitutions in current container definition
      */
@@ -156,7 +155,7 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     @Experimental
     default Optional<ItemDefinition<?>> itemOrSubstitution(QName name) {
         ItemDefinition<?> itemDef = findLocalItemDefinition(name);
-        if(itemDef != null) {
+        if (itemDef != null) {
             return Optional.of(itemDef);
         }
         return substitution(name);
@@ -172,6 +171,11 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
 
     @Experimental
     default boolean isStrictAnyMarker() {
+        return false;
+    }
+
+    /** This allows to distinguish between missing and explicitly removed definitions. */
+    default boolean isItemDefinitionRemoved(QName itemName) {
         return false;
     }
 }
