@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -32,8 +32,6 @@ import com.evolveum.midpoint.prism.marshaller.JaxbDomHack;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ItemPathCollectionsUtil;
-import com.evolveum.midpoint.prism.path.ItemPathSegment;
-import com.evolveum.midpoint.prism.path.ObjectReferencePathSegment;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -359,7 +357,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             item.setPrismContext(prismContext);
         }
         if (getComplexTypeDefinition() != null && item.getDefinition() == null) {
-            item.applyDefinition(determineItemDefinition(itemName, getComplexTypeDefinition()), false);
+            ID definition = determineItemDefinition(itemName, getComplexTypeDefinition());
+            if (definition instanceof RemovedItemDefinition) {
+                throw new SchemaException("No definition for item " + itemName + " in " + getParent());
+            }
+            item.applyDefinition(definition, false);
         }
         simpleAdd(item);
     }
@@ -771,13 +773,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return newItem;
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedNewItemInternal(QName name, Class<I> type,
-            ID itemDefinition) throws SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedNewItemInternal(
+            QName name, Class<I> type, ID itemDefinition) throws SchemaException {
         I newItem;
         if (itemDefinition == null) {
             ComplexTypeDefinition ctd = getComplexTypeDefinition();
             itemDefinition = determineItemDefinition(name, ctd);
-            if (ctd != null && itemDefinition == null) {
+            if (ctd != null && itemDefinition == null || itemDefinition instanceof RemovedItemDefinition) {
                 throw new SchemaException("No definition for item " + name + " in " + getParent());
             }
         }
@@ -848,13 +850,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public <X> PrismProperty<X> createProperty(QName propertyName) throws SchemaException {
         checkMutable();
-        PrismPropertyDefinition propertyDefinition = determineItemDefinition(propertyName, getComplexTypeDefinition());
-        if (propertyDefinition == null) {
-            // container has definition, but there is no property definition. This is either runtime schema
-            // or an error
-            if (getParent() != null && getDefinition() != null && !getDefinition().isRuntimeSchema()) {        // TODO clean this up
-                throw new IllegalArgumentException("No definition for property " + propertyName + " in " + complexTypeDefinition);
-            }
+        PrismPropertyDefinition<X> propertyDefinition = determineItemDefinition(propertyName, getComplexTypeDefinition());
+        // Container has definition, but there is no property definition. This is either runtime schema or an error.
+        if (propertyDefinition == null && getParent() != null && getDefinition() != null && !getDefinition().isRuntimeSchema()
+                || propertyDefinition instanceof RemovedItemDefinition) {
+            throw new IllegalArgumentException("No definition for property " + propertyName + " in " + complexTypeDefinition);
         }
         PrismProperty<X> property;
         if (propertyDefinition == null) {
@@ -1109,7 +1109,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             }
             // The "delete" delta will also result from the following diff
             boolean different = ((ItemImpl) thisItem).diffInternal(otherItem, deltas, false, strategy, exitOnDiff);
-            if(different && exitOnDiff) {
+            if (different && exitOnDiff) {
                 return true;
             }
         }
@@ -1131,7 +1131,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             }
 
             // Other item has no values
-            if(otherItem.hasNoValues()) {
+            if (otherItem.hasNoValues()) {
                 continue;
             }
             if (exitOnDiff) {
@@ -1239,6 +1239,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     // Special case: we parsed something as (raw) property but later we found out it's in fact a container!
                     // (It could be also a reference but this will be implemented later.)
                     parseRawPropertyAsContainer((PrismProperty<?>) item, (PrismContainerDefinition<?>) itemDefinition);
+                } else if (itemDefinition instanceof RemovedItemDefinition) {
+                    // See MID-7939, this seems logical step - if definition was removed (e.g. for
+                    // security reasons), let's remove the item too, so it's not available at all.
+                    //noinspection unchecked
+                    remove(item);
                 } else {
                     //noinspection unchecked
                     item.applyDefinition(itemDefinition, force);
@@ -1290,6 +1295,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return null;
             }
         } else {
+            if (ctd.isItemDefinitionRemoved(itemName)) {
+                // This allows the caller to treat removed definition differently, if desired. See MID-7939.
+                return (ID) new RemovedItemDefinition<>(itemName);
+            }
             throw new SchemaException("No definition for item " + itemName + " in " + getParent());
         }
     }
@@ -1845,7 +1854,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             replaceComplexTypeDefinition(newDefinition);
         }
 
-        for(Item<?,?> item : items.values()) {
+        for (Item<?, ?> item : items.values()) {
             if (item instanceof TransformableItem) {
                 ((TransformableItem) item).transformDefinition(complexTypeDefinition, transformation);
             }
@@ -1876,5 +1885,58 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
         private static final long serialVersionUID = 1L;
 
+    }
+
+    private static class RemovedItemDefinition<I extends Item> extends ItemDefinitionImpl<I> {
+
+        @SuppressWarnings("ConstantConditions")
+        private RemovedItemDefinition(@NotNull QName itemName) {
+            super(itemName, null, null);
+        }
+
+        @Override
+        public @NotNull I instantiate() throws SchemaException {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public @NotNull I instantiate(QName name) throws SchemaException {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public ItemDelta createEmptyDelta(ItemPath path) {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public boolean canBeDefinitionOf(PrismValue pvalue) {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public MutableItemDefinition<I> toMutable() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public Optional<ComplexTypeDefinition> structuredType() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        protected String getDebugDumpClassName() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public String getDocClassName() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public @NotNull ItemDefinition clone() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
     }
 }

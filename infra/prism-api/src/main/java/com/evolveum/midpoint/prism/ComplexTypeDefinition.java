@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,18 +7,19 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.prism.path.ItemName;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * Provides a definition for a complex type, i.e. type that prescribes inner items.
@@ -48,7 +49,7 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
      * If so, it should not be e.g. trimmed.
      *
      * EXPERIMENTAL
-      */
+     */
     @Experimental
     boolean isShared();
 
@@ -133,9 +134,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
      * Does a deep clone of this definition.
      *
      * @param ctdMap Keeps already cloned definitions when 'ultra deep cloning' is not requested.
-     *               Each definition is then cloned only once.
+     * Each definition is then cloned only once.
      * @param onThisPath Keeps already cloned definitions on the path from root to current node;
-     *                   in order to prevent infinite loops when doing ultra deep cloning.
+     * in order to prevent infinite loops when doing ultra deep cloning.
      */
     @NotNull
     ComplexTypeDefinition deepClone(Map<QName, ComplexTypeDefinition> ctdMap, Map<QName, ComplexTypeDefinition> onThisPath, Consumer<ItemDefinition> postCloneAction);
@@ -158,8 +159,8 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
 
     @Experimental
     default Optional<ItemDefinition<?>> itemOrSubstitution(QName name) {
-        ItemDefinition itemDef = findLocalItemDefinition(name);
-        if(itemDef != null) {
+        ItemDefinition<?> itemDef = findLocalItemDefinition(name);
+        if (itemDef != null) {
             return Optional.of(itemDef);
         }
         return substitution(name);
@@ -167,4 +168,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalDefinitionSt
 
     @Override
     MutableComplexTypeDefinition toMutable();
+
+    /** This allows to distinguish between missing and explicitly removed definitions. */
+    default boolean isItemDefinitionRemoved(QName itemName) {
+        return false;
+    }
 }
