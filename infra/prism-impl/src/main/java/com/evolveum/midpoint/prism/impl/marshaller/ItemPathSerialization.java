@@ -1,24 +1,23 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.marshaller;
 
 import java.util.*;
-
 import javax.xml.namespace.QName;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import org.jetbrains.annotations.NotNull;
+
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.PrismNamespaceContext.PrefixPreference;
 import com.evolveum.midpoint.prism.path.*;
-import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 
 /**
  * Holds internal (parsed) form of midPoint-style XPath-like expressions.
@@ -91,8 +90,8 @@ public final class ItemPathSerialization {
         return serialize(itemPath, context, false);
     }
 
-    public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context, boolean overrideNs) {
-        Map<String, String> usedPrefixToNs = new HashMap<String, String>();
+    public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context, boolean overriddeNs) {
+        Map<String, String> usedPrefixToNs = new HashMap<>();
         BiMap<String, String> undeclaredNsToPrefix = HashBiMap.create();
 
         List<PathHolderSegment> segments = new ArrayList<>();
@@ -101,10 +100,10 @@ public final class ItemPathSerialization {
             PathHolderSegment xsegment;
             if (segment instanceof NameItemPathSegment) {
                 QName name = ((NameItemPathSegment) segment).getName();
-                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overrideNs));
+                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs));
             } else if (segment instanceof VariableItemPathSegment) {
                 QName name = ((VariableItemPathSegment) segment).getName();
-                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overrideNs), true);
+                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs), true);
             } else if (segment instanceof IdItemPathSegment) {
                 xsegment = new PathHolderSegment(idToString(((IdItemPathSegment) segment).getId()));
             } else if (segment instanceof ObjectReferencePathSegment) {
@@ -129,8 +128,8 @@ public final class ItemPathSerialization {
             Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs) {
         String namespace = name.getNamespaceURI();
         String explicitPrefix = name.getPrefix();
-        if(Strings.isNullOrEmpty(namespace)) {
-            if(Strings.isNullOrEmpty(explicitPrefix)) {
+        if (Strings.isNullOrEmpty(namespace)) {
+            if (Strings.isNullOrEmpty(explicitPrefix)) {
                 /*
                  * COMPAT: QName has prefix, but no namespace, fallback to default namespace
                  *   since we do not know how to interpret it
@@ -141,7 +140,7 @@ public final class ItemPathSerialization {
         }
 
         String proposedPrefix = assignPrefix(namespace, explicitPrefix, global, localNamespaceToPrefix, prefixToNs, overrideNs);
-        if(explicitPrefix.equals(proposedPrefix)) {
+        if (explicitPrefix.equals(proposedPrefix)) {
             return name;
         }
         return new ItemName(namespace, name.getLocalPart(), proposedPrefix);
@@ -152,17 +151,17 @@ public final class ItemPathSerialization {
             Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs) {
 
         // First we try to use existing prefix
-        if(!Strings.isNullOrEmpty(explicitPrefix)) {
+        if (!Strings.isNullOrEmpty(explicitPrefix)) {
             String localNs = prefixToNs.get(explicitPrefix);
-            if(namespace.equals(localNs)) {
+            if (namespace.equals(localNs)) {
                 return explicitPrefix;
             }
             Optional<String> globalNs = global.namespaceFor(explicitPrefix);
-            if(globalNs.isPresent() && namespace.equals(globalNs.get())) {
+            if (globalNs.isPresent() && namespace.equals(globalNs.get())) {
                 prefixToNs.put(explicitPrefix, namespace);
                 return explicitPrefix;
             }
-            if(overrideNs && localNs == null) {
+            if (overrideNs && localNs == null) {
                 localNamespaceToPrefix.putIfAbsent(namespace, explicitPrefix);
                 prefixToNs.put(explicitPrefix, namespace);
                 return explicitPrefix;
@@ -170,12 +169,12 @@ public final class ItemPathSerialization {
         }
         // Renaming item/prefix
         String localPrefix = localNamespaceToPrefix.get(namespace);
-        if(localPrefix != null) {
+        if (localPrefix != null) {
             // We already created local prefix for specified namespace
             return localPrefix;
         }
         Optional<String> globalPrefix = global.prefixFor(namespace, PrefixPreference.GLOBAL_FIRST_SKIP_DEFAULTS);
-        if(globalPrefix.isPresent()) {
+        if (globalPrefix.isPresent()) {
             // We are reusing inherited prefix
             prefixToNs.put(globalPrefix.get(), namespace);
             return globalPrefix.get();
@@ -183,7 +182,7 @@ public final class ItemPathSerialization {
 
         // We Try to compute new prefix
         localPrefix = explicitPrefix;
-        while(isPrefixConflicting(localPrefix, prefixToNs, global)) {
+        while (isPrefixConflicting(localPrefix, prefixToNs, global)) {
             localPrefix = proposeNewPrefix(namespace, explicitPrefix);
         }
 

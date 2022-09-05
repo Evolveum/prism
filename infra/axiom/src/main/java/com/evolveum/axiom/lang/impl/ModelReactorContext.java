@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,46 +7,33 @@
 package com.evolveum.axiom.lang.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+import com.google.common.base.Strings;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomValue;
 import com.evolveum.axiom.api.AxiomValueFactory;
+import com.evolveum.axiom.api.AxiomValueIdentifier;
+import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition.Scope;
 import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.evolveum.axiom.api.schema.AxiomSchemaContext;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
-import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition.Scope;
 import com.evolveum.axiom.api.stream.AxiomBuilderStreamTarget;
 import com.evolveum.axiom.concepts.Lazy;
-import com.evolveum.axiom.lang.api.AxiomBuiltIn.Type;
 import com.evolveum.axiom.lang.antlr.AntlrDecoderContext;
 import com.evolveum.axiom.lang.antlr.AxiomModelStatementSource;
 import com.evolveum.axiom.lang.api.AxiomBuiltIn;
-import com.evolveum.axiom.api.AxiomValueIdentifier;
-import com.evolveum.axiom.lang.spi.AxiomIdentifierDefinitionImpl;
-import com.evolveum.axiom.lang.spi.AxiomNameResolver;
-import com.evolveum.axiom.lang.spi.AxiomItemDefinitionImpl;
-import com.evolveum.axiom.lang.spi.AxiomSemanticException;
-import com.evolveum.axiom.lang.spi.AxiomTypeDefinitionImpl;
+import com.evolveum.axiom.lang.api.AxiomBuiltIn.Type;
+import com.evolveum.axiom.lang.spi.*;
 import com.evolveum.axiom.reactor.Dependency;
 import com.evolveum.axiom.reactor.RuleReactorContext;
-import com.google.common.base.Strings;
 
-import org.jetbrains.annotations.Nullable;
-
-public class ModelReactorContext extends
-        RuleReactorContext<AxiomSemanticException, ValueContext<?>, ValueActionImpl<?>, RuleContextImpl>
+public class ModelReactorContext
+        extends RuleReactorContext<AxiomSemanticException, ValueContext<?>, ValueActionImpl<?>, RuleContextImpl>
         implements AxiomNameResolver {
-
-    private static final AxiomName ROOT = AxiomName.from("root", "root");
-
 
     private static final String AXIOM_DATA_RESOURCE = "/axiom-data.axiom";
     private static final String AXIOM_MODEL_RESOURCE = "/axiom-model.axiom";
@@ -56,13 +43,12 @@ public class ModelReactorContext extends
     private static final Lazy<AxiomModelStatementSource> TYPES_SOURCE = sourceFromResource(AXIOM_TYPES_RESOURCE);
     private static final Lazy<AxiomModelStatementSource> INFRA_SOURCE = sourceFromResource(AXIOM_DATA_RESOURCE);
 
-
     public static final Lazy<AxiomSchemaContext> BASE_LANGUAGE = Lazy.from(() -> {
         ModelReactorContext reactor = boostrapReactor();
         return reactor.computeSchemaContext();
     });
 
-    public static final ModelReactorContext reactor(AxiomSchemaContext context) {
+    public static ModelReactorContext reactor(AxiomSchemaContext context) {
         ModelReactorContext reactorContext = new ModelReactorContext(context);
         defaults(reactorContext);
         return reactorContext;
@@ -80,14 +66,14 @@ public class ModelReactorContext extends
 
     }
 
-    public static final ModelReactorContext boostrapReactor() {
+    public static ModelReactorContext boostrapReactor() {
         ModelReactorContext reactorContext = new ModelReactorContext(AxiomSchemaContextImpl.boostrapContext());
         defaults(reactorContext);
 
         return reactorContext;
     }
 
-    public static final ModelReactorContext defaultReactor() {
+    public static ModelReactorContext defaultReactor() {
         return reactor(BASE_LANGUAGE.get());
     }
 
@@ -108,12 +94,9 @@ public class ModelReactorContext extends
     private final AxiomSchemaContext boostrapContext;
     private final Map<AxiomValueIdentifier, CompositeIdentifierSpace> exported = new HashMap<>();
 
-    Map<Object, AxiomValueContext<?>> globalItems = new HashMap<>();
-
     IdentifierSpaceHolderImpl globalSpace = new IdentifierSpaceHolderImpl(Scope.GLOBAL);
 
     Map<AxiomName, AxiomValueFactory<?>> typeFactories = new HashMap<>();
-    List<AxiomValueContext<?>> roots = new ArrayList<>();
     private final Collection<LazyValue<?>> lazies = new ArrayList<>();
 
     public ModelReactorContext(AxiomSchemaContext boostrapContext) {
@@ -214,7 +197,7 @@ public class ModelReactorContext extends
 
     @Override
     protected Collection<RuleContextImpl> rulesFor(ValueContext<?> context) {
-        // TODO: Add smart filters if neccessary
+        // TODO: Add smart filters if necessary
         return rules;
     }
 

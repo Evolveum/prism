@@ -53,7 +53,7 @@ public abstract class PrismNamespaceContext implements Serializable {
      * Returns mapping of prefixes to namespaces defined in this namespace context.
      *
      * Note that mappings of parent namespaces context also apply, unless the prefix
-     * is overriden at current level.
+     * is overridden at current level.
      *
      * @return mapping of locally defined prefixes to namespaces
      */
@@ -238,12 +238,12 @@ public abstract class PrismNamespaceContext implements Serializable {
         /**
          * Returns all usable prefixes from parent node
          *
-         * We need to return all prefixes instead of first one, since they can be overriden
+         * We need to return all prefixes instead of first one, since they can be overridden
          * on nested levels.
          *
          * @param ns Namespace
          * @param preference Prefix preference (prefer top-most prefix vs closest prefix)
-         * @return Mutable list of available prefixes (prefixes which are not overriden in this or parent contexts).
+         * @return Mutable list of available prefixes (prefixes which are not overridden in this or parent contexts).
          * @see PrismNamespaceContext.PrefixPreference
          */
         protected List<String> parentPrefixesFor(String ns, PrefixPreference preference) {

@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2021-2022 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
 package com.evolveum.midpoint.prism.xml;
 
 import static org.testng.Assert.assertEquals;
@@ -44,10 +50,10 @@ public class TestPrismNamespaceContext {
         assertEquals(derivedNs.namespaceFor("").get(), NS_EXAMPLE);
         assertEquals(derivedNs.namespaceFor(null).get(), NS_EXAMPLE);
 
-        PrismNamespaceContext overridenNs = derivedNs.childContext(ImmutableMap.of("", NS_QUERY));
+        PrismNamespaceContext overriddenNs = derivedNs.childContext(ImmutableMap.of("", NS_QUERY));
 
-        assertRootPrefixesToNamespace(overridenNs);
-        assertEquals(overridenNs.namespaceFor("").get(), NS_QUERY);
+        assertRootPrefixesToNamespace(overriddenNs);
+        assertEquals(overriddenNs.namespaceFor("").get(), NS_QUERY);
 
     }
 

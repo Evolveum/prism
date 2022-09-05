@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl;
 
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.DATA;
@@ -12,39 +11,30 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.ItemDefinitionTransformer.TransformableItem;
-import com.evolveum.midpoint.prism.ItemDefinitionTransformer.TransformableValue;
-import com.evolveum.midpoint.prism.util.CloneUtil;
-import com.evolveum.midpoint.util.annotation.Experimental;
 
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.ItemDefinitionTransformer.TransformableItem;
+import com.evolveum.midpoint.prism.ItemDefinitionTransformer.TransformableValue;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.Holder;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 
@@ -70,7 +60,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     protected D definition;
     // FIXME: THis should be Collection, not list, since list implementations does not allow hashing
     @NotNull protected final List<V> values = new ArrayList<>();
-    private transient Map<String,Object> userData = new HashMap<>();
+    private transient Map<String, Object> userData = new HashMap<>();
 
     protected boolean incomplete;
 
@@ -90,7 +80,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         this.elementName = ItemName.fromQName(elementName);
     }
 
-
     /**
      * The constructors should be used only occasionally (if used at all).
      * Use the factory methods in the ResourceObjectDefinition instead.
@@ -103,16 +92,16 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
 
     static <T extends Item> T createNewDefinitionlessItem(QName name, Class<T> type, PrismContext prismContext) {
         T item;
-            try {
-                //noinspection unchecked
-                Constructor<T> constructor = toImplClass(type).getConstructor(QName.class);
-                item = constructor.newInstance(name);
+        try {
+            //noinspection unchecked
+            Constructor<T> constructor = toImplClass(type).getConstructor(QName.class);
+            item = constructor.newInstance(name);
             if (prismContext != null) {
                 item.revive(prismContext);
             }
-            } catch (Exception e) {
-                throw new SystemException("Error creating new definitionless "+type.getSimpleName()+": "+e.getClass().getName()+" "+e.getMessage(),e);
-            }
+        } catch (Exception e) {
+            throw new SystemException("Error creating new definitionless " + type.getSimpleName() + ": " + e.getClass().getName() + " " + e.getMessage(), e);
+        }
         return item;
     }
 
@@ -190,7 +179,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     @Override
     public void setParent(PrismContainerValue<?> parentValue) {
         if (this.parent != null && parentValue != null && this.parent != parentValue) {
-            throw new IllegalStateException("Attempt to reset parent of item "+this+" from "+this.parent+" to "+parentValue);
+            throw new IllegalStateException("Attempt to reset parent of item " + this + " from " + this.parent + " to " + parentValue);
         }
         // Immutability check can be skipped, as setting the parent doesn't alter this object.
         // However, if existing parent itself is immutable, adding/removing its child item will cause the exception.
@@ -228,9 +217,9 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         }
         if (type.isAssignableFrom(value.getClass())) {
             //noinspection unchecked
-            return (X)value;
+            return (X) value;
         } else {
-            throw new ClassCastException("Cannot cast value of item "+ getElementName()+" which is of type "+value.getClass()+" to "+type);
+            throw new ClassCastException("Cannot cast value of item " + getElementName() + " which is of type " + value.getClass() + " to " + type);
         }
     }
 
@@ -251,45 +240,45 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     @Override
     @NotNull
     public ItemPath getPath() {
-         if (parent == null) {
-             if (getElementName() != null) {
-                 return getElementName();
-             } else {
-                 throw new IllegalStateException("Unnamed item has no path");
-             }
-         }
-         /*
-          * This quite ugly algorithm is here to eliminate the need to repeatedly call itemPath.append(..) method
-          * that leads to creation of many little objects on the heap. Instead we simply collect path segments
-          * and merge them to a single item path in one operation.
-          *
-          * TODO This is not very nice solution. Think again about it.
-          */
-         List<Object> names = new ArrayList<>();
-         acceptParentVisitor(v -> {
-             Object pathComponent;
-             if (v instanceof Item) {
+        if (parent == null) {
+            if (getElementName() != null) {
+                return getElementName();
+            } else {
+                throw new IllegalStateException("Unnamed item has no path");
+            }
+        }
+        /*
+         * This quite ugly algorithm is here to eliminate the need to repeatedly call itemPath.append(..) method
+         * that leads to creation of many little objects on the heap. Instead we simply collect path segments
+         * and merge them to a single item path in one operation.
+         *
+         * TODO This is not very nice solution. Think again about it.
+         */
+        List<Object> names = new ArrayList<>();
+        acceptParentVisitor(v -> {
+            Object pathComponent;
+            if (v instanceof Item) {
                 if (v instanceof ItemImpl) {
                     pathComponent = ((ItemImpl) v).getPathComponent();
                 } else {
                     throw new IllegalStateException("Expected ItemImpl but got " + v.getClass());
                 }
             } else if (v instanceof PrismValue) {
-                 if (v instanceof PrismValueImpl) {
-                     pathComponent = ((PrismValueImpl) v).getPathComponent();
+                if (v instanceof PrismValueImpl) {
+                    pathComponent = ((PrismValueImpl) v).getPathComponent();
                 } else {
                     throw new IllegalStateException("Expected PrismValueImpl but got " + v.getClass());
                 }
             } else if (v instanceof Itemable) {     // e.g. a delta
-                 pathComponent = ((Itemable) v).getPath();
+                pathComponent = ((Itemable) v).getPath();
             } else {
                 throw new IllegalStateException("Expected Item or PrismValue but got " + v.getClass());
             }
-             if (pathComponent != null) {
-                 names.add(pathComponent);
+            if (pathComponent != null) {
+                names.add(pathComponent);
             }
-         });
-         return ItemPath.createReverse(names);
+        });
+        return ItemPath.createReverse(names);
     }
 
     @Override
@@ -352,7 +341,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     private boolean addAllInternal(Collection<V> newValues, boolean checkUniqueness, EquivalenceStrategy strategy) throws SchemaException {
         checkMutable();
         boolean changed = false;
-        for (V val: newValues) {
+        for (V val : newValues) {
             if (addInternal(val, checkUniqueness, strategy)) {
                 changed = true;
             }
@@ -439,7 +428,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         values.add(newValue);
     }
 
-
     @Override
     public void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy,
             EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
@@ -497,7 +485,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     public boolean removeAll(Collection<V> newValues, @NotNull EquivalenceStrategy strategy) {
         checkMutable();
         boolean changed = false;
-        for (V val: newValues) {
+        for (V val : newValues) {
             if (remove(val, strategy)) {
                 changed = true;
             }
@@ -565,8 +553,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
      * Merge all the values of other item to this item.
      */
     @Override
-    public void merge(Item<V,D> otherItem) throws SchemaException {
-        for (V otherValue: otherItem.getValues()) {
+    public void merge(Item<V, D> otherItem) throws SchemaException {
+        for (V otherValue : otherItem.getValues()) {
             if (!contains(otherValue)) {
                 add((V) otherValue.clone());
             }
@@ -574,7 +562,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     }
 
     @Override
-    public ItemDelta<V,D> diff(Item<V,D> other, @NotNull ParameterizedEquivalenceStrategy strategy) {
+    public ItemDelta<V, D> diff(Item<V, D> other, @NotNull ParameterizedEquivalenceStrategy strategy) {
         List<ItemDelta<V, D>> itemDeltas = new ArrayList<>();
         diffInternal(other, itemDeltas, true, strategy);
         return MiscUtil.extractSingleton(itemDeltas);
@@ -661,14 +649,14 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         }
     }
 
-    protected ItemDelta<V,D> fixupDelta(ItemDelta<V, D> delta, Item<V, D> other) {
+    protected ItemDelta<V, D> fixupDelta(ItemDelta<V, D> delta, Item<V, D> other) {
         return delta;
     }
 
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
-        for (PrismValue value: getValues()) {
+        for (PrismValue value : getValues()) {
             value.accept(visitor);
         }
     }
@@ -691,7 +679,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     public void recomputeAllValues() {
         accept(visitable -> {
             if (visitable instanceof PrismPropertyValue<?>) {
-                ((PrismPropertyValue<?>)visitable).recompute(getPrismContext());
+                ((PrismPropertyValue<?>) visitable).recompute(getPrismContext());
             }
         });
     }
@@ -708,19 +696,19 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
             checkDefinition(definition);
         }
         this.definition = definition;
-        for (PrismValue pval: getValues()) {
+        for (PrismValue pval : getValues()) {
             pval.applyDefinition(definition, force);
         }
     }
 
     @Override
     public void revive(PrismContext prismContext) {
-        // Is revive neccessary if prism context is static?
+        // Is revive necessary if prism context is static?
         // it is necessary to do e.g. PolyString recomputation even if PrismContext is set
         if (definition != null) {
             definition.revive(prismContext);
         }
-        for (V value: values) {
+        for (V value : values) {
             value.revive(prismContext);
         }
     }
@@ -766,31 +754,30 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         checkConsistenceInternal(this, false, false, scope);
     }
 
-
     @Override
     public void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope) {
         ItemPath path = getPath();
         if (elementName == null) {
-            throw new IllegalStateException("Item "+this+" has no name ("+path+" in "+rootItem+")");
+            throw new IllegalStateException("Item " + this + " has no name (" + path + " in " + rootItem + ")");
         }
 
         if (definition != null) {
             checkDefinition(definition);
         } else if (requireDefinitions && !isRaw()) {
-            throw new IllegalStateException("No definition in item "+this+" ("+path+" in "+rootItem+")");
+            throw new IllegalStateException("No definition in item " + this + " (" + path + " in " + rootItem + ")");
         }
-        for (V val: values) {
+        for (V val : values) {
             if (prohibitRaw && val.isRaw()) {
-                throw new IllegalStateException("Raw value "+val+" in item "+this+" ("+path+" in "+rootItem+")");
+                throw new IllegalStateException("Raw value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
             }
             if (val == null) {
-                throw new IllegalStateException("Null value in item "+this+" ("+path+" in "+rootItem+")");
+                throw new IllegalStateException("Null value in item " + this + " (" + path + " in " + rootItem + ")");
             }
             if (val.getParent() == null) {
-                throw new IllegalStateException("Null parent for value "+val+" in item "+this+" ("+path+" in "+rootItem+")");
+                throw new IllegalStateException("Null parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
             }
             if (val.getParent() != this) {
-                throw new IllegalStateException("Wrong parent for value "+val+" in item "+this+" ("+path+" in "+rootItem+"), "+
+                throw new IllegalStateException("Wrong parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + "), " +
                         "bad parent: " + val.getParent());
             }
             val.checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
@@ -878,7 +865,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         if (!(obj instanceof Item)) {
             return false;
         }
-        Item<?,?> second = (Item<?,?>) obj;
+        Item<?, ?> second = (Item<?, ?>) obj;
         @SuppressWarnings("unchecked")
         Collection<V> secondValues = (Collection<V>) second.getValues();
         return (!parameterizedEquivalenceStrategy.isConsideringDefinitions() || Objects.equals(definition, second.getDefinition())) &&
@@ -889,7 +876,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     }
 
     private void incrementObjectCompareCounterIfNeeded(Object obj) {
-        if (this instanceof PrismObject &&  PrismContext.get().getMonitor() != null) {
+        if (this instanceof PrismObject && PrismContext.get().getMonitor() != null) {
             PrismContext.get().getMonitor().recordPrismObjectCompareCount((PrismObject<? extends Objectable>) this, obj);
         }
     }
@@ -947,11 +934,11 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
     }
 
     @Override
-    public abstract Item<V,D> clone();
+    public abstract Item<V, D> clone();
 
     @Override
-    public Item<V,D> createImmutableClone() {
-        Item<V,D> clone = clone();
+    public Item<V, D> createImmutableClone() {
+        Item<V, D> clone = clone();
         clone.freeze();
         return clone;
     }

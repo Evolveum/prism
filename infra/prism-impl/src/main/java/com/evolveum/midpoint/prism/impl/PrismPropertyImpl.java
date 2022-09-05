@@ -1,33 +1,32 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl;
+
+import java.util.*;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
-import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
+import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
+import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.PrismPrettyPrinter;
-import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
-import com.evolveum.midpoint.util.*;
+import com.evolveum.midpoint.util.DebugDumpable;
+import com.evolveum.midpoint.util.DebugUtil;
+import com.evolveum.midpoint.util.PrettyPrinter;
+import com.evolveum.midpoint.util.ShortDumpable;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import org.jetbrains.annotations.NotNull;
-
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Property is a specific characteristic of an object. It may be considered
@@ -52,19 +51,17 @@ import java.util.List;
  *
  * @author Radovan Semancik
  */
-public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements
-        PrismProperty<T> {
+public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismPropertyDefinition<T>>
+        implements PrismProperty<T> {
 
     private static final long serialVersionUID = 6843901365945935660L;
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismPropertyImpl.class);
 
     private static final int MAX_SINGLELINE_LEN = 40;
-    private static final int INDEX_ENABLE_TRESHOLD = 50;
 
     // Start with indexing enabled
     private boolean indexAvailable = true;
-
 
     private transient HashSet<PrismPropertyValue<T>> valueIndex = null;
 
@@ -97,6 +94,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      * Sets applicable property definition.
      *
      * TODO remove (method in Item is sufficient)
+     *
      * @param definition the definition to set
      */
     @Override
@@ -117,7 +115,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     @Override
     public Collection<T> getRealValues() {
         Collection<T> realValues = new ArrayList<>(getValues().size());
-        for (PrismPropertyValue<T> pValue: getValues()) {
+        for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add(pValue.getValue());
         }
         return realValues;
@@ -130,7 +128,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     @Override
     public <X> Collection<X> getRealValues(Class<X> type) {
         Collection<X> realValues = new ArrayList<>(getValues().size());
-        for (PrismPropertyValue<T> pValue: getValues()) {
+        for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add((X) pValue.getValue());
         }
         return realValues;
@@ -199,7 +197,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         if (realValues == null || realValues.length == 0) {
             // nothing to do, already cleared
         } else {
-            for (T realValue: realValues) {
+            for (T realValue : realValues) {
                 addValue(new PrismPropertyValueImpl<>(realValue));
             }
         }
@@ -210,7 +208,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         if (pValuesToAdd == null) {
             return;
         }
-        for (PrismPropertyValue<T> pValue: pValuesToAdd) {
+        for (PrismPropertyValue<T> pValue : pValuesToAdd) {
             addValue(pValue);
         }
     }
@@ -251,7 +249,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return super.addInternalExecution(newValue);
     }
 
-
     @Override
     public void addRealValue(T valueToAdd) {
         addValue(new PrismPropertyValueImpl<>(valueToAdd));
@@ -266,7 +263,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     public boolean deleteValues(Collection<PrismPropertyValue<T>> pValuesToDelete) {
         checkMutable();
         boolean changed = false;
-        for (PrismPropertyValue<T> pValue: pValuesToDelete) {
+        for (PrismPropertyValue<T> pValue : pValuesToDelete) {
             if (!changed) {
                 changed = deleteValue(pValue);
             } else {
@@ -294,13 +291,12 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             }
         }
         if (!found) {
-            LOGGER.warn("Deleting value of property "+ getElementName()+" that does not exist (skipping), value: "+pValueToDelete);
+            LOGGER.warn("Deleting value of property " + getElementName()
+                    + " that does not exist (skipping), value: " + pValueToDelete);
         }
 
         return found;
     }
-
-
 
     @Override
     public void replaceValues(Collection<PrismPropertyValue<T>> valuesToReplace) {
@@ -353,21 +349,23 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             return this;
         }
         if (!isSingleValue()) {
-            throw new IllegalStateException("Attempt to resolve sub-path '"+path+"' on multi-value property " + getElementName());
+            throw new IllegalStateException("Attempt to resolve sub-path '"
+                    + path + "' on multi-value property " + getElementName());
         }
         PrismPropertyValue<T> value = getValue();
         return value.find(path);
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
         if (path == null || path.isEmpty()) {
             return new PartiallyResolvedItem<>((Item<IV, ID>) this, null);
         }
-        for (PrismPropertyValue<T> pvalue: getValues()) {
+        for (PrismPropertyValue<T> pvalue : getValues()) {
             T value = pvalue.getValue();
             if (!(value instanceof Structured)) {
-                throw new IllegalArgumentException("Attempt to resolve sub-path '"+path+"' on non-structured property value "+pvalue);
+                throw new IllegalArgumentException("Attempt to resolve sub-path '"
+                        + path + "' on non-structured property value " + pvalue);
             }
         }
         return new PartiallyResolvedItem<>((Item<IV, ID>) this, path);
@@ -386,7 +384,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     @Override
     protected void checkDefinition(PrismPropertyDefinition<T> def) {
         if (def == null) {
-            throw new IllegalArgumentException("Definition "+def+" cannot be applied to property "+this);
+            throw new IllegalArgumentException("Null definition cannot be applied to property " + this);
         }
     }
 
@@ -415,13 +413,15 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     @Override
-    protected ItemDelta fixupDelta(ItemDelta delta, Item otherItem) {
-        PrismPropertyDefinition def = getDefinition();
+    protected ItemDelta<PrismPropertyValue<T>, PrismPropertyDefinition<T>> fixupDelta(
+            ItemDelta<PrismPropertyValue<T>, PrismPropertyDefinition<T>> delta,
+            Item<PrismPropertyValue<T>, PrismPropertyDefinition<T>> otherItem) {
+        PrismPropertyDefinition<?> def = getDefinition();
         if (def != null && def.isSingleValue() && !delta.isEmpty()) {
             // Drop the current delta (it was used only to detect that something has changed
             // Generate replace delta instead of add/delete delta
-            PrismProperty<T> other = (PrismProperty<T>)otherItem;
-            PropertyDelta<T> propertyDelta = (PropertyDelta<T>)delta;
+            PrismProperty<T> other = (PrismProperty<T>) otherItem;
+            PropertyDelta<T> propertyDelta = (PropertyDelta<T>) delta;
             delta.clear();
             Collection<PrismPropertyValue<T>> replaceValues = new ArrayList<>(other.getValues().size());
             for (PrismPropertyValue<T> value : other.getValues()) {
@@ -479,7 +479,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             }
 
             if (multiline) {
-                for (PrismPropertyValue<T> value: getValues()) {
+                for (PrismPropertyValue<T> value : getValues()) {
                     sb.append("\n");
                     appendMetadata(sb, value, "", " ");
                     if (value.isRaw()) {
@@ -499,18 +499,18 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                                 // In that case we want to force debugDump as we are in detailedDebugMode here.
                                 // This is important e.g. for PolyString, in detailedDebugMode we want to see
                                 // all the PolyString details.
-                                sb.append(((DebugDumpable)realValue).debugDump(indent + 1));
+                                sb.append(((DebugDumpable) realValue).debugDump(indent + 1));
                             } else {
                                 if (realValue instanceof ShortDumpable) {
                                     DebugUtil.indentDebugDump(sb, indent + 1);
-                                    ((ShortDumpable)realValue).shortDump(sb);
+                                    ((ShortDumpable) realValue).shortDump(sb);
                                 } else if (realValue instanceof DebugDumpable) {
-                                    sb.append(((DebugDumpable)realValue).debugDump(indent + 1));
+                                    sb.append(((DebugDumpable) realValue).debugDump(indent + 1));
                                 } else {
                                     if (DebugUtil.isDetailedDebugDump()) {
                                         PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getPrismContext(), getElementName(), null);
                                     } else {
-                                        sb.append("SS{"+realValue+"}");
+                                        sb.append("SS{").append(realValue).append("}");
                                         PrettyPrinter.shortDump(sb, realValue);
                                     }
                                 }
@@ -578,9 +578,9 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             return null;
         }
         if (rawElement instanceof PrimitiveXNodeImpl<?>) {
-            return ((PrimitiveXNodeImpl<?>)rawElement).getStringValue();
+            return ((PrimitiveXNodeImpl<?>) rawElement).getStringValue();
         } else {
-            return "<class " + rawElement.getClass().getSimpleName()+">";
+            return "<class " + rawElement.getClass().getSimpleName() + ">";
         }
     }
 
@@ -593,7 +593,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         } else {
             sb.append("[ ");
             Iterator<PrismPropertyValue<T>> iterator = getValues().iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 PrismPropertyValue<T> value = iterator.next();
                 sb.append(value.toHumanReadableString());
                 if (iterator.hasNext()) {
@@ -606,7 +606,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     /**
-     * Return a human readable name of this class suitable for logs.
+     * Return a human-readable name of this class suitable for logs.
      */
     @Override
     protected String getDebugDumpClassName() {
@@ -619,17 +619,13 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      * If added value is raw or expression, value hash code index will be disabled.
      *
      * Index is only enabled when:
-     *   - property never contained any raw value or expression
-     *   - property has more than {@link #INDEX_ENABLE_TRESHOLD} items
+     * - property never contained any raw value or expression
+     * - property has more than {@link #INDEX_ENABLE_TRESHOLD} items TODO fix, not used, deleted
      *
      * Index is disabled when:
-     *   - raw value is inserted
-     *   -
-     *
-     * @param createIndexIfNeccessary
-     *
+     * - raw value is inserted
      */
-    private void enableOrDisableIndex(PrismPropertyValue<T> valueToAdd, boolean createIndexIfNeccessary) {
+    private void enableOrDisableIndex(PrismPropertyValue<T> valueToAdd, boolean createIndexIfNecessary) {
         if (valueToAdd.isRaw() || valueToAdd.getExpression() != null) {
             // Index is not usable anymore, since value may change its hashCode during
             // lifetime
@@ -640,7 +636,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         if (isSingleValueByDefinition()) {
             return;
         }
-        if (valueIndex == null && indexAvailable && createIndexIfNeccessary && PrismStaticConfiguration.indexEnableThreshold() <= size()) {
+        if (valueIndex == null && indexAvailable && createIndexIfNecessary
+                && PrismStaticConfiguration.indexEnableThreshold() <= size()) {
             // Lazily initialize index on N-th value
             this.valueIndex = new HashSet<>();
             for (PrismPropertyValue<T> value : getValues()) {
@@ -662,7 +659,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      *
      * This call needs to be followed with {@link #valueChangeEnd(PrismPropertyValue)} in success case
      * or {@link #valueChangeFailed(PrismPropertyValue)} in case of any error.
-     *
      */
     void valueChangeStart(PrismPropertyValue<T> propertyValue) {
         removeFromIndex(propertyValue);
@@ -712,5 +708,4 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             this.valueIndex.clear();
         }
     }
-
 }
