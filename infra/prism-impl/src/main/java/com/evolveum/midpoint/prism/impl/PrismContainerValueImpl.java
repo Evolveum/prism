@@ -763,8 +763,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
-            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException {
-        I newItem = createDetachedNewItemInternal(name, type, itemDefinition);
+            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException, RemovedItemDefinitionException {
+        I newItem = createDetachedNewItemInternal(name, type, itemDefinition, true);
         if (immutable) {
             newItem.freeze();
         }
@@ -773,17 +773,26 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createSubItem(QName name, Class<I> type, ID itemDefinition) throws SchemaException {
         checkMutable();
-        I newItem = createDetachedNewItemInternal(name, type, itemDefinition);
+        I newItem;
+        try {
+            newItem = createDetachedNewItemInternal(name, type, itemDefinition, false);
+        } catch (RemovedItemDefinitionException e) {
+            throw new SystemException("Unexpected exception: " + e.getMessage(), e);
+        }
         add(newItem);
         return newItem;
     }
 
     private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedNewItemInternal(
-            QName name, Class<I> type, ID itemDefinition) throws SchemaException {
+            QName name, Class<I> type, ID itemDefinition, boolean treatRemovedDefinitions)
+            throws SchemaException, RemovedItemDefinitionException {
         I newItem;
         if (itemDefinition == null) {
             ComplexTypeDefinition ctd = getComplexTypeDefinition();
             itemDefinition = determineItemDefinition(name, ctd);
+            if (treatRemovedDefinitions && itemDefinition instanceof RemovedItemDefinition) {
+                throw new RemovedItemDefinitionException();
+            }
             if (ctd != null && itemDefinition == null || itemDefinition instanceof RemovedItemDefinition) {
                 throw new SchemaException("No definition for item " + name + " in " + getParent());
             }

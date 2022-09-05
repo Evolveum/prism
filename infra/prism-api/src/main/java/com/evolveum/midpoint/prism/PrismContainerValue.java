@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.exception.CommonException;
 import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -193,7 +194,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     boolean containsItem(ItemPath propPath, boolean acceptEmptyItem) throws SchemaException;
 
     <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
-            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException;
+            Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException, RemovedItemDefinitionException;
 
     <T extends Containerable> PrismContainer<T> findOrCreateContainer(QName containerName) throws SchemaException;
 
@@ -350,4 +351,12 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      * Like isEmpty but ignores presence of container value ID.
      */
     boolean hasNoItems();
+
+    /** Used when accessing an item whose definition was removed. To be used only at very specific places! */
+    class RemovedItemDefinitionException extends CommonException {
+        @Override
+        public String getErrorTypeMessage() {
+            return "Removed item definition problem"; // irrelevant
+        }
+    }
 }

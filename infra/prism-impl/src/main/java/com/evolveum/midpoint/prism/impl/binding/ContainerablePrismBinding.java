@@ -33,19 +33,37 @@ public interface ContainerablePrismBinding extends Containerable {
     }
 
     default <T> List<T> prismGetPropertyValues(QName name, Class<T> clazz) {
-        return PrismForJAXBUtil.getPropertyValues(asPrismContainerValue(), name, clazz);
+        try {
+            return PrismForJAXBUtil.getPropertyValues(asPrismContainerValue(), name, clazz);
+        } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+            // If the definition has been removed, we don't want to fail here (MID-7968).
+            // However, we cannot return fully-functional list either. So we return just an empty, unmodifiable list.
+            return List.of();
+        }
     }
 
     default <T extends ContainerablePrismBinding> List<T> prismGetContainerableList(Producer<T> producer, QName name, Class<T> clazz) {
         PrismContainerValue<?> pcv = asPrismContainerValue();
-        PrismContainer<T> container = PrismForJAXBUtil.getContainer(pcv, name);
-        return new ContainerableList<>(container, pcv, producer);
+        try {
+            PrismContainer<T> container = PrismForJAXBUtil.getContainer(pcv, name);
+            return new ContainerableList<>(container, pcv, producer);
+        } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+            // If the definition has been removed, we don't want to fail here (MID-7968).
+            // However, we cannot return fully-functional list either. So we return just an empty, unmodifiable list.
+            return List.of();
+        }
     }
 
     default <T extends Referencable> List<T> prismGetReferencableList(Producer<T> producer, QName name, Class<?> clazz) {
         PrismContainerValue<?> pcv = asPrismContainerValue();
-        PrismReference reference = PrismForJAXBUtil.getReference(pcv, name);
-        return new ReferencableList<>(reference, pcv, producer);
+        try {
+            PrismReference reference = PrismForJAXBUtil.getReference(pcv, name);
+            return new ReferencableList<>(reference, pcv, producer);
+        } catch (PrismContainerValue.RemovedItemDefinitionException e) {
+            // If the definition has been removed, we don't want to fail here (MID-7968).
+            // However, we cannot return fully-functional list either. So we return just an empty, unmodifiable list.
+            return List.of();
+        }
     }
 
     default <T> void prismSetPropertyValue(ItemName name, T value) {

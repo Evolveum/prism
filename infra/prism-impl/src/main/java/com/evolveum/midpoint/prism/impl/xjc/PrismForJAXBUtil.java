@@ -96,7 +96,8 @@ public final class PrismForJAXBUtil {
         return null;
     }
 
-    public static <T> List<T> getPropertyValues(PrismContainerValue<?> container, QName name, Class<T> clazz) {
+    public static <T> List<T> getPropertyValues(PrismContainerValue<?> container, QName name, Class<T> clazz)
+            throws PrismContainerValue.RemovedItemDefinitionException {
         Validate.notNull(container, "Container must not be null.");
         Validate.notNull(name, "QName must not be null.");
         Validate.notNull(clazz, "Class type must not be null.");
@@ -105,6 +106,7 @@ public final class PrismForJAXBUtil {
         try {
             property = container.findProperty(ItemName.fromQName(name));
             if (property == null) {
+                //noinspection unchecked
                 property = container.createDetachedSubItem(name, PrismPropertyImpl.class, null, container.isImmutable());
             }
         } catch (SchemaException e) {
@@ -153,7 +155,8 @@ public final class PrismForJAXBUtil {
         return fieldContainerValue.asContainerable(fieldClass);
     }
 
-    public static <T extends PrismContainer<?>> T getContainer(PrismContainerValue parentValue, QName name) {
+    public static <T extends PrismContainer<?>> T getContainer(PrismContainerValue parentValue, QName name)
+            throws PrismContainerValue.RemovedItemDefinitionException {
         Validate.notNull(parentValue, "Parent container value must not be null.");
         Validate.notNull(name, "QName must not be null.");
 
@@ -329,7 +332,8 @@ public final class PrismForJAXBUtil {
         }
     }
 
-    public static PrismReference getReference(PrismContainerValue parent, QName fieldName) {
+    public static PrismReference getReference(PrismContainerValue parent, QName fieldName)
+            throws PrismContainerValue.RemovedItemDefinitionException {
         try {
             PrismReference reference = parent.findReference(fieldName);
             if (reference != null) {
