@@ -108,7 +108,6 @@
         <failsafe.version>3.0.0-M5</failsafe.version>
         <maven.api.version>3.8.1</maven.api.version>
         <checkstyle.version>3.1.2</checkstyle.version>
-        <xalan.version>2.7.2</xalan.version>
         <xerces.version>2.12.2</xerces.version>
 
         <plexus.container.version>1.7.1</plexus.container.version>
@@ -153,27 +152,6 @@
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>serializer</artifactId>
-                <version>${xalan.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!--
-            TODO: we should get rid of xalan/xerces if possible.
-            More (from 2015): http://www.odi.ch/weblog/posting.php?posting=689
-            ForgeRock got rid of it: https://bugster.forgerock.org/jira/browse/OPENAM-7320
-            -->
-            <dependency>
-                <groupId>xalan</groupId>
-                <artifactId>xalan</artifactId>
-                <version>${xalan.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.staxmate</groupId>
