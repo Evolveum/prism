@@ -24,6 +24,7 @@
     <name>midPoint Infrastructure - java utils</name>
 
     <dependencies>
+        <!-- Xerces only used for XMLChar.isValid(). -->
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
