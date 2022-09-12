@@ -63,7 +63,7 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
     }
 
     @Override
-    public @NotNull ItemPath getPath() {
+    public @Nullable ItemPath getPath() {
         return path;
     }
 
