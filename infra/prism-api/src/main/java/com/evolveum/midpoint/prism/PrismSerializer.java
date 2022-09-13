@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.path.PathSet;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -68,11 +68,11 @@ public interface PrismSerializer<T> {
      * These items will be skipped during serialization. If present, their original presence is indicated
      * by the "incomplete" flag.
      *
-     * @param itemNames Names of items to be skipped.
+     * @param itemsToSkip Paths of items to be skipped.
      * @return Serializer with the items to be skipped set.
      */
     @NotNull
-    PrismSerializer<T> itemsToSkip(Collection<? extends QName> itemNames);
+    PrismSerializer<T> itemsToSkip(PathSet itemsToSkip);
 
     /**
      * Serializes given prism item.

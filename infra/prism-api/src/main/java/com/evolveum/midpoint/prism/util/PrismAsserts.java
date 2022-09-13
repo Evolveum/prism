@@ -1072,6 +1072,10 @@ public class PrismAsserts {
         assert test : message;
     }
 
+    private static void assertFalse(String message, boolean test) {
+        assert !test : message;
+    }
+
     public static void assertEquals(String message, Object expected, Object actual) {
         assert MiscUtil.equals(expected, actual) : message
                 + ": expected " + MiscUtil.getValueWithClass(expected)
@@ -1297,15 +1301,30 @@ public class PrismAsserts {
 
     @SuppressWarnings("UnusedReturnValue")
     public static Item<?, ?> assertEmptyAndIncomplete(PrismObject<?> object, ItemPath itemPath) {
-        Item<?, ?> item = assertIncomplete(object, itemPath);
+        Item<?, ?> item = assertIncomplete(object.asObjectable().asPrismContainerValue(), itemPath);
         assertTrue(itemPath + " has values in " + object + ": " + item, item.hasNoValues());
         return item;
     }
 
     public static Item<?, ?> assertIncomplete(PrismObject<?> object, ItemPath itemPath) {
+        return assertIncomplete(object.asObjectable().asPrismContainerValue(), itemPath);
+    }
+
+    public static Item<?, ?> assertIncomplete(PrismContainerValue<?> object, ItemPath itemPath) {
         Item<?, ?> item = object.findItem(itemPath);
         assertNotNull("No " + itemPath + " in " + object, item);
         assertTrue(itemPath + " is not incomplete in " + object, item.isIncomplete());
+        return item;
+    }
+
+    public static Item<?, ?> assertNotIncomplete(PrismObject<?> object, ItemPath itemPath) {
+        return assertNotIncomplete(object.asObjectable().asPrismContainerValue(), itemPath);
+    }
+
+    public static Item<?, ?> assertNotIncomplete(PrismContainerValue<?> object, ItemPath itemPath) {
+        Item<?, ?> item = object.findItem(itemPath);
+        assertNotNull("No " + itemPath + " in " + object, item);
+        assertFalse(itemPath + " is incomplete in " + object, item.isIncomplete());
         return item;
     }
 

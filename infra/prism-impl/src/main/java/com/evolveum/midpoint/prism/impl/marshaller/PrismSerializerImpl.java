@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.SerializerTarget;
+import com.evolveum.midpoint.prism.path.PathSet;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
@@ -29,14 +30,18 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
     @NotNull private final PrismContextImpl prismContext;
     @NotNull private final SerializerTarget<T> target;
     private final QName itemName;
-    private final ItemDefinition itemDefinition;
+    private final ItemDefinition<?> itemDefinition;
     private final SerializationContext context;
-    private final Collection<? extends QName> itemsToSkip;
+    private final PathSet itemsToSkip;
 
     //region Setting up =============================================================================================
-    public PrismSerializerImpl(@NotNull SerializerTarget<T> target, QName itemName, ItemDefinition itemDefinition,
-            SerializationContext context, @NotNull PrismContextImpl prismContext,
-            Collection<? extends QName> itemsToSkip) {
+    public PrismSerializerImpl(
+            @NotNull SerializerTarget<T> target,
+            QName itemName,
+            ItemDefinition<?> itemDefinition,
+            SerializationContext context,
+            @NotNull PrismContextImpl prismContext,
+            PathSet itemsToSkip) {
         this.target = target;
         this.itemName = itemName;
         this.itemDefinition = itemDefinition;
@@ -78,7 +83,7 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
 
     @NotNull
     @Override
-    public PrismSerializer<T> itemsToSkip(Collection<? extends QName> itemsToSkip) {
+    public PrismSerializer<T> itemsToSkip(PathSet itemsToSkip) {
         return new PrismSerializerImpl<>(target, itemName, itemDefinition, context, prismContext, itemsToSkip);
     }
 

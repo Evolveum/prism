@@ -14,22 +14,41 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
+ * A "safe" set of {@link ItemPath} - i.e. the one where (e.g.) presence is checked using {@link ItemPath#equivalent(ItemPath)},
+ * not {@link Object#equals(Object)} method.
  *
+ * Slower than standard set! Operations are evaluated in `O(n)` time.
  */
 @Experimental
 public class PathSet implements Set<ItemPath> {
 
-    private final List<ItemPath> content = new ArrayList<>();
+    private static final PathSet EMPTY = new PathSet(List.of(), false);
+
+    /** Can be mutable or immutable. */
+    private final List<ItemPath> content;
+
+    private PathSet(List<ItemPath> initialContent, boolean cloneOnCreation) {
+        content = cloneOnCreation ?
+                new ArrayList<>(initialContent) : initialContent;
+    }
 
     public PathSet() {
+        this(List.of(), true);
     }
 
     public PathSet(@NotNull Collection<ItemPath> initialContent) {
-        content.addAll(initialContent);
+        this(new ArrayList<>(initialContent), false);
     }
 
+    public static PathSet empty() {
+        return EMPTY;
+    }
+
+    /**
+     * TODO maybe we should return immutable {@link PathSet} here.
+     */
     public static @NotNull PathSet of(ItemPath... paths) {
-        return new PathSet(List.of(paths));
+        return new PathSet(List.of(paths), true);
     }
 
     @Override
@@ -53,15 +72,18 @@ public class PathSet implements Set<ItemPath> {
         return content.iterator();
     }
 
+    @SuppressWarnings("NullableProblems")
     @NotNull
     @Override
     public Object[] toArray() {
         return content.toArray();
     }
 
+    @SuppressWarnings("NullableProblems")
     @NotNull
     @Override
     public <T> T[] toArray(@NotNull T[] a) {
+        //noinspection SuspiciousToArrayCall
         return content.toArray(a);
     }
 
