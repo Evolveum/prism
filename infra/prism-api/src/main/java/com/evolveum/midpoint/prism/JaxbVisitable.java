@@ -32,6 +32,8 @@ public interface JaxbVisitable {
             RawType raw = (RawType) visitable;
             if (raw.isParsed()) {
                 raw.getAlreadyParsedValue().accept(prismVisitor);
+            } else {
+                // Should we attempt to parse the raw value? Probably not, see the comment on RawType.accept(..)
             }
         }
     }

@@ -220,24 +220,6 @@ public class ItemDeltaCollectionsUtil {
         }
     }
 
-    public static boolean pathMatches(@NotNull Collection<? extends ItemDelta<?, ?>> deltas, @NotNull ItemPath path,
-            int segmentsToSkip,
-            boolean exactMatch) {
-        for (ItemDelta<?, ?> delta : deltas) {
-            ItemPath modifiedPath = delta.getPath().rest(segmentsToSkip).removeIds();   // because of extension/cities[2]/name (in delta) vs. extension/cities/name (in spec)
-            if (exactMatch) {
-                if (path.equivalent(modifiedPath)) {
-                    return true;
-                }
-            } else {
-                if (path.isSubPathOrEquivalent(modifiedPath)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public static <D extends ItemDelta> D findItemDelta(Collection<? extends ItemDelta> deltas, QName itemName, Class<D> deltaType) {
         return findItemDelta(deltas, ItemName.fromQName(itemName), deltaType, false);
     }

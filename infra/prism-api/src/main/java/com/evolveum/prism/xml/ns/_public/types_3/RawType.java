@@ -90,7 +90,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
     }
 
     /**
-     * Extracts a "real value" from a potential RawType object without expecting any specific type beforehand.
+     * Extracts a "real value" from a potential {@link RawType} object without expecting any specific type beforehand.
      * (Useful e.g. for determining value of xsd:anyType XML property.)
      */
     public static Object getValue(Object value) throws SchemaException {
@@ -106,15 +106,24 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
     }
 
     /**
-     * Extracts a "real value" from RawType object without expecting any specific type beforehand.
-     * If no explicit type is present, assumes xsd:string (and fails if the content is structured).
+     * Extracts a "real value" from {@link RawType} object without expecting any specific type beforehand.
+     * If no explicit type is present, assumes `xsd:string` (and fails if the content is structured).
      */
     public synchronized Object getValue(boolean store) throws SchemaException {
         Parsed<?> parsed = current().parse();
         if (store) {
             transition(parsed);
         }
-        return parsed.realValue();
+        try {
+            return parsed.realValue();
+        } catch (Throwable t) {
+            // It may happen that the real value cannot be obtained, e.g. when the content is a PCV without
+            // compile-time class. So we just return "this" as a real value.
+            //
+            // TODO implement this more seriously - for example, we may need something like Containerable
+            //  for PCVs that are not statically (compile-time) representable.
+            return this;
+        }
     }
 
     /**
@@ -328,7 +337,10 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         }
         visitor.visit(this);
 
-        if (value instanceof JaxbVisitable) {
+        if (value instanceof JaxbVisitable && !(value instanceof RawType)) {
+            // The value can be RawType if the "real value" couldn't be obtained during parsing the value.
+            // Fortunately, the value is most probably already parsed, so the visitor already had the chance to act upon it
+            // during the above "visitor.visit" call (even if it has no "real value" to act on).
             ((JaxbVisitable) value).accept(visitor);
         }
     }
