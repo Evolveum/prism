@@ -611,6 +611,16 @@ public class MiscUtil {
         return null;
     }
 
+    // TODO better name
+    public static <T> T getFirstNonNullFromList(List<T> values) {
+        for (T value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
+    }
+
     public static String getFirstNonNullString(Object... values) {
         Object value = getFirstNonNull(values);
         return value != null ? value.toString() : null;
