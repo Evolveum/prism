@@ -21,7 +21,7 @@ public interface PropertyValueFilter<T> extends ValueFilter<PrismPropertyValue<T
 
     // TODO cleanup this mess - how values are cloned, that expression is not cloned in LT/GT filter etc
     @Override
-    PropertyValueFilter clone();
+    PropertyValueFilter<T> clone();
 
     @Override
     default @Nullable QName getMatchingRule() {
@@ -29,12 +29,17 @@ public interface PropertyValueFilter<T> extends ValueFilter<PrismPropertyValue<T
         if (maybe != null) {
             return maybe;
         }
+        /*
+        // MID-6935 related fix, but this caused provisioning adding lower() to queries.
+        That is a performance problem especially on DBs where it can't be indexed (SQL Server).
+        Alternative is explicitly us different matcher in such queries, but currently this improvement
+        is non-compatible change causing problems - and as such disabled for now.
+
         var definition = getDefinition();
         if (definition != null) {
             return definition.getMatchingRuleQName();
         }
+        */
         return null;
     }
-    
-    
 }
