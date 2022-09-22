@@ -39,9 +39,15 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition>
 
     void setDefinition(@Nullable D definition);
 
+    /**
+     * Returns matching rule that should be used.
+     * This can be matching rule provided with the filter or some fallback/default.
+     * See MID-6935 for more, currently only returns the explicitly provided matching rule.
+     */
     @Nullable
     QName getMatchingRule();
 
+    /** Returns explicit matching rule provided in the filter. */
     @Nullable
     QName getDeclaredMatchingRule();
 
