@@ -187,7 +187,7 @@
         <xsd:complexContent>
             <xsd:extension base="tns:PropertySimpleValueFilterClauseType">
                 <xsd:sequence>
-                    <xsd:element ref="tns:filter"/>
+                    <xsd:element ref="tns:filter" minOccurs="0"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
