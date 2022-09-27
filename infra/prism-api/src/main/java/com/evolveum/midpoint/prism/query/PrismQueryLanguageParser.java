@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2021 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -15,23 +15,4 @@ public interface PrismQueryLanguageParser {
     <C extends Containerable> ObjectFilter parseFilter(Class<C> typeClass, String query) throws SchemaException;
 
     ObjectFilter parseFilter(PrismContainerDefinition<?> definition, String query) throws SchemaException;
-
-    /**
-     *
-     * @deprecated Use {@link #parseFilter(Class, String)} instead
-     */
-    @Deprecated
-    default <C extends Containerable> ObjectFilter parseQuery(Class<C> typeClass, String query) throws SchemaException {
-        return parseFilter(typeClass, query);
-    }
-
-    /**
-     *
-     * @deprecated Use {@link #parseFilter(PrismContainerDefinition, String)} instead
-     */
-    @Deprecated
-    default ObjectFilter parseQuery(PrismContainerDefinition<?> definition, String query) throws SchemaException {
-        return parseFilter(definition, query);
-    }
-
 }

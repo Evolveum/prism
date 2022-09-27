@@ -69,28 +69,16 @@ public class TestQueryConverters extends AbstractPrismTest {
         QueryType convertedQueryType = toQueryType(query);
         System.out.println("Re-converted query type");
         System.out.println(convertedQueryType.debugDump());
-
-//        Element filterClauseElement = convertedQueryType.getFilter().getFilterClauseAsElement(getPrismContext());
-//
-//        System.out.println("Serialized filter (JAXB->DOM)");
-//        System.out.println(DOMUtil.serializeDOMToString(filterClauseElement));
-//
-//        DomAsserts.assertElementQName(filterClauseElement, EqualFilter.ELEMENT_NAME);
-//        DomAsserts.assertSubElements(filterClauseElement, 2);
-//
-//        DomAsserts.assertSubElement(filterClauseElement, PrismConstants.Q_VALUE);
-//        Element valueElement = DOMUtil.getChildElement(filterClauseElement, PrismConstants.Q_VALUE);
-//        DomAsserts.assertTextContent(valueElement, "jack");
     }
 
     @Test
     void testBrokenExample() throws SchemaException {
 
-        ObjectFilter filter = PrismContext.get().createQueryParser().parseQuery(UserType.class,
+        ObjectFilter filter = PrismContext.get().createQueryParser().parseFilter(UserType.class,
                 "familyName = \"Doe\" and (givenName = \"John\" or givenName= \"Bill\")");
         display("FILTER: " + filter);
 
-        filter = PrismContext.get().createQueryParser().parseQuery(UserType.class, "extension/artMovement = \"asdf\"");
+        filter = PrismContext.get().createQueryParser().parseFilter(UserType.class, "extension/artMovement = \"asdf\"");
         display("FILTER: " + filter);
 
     }
@@ -129,23 +117,6 @@ public class TestQueryConverters extends AbstractPrismTest {
         PrismAsserts.assertSubnode(xandmap, EqualFilter.ELEMENT_NAME, ListXNodeImpl.class);
         ListXNodeImpl xequalsList = (ListXNodeImpl) xandmap.get(EqualFilter.ELEMENT_NAME);
         PrismAsserts.assertSize(xequalsList, 2);
-
-//        Element filterClauseElement = convertedFilterType.getFilterClauseAsElement(getPrismContext());
-//        System.out.println("Serialized filter (JAXB->DOM)");
-//        System.out.println(DOMUtil.serializeDOMToString(filterClauseElement));
-//
-//        DomAsserts.assertElementQName(filterClauseElement, AndFilter.ELEMENT_NAME);
-//        DomAsserts.assertSubElements(filterClauseElement, 2);
-//
-//        Element firstSubelement = DOMUtil.getChildElement(filterClauseElement, 0);
-//        DomAsserts.assertElementQName(firstSubelement, EqualFilter.ELEMENT_NAME);
-//        Element firstValueElement = DOMUtil.getChildElement(firstSubelement, PrismConstants.Q_VALUE);
-//        DomAsserts.assertTextContent(firstValueElement, "Jack");
-//
-//        Element secondSubelement = DOMUtil.getChildElement(filterClauseElement, 1);
-//        DomAsserts.assertElementQName(secondSubelement, EqualFilter.ELEMENT_NAME);
-//        Element secondValueElement = DOMUtil.getChildElement(secondSubelement, PrismConstants.Q_VALUE);
-//        DomAsserts.assertTextContent(secondValueElement, "Caribbean");
     }
 
     @Test
@@ -182,7 +153,7 @@ public class TestQueryConverters extends AbstractPrismTest {
     }
 
     private <C extends Containerable> ObjectFilter parseFilter(Class<C> typeClass, String string) throws SchemaException {
-        return getPrismContext().createQueryParser().parseQuery(typeClass, string);
+        return getPrismContext().createQueryParser().parseFilter(typeClass, string);
     }
 
     @Test
@@ -203,18 +174,6 @@ public class TestQueryConverters extends AbstractPrismTest {
         QueryType convertedQueryType = toQueryType(query);
         System.out.println("Re-converted query type");
         System.out.println(convertedQueryType.debugDump());
-
-//        Element filterClauseElement = convertedQueryType.getFilter().getFilterClauseAsElement(getPrismContext());
-//        logger.info(convertedQueryType.getFilter().getFilterClauseXNode().debugDump());
-//
-//        System.out.println("Serialized filter (JAXB->DOM)");
-//        String filterAsString = DOMUtil.serializeDOMToString(filterClauseElement);
-//        System.out.println(filterAsString);
-//        logger.info(filterAsString);
-//
-//        DomAsserts.assertElementQName(filterClauseElement, new QName(PrismConstants.NS_QUERY, "not"));
-//        assertEquals("wrong # of inOid subfilters", 1, filterClauseElement.getElementsByTagNameNS(PrismConstants.NS_QUERY, "inOid").getLength());
-//        assertEquals("wrong # of value subfilters", 4, filterClauseElement.getElementsByTagNameNS(PrismConstants.NS_QUERY, "value").getLength());
     }
 
     @Test
@@ -235,18 +194,6 @@ public class TestQueryConverters extends AbstractPrismTest {
         QueryType convertedQueryType = toQueryType(query);
         System.out.println("Re-converted query type");
         System.out.println(convertedQueryType.debugDump());
-
-//        Element filterClauseElement = convertedQueryType.getFilter().getFilterClauseAsElement(getPrismContext());
-//        logger.info(convertedQueryType.getFilter().getFilterClauseXNode().debugDump());
-//
-//        System.out.println("Serialized filter (JAXB->DOM)");
-//        String filterAsString = DOMUtil.serializeDOMToString(filterClauseElement);
-//        System.out.println(filterAsString);
-//        logger.info(filterAsString);
-//
-//        DomAsserts.assertElementQName(filterClauseElement, new QName(PrismConstants.NS_QUERY, "not"));
-//        assertEquals("wrong # of fullText subfilters", 1, filterClauseElement.getElementsByTagNameNS(PrismConstants.NS_QUERY, "fullText").getLength());
-//        assertEquals("wrong # of value subfilters", 2, filterClauseElement.getElementsByTagNameNS(PrismConstants.NS_QUERY, "value").getLength());
     }
 
     private ObjectQuery toObjectQuery(Class<? extends Containerable> type, SearchFilterType filterType) throws Exception {
