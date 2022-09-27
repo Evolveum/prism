@@ -19,7 +19,7 @@ import com.evolveum.midpoint.prism.impl.PrismObjectImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 
-public abstract class AbstractMutableObjectable extends ObjectType implements ContainerablePrismBinding, Objectable {
+public abstract class AbstractMutableObjectable extends ObjectType implements ContainerablePrismBinding, Objectable, Cloneable {
 
     /**
      * Always set up if we are connected to a value.
