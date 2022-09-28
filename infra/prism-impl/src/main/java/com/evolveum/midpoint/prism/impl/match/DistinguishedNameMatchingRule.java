@@ -86,7 +86,7 @@ public class DistinguishedNameMatchingRule implements MatchingRule<String> {
 
         a = normalize(a);
 
-        if (a == null){
+        if (a == null) {
             return false;
         }
 

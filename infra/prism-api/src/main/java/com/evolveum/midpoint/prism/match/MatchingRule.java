@@ -45,6 +45,15 @@ public interface MatchingRule<T> {
      * Returns a normalized version of the value.
      * For normalized version the following holds:
      * if A matches B then normalize(A) == normalize(B)
+     *
+     * FIXME Currently, the implementation of PolyStringNormMatchingRule does not fulfill this contract.
+     *  The main problem is that this method returns a value of the same type as it was called with.
+     *  It may not be appropriate for holding the normalized value. In the case of PolyString norm, we should
+     *  rather return String instead of PolyString. A similar case could be with comparing e.g. IP addresses
+     *  where an array or a list of numbers would be appropriate as the normalized representation.
+     *  (Note: In midPoint provisioning module, we rely on the method returning an object with the same type.
+     *  But currently, all values used there should be of String type. When introducing other types of attributes,
+     *  this question will need to be resolved.)
      */
     T normalize(T original) throws SchemaException;
 }
