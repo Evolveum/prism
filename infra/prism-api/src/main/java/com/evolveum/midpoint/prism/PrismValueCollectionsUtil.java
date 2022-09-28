@@ -245,4 +245,19 @@ public class PrismValueCollectionsUtil {
         }
         return pvalues;
     }
+
+    // Does no recomputation nor adoption
+    public static Collection<PrismValue> toPrismValues(Object... realValues) {
+        Collection<PrismValue> pValues = new ArrayList<>(realValues.length);
+        for (Object realValue : realValues) {
+            if (realValue instanceof Containerable) {
+                pValues.add(((Containerable) realValue).asPrismContainerValue());
+            } else if (realValue instanceof Referencable) {
+                pValues.add(((Referencable) realValue).asReferenceValue());
+            } else if (realValue != null) {
+                pValues.add(PrismContext.get().itemFactory().createPropertyValue(realValue));
+            }
+        }
+        return pValues;
+    }
 }
