@@ -130,6 +130,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                         .and().item(UserType.F_FULL_NAME).contains("arr")
                         .buildFilter();
         verify("givenName =[stringIgnoreCase] 'Jack' and fullName contains 'arr'", filter);
+        verify("givenName =[stringIgnoreCase] 'Jack' AND fullName contains 'arr'", filter, false);
     }
 
     @Test
@@ -140,6 +141,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                         .and().item(UserType.F_FULL_NAME).contains("'Arr")
                         .buildFilter();
         verify("givenName =[stringIgnoreCase] 'Jack' and fullName contains '\\'Arr'", filter);
+        verify("givenName =[stringIgnoreCase] 'Jack' AND fullName contains '\\'Arr'", filter, false);
     }
 
     @Test
@@ -249,6 +251,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                         .buildFilter();
         verify("familyName = 'Sparrow' and fullName contains 'arr' "
                 + "and (givenName = 'Jack' or givenName = 'Jackie')", filter);
+        verify("familyName = 'Sparrow' AND fullName contains 'arr' "
+                + "and (givenName = 'Jack' OR givenName = 'Jackie')", filter, false);
     }
 
     @Test(enabled = false)

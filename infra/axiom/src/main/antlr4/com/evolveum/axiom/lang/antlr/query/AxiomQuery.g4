@@ -108,9 +108,9 @@ PLUS : '+';
 LINE_COMMENT :  [ \n\r\t]* ('//' (~[\r\n]*)) [ \n\r\t]* -> skip;
 SEP: [ \n\r\t]+;
 
-AND_KEYWORD: 'and';
-OR_KEYWORD: 'or';
-NOT_KEYWORD: 'not';
+AND_KEYWORD: 'and'|'AND';
+OR_KEYWORD: 'or'|'OR';
+NOT_KEYWORD: 'not'|'NOT';
 IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
 
 fragment SQOUTE : '\'';
