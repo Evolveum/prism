@@ -91,6 +91,11 @@
         <!-- Controls surefire config/redirectTestOutputToFile setting. -->
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
+        <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
+        <snakeyaml.version>1.33</snakeyaml.version> <!-- fixes CVE-2022-25857 -->
+        <jackson.version>2.13.4</jackson.version> <!-- fixes CVE-2022-42004 -->
+        <!-- END of Spring Boot dependencies overrides -->
+
         <!-- Dependencies global versions -->
         <commons.io.version>2.11.0</commons.io.version>
         <slf4j.version>1.7.36</slf4j.version>
