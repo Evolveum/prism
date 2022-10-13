@@ -119,4 +119,9 @@ public class PathKeyedMap<T> implements Map<ItemPath, T>, Serializable {
     public Set<Entry<ItemPath, T>> entrySet() {
         return Collections.unmodifiableSet(internalMap.entrySet());
     }
+
+    @Override
+    public String toString() {
+        return internalMap.toString();
+    }
 }

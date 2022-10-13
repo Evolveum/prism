@@ -25,9 +25,9 @@ public class PathSet implements Set<ItemPath> {
     private static final PathSet EMPTY = new PathSet(List.of(), false);
 
     /** Can be mutable or immutable. */
-    private final List<ItemPath> content;
+    @NotNull private final List<ItemPath> content;
 
-    private PathSet(List<ItemPath> initialContent, boolean cloneOnCreation) {
+    private PathSet(@NotNull List<ItemPath> initialContent, boolean cloneOnCreation) {
         content = cloneOnCreation ?
                 new ArrayList<>(initialContent) : initialContent;
     }
@@ -133,5 +133,10 @@ public class PathSet implements Set<ItemPath> {
     @Override
     public void clear() {
         content.clear();
+    }
+
+    @Override
+    public String toString() {
+        return content.toString();
     }
 }
