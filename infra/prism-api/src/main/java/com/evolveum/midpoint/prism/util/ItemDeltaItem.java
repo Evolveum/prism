@@ -221,7 +221,7 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition> implem
         }
         if (subItemDeltas != null && !subItemDeltas.isEmpty()) {
             // TODO fix these ugly hacks
-            if (itemNew != null && itemOld.getPath().size() == 1) {
+            if (itemNew != null && itemOld != null && itemOld.getPath().size() == 1) {
                 // The path for itemNew will be OK in this case.
             } else {
                 // We need to have itemNew with the correct path. Currently, the only way how to ensure this is to
