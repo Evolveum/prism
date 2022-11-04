@@ -125,7 +125,7 @@ public class TestMiscUtil extends AbstractUnitTest {
     public void testThrowAsSameForObjectNotFoundException() {
         try {
             try {
-                throw new ObjectNotFoundException("Hi");
+                throw new ObjectNotFoundException("Hi", Object.class, "some-id");
             } catch (ObjectNotFoundException e) {
                 MiscUtil.throwAsSame(e, "Exception in processing: " + e.getMessage());
             }
