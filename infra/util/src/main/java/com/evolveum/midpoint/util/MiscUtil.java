@@ -740,7 +740,7 @@ public class MiscUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Throwable> void throwException(Throwable exception) throws T {
+    public static <T extends Throwable> void throwException(Throwable exception) throws T {
         throw (T) exception;
     }
 
