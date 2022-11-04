@@ -733,7 +733,7 @@ public class MiscUtil {
         }
     }
 
-    private static String formatExceptionMessage(Throwable t) {
+    public static String formatExceptionMessage(Throwable t) {
         return t != null
                 ? t.getMessage() + " [" + t.getClass().getSimpleName() + "]"
                 : null;
