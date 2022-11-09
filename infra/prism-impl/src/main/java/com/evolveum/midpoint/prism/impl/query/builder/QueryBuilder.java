@@ -7,10 +7,15 @@
 
 package com.evolveum.midpoint.prism.impl.query.builder;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
+
+import com.evolveum.midpoint.util.MiscUtil;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Here is the language structure:
@@ -62,27 +67,73 @@ import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
  */
 public final class QueryBuilder {
 
-    private final Class<? extends Containerable> queryClass;
-    private final PrismContext prismContext;
+    @NotNull private final Class<? extends Containerable> queryClass;
+    @NotNull private final PrismContext prismContext;
+    @Nullable private final QueryItemDefinitionResolver itemDefinitionResolver;
 
-    private QueryBuilder(Class<? extends Containerable> queryClass, PrismContext prismContext) {
+    private QueryBuilder(
+            @NotNull Class<? extends Containerable> queryClass,
+            @NotNull PrismContext prismContext,
+            @Nullable QueryItemDefinitionResolver itemDefinitionResolver) {
         this.queryClass = queryClass;
         this.prismContext = prismContext;
-        ComplexTypeDefinition containerCTD = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(queryClass);
-        if (containerCTD == null) {
-            throw new IllegalArgumentException("Couldn't find definition for complex type " + queryClass);
-        }
+        this.itemDefinitionResolver = itemDefinitionResolver;
     }
 
-    Class<? extends Containerable> getQueryClass() {
+    @NotNull Class<? extends Containerable> getQueryClass() {
         return queryClass;
     }
 
-    public PrismContext getPrismContext() {
+    public @NotNull PrismContext getPrismContext() {
         return prismContext;
     }
 
-    public static S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, PrismContext prismContext) {
-        return R_Filter.create(new QueryBuilder(queryClass, prismContext));
+    public static S_FilterEntryOrEmpty queryFor(
+            Class<? extends Containerable> queryClass,
+            PrismContext prismContext,
+            QueryItemDefinitionResolver itemDefinitionResolver) {
+        return R_Filter.create(
+                new QueryBuilder(queryClass, prismContext, itemDefinitionResolver));
+    }
+
+    public static S_FilterEntryOrEmpty queryFor(
+            Class<? extends Containerable> queryClass,
+            PrismContext prismContext) {
+        return queryFor(queryClass, prismContext, null);
+    }
+
+    <ID extends ItemDefinition<?>> ID findItemDefinition(
+            @NotNull Class<? extends Containerable> currentClass,
+            @NotNull ItemPath itemPath,
+            @NotNull Class<ID> type) {
+        if (itemDefinitionResolver != null) {
+            ItemDefinition<?> definition = itemDefinitionResolver.findItemDefinition(currentClass, itemPath);
+            if (definition != null) {
+                if (type.isAssignableFrom(definition.getClass())) {
+                    //noinspection unchecked
+                    return (ID) definition;
+                } else {
+                    throw new IllegalArgumentException(
+                            String.format("Expected definition of type %s but got %s; for path '%s'",
+                                    type.getSimpleName(), definition.getClass().getSimpleName(), itemPath));
+                }
+            }
+        }
+        return findItemDefinitionInSchemaRegistry(currentClass, itemPath, type);
+    }
+
+    private @NotNull <ID extends ItemDefinition<?>> ID findItemDefinitionInSchemaRegistry(
+            @NotNull Class<? extends Containerable> currentClass,
+            @NotNull ItemPath itemPath,
+            @NotNull Class<ID> type) {
+        ComplexTypeDefinition ctd =
+                MiscUtil.argNonNull(
+                        prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(currentClass),
+                        () -> "Definition for " + currentClass + " couldn't be found");
+        return MiscUtil.argNonNull(
+                ctd.findItemDefinition(itemPath, type),
+                () -> String.format(
+                        "Item path of '%s' in %s does not point to a valid %s",
+                        itemPath, currentClass.getSimpleName(), type.getSimpleName()));
     }
 }

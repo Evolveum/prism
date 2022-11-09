@@ -34,14 +34,14 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
     private final OrFilter currentFilter;
     private final LogicalSymbol lastLogicalSymbol;
     private final boolean isNegated;
-    protected final R_Filter parentFilter;
+    final R_Filter parentFilter;
     private final QName typeRestriction;
     private final ItemPath existsRestriction;
     private final List<ObjectOrdering> orderingList;
     private final Integer offset;
     private final Integer maxSize;
 
-    public R_Filter(QueryBuilder queryBuilder) {
+    private R_Filter(QueryBuilder queryBuilder) {
         this.queryBuilder = queryBuilder;
         this.currentClass = queryBuilder.getQueryClass();
         this.currentFilter = OrFilterImpl.createOr();
@@ -55,10 +55,18 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         this.maxSize = null;
     }
 
-    private R_Filter(QueryBuilder queryBuilder, Class<? extends Containerable> currentClass,
-            OrFilter currentFilter, LogicalSymbol lastLogicalSymbol, boolean isNegated,
-            R_Filter parentFilter, QName typeRestriction, ItemPath existsRestriction,
-            List<ObjectOrdering> orderingList, Integer offset, Integer maxSize) {
+    private R_Filter(
+            QueryBuilder queryBuilder,
+            Class<? extends Containerable> currentClass,
+            OrFilter currentFilter,
+            LogicalSymbol lastLogicalSymbol,
+            boolean isNegated,
+            R_Filter parentFilter,
+            QName typeRestriction,
+            ItemPath existsRestriction,
+            List<ObjectOrdering> orderingList,
+            Integer offset,
+            Integer maxSize) {
         this.queryBuilder = queryBuilder;
         this.currentClass = currentClass;
         this.currentFilter = currentFilter;
@@ -67,6 +75,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         this.parentFilter = parentFilter;
         this.typeRestriction = typeRestriction;
         this.existsRestriction = existsRestriction;
+        //noinspection ReplaceNullCheck
         if (orderingList != null) {
             this.orderingList = orderingList;
         } else {
@@ -113,7 +122,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         } else {
             OrFilter newFilter = appendAtomicFilter(subfilter, isNegated, lastLogicalSymbol);
             return new R_Filter(queryBuilder, currentClass, newFilter, null, false,
-                    parentFilter, typeRestriction, existsRestriction, orderingList, offset, maxSize);
+                    parentFilter, null, null, orderingList, offset, maxSize);
         }
     }
 
@@ -310,8 +319,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
 
     @Override
     public S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation, String... oids) {
-        path = getPrismContext().toUniformPath(path);
-        var refDef = resolveItemPath(path, PrismReferenceDefinition.class);
+        var refDef = queryBuilder.findItemDefinition(currentClass, path, PrismReferenceDefinition.class);
         List<PrismReferenceValue> prismRefValues = new ArrayList<>();
         if (oids != null && oids.length > 0) {
             for (String oid : oids) {
@@ -366,7 +374,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
             throw new IllegalArgumentException("Empty path in exists() filter is not allowed.");
         }
         ItemPath existsPath = ItemPath.create(components);
-        PrismContainerDefinition<?> pcd = resolveItemPath(existsPath, PrismContainerDefinition.class);
+        PrismContainerDefinition<?> pcd = queryBuilder.findItemDefinition(currentClass, existsPath, PrismContainerDefinition.class);
         Class<? extends Containerable> clazz = pcd.getCompileTimeClass();
         if (clazz == null) {
             throw new IllegalArgumentException("Item path of '" + existsPath
@@ -374,21 +382,6 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         }
         return new R_Filter(queryBuilder, clazz, OrFilterImpl.createOr(), null, false,
                 this, null, existsPath, null, null, null);
-    }
-
-    private <ID extends ItemDefinition<?>> ID resolveItemPath(ItemPath itemPath, Class<ID> type) {
-        Validate.notNull(type, "type");
-        ComplexTypeDefinition ctd = queryBuilder.getPrismContext()
-                .getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(currentClass);
-        if (ctd == null) {
-            throw new IllegalArgumentException("Definition for " + currentClass + " couldn't be found.");
-        }
-        ID definition = ctd.findItemDefinition(itemPath, type);
-        if (definition == null) {
-            throw new IllegalArgumentException("Item path of '" + itemPath + "' in "
-                    + currentClass + " does not point to a valid " + type.getSimpleName());
-        }
-        return definition;
     }
 
     @Override
@@ -418,31 +411,35 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
 
     @Override
     public S_ConditionEntry item(ItemPath itemPath) {
-        ItemDefinition<?> itemDefinition = resolveItemPath(
-                getPrismContext().toUniformPath(itemPath), ItemDefinition.class);
+        ItemDefinition<?> itemDefinition =
+                queryBuilder.findItemDefinition(currentClass, itemPath, ItemDefinition.class);
         return item(itemPath, itemDefinition);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public S_ConditionEntry itemWithDef(ItemDefinition itemDefinition, QName... names) {
         ItemPath itemPath = ItemPath.create((Object[]) names);
         return item(itemPath, itemDefinition);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public S_ConditionEntry item(ItemPath itemPath, ItemDefinition itemDefinition) {
         if (itemDefinition != null) {
-            return R_AtomicFilter.create(getPrismContext().toUniformPath(itemPath), itemDefinition, this);
+            return R_AtomicFilter.create(itemPath, itemDefinition, this);
         } else {
             return item(itemPath);
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public S_ConditionEntry item(PrismContainerDefinition containerDefinition, QName... names) {
         return item(containerDefinition, ItemPath.create((Object[]) names));
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public S_ConditionEntry item(PrismContainerDefinition containerDefinition, ItemPath itemPath) {
         ItemDefinition<?> itemDefinition = containerDefinition.findItemDefinition(itemPath);
@@ -592,7 +589,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         private final ItemPath path;
         private final QName relation;
 
-        public RefByEntry(QueryBuilder queryBuilder, R_Filter parent, ComplexTypeDefinition ctd,
+        RefByEntry(QueryBuilder queryBuilder, R_Filter parent, ComplexTypeDefinition ctd,
                 Class<? extends Containerable> type, ItemPath path, QName relation) {
             super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
             this.definition = ctd;
@@ -617,7 +614,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         private final ComplexTypeDefinition definition;
         private final ItemPath path;
 
-        public OwnedByEntry(QueryBuilder queryBuilder, R_Filter parent,
+        OwnedByEntry(QueryBuilder queryBuilder, R_Filter parent,
                 ComplexTypeDefinition ctd, Class<? extends Containerable> type, ItemPath path) {
             super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
             this.definition = ctd;
@@ -642,7 +639,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         private final ItemPath path;
         private final Collection<PrismReferenceValue> values;
 
-        public RefFilterEntry(QueryBuilder queryBuilder, R_Filter parent, PrismReferenceDefinition def,
+        RefFilterEntry(QueryBuilder queryBuilder, R_Filter parent, PrismReferenceDefinition def,
                 Class<? extends Containerable> type, ItemPath path, Collection<PrismReferenceValue> values) {
             super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
             this.definition = def;

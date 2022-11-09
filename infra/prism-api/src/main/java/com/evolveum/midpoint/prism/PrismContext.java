@@ -18,6 +18,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -355,6 +357,8 @@ public interface PrismContext extends ProtectorCreator {
     <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException;
 
     S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass);
+
+    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, QueryItemDefinitionResolver itemDefinitionResolver);
 
     /**
      * Access point to the "old" way of creating deltas. It is generally considered deprecated.

@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Element;
@@ -655,6 +657,12 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass) {
         return QueryBuilder.queryFor(queryClass, this);
+    }
+
+    @Override
+    public S_FilterEntryOrEmpty queryFor(
+            Class<? extends Containerable> queryClass, QueryItemDefinitionResolver itemDefinitionResolver) {
+        return QueryBuilder.queryFor(queryClass, this, itemDefinitionResolver);
     }
 
     @Override
