@@ -9,6 +9,7 @@ package com.evolveum.midpoint.util.exception;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.util.LocalizableMessage;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * Error regarding schema.
@@ -62,4 +63,10 @@ public class SchemaException extends CommonException {
         return propertyName;
     }
 
+    /** Provides additional context information to the exception by creating a wrapping one. */
+    @Experimental
+    public SchemaException wrap(String context) {
+        // Later we may take userFriendlyMessage into account.
+        return new SchemaException(context + ": " + getMessage(), this);
+    }
 }
