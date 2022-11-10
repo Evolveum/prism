@@ -34,14 +34,14 @@ public class SystemException extends RuntimeException {
      *
      * So it is expected _not_ to be caught and treated in any reasonable way.
      */
-    public static SystemException unexpected(@NotNull Exception e) {
-        return new SystemException("Unexpected " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+    public static SystemException unexpected(@NotNull Throwable t) {
+        return new SystemException("Unexpected " + t.getClass().getSimpleName() + ": " + t.getMessage(), t);
     }
 
     /**
-     * A variant of {@link #unexpected(Exception)} that provides a little bit of context.
+     * A variant of {@link #unexpected(Throwable)} that provides a little bit of context.
      */
-    public static SystemException unexpected(@NotNull Exception e, String context) {
-        return new SystemException("Unexpected " + e.getClass().getSimpleName() + " " + context + ": " + e.getMessage(), e);
+    public static SystemException unexpected(@NotNull Throwable t, String context) {
+        return new SystemException("Unexpected " + t.getClass().getSimpleName() + " " + context + ": " + t.getMessage(), t);
     }
 }
