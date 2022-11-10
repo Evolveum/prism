@@ -10,6 +10,8 @@ import com.evolveum.midpoint.util.LocalizableMessage;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * Object with specified {@link #type} and identifier ({@link #oid}) has not been found in the repository or in other
  * relevant context.
@@ -24,8 +26,8 @@ public class ObjectNotFoundException extends CommonException {
     /** Usually a repository OID. But for types other than Prism objects this may be arbitrary identifier. Can be null. */
     private final String oid;
 
-    /** Was this exception somewhat expected? This drives the estimated severity. */
-    private final boolean expected;
+    /** Estimated severity. */
+    private final CommonException.Severity severity;
 
     public ObjectNotFoundException() {
         this((String) null, null, null, null, false);
@@ -59,7 +61,19 @@ public class ObjectNotFoundException extends CommonException {
         super(message, cause);
         this.type = type;
         this.oid = oid;
-        this.expected = expected;
+        this.severity = severityForExpected(expected);
+    }
+
+    /** Consider using {@link #wrap(String)} if the cause is {@link ObjectNotFoundException} itself. */
+    public ObjectNotFoundException(String message, Throwable cause, Class<?> type, String oid, Severity severity) {
+        super(message, cause);
+        this.type = type;
+        this.oid = oid;
+        this.severity = Objects.requireNonNullElse(severity, Severity.FATAL_ERROR);
+    }
+
+    private static Severity severityForExpected(boolean expected) {
+        return expected ? Severity.HANDLED_ERROR : Severity.FATAL_ERROR;
     }
 
     public ObjectNotFoundException(Class<?> type, String oid) {
@@ -76,7 +90,7 @@ public class ObjectNotFoundException extends CommonException {
         super(message, cause);
         this.type = type;
         this.oid = oid;
-        this.expected = expected;
+        this.severity = severityForExpected(expected);
     }
 
     @SuppressWarnings("unused")
@@ -104,7 +118,7 @@ public class ObjectNotFoundException extends CommonException {
         super(cause);
         this.type = null;
         this.oid = null;
-        this.expected = false;
+        this.severity = Severity.FATAL_ERROR;
     }
 
     public String getOid() {
@@ -122,11 +136,11 @@ public class ObjectNotFoundException extends CommonException {
 
     @Override
     public @NotNull CommonException.Severity getSeverity() {
-        return expected ? Severity.HANDLED_ERROR : Severity.FATAL_ERROR;
+        return severity;
     }
 
     /** Provides additional context information to the exception by creating a wrapping one. */
     public ObjectNotFoundException wrap(String context) {
-        return new ObjectNotFoundException(context + ": " + getMessage(), this, type, oid, expected);
+        return new ObjectNotFoundException(context + ": " + getMessage(), this, type, oid, severity);
     }
 }
