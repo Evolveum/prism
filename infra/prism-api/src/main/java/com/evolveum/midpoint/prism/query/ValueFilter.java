@@ -53,6 +53,7 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
 
     void setMatchingRule(@Nullable QName matchingRule);
 
+    /** Returns a live list of values. The filter values can be manipulated through it. TODO - reconsider. */
     @Nullable
     List<V> getValues();
 
