@@ -356,8 +356,13 @@ public interface PrismContext extends ProtectorCreator {
 
     <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException;
 
+    /** Starts a query builder, with the default item definition resolution (i.e. from the system-wide schema). */
     S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass);
 
+    /**
+     * Starts a query builder, with a custom item definition resolver (e.g. for resource-specific queries).
+     * Usually not called directly from a general client code.
+     */
     S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, QueryItemDefinitionResolver itemDefinitionResolver);
 
     /**
