@@ -6,6 +6,9 @@
  */
 package com.evolveum.midpoint.prism.path;
 
+import com.evolveum.midpoint.util.DebugUtil;
+
+import javax.xml.namespace.QName;
 import java.io.Serializable;
 
 /**
@@ -15,6 +18,23 @@ import java.io.Serializable;
 public abstract class ItemPathSegment implements Serializable, Cloneable {
 
     private boolean wildcard = false;
+
+    /**
+     * Returns the string representation of full or simplified (POJO) item path segment.
+     *
+     * Enhance as necessary.
+     *
+     * @see NameItemPathSegment#toString()
+     */
+    public static String toString(Object segment) {
+        if (segment instanceof ItemPathSegment) {
+            return segment.toString();
+        } else if (segment instanceof QName) {
+            return DebugUtil.formatElementName((QName) segment);
+        } else {
+            return String.valueOf(segment);
+        }
+    }
 
     public boolean isWildcard() {
         return wildcard;
