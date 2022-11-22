@@ -12,13 +12,10 @@ import com.evolveum.midpoint.util.LocalizableMessage;
  * Error during evaluation of expression. The expressions are defined by system administrator.
  *
  * @author Radovan Semancik
- *
  */
 public class ExpressionEvaluationException extends CommonException {
 
     private static final long serialVersionUID = 5615419722362251191L;
-
-    private boolean shouldRestartEvaluation;
 
     public ExpressionEvaluationException() {
     }
@@ -50,13 +47,5 @@ public class ExpressionEvaluationException extends CommonException {
     @Override
     public String getErrorTypeMessage() {
         return "Expression error";
-    }
-
-    public boolean isShouldRestartEvaluation() {
-        return shouldRestartEvaluation;
-    }
-
-    public void setShouldRestartEvaluation(boolean shouldRestartEvaluation) {
-        this.shouldRestartEvaluation = shouldRestartEvaluation;
     }
 }
