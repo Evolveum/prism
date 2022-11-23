@@ -729,7 +729,9 @@ public interface ItemPath extends ShortDumpable, Serializable {
     default void shortDump(StringBuilder sb) {
         Iterator<?> iterator = getSegments().iterator();
         while (iterator.hasNext()) {
-            sb.append(iterator.next());
+            sb.append(
+                    ItemPathSegment.toString(
+                            iterator.next()));
             if (iterator.hasNext()) {
                 sb.append("/");
             }
