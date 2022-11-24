@@ -1801,37 +1801,41 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    @NotNull
     @Override
-    public Collection<PrismValue> getAllValues(ItemPath path) {
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
         if (path.isEmpty()) {
-            return singleton(this);
+            return List.of(this);
         }
         Object first = path.first();
         if (ItemPath.isIdentifier(first)) {
-            return singleton(new PrismPropertyValueImpl<>(getIdentifier()));
+            return List.of(new PrismPropertyValueImpl<>(getIdentifier()));
         } else if (ItemPath.isName(first)) {
             //noinspection unchecked
             Item<?, ?> item = findItem(path.firstToName(), Item.class);
             if (item == null) {
-                return emptySet();
+                return List.of();
             } else {
-                ItemPath rest = path.rest();
-                List<? extends PrismValue> values = item.getValues();
-                if (values.isEmpty()) {
-                    return emptySet();
-                } else if (values.size() == 1) {
-                    return values.get(0).getAllValues(rest); // unsafe but we avoid using unmodifiable collection because of performance
-                } else {
-                    List<PrismValue> rv = new ArrayList<>();
-                    for (PrismValue prismValue : values) {
-                        rv.addAll(prismValue.getAllValues(rest));
-                    }
-                    return rv;
-                }
+                return item.getAllValues(path.rest());
             }
         } else {
-            throw new IllegalArgumentException("Item paths does not start with a name nor with '#': " + path);
+            throw new IllegalArgumentException("Item path does not start with a name nor with '#': " + path);
+        }
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        assert !path.isEmpty();
+        Object first = path.first();
+        if (ItemPath.isName(first)) {
+            //noinspection unchecked
+            Item<?, ?> item = findItem(path.firstToName(), Item.class);
+            if (item == null) {
+                return List.of();
+            } else {
+                return item.getAllItems(path.rest());
+            }
+        } else {
+            throw new IllegalArgumentException("Item path does not start with a name: " + path);
         }
     }
 

@@ -25,7 +25,10 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * @author semancik
  *
  */
-public class DummyContainerImpl<C extends Containerable> extends DummyItem<PrismContainerValue<C>, PrismContainerDefinition<C>, PrismContainer<C>> implements PrismContainer<C> {
+public class DummyContainerImpl<C extends Containerable>
+        extends DummyItem<PrismContainerValue<C>, PrismContainerDefinition<C>, PrismContainer<C>>
+        implements PrismContainer<C> {
+
     private static final long serialVersionUID = 1L;
 
     public DummyContainerImpl(PrismContainer<C> realContainer, @NotNull ItemPath path) {

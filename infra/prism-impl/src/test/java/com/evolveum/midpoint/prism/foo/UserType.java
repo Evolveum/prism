@@ -15,6 +15,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 
@@ -118,6 +119,12 @@ public class UserType
 
     @XmlElement(name = "special")
     protected String specialWithInternalizedName; // internal name here differs from the one in serialized form
+
+    public UserType() {
+    }
+
+    public UserType(PrismContext ignored) {
+    }
 
     /**
      * Gets the value of the fullName property.

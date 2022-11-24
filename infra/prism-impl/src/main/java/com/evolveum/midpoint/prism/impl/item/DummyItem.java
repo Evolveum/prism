@@ -283,10 +283,13 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         delegate().freeze();
     }
 
-
-    @NotNull
-    public final Collection<PrismValue> getAllValues(ItemPath path) {
+    @NotNull public final Collection<PrismValue> getAllValues(ItemPath path) {
         return delegate().getAllValues(path);
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        return delegate().getAllItems(path);
     }
 
     public final PrismContext getPrismContext() {

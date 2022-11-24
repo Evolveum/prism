@@ -503,7 +503,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
     }
 
     /**
-     * Returns the value of the first segment if it is a name segment or throws.
+     * Returns the value of the first segment if it is a name segment or throws an exception otherwise.
      */
     @NotNull
     default ItemName firstToName() {

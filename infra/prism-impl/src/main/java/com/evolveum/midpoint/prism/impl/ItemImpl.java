@@ -923,14 +923,22 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> e
         }
     }
 
-    // Path may contain ambiguous segments (e.g. assignment/targetRef when there are more assignments)
-    // Note that the path can contain name segments only (at least for now)
     @Override
-    @NotNull
-    public Collection<PrismValue> getAllValues(ItemPath path) {
-        return values.stream()
-                .flatMap(v -> v.getAllValues(path).stream())
-                .collect(Collectors.toList());
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
+        if (path.isEmpty()) {
+            return Collections.unmodifiableCollection(values);
+        } else {
+            return List.of();  // Overridden for containers
+        }
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        if (path.isEmpty()) {
+            return List.of(this);
+        } else {
+            return List.of(); // Overridden for containers
+        }
     }
 
     @Override

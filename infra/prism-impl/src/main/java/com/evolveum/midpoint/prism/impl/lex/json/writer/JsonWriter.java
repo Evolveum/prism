@@ -14,11 +14,6 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 public class JsonWriter extends AbstractWriter {
 
-    @Deprecated
-    public JsonWriter() {
-        this(null);
-    }
-
     public JsonWriter(@NotNull SchemaRegistry schemaRegistry) {
         super(schemaRegistry);
     }

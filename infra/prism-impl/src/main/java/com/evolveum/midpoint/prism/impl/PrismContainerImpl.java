@@ -49,8 +49,9 @@ import java.util.function.Supplier;
  *
  * @author Radovan Semancik
  */
-public class PrismContainerImpl<C extends Containerable> extends ItemImpl<PrismContainerValue<C>, PrismContainerDefinition<C>> implements
-        PrismContainer<C> {
+public class PrismContainerImpl<C extends Containerable>
+        extends ItemImpl<PrismContainerValue<C>, PrismContainerDefinition<C>>
+        implements PrismContainer<C> {
 
     private static final long serialVersionUID = 5206821250098051028L;
 
@@ -917,5 +918,43 @@ public class PrismContainerImpl<C extends Containerable> extends ItemImpl<PrismC
             }
         });
         return paths;
+    }
+
+    @Override
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
+        if (path.isEmpty()) {
+            return Collections.unmodifiableCollection(values);
+        }
+        if (values.isEmpty()) {
+            return List.of();
+        } else if (values.size() == 1) {
+            return values.get(0).getAllValues(path);
+        } else {
+            List<PrismValue> rv = new ArrayList<>();
+            for (PrismValue prismValue : values) {
+                rv.addAll(
+                        prismValue.getAllValues(path));
+            }
+            return rv;
+        }
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        if (path.isEmpty()) {
+            return List.of(this);
+        }
+        if (values.isEmpty()) {
+            return List.of();
+        } else if (values.size() == 1) {
+            return values.get(0).getAllItems(path);
+        } else {
+            List<Item<?, ?>> rv = new ArrayList<>();
+            for (PrismValue prismValue : values) {
+                rv.addAll(
+                        prismValue.getAllItems(path));
+            }
+            return rv;
+        }
     }
 }
