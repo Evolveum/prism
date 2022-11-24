@@ -368,16 +368,19 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         return definition != null ? definition.getTypeName() : null;
     }
 
-    // Path may contain ambiguous segments (e.g. assignment/targetRef when there are more assignments)
-    // Note that the path can contain name segments only (at least for now)
     @Override
-    @NotNull
-    public Collection<PrismValue> getAllValues(ItemPath path) {
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
         if (path.isEmpty()) {
-            return singleton(this);
+            return List.of(this);
         } else {
-            return emptySet();
+            return List.of(); // Overridden for container values
         }
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        assert !path.isEmpty();
+        return List.of(); // Overridden for container values
     }
 
     @Override

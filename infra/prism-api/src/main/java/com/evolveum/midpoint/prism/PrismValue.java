@@ -210,10 +210,11 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
 
     QName getTypeName();
 
-    // Path may contain ambiguous segments (e.g. assignment/targetRef when there are more assignments)
-    // Note that the path can contain name segments only (at least for now)
-    @NotNull
-    Collection<PrismValue> getAllValues(ItemPath path);
+    /** See {@link Item#getAllValues(ItemPath)}. */
+    @NotNull Collection<PrismValue> getAllValues(ItemPath path);
+
+    /** See {@link Item#getAllItems(ItemPath)}. Here the path is never empty. */
+    @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path);
 
     boolean isRaw();
 

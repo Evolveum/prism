@@ -716,15 +716,35 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
         return item != null ? item.getValues() : Collections.emptySet();
     }
 
-    // Path may contain ambiguous segments (e.g. assignment/targetRef when there are more assignments)
-    // Note that the path can contain name segments only (at least for now)
-    @NotNull
-    Collection<PrismValue> getAllValues(ItemPath path);
+    /**
+     * Returns all values corresponding to the provided path.
+     *
+     * The path may contain ambiguous segments (e.g. `assignment/targetRef` when there are more assignments).
+     *
+     * Limitations:
+     *
+     * . The path can contain only name segments and the "identifier" (`#`) segment - at least for now. No ID segments.
+     * . There are no guarantees about duplicate values. They may or may not be present in the returned collections.
+     * . The caller should not modify the returned collection in any way.
+     *
+     * Note to implementors: Please take care about the performance of this method.
+     */
+    @NotNull Collection<PrismValue> getAllValues(ItemPath path);
 
-    @NotNull
-    static Collection<PrismValue> getAllValues(Item<?, ?> item, ItemPath path) {
+    /** See {@link #getAllValues(ItemPath)}. */
+    static @NotNull Collection<PrismValue> getAllValues(Item<?, ?> item, ItemPath path) {
         return item != null ? item.getAllValues(path) : Collections.emptySet();
     }
+
+    /**
+     * Returns all items corresponding to the provided path.
+     *
+     * This is an analogue to {@link #getAllValues(ItemPath)}.
+     * The only difference here is that `#` segment is not allowed, as it does not correspond to an item.
+     *
+     * (Shouldn't these methods be rather called findAllValues/findAllItems?)
+     */
+    @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path);
 
     // Primarily for testing
     @VisibleForTesting
