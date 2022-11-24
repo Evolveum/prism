@@ -234,7 +234,7 @@ public abstract class ObjectType
 
     @Override
     public void setupContainerValue(PrismContainerValue container) {
-        throw new UnsupportedOperationException("not implemented yet");
+        // just ignored (to allow getRealValue() to work on test prism objects)
     }
 
     public List<ObjectReferenceType> getParentOrgRef() {
