@@ -28,7 +28,7 @@ public class TestJsonParser extends DelegatingLexicalProcessorTest {
     protected LexicalProcessor<String> createLexicalProcessor() {
         return new DelegatingLexicalProcessor(
                 new JsonReader(PrismTestUtil.getSchemaRegistry()),
-                new JsonWriter());
+                new JsonWriter(PrismTestUtil.getSchemaRegistry()));
     }
 
     @Override

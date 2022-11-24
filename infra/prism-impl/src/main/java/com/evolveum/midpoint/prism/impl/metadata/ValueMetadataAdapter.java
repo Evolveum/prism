@@ -8,7 +8,6 @@
 package com.evolveum.midpoint.prism.impl.metadata;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -791,6 +790,11 @@ public class ValueMetadataAdapter implements ValueMetadata {
     @NotNull
     public static Collection<PrismValue> getAllValues(Item<?, ?> item, ItemPath path) {
         return Item.getAllValues(item, path);
+    }
+
+    @Override
+    public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
+        return delegate.getAllItems(path);
     }
 
     @Override
