@@ -8,8 +8,9 @@
 package com.evolveum.midpoint.prism.impl.query.builder;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.delta.builder.DeltaBuilder;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
+import com.evolveum.midpoint.prism.ItemDefinitionResolver;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 
 import com.evolveum.midpoint.util.MiscUtil;
@@ -69,12 +70,12 @@ public final class QueryBuilder {
 
     @NotNull private final Class<? extends Containerable> queryClass;
     @NotNull private final PrismContext prismContext;
-    @Nullable private final QueryItemDefinitionResolver itemDefinitionResolver;
+    @Nullable private final ItemDefinitionResolver itemDefinitionResolver;
 
     private QueryBuilder(
             @NotNull Class<? extends Containerable> queryClass,
             @NotNull PrismContext prismContext,
-            @Nullable QueryItemDefinitionResolver itemDefinitionResolver) {
+            @Nullable ItemDefinitionResolver itemDefinitionResolver) {
         this.queryClass = queryClass;
         this.prismContext = prismContext;
         this.itemDefinitionResolver = itemDefinitionResolver;
@@ -91,7 +92,7 @@ public final class QueryBuilder {
     public static S_FilterEntryOrEmpty queryFor(
             Class<? extends Containerable> queryClass,
             PrismContext prismContext,
-            QueryItemDefinitionResolver itemDefinitionResolver) {
+            ItemDefinitionResolver itemDefinitionResolver) {
         return R_Filter.create(
                 new QueryBuilder(queryClass, prismContext, itemDefinitionResolver));
     }
@@ -102,7 +103,8 @@ public final class QueryBuilder {
         return queryFor(queryClass, prismContext, null);
     }
 
-    <ID extends ItemDefinition<?>> ID findItemDefinition(
+    /** See {@link DeltaBuilder#findItemDefinition(ItemPath, Class)}. */
+    <ID extends ItemDefinition<?>> @NotNull ID findItemDefinition(
             @NotNull Class<? extends Containerable> currentClass,
             @NotNull ItemPath itemPath,
             @NotNull Class<ID> type) {
