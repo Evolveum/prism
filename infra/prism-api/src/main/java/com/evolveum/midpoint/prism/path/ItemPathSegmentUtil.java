@@ -17,8 +17,8 @@ import javax.xml.namespace.QName;
  */
 class ItemPathSegmentUtil {
     public static boolean isName(Object segment) {
-        return segment instanceof NameItemPathSegment || segment instanceof QName
-                && !isSpecialName(segment); // todo remove
+        return segment instanceof NameItemPathSegment
+                || segment instanceof QName && !isSpecialName(segment);
     }
 
     @Contract("_, true -> !null")
@@ -39,8 +39,9 @@ class ItemPathSegmentUtil {
     }
 
     static boolean isSpecial(Object o) {
-        return o instanceof IdentifierPathSegment || o instanceof ReferencePathSegment
-                || isSpecialName(o);    // todo remove
+        return o instanceof IdentifierPathSegment
+                || o instanceof ReferencePathSegment
+                || isSpecialName(o);
     }
 
     public static boolean isSpecialName(Object o) {
