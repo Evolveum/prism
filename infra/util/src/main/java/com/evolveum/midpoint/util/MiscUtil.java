@@ -341,6 +341,10 @@ public class MiscUtil {
         }
     }
 
+    // TODO deprecated, used only in test:
+    //  - use String for cases going through XmlTypeConverter.createXMLGregorianCalendar
+    //  - use other java.time.* options if appropriate
+    @Deprecated
     public static Date asDate(int year, int month, int date, int hrs, int min, int sec) {
         Calendar cal = Calendar.getInstance();
         cal.set(year, month - 1, date, hrs, min, sec);
