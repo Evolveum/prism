@@ -10,6 +10,9 @@ package com.evolveum.midpoint.prism.impl.delta.builder;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.query.builder.QueryBuilder;
+import com.evolveum.midpoint.prism.ItemDefinitionResolver;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -26,32 +29,40 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
- * Grammar:
- * <p>
+ * Grammar
+ *
+ * ----
  * ObjectDelta ::= (ItemDelta)* ( 'OBJECT-DELTA(oid)' | 'ITEM-DELTA' | 'ITEM-DELTAS' )
- * <p>
+ *
  * ItemDelta ::= 'ITEM(...)' ( ( 'ADD-VALUES(...)' 'DELETE-VALUES(...)'? ) |
  * ( 'DELETE-VALUES(...)' 'ADD-VALUES(...)'? ) | 'REPLACE-VALUES(...)' )
- * <p>
+ * ----
+ *
  * When combining DELETE and ADD prefer using DELETE first to match the actual behavior.
- * It is not possible to
  */
 @Experimental
-public class DeltaBuilder<T extends Containerable>
+public class DeltaBuilder<C extends Containerable>
         implements S_ItemEntry, S_MaybeDelete, S_MaybeAdd, S_ValuesEntry {
 
-    private final Class<T> objectClass;
+    private final Class<C> objectClass;
     private final ComplexTypeDefinition containerCTD;
     private final PrismContext prismContext;
+
+    /** Useful if one wants to create definition-ful deltas (e.g. for resource objects). */
+    @Nullable private final ItemDefinitionResolver itemDefinitionResolver;
 
     // BEWARE - although these are final, their content may (and does) vary. Not much clean.
     private final List<ItemDelta<?, ?>> deltas;
     private final ItemDelta currentDelta;
 
-    public DeltaBuilder(Class<T> objectClass, PrismContext prismContext) throws SchemaException {
+    public DeltaBuilder(Class<C> objectClass, PrismContext prismContext, ItemDefinitionResolver itemDefinitionResolver)
+            throws SchemaException {
         this.objectClass = objectClass;
         this.prismContext = prismContext;
+        this.itemDefinitionResolver = itemDefinitionResolver;
         containerCTD = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(this.objectClass);
         if (containerCTD == null) {
             throw new SchemaException("Couldn't find definition for complex type " + this.objectClass);
@@ -60,24 +71,27 @@ public class DeltaBuilder<T extends Containerable>
         currentDelta = null;
     }
 
-    public DeltaBuilder(Class<T> objectClass, ComplexTypeDefinition containerCTD, PrismContext prismContext, List<ItemDelta<?, ?>> deltas, ItemDelta currentDelta) {
+    private DeltaBuilder(
+            Class<C> objectClass,
+            ComplexTypeDefinition containerCTD,
+            PrismContext prismContext,
+            @Nullable ItemDefinitionResolver itemDefinitionResolver,
+            List<ItemDelta<?, ?>> deltas,
+            ItemDelta currentDelta) {
         this.objectClass = objectClass;
         this.containerCTD = containerCTD;
         this.prismContext = prismContext;
+        this.itemDefinitionResolver = itemDefinitionResolver;
         this.deltas = deltas;
         this.currentDelta = currentDelta;
     }
 
-    public Class<T> getObjectClass() {
+    public Class<C> getObjectClass() {
         return objectClass;
     }
 
     public PrismContext getPrismContext() {
         return prismContext;
-    }
-
-    public static <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass, PrismContext prismContext) throws SchemaException {
-        return new DeltaBuilder<>(objectClass, prismContext);
     }
 
     @Override
@@ -92,11 +106,35 @@ public class DeltaBuilder<T extends Containerable>
 
     @Override
     public S_ValuesEntry item(ItemPath path) {
-        ItemDefinition definition = containerCTD.findItemDefinition(path);
+        ItemDefinition<?> definition = findItemDefinition(path, ItemDefinition.class);
         if (definition == null) {
             throw new IllegalArgumentException("Undefined or dynamic path: " + path + " in: " + containerCTD);
         }
         return item(path, definition);
+    }
+
+    /**
+     * See {@link QueryBuilder#findItemDefinition(Class, ItemPath, Class)}.
+     *
+     * For historic reasons, we allow missing definitions here. ({@link #property(ItemPath)} supports them.)
+     */
+    private <ID extends ItemDefinition<?>> @Nullable ID findItemDefinition(
+            @NotNull ItemPath itemPath,
+            @NotNull Class<ID> type) {
+        if (itemDefinitionResolver != null) {
+            ItemDefinition<?> definition = itemDefinitionResolver.findItemDefinition(objectClass, itemPath);
+            if (definition != null) {
+                if (type.isAssignableFrom(definition.getClass())) {
+                    //noinspection unchecked
+                    return (ID) definition;
+                } else {
+                    throw new IllegalArgumentException(
+                            String.format("Expected definition of type %s but got %s; for path '%s'",
+                                    type.getSimpleName(), definition.getClass().getSimpleName(), itemPath));
+                }
+            }
+        }
+        return containerCTD.findItemDefinition(itemPath, type);
     }
 
     @Override
@@ -115,7 +153,7 @@ public class DeltaBuilder<T extends Containerable>
         if (currentDelta != null) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder(objectClass, containerCTD, prismContext, newDeltas, newDelta);
+        return new DeltaBuilder(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     @Override
@@ -130,7 +168,7 @@ public class DeltaBuilder<T extends Containerable>
 
     @Override
     public S_ValuesEntry property(ItemPath path) {
-        PrismPropertyDefinition<T> definition = containerCTD.findPropertyDefinition(path);
+        PrismPropertyDefinition<?> definition = findItemDefinition(path, PrismPropertyDefinition.class);
         return property(path, definition);
     }
 
@@ -141,21 +179,19 @@ public class DeltaBuilder<T extends Containerable>
         if (currentDelta != null) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder(objectClass, containerCTD, prismContext, newDeltas, newDelta);
+        return new DeltaBuilder(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     // TODO fix this after ObjectDelta is changed to accept Containerable
     @Override
     public ObjectDelta asObjectDelta(String oid) {
-        return prismContext.deltaFactory().object().createModifyDelta(oid, getAllDeltas(), (Class) objectClass
-        );
+        return prismContext.deltaFactory().object().createModifyDelta(oid, getAllDeltas(), (Class) objectClass);
     }
 
     @Override
     public List<ObjectDelta<?>> asObjectDeltas(String oid) {
-        return Collections.<ObjectDelta<?>>singletonList(
-                prismContext.deltaFactory().object().createModifyDelta(oid, getAllDeltas(), (Class) objectClass
-                ));
+        return Collections.singletonList(
+                prismContext.deltaFactory().object().createModifyDelta(oid, getAllDeltas(), (Class) objectClass));
     }
 
     @Override

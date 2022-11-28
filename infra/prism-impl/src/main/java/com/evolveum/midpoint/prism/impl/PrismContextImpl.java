@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
+import com.evolveum.midpoint.prism.ItemDefinitionResolver;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -651,7 +651,13 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException {
-        return new DeltaBuilder<>(objectClass, this);
+        return new DeltaBuilder<>(objectClass, this, null);
+    }
+
+    @Override
+    public <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass, ItemDefinitionResolver itemDefinitionResolver)
+            throws SchemaException {
+        return new DeltaBuilder<>(objectClass, this, itemDefinitionResolver);
     }
 
     @Override
@@ -661,7 +667,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public S_FilterEntryOrEmpty queryFor(
-            Class<? extends Containerable> queryClass, QueryItemDefinitionResolver itemDefinitionResolver) {
+            Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver) {
         return QueryBuilder.queryFor(queryClass, this, itemDefinitionResolver);
     }
 

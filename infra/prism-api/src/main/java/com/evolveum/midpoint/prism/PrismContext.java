@@ -18,8 +18,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
-import com.evolveum.midpoint.prism.query.builder.QueryItemDefinitionResolver;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -354,7 +352,15 @@ public interface PrismContext extends ProtectorCreator {
      */
     CanonicalItemPath createCanonicalItemPath(ItemPath itemPath);
 
+    /** Starts a delta builder, with the default item definition resolution (i.e. from the system-wide schema). */
     <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException;
+
+    /**
+     * Starts a delta builder, with a custom item definition resolver (e.g. for resource-specific deltas).
+     * Usually not called directly from a general client code.
+     */
+    <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass, ItemDefinitionResolver itemDefinitionResolver)
+            throws SchemaException;
 
     /** Starts a query builder, with the default item definition resolution (i.e. from the system-wide schema). */
     S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass);
@@ -363,7 +369,7 @@ public interface PrismContext extends ProtectorCreator {
      * Starts a query builder, with a custom item definition resolver (e.g. for resource-specific queries).
      * Usually not called directly from a general client code.
      */
-    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, QueryItemDefinitionResolver itemDefinitionResolver);
+    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver);
 
     /**
      * Access point to the "old" way of creating deltas. It is generally considered deprecated.
