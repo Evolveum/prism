@@ -38,10 +38,9 @@ public interface S_ItemEntry {
     List<ObjectDelta<?>> asObjectDeltas(String oid);
     <O extends Objectable> ObjectDelta<O> asObjectDelta(String oid);
 
-    // TEMPORARY HACK
-    @SuppressWarnings("unchecked")
+    @Deprecated // Now this is the same as `asObjectDelta`
     default <X extends Objectable> ObjectDelta<X> asObjectDeltaCast(String oid) {
-        return (ObjectDelta<X>) asObjectDelta(oid);
+        return asObjectDelta(oid);
     }
 
     ItemDelta<?,?> asItemDelta();
