@@ -6,22 +6,6 @@
  */
 package com.evolveum.midpoint.prism.xml;
 
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.path.UniformItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
-import org.apache.commons.codec.binary.Base64;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.TestOnly;
-import org.w3c.dom.Element;
-
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.datatype.*;
-import javax.xml.namespace.QName;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -32,6 +16,23 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.datatype.*;
+import javax.xml.namespace.QName;
+
+import org.apache.commons.codec.binary.Base64;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.TestOnly;
+import org.w3c.dom.Element;
+
+import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.logging.Trace;
+import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
  * Simple implementation that converts XSD primitive types to Java (and vice
@@ -138,8 +139,16 @@ public class XmlTypeConverter {
 
     public static XMLGregorianCalendar createXMLGregorianCalendar(String string) {
         // We need to make gregorian calendar roundtrip to make sure time zone is included
+        return createXMLGregorianCalendar(parseXmlGregorianCalendar(string));
+    }
 
-        return createXMLGregorianCalendar(getDatatypeFactory().newXMLGregorianCalendar(string));
+    private static XMLGregorianCalendar parseXmlGregorianCalendar(String string) {
+        try {
+            return getDatatypeFactory().newXMLGregorianCalendar(string);
+        } catch (IllegalArgumentException e) {
+            // Original message only contains the value which doesn't suggest how to fix it without any context.
+            throw new IllegalArgumentException("Invalid XML date/time value: " + string, e);
+        }
     }
 
     public static XMLGregorianCalendar createXMLGregorianCalendarFromIso8601(String iso8601string) {
@@ -235,7 +244,6 @@ public class XmlTypeConverter {
         return duration.getSign() == 0;
     }
 
-
     // to be used from within createDuration only (for general use it should be rewritten!!)
     private static BigDecimal toBigDecimal(Number number) {
         if (number instanceof BigDecimal) {
@@ -272,33 +280,33 @@ public class XmlTypeConverter {
         if (stringValue == null) {
             return null;
         }
-        for (T enumConstant: expectedType.getEnumConstants()) {
+        for (T enumConstant : expectedType.getEnumConstants()) {
             Field field;
             try {
-                field = expectedType.getField(((Enum)enumConstant).name());
+                field = expectedType.getField(((Enum) enumConstant).name());
             } catch (SecurityException e) {
-                throw new IllegalArgumentException("Error getting field from '"+enumConstant+"' in "+expectedType, e);
+                throw new IllegalArgumentException("Error getting field from '" + enumConstant + "' in " + expectedType, e);
             } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException("Error getting field from '"+enumConstant+"' in "+expectedType, e);
+                throw new IllegalArgumentException("Error getting field from '" + enumConstant + "' in " + expectedType, e);
             }
             XmlEnumValue annotation = field.getAnnotation(XmlEnumValue.class);
             if (annotation.value().equals(stringValue)) {
                 return enumConstant;
             }
         }
-        throw new IllegalArgumentException("No enum value '"+stringValue+"' in "+expectedType);
+        throw new IllegalArgumentException("No enum value '" + stringValue + "' in " + expectedType);
     }
 
     public static <T> String fromXmlEnum(T enumValue) {
         if (enumValue == null) {
             return null;
         }
-        String fieldName = ((Enum)enumValue).name();
+        String fieldName = ((Enum) enumValue).name();
         Field field;
         try {
             field = enumValue.getClass().getField(fieldName);
         } catch (SecurityException | NoSuchFieldException e) {
-            throw new IllegalArgumentException("Error getting field from "+enumValue, e);
+            throw new IllegalArgumentException("Error getting field from " + enumValue, e);
         }
         XmlEnumValue annotation = field.getAnnotation(XmlEnumValue.class);
         return annotation.value();
@@ -484,7 +492,7 @@ public class XmlTypeConverter {
             // TODO: maybe we will need more intelligent conversion, e.g. to trim spaces, case insensitive, etc.
             return (T) Boolean.valueOf(stringContent);
         } else if (type.equals(GregorianCalendar.class)) {
-            return (T) getDatatypeFactory().newXMLGregorianCalendar(stringContent).toGregorianCalendar();
+            return (T) parseXmlGregorianCalendar(stringContent).toGregorianCalendar();
         } else if (XMLGregorianCalendar.class.isAssignableFrom(type)) {
             // MID-6361: We need to make XmlGregorian - Gregorian - XmlGregorian roundtrip to make sure time zone is includded
             return (T) createXMLGregorianCalendar(stringContent);
@@ -498,7 +506,7 @@ public class XmlTypeConverter {
             throw new UnsupportedOperationException("Path conversion not supported yet");
         } else {
             if (exceptionOnUnknown) {
-                throw new IllegalArgumentException("Unknown conversion type "+type);
+                throw new IllegalArgumentException("Unknown conversion type " + type);
             } else {
                 return null;
             }
@@ -518,7 +526,7 @@ public class XmlTypeConverter {
                 String orig = polyStringElement.getTextContent();
                 return new PolyString(orig);
             } else {
-                throw new SchemaException("Missing element "+PrismConstants.POLYSTRING_ELEMENT_ORIG_QNAME+" in polystring element "+
+                throw new SchemaException("Missing element " + PrismConstants.POLYSTRING_ELEMENT_ORIG_QNAME + " in polystring element " +
                         DOMUtil.getQName(polyStringElement));
             }
         } else {
