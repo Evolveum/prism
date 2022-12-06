@@ -596,7 +596,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     // todo optimize this some day
     @Override
     public PrismReference findReferenceByCompositeObjectElementName(QName elementName) {
-        for (Item item : items.values()) {
+        for (Item<?, ?> item : items.values()) {
             if (item instanceof PrismReference) {
                 PrismReference ref = (PrismReference) item;
                 PrismReferenceDefinition refDef = ref.getDefinition();
