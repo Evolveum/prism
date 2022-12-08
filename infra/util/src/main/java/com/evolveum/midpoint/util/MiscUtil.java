@@ -652,6 +652,12 @@ public class MiscUtil {
         }
     }
 
+    public @NotNull static <T> T extractSingletonRequired(Collection<T> collection) {
+        return extractSingletonRequired(collection,
+                () -> new IllegalArgumentException("Multiple values in " + collection),
+                () -> new IllegalArgumentException("No values"));
+    }
+
     public static <T> T getSingleValue(Collection<T> values, T defaultValue, String contextDescription) {
         if (values.size() == 0) {
             return defaultValue;
