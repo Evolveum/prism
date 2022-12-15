@@ -37,6 +37,8 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import com.evolveum.midpoint.util.exception.*;
+
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,10 +47,6 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
-import com.evolveum.midpoint.util.exception.CommonException;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.SystemException;
-import com.evolveum.midpoint.util.exception.TunnelException;
 
 /**
  * @author semancik
@@ -67,6 +65,7 @@ public class MiscUtil {
         }
     }
 
+    @SafeVarargs
     @NotNull
     public static <T> Collection<T> union(Collection<T>... sets) {
         Set<T> resultSet = new HashSet<>();
@@ -78,6 +77,7 @@ public class MiscUtil {
         return resultSet;
     }
 
+    @SafeVarargs
     public static <T> Collection<? extends T> unionExtends(Collection<? extends T>... sets) {
         Set<T> resultSet = new HashSet<>();
         for (Collection<? extends T> set : sets) {
@@ -1056,7 +1056,7 @@ public class MiscUtil {
         E get();
     }
 
-    public static <T, E extends Exception> T requireNonNull(T value, ExceptionSupplier<E> exceptionSupplier) throws E {
+    public static <T, E extends Throwable> T requireNonNull(T value, ExceptionSupplier<E> exceptionSupplier) throws E {
         if (value != null) {
             return value;
         } else {
@@ -1076,6 +1076,12 @@ public class MiscUtil {
     public static void schemaCheck(boolean condition, String template, Object... arguments) throws SchemaException {
         if (!condition) {
             throw new SchemaException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
+    public static void configCheck(boolean condition, String template, Object... arguments) throws ConfigurationException {
+        if (!condition) {
+            throw new ConfigurationException(Strings.lenientFormat(template, arguments));
         }
     }
 
@@ -1201,5 +1207,27 @@ public class MiscUtil {
     /** Are we running on Windows? (Rough estimate.) */
     public static boolean onWindows() {
         return File.separatorChar == '\\';
+    }
+
+    /**
+     * Returns a concatenation of two collections. (No trying to remove multiplicities.)
+     * Optimizing the operation if one of collections is empty.
+     *
+     * The return value should not be used for modifications!
+     */
+    public static @NotNull <T> Collection<? extends T> concat(
+            @NotNull Collection<? extends T> collection1,
+            @NotNull Collection<? extends T> collection2) {
+        if (collection1.isEmpty()) {
+            return collection2;
+        }
+        if (collection2.isEmpty()) {
+            return collection1;
+        }
+        List<T> concatenation =
+                new ArrayList<>(collection1.size() + collection2.size());
+        concatenation.addAll(collection1);
+        concatenation.addAll(collection2);
+        return concatenation;
     }
 }
