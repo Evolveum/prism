@@ -388,7 +388,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         if (!(file.getName().matches(".*\\.xsd$"))) {
             LOGGER.trace("Skipping registering {}, because it is not schema definition.", file.getAbsolutePath());
         } else {
-            LOGGER.debug("Loading schema from file {}", file);
+            LOGGER.info("Loading schema from file {}", file);
             SchemaDescriptionImpl desc = SchemaDescriptionParser.parseFile(file);
             desc.setPrismSchema(true);
             registerSchemaDescription(desc);
