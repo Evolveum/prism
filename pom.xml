@@ -27,7 +27,7 @@
 
     <groupId>com.evolveum.prism</groupId>
     <artifactId>prism-parent</artifactId>
-    <version>4.4.3p1</version>
+    <version>4.4.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Prism Project</name>
