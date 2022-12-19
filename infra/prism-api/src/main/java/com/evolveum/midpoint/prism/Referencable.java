@@ -7,12 +7,19 @@
 
 package com.evolveum.midpoint.prism;
 
+import javax.xml.namespace.QName;
+
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 
-import javax.xml.namespace.QName;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Katka Valalikova
@@ -29,6 +36,13 @@ public interface Referencable {
 
     static String getOid(Referencable referencable) {
         return referencable != null ? referencable.getOid() : null;
+    }
+
+    static @NotNull Set<String> getOids(@NotNull Collection<? extends Referencable> referencables) {
+        return referencables.stream()
+                .map(ref -> getOid(ref))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
     }
 
     QName getType();
