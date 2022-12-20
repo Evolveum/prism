@@ -20,7 +20,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * @author semancik
  */
 @FunctionalInterface
-public interface DefinitionResolver<PD extends ItemDefinition, ID extends ItemDefinition> {
+public interface DefinitionResolver<PD extends ItemDefinition<?>, ID extends ItemDefinition<?>> {
 
     ID resolve(PD parentDefinition, ItemPath path) throws SchemaException;
 

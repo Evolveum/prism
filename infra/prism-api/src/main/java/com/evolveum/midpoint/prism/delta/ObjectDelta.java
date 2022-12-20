@@ -382,4 +382,12 @@ public interface ObjectDelta<O extends Objectable>
     void clear();
 
     boolean isImmutable();
+
+    /**
+     * Creates {@link PrismValueDeltaSetTriple} (plus/minus/zero sets) for the value of {@link PrismObject}.
+     *
+     * Quite inefficient, as uses object cloning.
+     */
+    @Experimental
+    PrismValueDeltaSetTriple<PrismObjectValue<O>> toDeltaSetTriple(PrismObject<O> objectOld) throws SchemaException;
 }

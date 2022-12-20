@@ -1497,4 +1497,31 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             }
         }
     }
+
+    @Override
+    public PrismValueDeltaSetTriple<PrismObjectValue<O>> toDeltaSetTriple(PrismObject<O> objectOld) throws SchemaException {
+        if (objectOld == null) {
+            if (isAdd()) {
+                PrismValueDeltaSetTriple<PrismObjectValue<O>> triple = new PrismValueDeltaSetTripleImpl<>();
+                triple.addToPlusSet(objectToAdd.getValue());
+                return triple;
+            } else {
+                throw new IllegalArgumentException("Couldn't create delta set triple for null objectOld and delta: " + this);
+            }
+        } else {
+            if (isAdd()) {
+                throw new IllegalArgumentException("Couldn't create delta set triple for " + objectOld + " and delta: " + this);
+            }
+            PrismValueDeltaSetTriple<PrismObjectValue<O>> triple = new PrismValueDeltaSetTripleImpl<>();
+            triple.addToMinusSet(objectOld.getValue().clone());
+            if (isModify()) {
+                PrismObject<O> objectNew = objectOld.clone();
+                applyTo(objectNew);
+                triple.addToPlusSet(objectNew.getValue());
+            } else {
+                assert isDelete();
+            }
+            return triple;
+        }
+    }
 }

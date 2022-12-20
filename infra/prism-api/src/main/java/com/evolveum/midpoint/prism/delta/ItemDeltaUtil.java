@@ -9,12 +9,13 @@ package com.evolveum.midpoint.prism.delta;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.util.CloneUtil;
+import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.ModificationTypeType;
 
 /**
- *
+ * Utilities related to {@link ItemDelta} and {@link ItemDeltaType} objects.
  */
 public class ItemDeltaUtil {
 
@@ -28,17 +29,36 @@ public class ItemDeltaUtil {
         return !itemDeltaType.getValue().isEmpty();
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> PrismValueDeltaSetTriple<IV> toDeltaSetTriple(
-            Item<IV, ID> item,
-            ItemDelta<IV, ID> delta, PrismContext prismContext) throws SchemaException {
-        if (item == null && delta == null) {
+    /** Converts the old state of an item and the delta into "plus/minus/zero" information. */
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> PrismValueDeltaSetTriple<IV> toDeltaSetTriple(
+            Item<IV, ID> itemOld, ItemDelta<IV, ID> delta) throws SchemaException {
+        if (itemOld == null && delta == null) {
             return null;
         } else if (delta == null) {
-            PrismValueDeltaSetTriple<IV> triple = prismContext.deltaFactory().createPrismValueDeltaSetTriple();
-            triple.addAllToZeroSet(PrismValueCollectionsUtil.cloneCollection(item.getValues()));
+            PrismValueDeltaSetTriple<IV> triple = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
+            triple.addAllToZeroSet(PrismValueCollectionsUtil.cloneCollection(itemOld.getValues()));
             return triple;
         } else {
-            return delta.toDeltaSetTriple(item);
+            return delta.toDeltaSetTriple(itemOld);
+        }
+    }
+
+    /**
+     * The {@link #toDeltaSetTriple(Item, ItemDelta)} for whole objects. It is necessary mainly because {@link ObjectDelta}
+     * is not an {@link ItemDelta} (although {@link PrismObject} is an {@link Item}).
+     */
+    @Experimental
+    public static <O extends Objectable> PrismValueDeltaSetTriple<PrismObjectValue<O>> toDeltaSetTriple(
+            PrismObject<O> objectOld, ObjectDelta<O> delta) throws SchemaException {
+        if (objectOld == null && delta == null) {
+            return null;
+        } else if (delta == null) {
+            PrismValueDeltaSetTriple<PrismObjectValue<O>> triple =
+                    PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
+            triple.addToZeroSet(objectOld.getValue().clone());
+            return triple;
+        } else {
+            return delta.toDeltaSetTriple(objectOld);
         }
     }
 

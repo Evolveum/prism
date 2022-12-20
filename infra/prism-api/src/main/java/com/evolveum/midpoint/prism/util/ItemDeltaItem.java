@@ -34,7 +34,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  *
  * @author Radovan Semancik
  */
-public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition> implements DebugDumpable, Serializable {
+public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> implements DebugDumpable, Serializable {
 
     private Item<V,D> itemOld;
     private ItemDelta<V,D> delta;
@@ -240,11 +240,13 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition> implem
         }
     }
 
-    public <IV extends PrismValue, ID extends ItemDefinition> ItemDeltaItem<IV,ID> findIdi(@NotNull ItemPath path) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(@NotNull ItemPath path)
+            throws SchemaException {
         return findIdi(path, null);
     }
 
-    public <IV extends PrismValue, ID extends ItemDefinition> ItemDeltaItem<IV,ID> findIdi(@NotNull ItemPath path, @Nullable DefinitionResolver<D,ID> additionalDefinitionResolver) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(
+            @NotNull ItemPath path, @Nullable DefinitionResolver<D, ID> additionalDefinitionResolver) throws SchemaException {
         if (path.isEmpty()) {
             //noinspection unchecked
             return (ItemDeltaItem<IV,ID>) this;
@@ -348,8 +350,8 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition> implem
         return subIdi;
     }
 
-    public PrismValueDeltaSetTriple<V> toDeltaSetTriple(PrismContext prismContext) throws SchemaException {
-        return ItemDeltaUtil.toDeltaSetTriple(itemOld, delta, prismContext);
+    public PrismValueDeltaSetTriple<V> toDeltaSetTriple() throws SchemaException {
+        return ItemDeltaUtil.toDeltaSetTriple(itemOld, delta);
     }
 
     public boolean isContainer() {

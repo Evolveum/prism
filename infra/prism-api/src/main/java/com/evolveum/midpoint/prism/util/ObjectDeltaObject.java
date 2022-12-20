@@ -153,7 +153,9 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition> ItemDeltaItem<IV,ID> findIdi(@NotNull ItemPath path, @Nullable  DefinitionResolver<PrismObjectDefinition<O>,ID> additionalDefinitionResolver) throws SchemaException {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(
+            @NotNull ItemPath path, @Nullable  DefinitionResolver<PrismObjectDefinition<O>,ID> additionalDefinitionResolver)
+            throws SchemaException {
         Item<IV,ID> subItemOld = null;
         ItemPath subResidualPath = null;
         if (oldObject != null) {
