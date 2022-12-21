@@ -14,7 +14,7 @@ public class Lazy<T> extends AbstractLazy<T> implements java.util.function.Suppl
         super(supplier);
     }
 
-    public static final <T> Lazy<T> from(Supplier<? extends T> supplier) {
+    public static <T> Lazy<T> from(Supplier<? extends T> supplier) {
         return new Lazy<>(supplier);
     }
 

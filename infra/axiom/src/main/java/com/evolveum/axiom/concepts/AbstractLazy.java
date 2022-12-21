@@ -25,6 +25,14 @@ public abstract class AbstractLazy<T> {
         return (T) val;
     }
 
+    public void set(Object value) {
+        this.value = value;
+    }
+
+    public boolean isUnwrapped() {
+        return !(value instanceof Lazy.Supplier<?>);
+    }
+
     @Override
     public String toString() {
         return String.valueOf(value);
