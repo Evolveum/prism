@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,21 +7,19 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.path.ItemName;
-
-import com.evolveum.midpoint.prism.polystring.PolyString;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-import java.util.function.Predicate;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 
 /**
  * Selects a value from multivalued item (property, container, reference). A typical use is to select
  * among PrismContainerValues by checking some sub-item ("key") value.
  *
  * TODO Find a better name. "ValueMatcher" is already used in a different context.
- *
  */
 @FunctionalInterface
 public interface ValueSelector<V extends PrismValue> extends Predicate<V> {
@@ -44,5 +42,9 @@ public interface ValueSelector<V extends PrismValue> extends Predicate<V> {
 
     static <T> ValueSelector<PrismPropertyValue<T>> origEquals(@NotNull T expectedValue) {
         return ppv -> ppv != null && expectedValue.equals(PolyString.getOrig((PolyString) ppv.getRealValue()));
+    }
+
+    static ValueSelector<PrismReferenceValue> refEquals(@NotNull String expectedTargetOid) {
+        return ppv -> ppv != null && expectedTargetOid.equals(ppv.getOid());
     }
 }
