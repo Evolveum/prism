@@ -18,6 +18,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.prism.query.builder.S_FilterEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -350,7 +351,16 @@ public interface PrismContext extends ProtectorCreator {
 
     <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException;
 
-    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass);
+    /**
+     * Starts a query builder with the goal of creating a query targeted at given object or container type.
+     *
+     * @param type Type of object or container values queried. This information is needed to resolve the definitions
+     *             of items (properties, references, containers) used in query formulation. It is _not_ meant to restrict
+     *             the objects returned when the query is eventually applied. If you want to restrict the type of objects
+     *             returned right in the query (and not just when making e.g. the `searchObjects` call), please consider
+     *             using {@link S_FilterEntry#type(Class)} or {@link S_FilterEntry#type(QName)}.
+     */
+    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> type);
 
     /**
      * Access point to the "old" way of creating deltas. It is generally considered deprecated.
