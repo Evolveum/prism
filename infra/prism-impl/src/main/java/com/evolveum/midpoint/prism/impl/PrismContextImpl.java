@@ -661,14 +661,14 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
-    public S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass) {
-        return QueryBuilder.queryFor(queryClass, this);
+    public S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> type) {
+        return QueryBuilder.queryFor(type, this);
     }
 
     @Override
     public S_FilterEntryOrEmpty queryFor(
-            Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver) {
-        return QueryBuilder.queryFor(queryClass, this, itemDefinitionResolver);
+            Class<? extends Containerable> type, ItemDefinitionResolver itemDefinitionResolver) {
+        return QueryBuilder.queryFor(type, this, itemDefinitionResolver);
     }
 
     @Override

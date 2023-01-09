@@ -18,6 +18,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.prism.query.builder.S_FilterEntry;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -362,14 +364,25 @@ public interface PrismContext extends ProtectorCreator {
     <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass, ItemDefinitionResolver itemDefinitionResolver)
             throws SchemaException;
 
-    /** Starts a query builder, with the default item definition resolution (i.e. from the system-wide schema). */
-    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass);
+    /**
+     * Starts a query builder with the goal of creating a query targeted at given object or container type.
+     * The resolution of items (properties, references, containers) used in the query formulation is done by the default process,
+     * i.e. from the system-wide schema.
+     *
+     * @param type The type of object or container values queried. This information is used to resolve the definitions of items
+     * used in query formulation. It is _not_ meant to restrict the objects returned when the query is eventually applied.
+     * If you want to restrict the type of objects returned right in the query (and not just when making e.g. the `searchObjects`
+     * call), please consider using {@link S_FilterEntry#type(Class)} or {@link S_FilterEntry#type(QName)}.
+     */
+    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> type);
 
     /**
      * Starts a query builder, with a custom item definition resolver (e.g. for resource-specific queries).
      * Usually not called directly from a general client code.
+     *
+     * @see #queryFor(Class)
      */
-    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver);
+    S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> type, ItemDefinitionResolver itemDefinitionResolver);
 
     /**
      * Access point to the "old" way of creating deltas. It is generally considered deprecated.
