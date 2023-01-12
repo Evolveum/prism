@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Evolveum and contributors
+ * Copyright (C) 2022-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -124,14 +124,12 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
-        DebugUtil.indentDebugDump(sb, indent);
-        sb.append("ReferencedBy: type: ");
-        sb.append(type.getTypeName().getLocalPart());
-        sb.append(" path: ");
-        sb.append(path);
-        sb.append('\n');
+        DebugUtil.debugDumpLabelLn(sb, "REFERENCED-BY", indent);
+        DebugUtil.debugDumpWithLabelLn(sb, "TYPE", type.getTypeName().getLocalPart(), indent + 1);
+        DebugUtil.debugDumpWithLabel(sb, "PATH", path.toString(), indent + 1);
         if (filter != null) {
-            sb.append(filter.debugDump(indent + 1));
+            sb.append('\n');
+            DebugUtil.debugDumpWithLabel(sb, "Reference owner filter", filter, indent + 1);
         }
         return sb.toString();
     }

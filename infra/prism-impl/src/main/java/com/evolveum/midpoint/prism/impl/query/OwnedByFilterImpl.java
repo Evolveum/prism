@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Evolveum and contributors
+ * Copyright (C) 2022-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -116,14 +116,12 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
-        DebugUtil.indentDebugDump(sb, indent);
-        sb.append("OwnedBy: type: ");
-        sb.append(type.getTypeName().getLocalPart());
-        sb.append(" path: ");
-        sb.append(path);
-        sb.append('\n');
+        DebugUtil.debugDumpLabelLn(sb, "OWNED-BY", indent);
+        DebugUtil.debugDumpWithLabelLn(sb, "TYPE", type.getTypeName().getLocalPart(), indent + 1);
+        DebugUtil.debugDumpWithLabel(sb, "PATH", path != null ? path.toString() : "", indent + 1);
         if (filter != null) {
-            sb.append(filter.debugDump(indent + 1));
+            sb.append("\n");
+            DebugUtil.debugDumpWithLabel(sb, "Owner filter", filter, indent + 1);
         }
         return sb.toString();
     }

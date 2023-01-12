@@ -294,8 +294,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
-        DebugUtil.indentDebugDump(sb, indent);
-        sb.append(getFilterName()).append(":");
+        DebugUtil.debugDumpLabel(sb, getFilterName(), indent);
         debugDump(indent, sb);
         return sb.toString();
     }
