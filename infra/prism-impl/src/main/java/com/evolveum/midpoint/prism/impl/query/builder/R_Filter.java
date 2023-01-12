@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -20,14 +20,12 @@ import com.evolveum.midpoint.prism.impl.query.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.*;
-import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
- * EXPERIMENTAL IMPLEMENTATION.
+ * Implementation of the top-level of the Query fluent API grammar (see {@link QueryBuilder}).
+ * See {@link R_AtomicFilter} for low-level filters.
  */
-// FIXME: Add better names
-@Experimental
-public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
+public class R_Filter implements S_FilterEntryOrEmpty {
 
     private final QueryBuilder queryBuilder;
     private final Class<? extends Containerable> currentClass; // object we are working on (changes on Exists filter)
@@ -416,16 +414,14 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         return item(itemPath, itemDefinition);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public S_ConditionEntry itemWithDef(ItemDefinition itemDefinition, QName... names) {
+    public S_ConditionEntry itemWithDef(ItemDefinition<?> itemDefinition, QName... names) {
         ItemPath itemPath = ItemPath.create((Object[]) names);
         return item(itemPath, itemDefinition);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public S_ConditionEntry item(ItemPath itemPath, ItemDefinition itemDefinition) {
+    public S_ConditionEntry item(ItemPath itemPath, ItemDefinition<?> itemDefinition) {
         if (itemDefinition != null) {
             return R_AtomicFilter.create(itemPath, itemDefinition, this);
         } else {
@@ -433,15 +429,13 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public S_ConditionEntry item(PrismContainerDefinition containerDefinition, QName... names) {
+    public S_ConditionEntry item(PrismContainerDefinition<?> containerDefinition, QName... names) {
         return item(containerDefinition, ItemPath.create((Object[]) names));
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public S_ConditionEntry item(PrismContainerDefinition containerDefinition, ItemPath itemPath) {
+    public S_ConditionEntry item(PrismContainerDefinition<?> containerDefinition, ItemPath itemPath) {
         ItemDefinition<?> itemDefinition = containerDefinition.findItemDefinition(itemPath);
         if (itemDefinition == null) {
             throw new IllegalArgumentException("No definition of " + itemPath + " in " + containerDefinition);
@@ -583,7 +577,40 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         return queryBuilder.getPrismContext();
     }
 
-    private static class RefByEntry extends R_Filter {
+    /**
+     * This helper {@link R_Filter} subclass makes filters containing optional inner filters more convenient.
+     * For example, {@link S_FilterEntry#ref(ItemPath)}, {@link S_FilterEntry#ownedBy(Class)}
+     * and {@link S_FilterEntry#referencedBy(Class, ItemPath)} now can be followed by {@link #and()}, {@link #or()}
+     * or {@link #build()} immediately without the need to use chain of {@link #block()} and {@link #endBlock()}.
+     *
+     * @since 4.7
+     */
+    private static class R_FilterBlockAutoClose extends R_Filter {
+
+        // TODO do we want to rename it and also add definition+path here?
+        // TODO this currently does not help with EXISTS filter
+
+        private R_FilterBlockAutoClose(QueryBuilder queryBuilder, Class<? extends Containerable> type, R_Filter parent) {
+            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+        }
+
+        @Override
+        public ObjectQuery build() {
+            return block().endBlock().build();
+        }
+
+        @Override
+        public S_FilterEntry and() {
+            return block().endBlock().and();
+        }
+
+        @Override
+        public S_FilterEntry or() {
+            return block().endBlock().or();
+        }
+    }
+
+    private static class RefByEntry extends R_FilterBlockAutoClose {
 
         private final ComplexTypeDefinition definition;
         private final ItemPath path;
@@ -591,7 +618,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
 
         RefByEntry(QueryBuilder queryBuilder, R_Filter parent, ComplexTypeDefinition ctd,
                 Class<? extends Containerable> type, ItemPath path, QName relation) {
-            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            super(queryBuilder, type, parent);
             this.definition = ctd;
             this.path = path;
             this.relation = relation;
@@ -600,7 +627,8 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         @Override
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = ReferencedByFilterImpl.create(definition, path, subfilter, relation);
-            return this.parentFilter.addSubfilter(filter);
+            //noinspection DataFlowIssue - parent filter surely is not null
+            return parentFilter.addSubfilter(filter);
         }
 
         @Override
@@ -609,14 +637,14 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         }
     }
 
-    private static class OwnedByEntry extends R_Filter {
+    private static class OwnedByEntry extends R_FilterBlockAutoClose {
 
         private final ComplexTypeDefinition definition;
         private final ItemPath path;
 
         OwnedByEntry(QueryBuilder queryBuilder, R_Filter parent,
                 ComplexTypeDefinition ctd, Class<? extends Containerable> type, ItemPath path) {
-            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            super(queryBuilder, type, parent);
             this.definition = ctd;
             this.path = path;
         }
@@ -624,7 +652,8 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         @Override
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = OwnedByFilterImpl.create(definition, path, subfilter);
-            return this.parentFilter.addSubfilter(filter);
+            //noinspection DataFlowIssue - parent filter surely is not null
+            return parentFilter.addSubfilter(filter);
         }
 
         @Override
@@ -633,7 +662,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         }
     }
 
-    private static class RefFilterEntry extends R_Filter {
+    private static class RefFilterEntry extends R_FilterBlockAutoClose {
 
         private final PrismReferenceDefinition definition;
         private final ItemPath path;
@@ -641,7 +670,7 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
 
         RefFilterEntry(QueryBuilder queryBuilder, R_Filter parent, PrismReferenceDefinition def,
                 Class<? extends Containerable> type, ItemPath path, Collection<PrismReferenceValue> values) {
-            super(queryBuilder, type, OrFilterImpl.createOr(), null, false, parent, null, null, null, null, null);
+            super(queryBuilder, type, parent);
             this.definition = def;
             this.path = path;
             this.values = values;
@@ -651,7 +680,8 @@ public class R_Filter implements S_FilterEntryOrEmpty, S_FilterExit {
         R_Filter addSubfilter(ObjectFilter subfilter) {
             var filter = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition, values);
             filter.setFilter(subfilter);
-            return this.parentFilter.addSubfilter(filter);
+            //noinspection DataFlowIssue - parent filter surely is not null
+            return parentFilter.addSubfilter(filter);
         }
 
         @Override
