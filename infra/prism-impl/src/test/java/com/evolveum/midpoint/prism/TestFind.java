@@ -56,7 +56,7 @@ public class TestFind extends AbstractPrismTest {
         PrismProperty<PolyString> nameProperty = findProperty(user, path);
 
         // THEN
-        PrismInternalTestUtil.asssertJackPolyName(nameProperty, user, true);
+        PrismInternalTestUtil.assertJackPolyName(nameProperty, user, true);
         assertSame("QName found something other", nameProperty, user.findProperty(UserType.F_POLY_NAME));
     }
 

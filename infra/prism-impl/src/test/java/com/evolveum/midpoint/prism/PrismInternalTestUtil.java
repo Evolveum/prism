@@ -1,16 +1,14 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism;
 
+import static org.testng.AssertJUnit.*;
+
 import static com.evolveum.midpoint.prism.util.PrismTestUtil.getPrismContext;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertNull;
-import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -328,7 +326,6 @@ public class PrismInternalTestUtil implements PrismContextFactory {
 
     public static void assertUserJackContent(PrismObject<UserType> user, boolean expectRawInConstructions,
             boolean expectFullPolyName, boolean withIncomplete) throws SchemaException {
-        PrismContext prismContext = user.getPrismContext();
         assertEquals("Wrong oid", USER_JACK_OID, user.getOid());
         assertEquals("Wrong version", "42", user.getVersion());
         PrismAsserts.assertObjectDefinition(user.getDefinition(), USER_QNAME, USER_TYPE_QNAME, UserType.class);
@@ -346,7 +343,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         assertPropertyValue(user, "special", "got it!");
         assertPropertyDefinition(user, "special", DOMUtil.XSD_STRING, 0, 1);
 
-        asssertJackPolyName(user, expectFullPolyName);
+        assertJackPolyName(user, expectFullPolyName);
         assertPropertyDefinition(user, "polyName", PolyStringType.COMPLEX_TYPE, 0, 1);
 
         ItemPath enabledPath = USER_ENABLED_PATH;
@@ -434,13 +431,13 @@ public class PrismInternalTestUtil implements PrismContextFactory {
 
     }
 
-    private static void asssertJackPolyName(PrismObject<UserType> user, boolean expectFullPolyName) {
+    private static void assertJackPolyName(PrismObject<UserType> user, boolean expectFullPolyName) {
         ItemName propQName = new ItemName(NS_FOO, "polyName");
         PrismProperty<PolyString> polyNameProp = user.findProperty(propQName);
-        asssertJackPolyName(polyNameProp, user, expectFullPolyName);
+        assertJackPolyName(polyNameProp, user, expectFullPolyName);
     }
 
-    public static void asssertJackPolyName(PrismProperty<PolyString> polyNameProp, PrismObject<UserType> user, boolean expectFullPolyName) {
+    public static void assertJackPolyName(PrismProperty<PolyString> polyNameProp, PrismObject<UserType> user, boolean expectFullPolyName) {
         assertNotNull("No polyName in "+user, polyNameProp);
         PolyString polyName = polyNameProp.getAnyRealValue();
         assertEquals("Wrong polyName.orig in "+user, "Džek Sperou", polyName.getOrig());
@@ -472,11 +469,10 @@ public class PrismInternalTestUtil implements PrismContextFactory {
     }
 
     private static void assertUserJackExtension(PrismObject<UserType> user, boolean withIncomplete) {
-        PrismContext prismContext = user.getPrismContext();
         PrismContainer<?> extension = user.getExtension();
         //assertContainerDefinition(extension, "extension", USER_EXTENSION_QNAME, 0, 1);
         PrismContainerValue<?> extensionValue = extension.getValue();
-        assertTrue("Extension parent", extensionValue.getParent() == extension);
+        assertSame("Extension parent", extensionValue.getParent(), extension);
         assertNull("Extension ID", extensionValue.getId());
         PrismAsserts.assertPropertyValue(extension, EXTENSION_BAR_ELEMENT, "BAR");
         PrismAsserts.assertPropertyValue(extension, EXTENSION_NUM_ELEMENT, 42);
