@@ -1,19 +1,22 @@
 /*
- * Copyright (C) 2020-2021 Evolveum and contributors
+ * Copyright (C) 2020-2022 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-
 import javax.xml.namespace.QName;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.axiom.concepts.Builder;
@@ -25,15 +28,8 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
-import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
-
 
 public class QueryWriter implements Builder<PrismQuerySerialization> {
-
-    private static final String PATH_SELF = ".";
 
     private static final String MATCHING_RULE_NS = PrismQueryLanguageParserImpl.MATCHING_RULE_NS;
 
@@ -44,15 +40,13 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
     }
 
     public void writeSelf() {
-        target.emitWord(PATH_SELF);
+        target.emitWord(ItemPath.SELF_PATH_SYMBOL);
     }
-
 
     void writePath(String string) {
         target.emitSpace();
         target.emit(string);
     }
-
 
     public void writePath(ItemPath path) {
         ItemPathSerialization pathSer = ItemPathSerialization.serialize(UniformItemPath.from(path), target.context());
@@ -62,7 +56,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
     }
 
     public void writeMatchingRule(@Nullable QName matchingRule) {
-        if(matchingRule == null) {
+        if (matchingRule == null) {
             return;
         }
         target.emit("[");
@@ -101,7 +95,6 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
         writeList(values, this::writeValue);
     }
 
-
     public void startNestedFilter() {
         target.emitSpace();
         target.emitSeparator("(");
@@ -126,7 +119,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
             target.emit(rawValue.toString());
             return;
         }
-        // FIXME: Common utility should also detect enums, ideally staticly (not programaticly)
+        // FIXME: Common utility should also detect enums, ideally statically (not programmatically)
         writeString(rawValue);
     }
 
@@ -145,7 +138,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
 
     private void emitQName(QName filter, String additionalDefaultNs) {
         String prefix = resolvePrefix(filter, additionalDefaultNs);
-        if(!Strings.isNullOrEmpty(prefix)) {
+        if (!Strings.isNullOrEmpty(prefix)) {
             target.emit(prefix);
             target.emit(":");
         }
@@ -159,7 +152,6 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
         return target.prefixFor(name.getNamespaceURI(), name.getPrefix());
     }
 
-
     private void writeFilter(ObjectFilter filter, QueryWriter output) throws NotSupportedException {
         FilterSerializers.write(filter, output);
     }
@@ -170,7 +162,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
 
     private <T> void writeList(Collection<? extends T> values, Consumer<? super T> writer) {
         target.emitSpace();
-        if(values.size() == 1) {
+        if (values.size() == 1) {
             writer.accept(values.iterator().next());
         } else {
             target.emitSeparator("(");
@@ -224,6 +216,5 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
         }
 
     }
-
 
 }

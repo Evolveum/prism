@@ -1,10 +1,9 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism;
 
 import java.io.File;
@@ -13,10 +12,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,17 +24,14 @@ import com.evolveum.midpoint.prism.crypto.ProtectorCreator;
 import com.evolveum.midpoint.prism.delta.DeltaFactory;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.delta.builder.S_ItemEntry;
+import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.marshaller.ParsingMigrator;
 import com.evolveum.midpoint.prism.metadata.ValueMetadataFactory;
 import com.evolveum.midpoint.prism.path.CanonicalItemPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
-import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
-import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
-import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
-import com.evolveum.midpoint.prism.query.QueryConverter;
-import com.evolveum.midpoint.prism.query.QueryFactory;
+import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.schema.SchemaFactory;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
@@ -166,7 +159,7 @@ public interface PrismContext extends ProtectorCreator {
 
     void adopt(Containerable containerable) throws SchemaException;
 
-    void adopt(PrismContainerValue value) throws SchemaException;
+    void adopt(PrismContainerValue<?> value) throws SchemaException;
 
     <T extends Objectable> void adopt(ObjectDelta<T> delta) throws SchemaException;
 
@@ -372,6 +365,18 @@ public interface PrismContext extends ProtectorCreator {
     S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver);
 
     /**
+     * Starts a query builder for reference search, with the default item definition resolution (i.e. from the system-wide schema).
+     * After this call the mandatory owned-by filter based on the provided parameters is initiated.
+     * The next step can be:
+     *
+     * * writing a filter (e.g. item+condition call) which will be interpreted as a nested owner filter;
+     * * starting a block, which will, again, specify the nested owner filter;
+     * * continuing with other filter using and/or (which finishes the owned-by filter) - unless a logical filter, the next filter should be a ref filter;
+     * * or calling {@link S_FilterEntryOrEmpty#build()} to finish the query builder.
+     */
+    S_FilterEntryOrEmpty queryForReferenceOwnedBy(Class<? extends Containerable> ownerClass, ItemPath referencePath);
+
+    /**
      * Access point to the "old" way of creating deltas. It is generally considered deprecated.
      * DeltaBuilder (accessed via deltaFor method) should be used instead.
      * <p>
@@ -418,7 +423,6 @@ public interface PrismContext extends ProtectorCreator {
 
     @Experimental
     EquivalenceStrategy getProvenanceEquivalenceStrategy();
-
 
     default PrismQueryLanguageParser createQueryParser() {
         return createQueryParser(Collections.emptyMap());

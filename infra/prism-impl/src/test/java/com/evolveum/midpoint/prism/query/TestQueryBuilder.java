@@ -625,6 +625,47 @@ public class TestQueryBuilder extends AbstractPrismTest {
         compare(actual, expected);
     }
 
+    @Test
+    public void test500ReferenceSearchFilterSimple() {
+        when("reference search is created without further conditions");
+        ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .build();
+
+        then("filter is built without error and is equal to simple owned by filter");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF, null));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test501ReferenceSearchFilterWithRefFilter() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+        QName someRelation = QName.valueOf("some-relation");
+
+        when("reference search is created with owned by condition and ref filter");
+        ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .id("user-oid") // filtering the owner of the searched reference
+                .and() // IMPORTANT to get out of ownedBy filter!
+                .ref(ItemPath.EMPTY_PATH, ACCOUNT_TYPE_QNAME, someRelation)
+                .item(AccountType.F_NAME).eq("account-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF,
+                                InOidFilterImpl.createInOid("user-oid")),
+                        RefFilterImpl.createReferenceEqual(ItemPath.SELF_PATH, accountRefDef,
+                                List.of(getPrismContext().itemFactory().createReferenceValue(null, ACCOUNT_TYPE_QNAME)
+                                        .relation(someRelation)),
+                                EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "account-name"))));
+        compare(actual, expected);
+    }
+
     protected void compare(ObjectQuery actual, ObjectQuery expected) {
         String exp = expected.debugDump();
         String act = actual.debugDump();
