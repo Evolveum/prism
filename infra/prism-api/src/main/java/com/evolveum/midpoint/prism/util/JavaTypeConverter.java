@@ -173,6 +173,16 @@ public class JavaTypeConverter {
         if (expectedType == BigDecimal.class && rawValue instanceof String) {
             return new BigDecimal(((String) rawValue).trim());
         }
+        if (expectedType == BigDecimal.class && rawValue instanceof Integer) {
+            return BigDecimal.valueOf((int) rawValue);
+        }
+        if (expectedType == BigDecimal.class && rawValue instanceof Long) {
+            return BigDecimal.valueOf((long) rawValue);
+        }
+        if (expectedType == BigDecimal.class && rawValue instanceof Number) {
+            // https://stackoverflow.com/questions/16216248/convert-java-number-to-bigdecimal-best-way
+            return new BigDecimal(rawValue.toString());
+        }
         if (expectedType == String.class && rawValue instanceof BigDecimal) {
             return rawValue.toString().trim();
         }

@@ -14,6 +14,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -1163,6 +1164,10 @@ public class MiscUtil {
         } else {
             return Arrays.asList(values);
         }
+    }
+
+    public static BigDecimal or0(BigDecimal value) {
+        return Objects.requireNonNullElse(value, BigDecimal.ZERO);
     }
 
     public static int or0(Integer value) {
