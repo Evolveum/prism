@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.query.builder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.Validate;
@@ -62,11 +63,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
         this.parentFilter = parentFilter;
         this.typeRestriction = typeRestriction;
         this.existsRestriction = existsRestriction;
-        if (orderingList != null) {
-            this.orderingList = orderingList;
-        } else {
-            this.orderingList = new ArrayList<>();
-        }
+        this.orderingList = Objects.requireNonNullElseGet(orderingList, ArrayList::new);
         this.offset = offset;
         this.maxSize = maxSize;
     }
@@ -351,15 +348,22 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     private PrismReferenceDefinition determineReferenceDefinition(ItemPath path) {
         PrismReferenceDefinition refDef;
         if (referenceSearchDefinition != null) {
-            if (ItemPath.isEmpty(path) || path.equivalent(ItemPath.SELF_PATH)) {
-                refDef = referenceSearchDefinition;
-            } else {
-                throw new IllegalArgumentException(
-                        "Reference search only supports REF filter with SELF path (.) on the top level."
-                                + " You probably need to use target filter nested inside REF filter.");
-            }
+            refDef = checkSelfPathAndGetReferenceSearchDefinition(path);
         } else {
             refDef = queryBuilder.findItemDefinition(getCurrentClass(), path, PrismReferenceDefinition.class);
+        }
+        return refDef;
+    }
+
+    private PrismReferenceDefinition checkSelfPathAndGetReferenceSearchDefinition(ItemPath path) {
+        PrismReferenceDefinition refDef;
+        if (ItemPath.isEmpty(path) || path.equivalent(ItemPath.SELF_PATH)) {
+            refDef = referenceSearchDefinition;
+        } else {
+            throw new IllegalArgumentException(
+                    "Reference search only supports REF filter with SELF path (.) on the top level."
+                            + " You probably need to use target filter nested inside REF filter."
+                            + " Used item path: " + path);
         }
         return refDef;
     }
@@ -439,8 +443,14 @@ public class R_Filter implements S_FilterEntryOrEmpty {
 
     @Override
     public S_ConditionEntry item(ItemPath itemPath) {
-        ItemDefinition<?> itemDefinition =
-                queryBuilder.findItemDefinition(getCurrentClass(), itemPath, ItemDefinition.class);
+        ItemDefinition<?> itemDefinition;
+        if (referenceSearchDefinition != null) {
+            itemDefinition = checkSelfPathAndGetReferenceSearchDefinition(itemPath);
+            itemPath = ItemPath.SELF_PATH; // just in case empty path was used
+        } else {
+            itemDefinition = queryBuilder.findItemDefinition(
+                    getCurrentClass(), itemPath, ItemDefinition.class);
+        }
         return item(itemPath, itemDefinition);
     }
 
