@@ -61,6 +61,11 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition>
 
     D getDefinition();
 
+    default boolean isOperational() {
+        D definition = getDefinition();
+        return definition != null && definition.isOperational();
+    }
+
     void setDefinition(D definition);
 
     @Override
