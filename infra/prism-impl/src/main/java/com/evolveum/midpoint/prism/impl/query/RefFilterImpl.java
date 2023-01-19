@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -30,14 +30,14 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     private static final long serialVersionUID = 1L;
 
     /**
-     * By default null OID means to match any value (no additional condition).
+     * By default, null OID means to match any value (no additional condition).
      * Value {@code false} means to match only refs where OID is {@code null}.
      * False is ignored by legacy SQL repo, but supported by Sqale repo.
      */
     private boolean oidNullAsAny = true;
 
     /**
-     * By default null target type means to match any value (no additional condition).
+     * By default, null target type means to match any value (no additional condition).
      * Value {@code false} means to match only refs where type is {@code null}.
      * False is ignored by legacy SQL repo, but supported by Sqale repo.
      */
@@ -54,21 +54,33 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         this.filter = filter;
     }
 
-    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, Collection<PrismReferenceValue> values,
+    public static RefFilter createReferenceEqual(
+            ItemPath path,
+            PrismReferenceDefinition definition,
+            Collection<PrismReferenceValue> values,
             ObjectFilter targetFilter) {
         return new RefFilterImpl(path, definition, values != null ? new ArrayList<>(values) : null, null, targetFilter);
     }
 
-    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, ExpressionWrapper expression,
+    public static RefFilter createReferenceEqual(
+            ItemPath path,
+            PrismReferenceDefinition definition,
+            ExpressionWrapper expression,
             ObjectFilter targetFilter) {
         return new RefFilterImpl(path, definition, null, expression, targetFilter);
     }
 
-    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, Collection<PrismReferenceValue> values) {
+    public static RefFilter createReferenceEqual(
+            ItemPath path,
+            PrismReferenceDefinition definition,
+            Collection<PrismReferenceValue> values) {
         return createReferenceEqual(path, definition, values, null);
     }
 
-    public static RefFilter createReferenceEqual(ItemPath path, PrismReferenceDefinition definition, ExpressionWrapper expression) {
+    public static RefFilter createReferenceEqual(
+            ItemPath path,
+            PrismReferenceDefinition definition,
+            ExpressionWrapper expression) {
         return createReferenceEqual(path, definition, expression, null);
     }
 
@@ -192,6 +204,9 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
     protected void debugDump(int indent, StringBuilder sb) {
         super.debugDump(indent, sb);
         sb.append("\n");
+        if (filter != null) {
+            DebugUtil.debugDumpWithLabelLn(sb, "Target filter", filter, indent + 1);
+        }
         DebugUtil.debugDumpWithLabelLn(sb, "Null OID means any", oidNullAsAny, indent + 1);
         DebugUtil.debugDumpWithLabel(sb, "Null target type means any", targetTypeNullAsAny, indent + 1);
         // relationNullAsAny is currently ignored anyway

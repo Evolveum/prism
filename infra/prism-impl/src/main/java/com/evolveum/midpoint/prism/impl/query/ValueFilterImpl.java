@@ -294,8 +294,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Override
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
-        DebugUtil.indentDebugDump(sb, indent);
-        sb.append(getFilterName()).append(":");
+        DebugUtil.debugDumpLabel(sb, getFilterName(), indent);
         debugDump(indent, sb);
         return sb.toString();
     }
@@ -445,7 +444,10 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
             }
         }
         if (definition != null && ItemPath.isName(last)) {
-            if (!QNameUtil.match(definition.getItemName(), ItemPath.toName(last))) {
+            ItemName itemName = ItemPath.toName(last);
+            // Self paths are ignored to support REF filter in reference search.
+            if (!ItemPath.SELF_PATH.equivalent(itemName)
+                    && !QNameUtil.match(definition.getItemName(), itemName)) {
                 throw new IllegalArgumentException("Last segment of item path (" + fullPath.lastName() + ") "
                         + "does not match item name from the definition: " + definition);
             }

@@ -1,20 +1,23 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.query;
 
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.NS_FOO;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 import static com.evolveum.midpoint.prism.util.PrismTestUtil.getSchemaRegistry;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.foo.AccountType;
+import com.evolveum.midpoint.prism.foo.ActivationType;
 import com.evolveum.midpoint.prism.foo.AssignmentType;
 import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.query.*;
@@ -29,7 +32,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
  */
 public class TestQueryBuilder extends AbstractPrismTest {
 
-    public static final QName USER_TYPE_QNAME = new QName(NS_FOO, "UserType");
     public static final QName ASSIGNMENT_TYPE_QNAME = new QName(NS_FOO, "AssignmentType");
 
     @Test
@@ -303,7 +305,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
     }
 
     @Test
-    public void test150ExistsWithEquals() throws Exception {
+    public void test150ExistsWithEquals() {
         ObjectQuery actual = getPrismContext().queryFor(UserType.class)
                 .exists(UserType.F_ASSIGNMENT)
                 .item(AssignmentType.F_DESCRIPTION).startsWith("desc1")
@@ -324,7 +326,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
     }
 
     @Test
-    public void test151ExistsWithEquals2() throws Exception {
+    public void test151ExistsWithEquals2() {
         ObjectQuery actual = getPrismContext().queryFor(UserType.class)
                 .exists(UserType.F_ASSIGNMENT)
                 .item(AssignmentType.F_NOTE).endsWith("DONE.")
@@ -345,7 +347,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
     }
 
     @Test
-    public void test152ExistsWithEqualsInBlock() throws Exception {
+    public void test152ExistsWithEqualsInBlock() {
         ObjectQuery actual = getPrismContext().queryFor(UserType.class)
                 .exists(UserType.F_ASSIGNMENT)
                 .block()
@@ -368,7 +370,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
     }
 
     @Test
-    public void test154ExistsWithEqualsAndAllInBlock() throws Exception {
+    public void test154ExistsWithEqualsAndAllInBlock() {
         ObjectQuery actual = getPrismContext().queryFor(UserType.class)
                 .exists(UserType.F_ASSIGNMENT)
                 .block()
@@ -394,7 +396,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
     }
 
     @Test
-    public void test156ExistsAndSomething() throws Exception {
+    public void test156ExistsAndSomething() {
         ObjectQuery actual = getPrismContext().queryFor(UserType.class)
                 .exists(UserType.F_ASSIGNMENT)
                 .none()
@@ -472,6 +474,195 @@ public class TestQueryBuilder extends AbstractPrismTest {
                 LessFilterImpl.createLess(UserType.F_LOCALITY, localityDef, null,
                         UserType.F_NAME, nameDef, true)
         );
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test400ExtendedRefFilter() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+
+        when("reference filter is created with no value with build() shortcut (no need for block().endBlock())");
+        ObjectQuery actual = getPrismContext().queryFor(UserType.class)
+                .ref(UserType.F_ACCOUNT_REF)
+                .build();
+
+        then("filter is built without error and is equal to simple ref filter with no value");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                RefFilterImpl.createReferenceEqual(UserType.F_ACCOUNT_REF, accountRefDef, List.of()));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test401ExtendedRefFilterWithSimpleTargetFilter() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+
+        when("reference filter with nested target filter is created");
+        ObjectQuery actual = getPrismContext().queryFor(UserType.class)
+                .ref(UserType.F_ACCOUNT_REF, ACCOUNT_TYPE_QNAME, null)
+                .item(AccountType.F_NAME).eq("account-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                RefFilterImpl.createReferenceEqual(UserType.F_ACCOUNT_REF, accountRefDef,
+                        List.of(getPrismContext().itemFactory().createReferenceValue(null, ACCOUNT_TYPE_QNAME)),
+                        EqualFilterImpl.createEqual(AccountType.F_NAME, nameDefinition, null, "account-name")));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test402ExtendedRefFilterWithImmediateAnd() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+
+        when("reference filter and another filter (not nested)");
+        ObjectQuery actual = getPrismContext().queryFor(UserType.class)
+                .ref(UserType.F_ACCOUNT_REF)
+                .and()
+                .item(UserType.F_NAME).eq("user-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        RefFilterImpl.createReferenceEqual(UserType.F_ACCOUNT_REF, accountRefDef, List.of()),
+                        EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "user-name")));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test403ExtendedRefFilterWithNestedFilterFollowedByAnd() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+
+        when("reference filter with nested filter and another filter outside nested filter because block() is not used");
+        ObjectQuery actual = getPrismContext().queryFor(UserType.class)
+                .ref(UserType.F_ACCOUNT_REF)
+                .item(AccountType.F_NAME).eq("account-name")
+                .and()
+                .item(UserType.F_NAME).eq("user-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        RefFilterImpl.createReferenceEqual(UserType.F_ACCOUNT_REF, accountRefDef, List.of(),
+                                EqualFilterImpl.createEqual(AccountType.F_NAME, nameDefinition, null, "account-name")),
+                        EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "user-name")));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test410OwnedBy() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME);
+        PrismPropertyDefinition<?> activationDefinition =
+                userDef.findContainerDefinition(UserType.F_ACTIVATION)
+                        .findPropertyDefinition(ActivationType.F_ENABLED);
+
+        when("owned-by filter with nested filter and another filter outside nested filter because block() is not used");
+        ObjectQuery actual = getPrismContext().queryFor(ActivationType.class)
+                .ownedBy(UserType.class, UserType.F_ACTIVATION)
+                .item(UserType.F_NAME).eq("user-name")
+                .and()
+                .item(ActivationType.F_ENABLED).eq(true)
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACTIVATION,
+                                EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "user-name")),
+                        EqualFilterImpl.createEqual(ActivationType.F_ENABLED, activationDefinition, null, true)));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test420ReferencedBy() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+        PrismPropertyDefinition<?> fullNameDefinition = userDef.findPropertyDefinition(UserType.F_FULL_NAME);
+        QName someRelation = QName.valueOf("some-relation");
+
+        when("referenced-by filter with nested complex filter and another filter on root");
+        ObjectQuery actual = getPrismContext().queryFor(AccountType.class)
+                .referencedBy(UserType.class, UserType.F_ACCOUNT_REF, someRelation)
+                .block()
+                .item(UserType.F_NAME).eq("user-name")
+                .or()
+                .item(UserType.F_FULL_NAME).eq("full-name")
+                .endBlock()
+                .and()
+                .item(AccountType.F_NAME).eq("account-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        ReferencedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF,
+                                OrFilterImpl.createOr(
+                                        EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "user-name"),
+                                        EqualFilterImpl.createEqual(UserType.F_FULL_NAME, fullNameDefinition, null, "full-name")),
+                                someRelation),
+                        EqualFilterImpl.createEqual(AccountType.F_NAME, nameDefinition, null, "account-name")));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test500ReferenceSearchFilterSimple() {
+        when("reference search is created without further conditions");
+        ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .build();
+
+        then("filter is built without error and is equal to simple owned by filter");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF, null));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test501ReferenceSearchFilterWithRefFilter() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismPropertyDefinition<?> nameDefinition = userDef.findPropertyDefinition(UserType.F_NAME); // works for account name too
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+        QName someRelation = QName.valueOf("some-relation");
+
+        when("reference search is created with owned by condition and ref filter");
+        ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .id("user-oid") // filtering the owner of the searched reference
+                .and() // IMPORTANT to get out of ownedBy filter!
+                .ref(ItemPath.EMPTY_PATH, ACCOUNT_TYPE_QNAME, someRelation)
+                .item(AccountType.F_NAME).eq("account-name")
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF,
+                                InOidFilterImpl.createInOid("user-oid")),
+                        RefFilterImpl.createReferenceEqual(ItemPath.SELF_PATH, accountRefDef,
+                                List.of(getPrismContext().itemFactory().createReferenceValue(null, ACCOUNT_TYPE_QNAME)
+                                        .relation(someRelation)),
+                                EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "account-name"))));
         compare(actual, expected);
     }
 

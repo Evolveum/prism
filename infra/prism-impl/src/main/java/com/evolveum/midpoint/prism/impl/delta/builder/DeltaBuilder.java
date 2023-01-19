@@ -1,19 +1,16 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.impl.delta.builder;
 
 import java.util.*;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.impl.query.builder.QueryBuilder;
-import com.evolveum.midpoint.prism.ItemDefinitionResolver;
-
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.*;
@@ -25,11 +22,11 @@ import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
 import com.evolveum.midpoint.prism.impl.delta.ReferenceDeltaImpl;
+import com.evolveum.midpoint.prism.impl.query.builder.QueryBuilder;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Grammar
@@ -122,16 +119,9 @@ public class DeltaBuilder<C extends Containerable>
             @NotNull ItemPath itemPath,
             @NotNull Class<ID> type) {
         if (itemDefinitionResolver != null) {
-            ItemDefinition<?> definition = itemDefinitionResolver.findItemDefinition(objectClass, itemPath);
+            ID definition = DefinitionUtil.findItemDefinition(itemDefinitionResolver, objectClass, itemPath, type);
             if (definition != null) {
-                if (type.isAssignableFrom(definition.getClass())) {
-                    //noinspection unchecked
-                    return (ID) definition;
-                } else {
-                    throw new IllegalArgumentException(
-                            String.format("Expected definition of type %s but got %s; for path '%s'",
-                                    type.getSimpleName(), definition.getClass().getSimpleName(), itemPath));
-                }
+                return definition;
             }
         }
         return containerCTD.findItemDefinition(itemPath, type);
@@ -141,9 +131,9 @@ public class DeltaBuilder<C extends Containerable>
     public S_ValuesEntry item(ItemPath path, ItemDefinition definition) {
         ItemDelta newDelta;
         if (definition instanceof PrismPropertyDefinition) {
-            newDelta = new PropertyDeltaImpl(path, (PrismPropertyDefinition) definition, prismContext);
+            newDelta = new PropertyDeltaImpl<>(path, (PrismPropertyDefinition<?>) definition, prismContext);
         } else if (definition instanceof PrismContainerDefinition) {
-            newDelta = new ContainerDeltaImpl(path, (PrismContainerDefinition) definition, prismContext);
+            newDelta = new ContainerDeltaImpl<>(path, (PrismContainerDefinition<?>) definition, prismContext);
         } else if (definition instanceof PrismReferenceDefinition) {
             newDelta = new ReferenceDeltaImpl(path, (PrismReferenceDefinition) definition, prismContext);
         } else {
@@ -153,7 +143,7 @@ public class DeltaBuilder<C extends Containerable>
         if (currentDelta != null) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
+        return new DeltaBuilder<>(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     @Override
@@ -174,12 +164,12 @@ public class DeltaBuilder<C extends Containerable>
 
     @Override
     public <T> S_ValuesEntry property(ItemPath path, PrismPropertyDefinition<T> definition) {
-        PropertyDelta<Object> newDelta = new PropertyDeltaImpl(path, definition, prismContext);
+        PropertyDelta<T> newDelta = new PropertyDeltaImpl<>(path, definition, prismContext);
         List<ItemDelta<?, ?>> newDeltas = deltas;
         if (currentDelta != null) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
+        return new DeltaBuilder<>(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     // TODO fix this after ObjectDelta is changed to accept Containerable

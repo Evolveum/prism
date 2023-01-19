@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -11,12 +11,11 @@ import java.util.Iterator;
 import java.util.List;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.PrismContext;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.ShortDumpable;
 
@@ -63,6 +62,8 @@ import com.evolveum.midpoint.util.ShortDumpable;
 public interface ItemPath extends ShortDumpable, Serializable {
 
     ItemPath EMPTY_PATH = ItemPathImpl.EMPTY_PATH;
+    String SELF_PATH_SYMBOL = ".";
+    ItemPath SELF_PATH = ItemPath.create(SELF_PATH_SYMBOL);
 
     //region Creation and basic operations
     /**

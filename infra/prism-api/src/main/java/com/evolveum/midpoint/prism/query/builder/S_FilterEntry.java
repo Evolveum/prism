@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * See the grammar in Javadoc for {@code QueryBuilder}.
@@ -28,11 +29,17 @@ public interface S_FilterEntry {
     S_ConditionEntry item(QName... names);
     S_ConditionEntry item(String... names);
     S_ConditionEntry item(ItemPath path);
-    S_ConditionEntry item(ItemPath itemPath, ItemDefinition itemDefinition);
-    S_ConditionEntry itemWithDef(ItemDefinition itemDefinition, QName... names); // experimental
-    S_ConditionEntry item(PrismContainerDefinition containerDefinition, QName... names);
+    S_ConditionEntry item(ItemPath itemPath, ItemDefinition<?> itemDefinition);
+
+    @Experimental
+    S_ConditionEntry itemWithDef(ItemDefinition<?> itemDefinition, QName... names);
+
+    S_ConditionEntry item(PrismContainerDefinition<?> containerDefinition, QName... names);
     S_ConditionEntry item(PrismContainerDefinition<?> containerDefinition, ItemPath itemPath);
-    S_MatchingRuleEntry itemAs(PrismProperty<?> property); // experimental; TODO choose better name for this method
+
+    @Experimental
+    S_MatchingRuleEntry itemAs(PrismProperty<?> property); // TODO choose better name for this method
+
     S_FilterExit id(String... identifiers);
     S_FilterExit id(long... identifiers);
     S_FilterExit ownerId(String... identifiers);
@@ -99,21 +106,36 @@ public interface S_FilterEntry {
             QName relation);
 
     /**
-     * Creates REF filter with no values - good when only the target filter is required.
+     * Ref filter with no values with optional ref-target filter that can follow this call immediately.
      *
      * For example:
      * ----
      * filter.ref(ObjectType.F_PARENT_ORG_REF)
      * .item(OrgType.F_DISPLAY_ORDER).eq(30) // target filter
      * ----
+     *
+     * Use combo {@link #item(ItemPath)} and {@link S_ConditionEntry#ref(PrismReferenceValue...)}
+     * for simple REF filters and multi-value support.
      */
     default S_FilterEntryOrEmpty ref(ItemPath path) {
         return ref(path, null, null, new String[0]);
     }
 
+    /**
+     * Ref filter for target type and relation with optional ref-target filter that can follow this call immediately.
+     *
+     * Use combo {@link #item(ItemPath)} and {@link S_ConditionEntry#ref(PrismReferenceValue...)}
+     * for simple REF filters and multi-value support.
+     */
     default S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation) {
         return ref(path, targetType, relation, new String[0]);
     }
 
+    /**
+     * Ref filter with single value and optional ref-target filter that can follow this call immediately.
+     *
+     * Use combo {@link #item(ItemPath)} and {@link S_ConditionEntry#ref(PrismReferenceValue...)}
+     * for simple REF filters and multi-value support.
+     */
     S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation, String... oid);
 }

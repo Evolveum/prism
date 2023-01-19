@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -14,8 +14,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.ItemDefinitionResolver;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -238,7 +236,7 @@ public final class PrismContextImpl implements PrismContext {
     /**
      * WARNING! This is not really public method. It should NOT be used outside the prism implementation.
      */
-    public PrismUnmarshaller getPrismUnmarshaller() {
+    public @NotNull PrismUnmarshaller getPrismUnmarshaller() {
         return prismUnmarshaller;
     }
 
@@ -436,7 +434,7 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
-    public void adopt(PrismContainerValue value) throws SchemaException {
+    public void adopt(PrismContainerValue<?> value) throws SchemaException {
         value.revive(this);
     }
 
@@ -669,6 +667,11 @@ public final class PrismContextImpl implements PrismContext {
     public S_FilterEntryOrEmpty queryFor(
             Class<? extends Containerable> type, ItemDefinitionResolver itemDefinitionResolver) {
         return QueryBuilder.queryFor(type, this, itemDefinitionResolver);
+    }
+
+    @Override
+    public S_FilterEntryOrEmpty queryForReferenceOwnedBy(Class<? extends Containerable> ownerClass, ItemPath referencePath) {
+        return QueryBuilder.queryForReferenceOwnedBy(ownerClass, referencePath, this);
     }
 
     @Override
