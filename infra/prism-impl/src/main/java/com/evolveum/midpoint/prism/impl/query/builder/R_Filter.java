@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.query.*;
+import com.evolveum.midpoint.prism.impl.query.lang.QueryWriter;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.*;
@@ -323,7 +324,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     public S_FilterEntryOrEmpty ref(ItemPath path, QName targetType, QName relation, String... oids) {
         PrismReferenceDefinition refDef = determineReferenceDefinition(path);
         if (referenceSearchDefinition != null) {
-            path = ItemPath.SELF_PATH; // empty path causes problems later
+            path = ItemPath.SELF_PATH;
         }
 
         List<PrismReferenceValue> prismRefValues = new ArrayList<>();
@@ -357,7 +358,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
 
     private PrismReferenceDefinition checkSelfPathAndGetReferenceSearchDefinition(ItemPath path) {
         PrismReferenceDefinition refDef;
-        if (ItemPath.isEmpty(path) || path.equivalent(ItemPath.SELF_PATH)) {
+        if (ItemPath.isEmpty(path)) {
             refDef = referenceSearchDefinition;
         } else {
             throw new IllegalArgumentException(
@@ -433,12 +434,20 @@ public class R_Filter implements S_FilterEntryOrEmpty {
 
     @Override
     public S_ConditionEntry item(QName... names) {
-        return item(ItemPath.create((Object[]) names));
+        return item(
+                // Convenience conversion for various ways how self path can be written:
+                names.length == 1 && names[0].equals(PrismConstants.T_SELF)
+                        ? ItemPath.SELF_PATH
+                        : ItemPath.create((Object[]) names));
     }
 
     @Override
     public S_ConditionEntry item(String... names) {
-        return item(ItemPath.create((Object[]) names));
+        return item(
+                // Convenience conversion for various ways how self path can be written:
+                names.length == 1 && (names[0].equals("") || names[0].equals(QueryWriter.SELF_PATH_SYMBOL))
+                        ? ItemPath.SELF_PATH
+                        : ItemPath.create((Object[]) names));
     }
 
     @Override
@@ -446,7 +455,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
         ItemDefinition<?> itemDefinition;
         if (referenceSearchDefinition != null) {
             itemDefinition = checkSelfPathAndGetReferenceSearchDefinition(itemPath);
-            itemPath = ItemPath.SELF_PATH; // just in case empty path was used
+            itemPath = ItemPath.SELF_PATH;
         } else {
             itemDefinition = queryBuilder.findItemDefinition(
                     getCurrentClass(), itemPath, ItemDefinition.class);

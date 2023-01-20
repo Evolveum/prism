@@ -6,17 +6,15 @@
  */
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.util.annotation.Experimental;
-
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  * @author semancik
- *
  */
 public class PrismConstants {
 
@@ -143,6 +141,13 @@ public class PrismConstants {
     public static final QName T_OBJECT_REFERENCE = new QName(NS_TYPES, "objectReference");
     public static final String T_ID_LOCAL_PART = "id";
     public static final QName T_ID = new QName(NS_TYPES, T_ID_LOCAL_PART);
+
+    /**
+     * Self is a bit special, because the item path for self (.) is technically an empty path.
+     * So it's not a single-segment path with this QName in it and must be treated on some places.
+     * Use {@link com.evolveum.midpoint.prism.path.ItemPath#SELF_PATH} where applicable instead of this constant.
+     */
+    public static final QName T_SELF = new QName(NS_TYPES, "");
 
     // Misc
 

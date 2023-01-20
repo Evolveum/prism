@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,12 +7,12 @@
 
 package com.evolveum.midpoint.prism.impl.marshaller;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
- *
  * @author Radovan Semancik
  */
 public class PathHolderSegment {
@@ -51,7 +51,7 @@ public class PathHolderSegment {
     }
 
     public PathHolderSegment(String value) {
-        this.qName = qName;
+        this.qName = null;
         this.variable = false;
         this.value = value;
     }
@@ -100,7 +100,7 @@ public class PathHolderSegment {
         if (value != null) {
             sb.append("[");
             if (qName != null) {        // this is currently not used, anyway...
-                sb.append(qName.toString());
+                sb.append(qName);
                 sb.append("='");
                 sb.append(value);       // todo escape apostrophes in value
                 sb.append("'");
@@ -119,16 +119,17 @@ public class PathHolderSegment {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         PathHolderSegment that = (PathHolderSegment) o;
-
-        if (variable != that.variable) return false;
-        if (qName != null ? !qName.equals(that.qName) : that.qName != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
-        return true;
+        return Objects.equals(variable, that.variable)
+                && Objects.equals(qName, that.qName)
+                && Objects.equals(value, that.value);
     }
 
     @Override
@@ -144,7 +145,6 @@ public class PathHolderSegment {
      * It's a bit of hack.
      *
      * Precondition: there is no prefix set.
-     * @param prefix
      */
     public void setQNamePrefix(String prefix) {
         if (qName == null) {

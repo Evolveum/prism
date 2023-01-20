@@ -1,34 +1,16 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
-
 package com.evolveum.midpoint.prism.path;
 
-import com.evolveum.midpoint.prism.AbstractPrismTest;
-import com.evolveum.midpoint.prism.PrismInternalTestUtil;
-import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
-import com.evolveum.midpoint.prism.impl.marshaller.PathHolderSegment;
-import com.evolveum.midpoint.prism.impl.marshaller.TrivialItemPathParser;
-import com.evolveum.midpoint.prism.util.PrismTestUtil;
-import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import org.testng.AssertJUnit;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,10 +21,30 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import org.assertj.core.api.Assertions;
+import org.testng.AssertJUnit;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.evolveum.midpoint.prism.AbstractPrismTest;
+import com.evolveum.midpoint.prism.PrismInternalTestUtil;
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
+import com.evolveum.midpoint.prism.impl.marshaller.PathHolderSegment;
+import com.evolveum.midpoint.prism.impl.marshaller.TrivialItemPathParser;
+import com.evolveum.midpoint.prism.util.PrismTestUtil;
+import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.PrettyPrinter;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * This is low-level ItemPath parsing/serialization test.
@@ -56,8 +58,6 @@ public class ItemPathTest extends AbstractPrismTest {
     private static final String NS_C = "http://midpoint.evolveum.com/xml/ns/public/common/common-3";
     private static final String NS_FOO = "http://foo.com/";
     private static final String NS_BAR = "http://bar.com/";
-
-    private static final String FILENAME_CHANGETYPE = "src/test/resources/path/changetype-1.xml";
 
     public ItemPathTest() {
     }
@@ -115,7 +115,7 @@ public class ItemPathTest extends AbstractPrismTest {
 
         Node el1 = nodes.item(0);
 
-        return (Element)el1;
+        return (Element) el1;
     }
 
     @Test
@@ -123,8 +123,8 @@ public class ItemPathTest extends AbstractPrismTest {
 
         String xpathStr =
                 "declare namespace v='http://vvv.com';" +
-                "declare namespace x='http://www.xxx.com';" +
-                "$v:var/x:xyz[10]";
+                        "declare namespace x='http://www.xxx.com';" +
+                        "$v:var/x:xyz[10]";
 
         ItemPathHolder xpath = ItemPathHolder.createForTesting(xpathStr);
 
@@ -135,7 +135,6 @@ public class ItemPathTest extends AbstractPrismTest {
 
     @Test
     public void dotTest() {
-
         ItemPathHolder dotPath = ItemPathHolder.createForTesting(".");
 
         AssertJUnit.assertTrue(dotPath.toSegments().isEmpty());
@@ -175,17 +174,17 @@ public class ItemPathTest extends AbstractPrismTest {
 
         ItemPathHolder xpath = ItemPathHolder.createForTesting(xpathStr);
 
-        System.out.println("Pure XPath: "+xpath.getXPathWithoutDeclarations());
+        System.out.println("Pure XPath: " + xpath.getXPathWithoutDeclarations());
         AssertJUnit.assertEquals("foo:foofoo/x:bar", xpath.getXPathWithoutDeclarations());
 
-        System.out.println("ROUND TRIP: "+xpath.getXPathWithDeclarations());
+        System.out.println("ROUND TRIP: " + xpath.getXPathWithDeclarations());
 
         List<String> expected = Arrays.asList(
                 "declare default namespace 'http://default.com/'; declare namespace foo='http://ff.com/'; declare namespace bar='http://www.b.com'; declare namespace x='http://xxx.com/'; foo:foofoo/x:bar",   // java7
                 "declare default namespace 'http://default.com/'; declare namespace bar='http://www.b.com'; declare namespace foo='http://ff.com/'; declare namespace x='http://xxx.com/'; foo:foofoo/x:bar",   // java8
                 "declare default namespace 'http://default.com/'; declare namespace x='http://xxx.com/'; declare namespace bar='http://www.b.com'; declare namespace foo='http://ff.com/'; foo:foofoo/x:bar" // after JSON/YAML serialization fix (java8)
         );
-        AssertJUnit.assertTrue("Unexpected path with declarations: "+xpath.getXPathWithDeclarations(), expected.contains(xpath.getXPathWithDeclarations()));
+        AssertJUnit.assertTrue("Unexpected path with declarations: " + xpath.getXPathWithDeclarations(), expected.contains(xpath.getXPathWithDeclarations()));
     }
 
     @Test
@@ -199,14 +198,13 @@ public class ItemPathTest extends AbstractPrismTest {
 
         ItemPathHolder xpath = ItemPathHolder.createForTesting(xpathStr, namespaceMap);
 
-        System.out.println("Pure XPath: "+xpath.getXPathWithoutDeclarations());
+        System.out.println("Pure XPath: " + xpath.getXPathWithoutDeclarations());
         AssertJUnit.assertEquals("foo:foo/bar:bar", xpath.getXPathWithoutDeclarations());
 
-        System.out.println("ROUND TRIP: "+xpath.getXPathWithDeclarations());
+        System.out.println("ROUND TRIP: " + xpath.getXPathWithDeclarations());
         AssertJUnit.assertEquals("foo:foo/bar:bar", xpath.getXPathWithDeclarations());
 
     }
-
 
     @Test
     public void strangeCharsTest() throws IOException {
@@ -225,10 +223,10 @@ public class ItemPathTest extends AbstractPrismTest {
 
         ItemPathHolder xpath = ItemPathHolder.createForTesting(xpathStr);
 
-        System.out.println("Stragechars Pure XPath: "+xpath.getXPathWithoutDeclarations());
+        System.out.println("Stragechars Pure XPath: " + xpath.getXPathWithoutDeclarations());
         AssertJUnit.assertEquals("$i:user/i:extension/ri:foobar", xpath.getXPathWithoutDeclarations());
 
-        System.out.println("Stragechars ROUND TRIP: "+xpath.getXPathWithDeclarations());
+        System.out.println("Stragechars ROUND TRIP: " + xpath.getXPathWithDeclarations());
 
     }
 
@@ -251,7 +249,7 @@ public class ItemPathTest extends AbstractPrismTest {
         Map<String, String> nsdecls = DOMUtil.getNamespaceDeclarations(element);
 //        assertEquals("Wrong declaration for prefix "+XPathHolder.DEFAULT_PREFIX, NS_FOO, nsdecls.get(XPathHolder.DEFAULT_PREFIX));
         String prefix = nsdecls.keySet().iterator().next();
-        assertEquals("Wrong element content", prefix+":foo", element.getTextContent());
+        assertEquals("Wrong element content", prefix + ":foo", element.getTextContent());
     }
 
     @Test
@@ -279,17 +277,17 @@ public class ItemPathTest extends AbstractPrismTest {
     public void parseSpecial() {
         final String D = "declare namespace x='http://xyz.com/'; ";
         AssertJUnit.assertEquals("..", TrivialItemPathParser.parse("..").getPureItemPathString());
-        AssertJUnit.assertEquals("..", TrivialItemPathParser.parse(D+"..").getPureItemPathString());
+        AssertJUnit.assertEquals("..", TrivialItemPathParser.parse(D + "..").getPureItemPathString());
         AssertJUnit.assertEquals("a/../b", TrivialItemPathParser.parse("a/../b").getPureItemPathString());
-        AssertJUnit.assertEquals("a/../b", TrivialItemPathParser.parse(D+"a/../b").getPureItemPathString());
+        AssertJUnit.assertEquals("a/../b", TrivialItemPathParser.parse(D + "a/../b").getPureItemPathString());
         AssertJUnit.assertEquals("@", TrivialItemPathParser.parse("@").getPureItemPathString());
-        AssertJUnit.assertEquals("@", TrivialItemPathParser.parse(D+"@").getPureItemPathString());
+        AssertJUnit.assertEquals("@", TrivialItemPathParser.parse(D + "@").getPureItemPathString());
         AssertJUnit.assertEquals("a/@/b", TrivialItemPathParser.parse("a/@/b").getPureItemPathString());
-        AssertJUnit.assertEquals("a/@/b", TrivialItemPathParser.parse(D+"a/@/b").getPureItemPathString());
+        AssertJUnit.assertEquals("a/@/b", TrivialItemPathParser.parse(D + "a/@/b").getPureItemPathString());
         AssertJUnit.assertEquals("#", TrivialItemPathParser.parse("#").getPureItemPathString());
-        AssertJUnit.assertEquals("#", TrivialItemPathParser.parse(D+"#").getPureItemPathString());
+        AssertJUnit.assertEquals("#", TrivialItemPathParser.parse(D + "#").getPureItemPathString());
         AssertJUnit.assertEquals("a/#/b", TrivialItemPathParser.parse("a/#/b").getPureItemPathString());
-        AssertJUnit.assertEquals("a/#/b", TrivialItemPathParser.parse(D+"a/#/b").getPureItemPathString());
+        AssertJUnit.assertEquals("a/#/b", TrivialItemPathParser.parse(D + "a/#/b").getPureItemPathString());
     }
 
     /*

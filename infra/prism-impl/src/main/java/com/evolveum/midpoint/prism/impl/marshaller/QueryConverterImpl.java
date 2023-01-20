@@ -657,10 +657,13 @@ public class QueryConverterImpl implements QueryConverter {
             boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
         ItemPath itemPath = getPath(clauseXMap);
 
-        if (itemPath == null || itemPath.isEmpty()) {
+        if (itemPath == null) {
             throw new SchemaException("Cannot convert query, because query does not contain property path.");
         }
-        QName itemName = ItemPath.toName(itemPath.last());
+
+        QName itemName = itemPath.isEmpty()
+                ? PrismConstants.T_SELF
+                : ItemPath.toName(itemPath.last());
 
         PrismReferenceDefinition itemDefinition = null;
         if (pcd != null) {

@@ -650,7 +650,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
         ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
                 .id("user-oid") // filtering the owner of the searched reference
                 .and() // IMPORTANT to get out of ownedBy filter!
-                .ref(ItemPath.EMPTY_PATH, ACCOUNT_TYPE_QNAME, someRelation)
+                .ref(ItemPath.SELF_PATH, ACCOUNT_TYPE_QNAME, someRelation)
                 .item(AccountType.F_NAME).eq("account-name")
                 .build();
 
@@ -663,6 +663,28 @@ public class TestQueryBuilder extends AbstractPrismTest {
                                 List.of(getPrismContext().itemFactory().createReferenceValue(null, ACCOUNT_TYPE_QNAME)
                                         .relation(someRelation)),
                                 EqualFilterImpl.createEqual(UserType.F_NAME, nameDefinition, null, "account-name"))));
+        compare(actual, expected);
+    }
+
+    @Test
+    public void test502SelfQNameIsConvertedToSelfPath() {
+        given("proper definitions");
+        PrismObjectDefinition<?> userDef =
+                getSchemaRegistry().findObjectDefinitionByCompileTimeClass(UserType.class);
+        PrismReferenceDefinition accountRefDef = userDef.findReferenceDefinition(UserType.F_ACCOUNT_REF);
+
+        when("reference search is created using T_SELF constant (where SELF_PATH is preferred)");
+        ObjectQuery actual = getPrismContext().queryForReferenceOwnedBy(UserType.class, UserType.F_ACCOUNT_REF)
+                .and()
+                .item(PrismConstants.T_SELF).ref(null, ACCOUNT_TYPE_QNAME, null)
+                .build();
+
+        then("filter is built without error and matches expected structure");
+        ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
+                AndFilterImpl.createAnd(
+                        OwnedByFilterImpl.create(USER_TYPE_QNAME, UserType.F_ACCOUNT_REF, null),
+                        RefFilterImpl.createReferenceEqual(ItemPath.SELF_PATH, accountRefDef,
+                                List.of(getPrismContext().itemFactory().createReferenceValue(null, ACCOUNT_TYPE_QNAME)))));
         compare(actual, expected);
     }
 
