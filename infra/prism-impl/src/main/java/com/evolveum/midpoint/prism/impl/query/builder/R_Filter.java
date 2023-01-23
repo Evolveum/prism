@@ -519,7 +519,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     }
 
     @Override
-    public S_FilterExit asc(QName... names) {
+    public S_QueryExit asc(QName... names) {
         if (names.length == 0) {
             throw new IllegalArgumentException("There must be at least one name for asc(...) ordering");
         }
@@ -527,7 +527,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     }
 
     @Override
-    public S_FilterExit asc(ItemPath path) {
+    public S_QueryExit asc(ItemPath path) {
         if (ItemPath.isEmpty(path)) {
             throw new IllegalArgumentException("There must be non-empty path for asc(...) ordering");
         }
@@ -535,7 +535,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     }
 
     @Override
-    public S_FilterExit desc(QName... names) {
+    public S_QueryExit desc(QName... names) {
         if (names.length == 0) {
             throw new IllegalArgumentException("There must be at least one name for asc(...) ordering");
         }
@@ -543,7 +543,7 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     }
 
     @Override
-    public S_FilterExit desc(ItemPath path) {
+    public S_QueryExit desc(ItemPath path) {
         if (ItemPath.isEmpty(path)) {
             throw new IllegalArgumentException("There must be non-empty path for desc(...) ordering");
         }
@@ -551,12 +551,12 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     }
 
     @Override
-    public S_FilterExit offset(Integer n) {
+    public S_QueryExit offset(Integer n) {
         return setOffset(n);
     }
 
     @Override
-    public S_FilterExit maxSize(Integer n) {
+    public S_QueryExit maxSize(Integer n) {
         return setMaxSize(n);
     }
 
@@ -638,8 +638,8 @@ public class R_Filter implements S_FilterEntryOrEmpty {
     /**
      * This helper {@link R_Filter} subclass makes filters containing optional inner filters more convenient.
      * For example, {@link S_FilterEntry#ref(ItemPath)}, {@link S_FilterEntry#ownedBy(Class)}
-     * and {@link S_FilterEntry#referencedBy(Class, ItemPath)} now can be followed by {@link #and()}, {@link #or()}
-     * or {@link #build()} immediately without the need to use chain of {@link #block()} and {@link #endBlock()}.
+     * and {@link S_FilterEntry#referencedBy(Class, ItemPath)} now can be followed by {@link #and()}, {@link #or()},
+     * {@link #build()} and similar methods immediately without the need to use chain of {@link #block()} and {@link #endBlock()}.
      *
      * @since 4.7
      */
@@ -654,11 +654,6 @@ public class R_Filter implements S_FilterEntryOrEmpty {
         }
 
         @Override
-        public ObjectQuery build() {
-            return block().endBlock().build();
-        }
-
-        @Override
         public S_FilterEntry and() {
             return block().endBlock().and();
         }
@@ -666,6 +661,46 @@ public class R_Filter implements S_FilterEntryOrEmpty {
         @Override
         public S_FilterEntry or() {
             return block().endBlock().or();
+        }
+
+        @Override
+        public S_QueryExit asc(QName... names) {
+            return block().endBlock().asc(names);
+        }
+
+        @Override
+        public S_QueryExit asc(ItemPath path) {
+            return block().endBlock().asc(path);
+        }
+
+        @Override
+        public S_QueryExit desc(QName... names) {
+            return block().endBlock().desc(names);
+        }
+
+        @Override
+        public S_QueryExit desc(ItemPath path) {
+            return block().endBlock().desc(path);
+        }
+
+        @Override
+        public S_QueryExit offset(Integer n) {
+            return block().endBlock().offset(n);
+        }
+
+        @Override
+        public S_QueryExit maxSize(Integer n) {
+            return block().endBlock().maxSize(n);
+        }
+
+        @Override
+        public ObjectQuery build() {
+            return block().endBlock().build();
+        }
+
+        @Override
+        public ObjectFilter buildFilter() {
+            return block().endBlock().buildFilter();
         }
     }
 
