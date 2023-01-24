@@ -17,8 +17,6 @@ import com.evolveum.midpoint.util.QNameUtil;
 
 public class ItemName extends QName implements ItemPath {
 
-    public static final ItemName SELF_NAME = new ItemName(SELF_PATH_SYMBOL);
-
     public ItemName(String namespaceURI, String localPart) {
         super(namespaceURI, localPart);
     }

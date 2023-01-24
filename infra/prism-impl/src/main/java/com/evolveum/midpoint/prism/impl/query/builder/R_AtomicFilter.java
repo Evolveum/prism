@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -17,10 +17,8 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.query.*;
-import com.evolveum.midpoint.prism.impl.query.builder.R_AtomicFilter.FuzzyStringBuilderImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
@@ -30,8 +28,6 @@ import com.evolveum.midpoint.prism.query.builder.*;
 import com.evolveum.midpoint.util.MiscUtil;
 
 public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_RightHandItemEntry {
-
-
 
     private final ItemPath itemPath;
     private final PrismPropertyDefinition<?> propertyDefinition;
@@ -388,32 +384,32 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     }
 
     @Override
-    public S_FilterExit asc(QName... names) {
+    public S_QueryExit asc(QName... names) {
         return finish().asc(names);
     }
 
     @Override
-    public S_FilterExit asc(ItemPath path) {
+    public S_QueryExit asc(ItemPath path) {
         return finish().asc(path);
     }
 
     @Override
-    public S_FilterExit desc(QName... names) {
+    public S_QueryExit desc(QName... names) {
         return finish().desc(names);
     }
 
     @Override
-    public S_FilterExit desc(ItemPath path) {
+    public S_QueryExit desc(ItemPath path) {
         return finish().desc(path);
     }
 
     @Override
-    public S_FilterExit offset(Integer n) {
+    public S_QueryExit offset(Integer n) {
         return finish().offset(n);
     }
 
     @Override
-    public S_FilterExit maxSize(Integer n) {
+    public S_QueryExit maxSize(Integer n) {
         return finish().maxSize(n);
     }
 
@@ -431,20 +427,21 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
 
     public class FuzzyStringBuilderImpl implements FuzzyStringBuilder {
 
-        private List<PrismPropertyValue<String>> values = new ArrayList<>();
+        private final List<PrismPropertyValue<String>> values = new ArrayList<>();
 
         @Override
         public FuzzyStringBuilder value(String value) {
-            values.add(new PrismPropertyValueImpl<String>(value));
+            values.add(new PrismPropertyValueImpl<>(value));
             return this;
         }
 
         @Override
         public S_FilterExit method(FuzzyMatchingMethod method) {
-            var list = new ArrayList<PrismPropertyValue<String>>(values);
-            ValueFilter<?, ?> fuzzyFilter = FuzzyStringMatchFilterImpl.<String>create(itemPath, (PrismPropertyDefinition<String>) propertyDefinition, method, list);
+            var list = new ArrayList<>(values);
+            //noinspection unchecked
+            ValueFilter<?, ?> fuzzyFilter = FuzzyStringMatchFilterImpl.create(
+                    itemPath, (PrismPropertyDefinition<String>) propertyDefinition, method, list);
             return new R_AtomicFilter(R_AtomicFilter.this, fuzzyFilter);
         }
-
     }
 }

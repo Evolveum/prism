@@ -31,6 +31,7 @@ import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 
 public class QueryWriter implements Builder<PrismQuerySerialization> {
 
+    public static final String SELF_PATH_SYMBOL = ".";
     private static final String MATCHING_RULE_NS = PrismQueryLanguageParserImpl.MATCHING_RULE_NS;
 
     private final PrismQuerySerializerImpl.SimpleBuilder target;
@@ -40,7 +41,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
     }
 
     public void writeSelf() {
-        target.emitWord(ItemPath.SELF_PATH_SYMBOL);
+        target.emitWord(SELF_PATH_SYMBOL);
     }
 
     void writePath(String string) {

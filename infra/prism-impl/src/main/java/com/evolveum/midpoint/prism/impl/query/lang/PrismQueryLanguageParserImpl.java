@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2022 Evolveum and contributors
+ * Copyright (C) 2020-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -30,13 +30,9 @@ import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter;
+import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
-import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
-import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
-import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
-import com.evolveum.midpoint.prism.query.TypeFilter;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -93,12 +89,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
     }
 
-
     private static final ValuesArgument<String> STRING_VALUES = new ValuesArgument<>(String.class);
     private static final FilterArgumentSpec<Integer> LEVENSHTEIN_THRESHOLD = new FilterArgumentSpec<>(FuzzyStringMatchFilter.THRESHOLD, Integer.class);
     private static final FilterArgumentSpec<Float> SIMILARITY_THRESHOLD = new FilterArgumentSpec<>(FuzzyStringMatchFilter.THRESHOLD, Float.class);
     private static final FilterArgumentSpec<Boolean> INCLUSIVE = new FilterArgumentSpec<>(FuzzyStringMatchFilter.INCLUSIVE, Boolean.class, true);
-
 
     private static final List<FilterArgumentSpec<?>> LEVENSHTEIN_ARGUMENTS = ImmutableList.of(
             STRING_VALUES,
@@ -184,7 +178,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             this.argumentDef = argumentDef;
         }
 
-
         @Override
         public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef,
                 ItemPath itemPath, ItemDefinition<?> itemDef, QName matchingRule,
@@ -214,7 +207,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         @Override
-        public ObjectFilter create(PrismContainerDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
+        public ObjectFilter create(PrismContainerDefinition<?> parentDef,
+                ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
                 QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
             schemaCheck(itemPath.isEmpty(), "Only '.' is supported for %s", filterName);
             return create(parentDef, matchingRule, subfilterOrValue);
@@ -526,8 +520,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                         QName matchingRule, Map<QName, Object> arguments) {
                     int threshold = getArgument(LEVENSHTEIN_THRESHOLD, arguments);
                     boolean inclusive = getArgument(INCLUSIVE, arguments);
-                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.levenshtein(threshold, inclusive );
-                    var values = getValues(STRING_VALUES,arguments);
+                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.levenshtein(threshold, inclusive);
+                    var values = getValues(STRING_VALUES, arguments);
                     List<PrismPropertyValue<String>> prismValues = toPrismValues(values);
                     var filter = FuzzyStringMatchFilterImpl.create(itemPath,
                             (PrismPropertyDefinition<String>) itemDef, method, prismValues);
@@ -542,8 +536,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                         QName matchingRule, Map<QName, Object> arguments) {
                     float threshold = getArgument(SIMILARITY_THRESHOLD, arguments);
                     boolean inclusive = getArgument(INCLUSIVE, arguments);
-                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.similarity(threshold, inclusive );
-                    var values = getValues(STRING_VALUES,arguments);
+                    FuzzyMatchingMethod method = FuzzyStringMatchFilter.similarity(threshold, inclusive);
+                    var values = getValues(STRING_VALUES, arguments);
                     List<PrismPropertyValue<String>> prismValues = toPrismValues(values);
                     var filter = FuzzyStringMatchFilterImpl.create(itemPath,
                             (PrismPropertyDefinition<String>) itemDef, method, prismValues);
@@ -578,7 +572,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private <T> List<PrismPropertyValue<T>> toPrismValues(List<T> rawValues) {
         List<PrismPropertyValue<T>> ret = new ArrayList<>();
         for (T raw : rawValues) {
-            ret.add(new PrismPropertyValueImpl<T>(raw));
+            ret.add(new PrismPropertyValueImpl<>(raw));
         }
         return ret;
     }
@@ -605,7 +599,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         var defIter = definitions.iterator();
         var valueIter = values.values.iterator();
         Map<QName, Object> ret = new HashMap<>();
-        while(defIter.hasNext()) {
+        while (defIter.hasNext()) {
             var def = defIter.next();
             schemaCheck(!def.required || valueIter.hasNext(), "Required argument %s is not specified", def.name.getLocalPart());
             if (valueIter.hasNext()) {

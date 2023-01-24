@@ -62,8 +62,9 @@ import com.evolveum.midpoint.util.ShortDumpable;
 public interface ItemPath extends ShortDumpable, Serializable {
 
     ItemPath EMPTY_PATH = ItemPathImpl.EMPTY_PATH;
-    String SELF_PATH_SYMBOL = ".";
-    ItemPath SELF_PATH = ItemPath.create(SELF_PATH_SYMBOL);
+
+    /** Self path is just an empty path, but gives it better interpretation in some contexts. */
+    ItemPath SELF_PATH = ItemPathImpl.EMPTY_PATH;
 
     //region Creation and basic operations
     /**
@@ -518,6 +519,8 @@ public interface ItemPath extends ShortDumpable, Serializable {
     @NotNull
     default QName firstToQName() {
         if (isEmpty()) {
+            // TODO if empty is considered self, should this still complain?
+            //  For now, empty=self treatment is a responsibility of the calling code, not this method.
             throw new IllegalArgumentException("Item path is empty!");
         }
 

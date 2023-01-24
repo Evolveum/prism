@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +54,6 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     protected ValueFilterImpl(@NotNull ItemPath fullPath, @Nullable D definition, @Nullable QName matchingRule,
             @Nullable List<V> values, @Nullable ExpressionWrapper expression,
             @Nullable ItemPath rightHandSidePath, @Nullable ItemDefinition<?> rightHandSideDefinition) {
-        Validate.isTrue(!ItemPath.isEmpty(fullPath), "path in filter is null or empty");
         this.fullPath = fullPath;
         this.definition = definition;
         this.matchingRule = matchingRule;
@@ -406,15 +404,15 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         if (requireDefinitions && definition == null) {
             throw new IllegalArgumentException("Null definition in " + this);
         }
-        if (fullPath.isEmpty()) {
-            throw new IllegalArgumentException("Empty path in " + this);
-        }
         Object last = fullPath.last();
-        if (!ItemPath.isName(last) && !ItemPath.isIdentifier(last)) {
-            throw new IllegalArgumentException("Last segment of item path is not a name or identifier segment: " + fullPath + " (it is " + last + ")");
-        }
-        if (rightHandSidePath != null && rightHandSidePath.isEmpty()) {
-            throw new IllegalArgumentException("Not-null but empty right side path in " + this);
+        // Empty path indicates self (.) path, we want to skip the next tests for that.
+        if (!fullPath.isEmpty()) {
+            if (!ItemPath.isName(last) && !ItemPath.isIdentifier(last)) {
+                throw new IllegalArgumentException("Last segment of item path is not a name or identifier segment: " + fullPath + " (it is " + last + ")");
+            }
+            if (rightHandSidePath != null && rightHandSidePath.isEmpty()) {
+                throw new IllegalArgumentException("Not-null but empty right side path in " + this);
+            }
         }
         int count = 0;
         if (values != null) {
@@ -445,9 +443,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         }
         if (definition != null && ItemPath.isName(last)) {
             ItemName itemName = ItemPath.toName(last);
-            // Self paths are ignored to support REF filter in reference search.
-            if (!ItemPath.SELF_PATH.equivalent(itemName)
-                    && !QNameUtil.match(definition.getItemName(), itemName)) {
+            if (!QNameUtil.match(definition.getItemName(), itemName)) {
                 throw new IllegalArgumentException("Last segment of item path (" + fullPath.lastName() + ") "
                         + "does not match item name from the definition: " + definition);
             }
