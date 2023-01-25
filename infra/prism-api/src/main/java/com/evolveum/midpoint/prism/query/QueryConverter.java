@@ -27,9 +27,9 @@ public interface QueryConverter {
 
     ObjectFilter parseFilter(XNode xnode, Class<? extends Containerable> clazz) throws SchemaException;
 
-    ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull Class<? extends Containerable> clazz) throws SchemaException;
+    ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull Class<?> clazz) throws SchemaException;
 
-    ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull PrismContainerDefinition<?> objDef) throws SchemaException;
+    ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull ItemDefinition<?> objDef) throws SchemaException;
 
     /**
      * Tries to parse as much from filter as possible, without knowing the definition of object(s) to which the

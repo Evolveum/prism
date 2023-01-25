@@ -1,46 +1,38 @@
 /*
- * Copyright (c) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.impl.marshaller;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import static com.evolveum.midpoint.util.Checks.checkSchema;
 import static com.evolveum.midpoint.util.Checks.checkSchemaNotNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.*;
-import com.evolveum.midpoint.prism.xnode.*;
-
-import com.evolveum.midpoint.util.annotation.Experimental;
-
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.*;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
 import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
-import com.evolveum.midpoint.prism.impl.xnode.IncompleteMarkerXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.SchemaXNodeImpl;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismUtil;
+import com.evolveum.midpoint.prism.xnode.*;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.QNameUtil;
@@ -52,8 +44,6 @@ import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 import com.evolveum.prism.xml.ns._public.types_3.SchemaDefinitionType;
-import com.google.common.collect.ImmutableSet;
-
 
 public class PrismUnmarshaller {
 
@@ -96,7 +86,7 @@ public class PrismUnmarshaller {
     <O extends Objectable> PrismObject<O> parseObject(@NotNull RootXNodeImpl root, ItemDefinition<?> itemDefinition, QName itemName,
             QName typeName, Class<?> typeClass, @NotNull ParsingContext pc) throws SchemaException {
         checkSchema(itemDefinition == null || itemDefinition instanceof PrismObjectDefinition,
-                "Cannot parse object from element %s, the element does not define an object, it is defined as %s",itemName, itemDefinition);
+                "Cannot parse object from element %s, the element does not define an object, it is defined as %s", itemName, itemDefinition);
         ItemInfo<?> itemInfo = ItemInfo.determine(itemDefinition,
                 root.getRootElementName(), itemName, ARTIFICIAL_OBJECT_NAME,
                 root.getTypeQName(), typeName,
@@ -255,21 +245,21 @@ public class PrismUnmarshaller {
 
     private Long getContainerId(MapXNodeImpl xmap, PrismContainerDefinition<?> containerDef) throws SchemaException {
         PrimitiveXNodeImpl<Object> maybeId = xmap.getPrimitive(XNodeImpl.KEY_CONTAINER_ID);
-        if(isContainerId(XNodeImpl.KEY_CONTAINER_ID, maybeId, containerDef)) {
+        if (isContainerId(XNodeImpl.KEY_CONTAINER_ID, maybeId, containerDef)) {
             return maybeId.getParsedValue(DOMUtil.XSD_LONG, Long.class);
         }
         return null;
     }
 
     private boolean isContainerId(QName itemName, XNodeImpl node, PrismContainerDefinition<?> parentDef) {
-        if(node instanceof PrimitiveXNodeImpl<?> && QNameUtil.match(itemName, XNodeImpl.KEY_CONTAINER_ID)) {
-            if(((PrimitiveXNodeImpl<?>)node).isAttribute()) {
+        if (node instanceof PrimitiveXNodeImpl<?> && QNameUtil.match(itemName, XNodeImpl.KEY_CONTAINER_ID)) {
+            if (((PrimitiveXNodeImpl<?>) node).isAttribute()) {
                 return true;
             }
-            if(parentDef.isRuntimeSchema() && itemName.getNamespaceURI() != null) {
+            if (parentDef.isRuntimeSchema() && itemName.getNamespaceURI() != null) {
                 return false;
             }
-            if(idDef(parentDef) == null) {
+            if (idDef(parentDef) == null) {
                 return true;
             }
         }
@@ -278,9 +268,6 @@ public class PrismUnmarshaller {
 
     /**
      * Returns an item with name "id".
-     *
-     * @param containerDef
-     * @return
      */
     private ItemDefinition<?> idDef(PrismContainerDefinition<?> containerDef) {
         if (containerDef == null) {
@@ -385,7 +372,7 @@ public class PrismUnmarshaller {
 
             if (itemDef == null) {
                 boolean shouldContinue = handleMissingDefinition(itemName, containerDef, complexTypeDefinition, pc, map);
-                if(shouldContinue) {
+                if (shouldContinue) {
                     continue;
                 }
 
@@ -412,7 +399,7 @@ public class PrismUnmarshaller {
         SchemaMigration migration = determineSchemaMigration(typeDefinition, itemName);
         if (migration != null && pc.isCompat()) {
             if (migration.getOperation() == SchemaMigrationOperation.REMOVED) {
-                String msg = "Item "+itemName+" was removed from the schema, skipped processing of that item";
+                String msg = "Item " + itemName + " was removed from the schema, skipped processing of that item";
                 pc.warn(LOGGER, msg);
                 return true;
             } else {
@@ -547,7 +534,7 @@ public class PrismUnmarshaller {
                 ppv.setPrismContext(prismContext);
                 rv = ppv;
             }
-        } else if (pc.isConvertUnknownTypes()){
+        } else if (pc.isConvertUnknownTypes()) {
             node = node.clone();
             // We need to remove xsi:type
             node.setTypeQName(null);
@@ -707,7 +694,7 @@ public class PrismUnmarshaller {
         PrismObjectDefinition<Objectable> objectDefinition = null;
         if (targetType != null) {
             objectDefinition = checkSchemaNotNull(schemaRegistry.findObjectDefinitionByType(targetType),
-                    "No definition for type %s in reference",targetType);
+                    "No definition for type %s in reference", targetType);
             refVal.setTargetType(targetType);
         }
 
@@ -838,7 +825,7 @@ public class PrismUnmarshaller {
         return schemaRegistry.locateItemDefinition(itemName, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
     }
 
-    private ItemDefinition<?> createDynamicItemDefinition(QName itemName, XNode node)  {
+    private ItemDefinition<?> createDynamicItemDefinition(QName itemName, XNode node) {
         if (node == null) {
             return null;
         }
@@ -859,7 +846,7 @@ public class PrismUnmarshaller {
             return null;
         }
 
-        PrismPropertyDefinitionImpl <?> propDef = new PrismPropertyDefinitionImpl<>(itemName, typeName);
+        PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(itemName, typeName);
         Integer maxOccurs = node.getMaxOccurs();
         if (maxOccurs != null) {
             propDef.setMaxOccurs(maxOccurs);
@@ -875,7 +862,11 @@ public class PrismUnmarshaller {
 
     //TODO
     public <T extends Containerable> ItemDefinition<?> locateItemDefinition(
-            @NotNull PrismContainerDefinition<T> containerDefinition, @NotNull QName itemName, @Nullable XNode xnode) {
-        return locateItemDefinition(itemName, containerDefinition.getComplexTypeDefinition(), xnode);
+            @NotNull ItemDefinition<?> containerDefinition, @NotNull QName itemName, @Nullable XNode xnode) {
+        if (containerDefinition instanceof PrismContainerDefinition) {
+            return locateItemDefinition(itemName,
+                    ((PrismContainerDefinition<?>) containerDefinition).getComplexTypeDefinition(), xnode);
+        }
+        throw new UnsupportedOperationException("Now what?"); // TODO finish this case... if needed
     }
 }
