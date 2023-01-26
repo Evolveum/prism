@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -60,10 +60,17 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
         freeze(filter);
     }
 
-    public static <C extends Containerable> ExistsFilter createExists(
-            ItemPath itemPath, PrismContainerDefinition<C> containerDef, ObjectFilter filter) {
-        ItemDefinition<?> itemDefinition = FilterImplUtil.findItemDefinition(itemPath, containerDef);
-        return new ExistsFilterImpl(itemPath, itemDefinition, filter);
+    public static ExistsFilter createExists(
+            ItemPath itemPath, ItemDefinition<?> containerDef, ObjectFilter filter) {
+        if (containerDef instanceof PrismContainerDefinition) {
+            ItemDefinition<?> itemDefinition =
+                    FilterImplUtil.findItemDefinition(
+                            itemPath, (PrismContainerDefinition<? extends Containerable>) containerDef);
+            return new ExistsFilterImpl(itemPath, itemDefinition, filter);
+        }
+        throw new UnsupportedOperationException(
+                "Not supported for non-container definitions, itemPath=" + itemPath + ", "
+                        + " containerDef=" + containerDef + ", filter: " + filter);
     }
 
     public static <C extends Containerable> ExistsFilter createExists(

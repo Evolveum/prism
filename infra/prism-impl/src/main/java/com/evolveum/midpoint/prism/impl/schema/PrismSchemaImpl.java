@@ -362,7 +362,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
                 if (def instanceof PrismContainerDefinition) {
                     @SuppressWarnings("unchecked")
                     ID contDef = (ID) def;
-                    if (compileTimeClass.equals(((PrismContainerDefinition) contDef).getCompileTimeClass())) {
+                    if (compileTimeClass.equals(((PrismContainerDefinition<?>) contDef).getCompileTimeClass())) {
                         found.add(contDef);
                     }
                 } else if (def instanceof PrismPropertyDefinition) {
@@ -372,7 +372,11 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
                         found.add(itemDef);
                     }
                 } else {
-                    // skipping the definition (PRD is not supported yet)
+                    // Skipping the definition, PRD is not supported here.
+                    // Currently, this does not work sensibly for midPoint because it has multiple top-level
+                    // elements for ObjectReferenceType (not to mention it's common-3, not Prism ORT).
+                    // Instead, use findItemDefinitionsByElementName(...) to find the reference definition
+                    // by well-known top-level element name .
                 }
             }
         }

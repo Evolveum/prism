@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Evolveum and contributors
+ * Copyright (C) 2018-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -12,6 +12,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPAC
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.testng.AssertJUnit;
@@ -24,6 +25,7 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.foo.AssignmentType;
 import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.query.PrismQueryLanguageParser;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.tools.testng.AbstractUnitTest;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -134,7 +136,7 @@ public abstract class AbstractPrismTest extends AbstractUnitTest {
     }
 
     protected boolean assignmentMatches(PrismContainerValue<AssignmentType> assignmentValue, Long expectedId, String expectedDescription) {
-        if (assignmentValue.getId() != expectedId) {
+        if (!Objects.equals(assignmentValue.getId(), expectedId)) {
             return false;
         }
         String description = assignmentValue.getPropertyRealValue(AssignmentType.F_DESCRIPTION, String.class);
@@ -184,4 +186,7 @@ public abstract class AbstractPrismTest extends AbstractUnitTest {
         return user;
     }
 
+    protected PrismQueryLanguageParser queryParser() {
+        return PrismTestUtil.getPrismContext().createQueryParser();
+    }
 }
