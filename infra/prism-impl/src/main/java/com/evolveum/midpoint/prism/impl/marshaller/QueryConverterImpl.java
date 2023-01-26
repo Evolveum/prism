@@ -119,7 +119,7 @@ public class QueryConverterImpl implements QueryConverter {
         return parseFilterInternal(xmap, pcd, false, null);
     }
 
-    private <O extends Containerable> ObjectFilter parseFilter(MapXNode xmap, ItemDefinition<?> def) throws SchemaException {
+    private ObjectFilter parseFilter(MapXNode xmap, ItemDefinition<?> def) throws SchemaException {
         if (xmap == null) {
             return null;
         }
@@ -128,15 +128,21 @@ public class QueryConverterImpl implements QueryConverter {
 
     @Override
     public ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull Class<?> clazz) throws SchemaException {
-        ItemDefinition<?> def = Referencable.class.isAssignableFrom(clazz)
-                ? PrismContext.get().definitionFactory().createReferenceDefinition(
-                PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE)
-                : prismContext.getSchemaRegistry()
-                .findItemDefinitionByCompileTimeClass(clazz, ItemDefinition.class);
+        ItemDefinition<?> def = getItemDefinitionForTypeClass(clazz);
         if (def == null) {
             throw new SchemaException("Cannot find container definition for " + clazz);
         }
         return parseFilter(filter, def);
+    }
+
+    private ItemDefinition<?> getItemDefinitionForTypeClass(@NotNull Class<?> clazz) {
+        if (Referencable.class.isAssignableFrom(clazz)) {
+            return PrismContext.get().definitionFactory().createReferenceDefinition(
+                    PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE);
+        } else {
+            return prismContext.getSchemaRegistry()
+                    .findItemDefinitionByCompileTimeClass(clazz, ItemDefinition.class);
+        }
     }
 
     @Override
@@ -154,7 +160,7 @@ public class QueryConverterImpl implements QueryConverter {
         return prismContext.createQueryParser(context.allPrefixes()).parseFilter(def, filter);
     }
 
-    private <C extends Containerable> ObjectFilter parseFilterInternal(
+    private ObjectFilter parseFilterInternal(
             @NotNull MapXNodeImpl filterXMap,
             @Nullable ItemDefinition<?> pcd,
             boolean preliminaryParsingOnly,
@@ -165,7 +171,7 @@ public class QueryConverterImpl implements QueryConverter {
         return parseFilterInternal(clauseContent, clauseQName, pcd, preliminaryParsingOnly, pc);
     }
 
-    private <C extends Containerable> ObjectFilter parseFilterInternal(XNodeImpl clauseContent, QName clauseQName,
+    private ObjectFilter parseFilterInternal(XNodeImpl clauseContent, QName clauseQName,
             ItemDefinition<?> pcd, boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
 
         // trivial filters
@@ -333,7 +339,7 @@ public class QueryConverterImpl implements QueryConverter {
         throw new SchemaException("Element text must contain textual filter");
     }
 
-    private <C extends Containerable> AndFilter parseAndFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
+    private AndFilter parseAndFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
             boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
         List<ObjectFilter> subFilters = parseLogicalFilter(clauseXMap, pcd, preliminaryParsingOnly, pc);
         if (preliminaryParsingOnly) {
@@ -364,7 +370,7 @@ public class QueryConverterImpl implements QueryConverter {
         return subFilters;
     }
 
-    private <C extends Containerable> OrFilter parseOrFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
+    private OrFilter parseOrFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
             boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
         List<ObjectFilter> subFilters = parseLogicalFilter(clauseXMap, pcd, preliminaryParsingOnly, pc);
         if (preliminaryParsingOnly) {
@@ -374,7 +380,7 @@ public class QueryConverterImpl implements QueryConverter {
         }
     }
 
-    private <C extends Containerable> NotFilter parseNotFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
+    private NotFilter parseNotFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
             boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
         Entry<QName, XNodeImpl> entry = singleSubEntry(clauseXMap, "not");
         ObjectFilter subfilter = parseFilterInternal(entry.getValue(), entry.getKey(), pcd, preliminaryParsingOnly, pc);
@@ -662,7 +668,7 @@ public class QueryConverterImpl implements QueryConverter {
         }
     }
 
-    private <C extends Containerable> RefFilter parseRefFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
+    private RefFilter parseRefFilter(MapXNodeImpl clauseXMap, ItemDefinition<?> pcd,
             boolean preliminaryParsingOnly, ParsingContext pc) throws SchemaException {
         ItemPath itemPath = getPath(clauseXMap);
 
@@ -1202,7 +1208,7 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     @Override
-    public <C extends Containerable> ObjectQuery createObjectQuery(Class<C> clazz, QueryType queryType)
+    public ObjectQuery createObjectQuery(Class<?> clazz, QueryType queryType)
             throws SchemaException {
         if (queryType == null) {
             return null;
@@ -1211,31 +1217,31 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     @Override
-    public <C extends Containerable> ObjectQuery createObjectQuery(Class<C> clazz, SearchFilterType filterType)
+    public ObjectQuery createObjectQuery(Class<?> clazz, SearchFilterType filterType)
             throws SchemaException {
         return createObjectQueryInternal(clazz, filterType, null);
     }
 
     @Override
-    public <C extends Containerable> ObjectFilter createObjectFilter(Class<C> clazz, SearchFilterType filterType)
+    public ObjectFilter createObjectFilter(Class<?> clazz, SearchFilterType filterType)
             throws SchemaException {
         ObjectQuery query = createObjectQueryInternal(clazz, filterType, null);
         return query.getFilter();
     }
 
     @Override
-    public <C extends Containerable> ObjectFilter createObjectFilter(PrismContainerDefinition<C> containerDefinition,
-            SearchFilterType filterType)
+    public ObjectFilter createObjectFilter(
+            ItemDefinition<?> objDef, SearchFilterType filterType)
             throws SchemaException {
-        ObjectQuery query = createObjectQueryInternal(containerDefinition, filterType, null);
+        ObjectQuery query = createObjectQueryInternal(objDef, filterType, null);
         return query.getFilter();
     }
 
     @NotNull
-    private <O extends Containerable> ObjectQuery createObjectQueryInternal(Class<O> clazz, SearchFilterType filterType,
-            PagingType pagingType)
+    private ObjectQuery createObjectQueryInternal(
+            Class<?> clazz, SearchFilterType filterType, PagingType pagingType)
             throws SchemaException {
-        PrismContainerDefinition<O> objDef = prismContext.getSchemaRegistry().findContainerDefinitionByCompileTimeClass(clazz);
+        ItemDefinition<?> objDef = getItemDefinitionForTypeClass(clazz);
         if (objDef == null) {
             throw new SchemaException("cannot find obj/container definition for class " + clazz);
         } else {
@@ -1244,8 +1250,8 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     @NotNull
-    private <O extends Containerable> ObjectQuery createObjectQueryInternal(PrismContainerDefinition<O> objDef,
-            SearchFilterType filterType, PagingType pagingType)
+    private ObjectQuery createObjectQueryInternal(
+            ItemDefinition<?> objDef, SearchFilterType filterType, PagingType pagingType)
             throws SchemaException {
 
         try {

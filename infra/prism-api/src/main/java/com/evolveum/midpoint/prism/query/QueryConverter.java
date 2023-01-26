@@ -40,9 +40,9 @@ public interface QueryConverter {
 
     // 1b. Parsing queries
 
-    <C extends Containerable> ObjectQuery createObjectQuery(Class<C> clazz, QueryType queryType) throws SchemaException;
+    ObjectQuery createObjectQuery(Class<?> clazz, QueryType queryType) throws SchemaException;
 
-    <C extends Containerable> ObjectQuery createObjectQuery(Class<C> clazz, SearchFilterType filterType) throws SchemaException;
+    ObjectQuery createObjectQuery(Class<?> clazz, SearchFilterType filterType) throws SchemaException;
 
     // 2. Serializing
 
@@ -50,10 +50,10 @@ public interface QueryConverter {
 
     SearchFilterType createSearchFilterType(ObjectFilter filter) throws SchemaException;
 
-    <C extends Containerable> ObjectFilter createObjectFilter(Class<C> clazz, SearchFilterType filterType)
+    ObjectFilter createObjectFilter(Class<?> clazz, SearchFilterType filterType)
             throws SchemaException;
 
-    <C extends Containerable> ObjectFilter createObjectFilter(PrismContainerDefinition<C> containerDefinition, SearchFilterType filterType)
+    ObjectFilter createObjectFilter(ItemDefinition<?> containerDefinition, SearchFilterType filterType)
             throws SchemaException;
 
     MapXNode serializeFilter(ObjectFilter filter) throws SchemaException;

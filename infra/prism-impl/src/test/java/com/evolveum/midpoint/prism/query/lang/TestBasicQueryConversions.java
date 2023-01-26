@@ -35,7 +35,10 @@ import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.*;
+import com.evolveum.midpoint.prism.query.FullTextFilter;
+import com.evolveum.midpoint.prism.query.ObjectFilter;
+import com.evolveum.midpoint.prism.query.ObjectQuery;
+import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
@@ -57,12 +60,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         return PrismTestUtil.parseObject(FILE_USER_JACK_FILTERS);
     }
 
-    private PrismQueryLanguageParser parser() {
-        return PrismTestUtil.getPrismContext().createQueryParser();
-    }
-
     private ObjectFilter parse(String query) throws SchemaException {
-        return parser().parseFilter(UserType.class, query);
+        return queryParser().parseFilter(UserType.class, query);
     }
 
     private void verify(String query, ObjectFilter original) throws SchemaException, IOException {
@@ -78,7 +77,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     }
 
     private void verify(Class<? extends Containerable> type, String query, ObjectFilter expectedFilter) throws SchemaException, NotSupportedException {
-        ObjectFilter dslFilter = parser().parseFilter(type, query);
+        ObjectFilter dslFilter = queryParser().parseFilter(type, query);
         assertFilterEquals(dslFilter, expectedFilter);
 
         PrismQuerySerialization toAxiom = getPrismContext().querySerializer().serialize(dslFilter, PrismNamespaceContext.of(UserType.COMPLEX_TYPE.getNamespaceURI()));
@@ -576,7 +575,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     @Test
     public void testRefSearchWithOwnedByOnly() throws Exception {
-        ObjectFilter objectFilter = parser().parseFilter(Referencable.class,
+        ObjectFilter objectFilter = queryParser().parseFilter(Referencable.class,
                 ". ownedBy (@type = UserType and @path = accountRef)");
         Assertions.assertThat(objectFilter).hasToString(
                 "OWNED-BY(CTD ({.../test/foo-1.xsd}UserType),accountRef,null)");
@@ -584,7 +583,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     @Test
     public void testRefSearchWithOwnedByAndRefFilter() throws Exception {
-        ObjectFilter objectFilter = parser().parseFilter(Referencable.class,
+        ObjectFilter objectFilter = queryParser().parseFilter(Referencable.class,
                 ". ownedBy (@type = UserType and @path = accountRef)"
                         + " and . matches (oid = 'c0c010c0-d34d-b33f-f00d-aaaaaaaa1113')");
         Assertions.assertThat(objectFilter).hasToString("AND("
