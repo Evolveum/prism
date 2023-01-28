@@ -852,4 +852,11 @@ public class ValueMetadataAdapter implements ValueMetadata {
     public ComplexTypeDefinition getComplexTypeDefinition() {
         return delegate.getComplexTypeDefinition();
     }
+
+    @Override
+    public String toString() {
+        return "ValueMetadataAdapter{" +
+                "delegate=" + delegate +
+                '}';
+    }
 }

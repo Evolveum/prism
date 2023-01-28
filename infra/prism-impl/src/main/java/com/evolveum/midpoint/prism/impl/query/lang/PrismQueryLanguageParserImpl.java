@@ -897,7 +897,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return parent.findItemDefinition(path, type);
         }
 
-        schemaCheck(typeDef != null && parent instanceof PrismContainerDefinition,
+        // OR parent == null is necessary to resolve additional conditions in ownedBy (e.g. name = 'xy')
+        schemaCheck(typeDef != null && (parent instanceof PrismContainerDefinition || parent == null),
                 "Only references and containers are supported");
         return typeDef.findItemDefinition(path, type);
     }

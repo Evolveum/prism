@@ -582,6 +582,14 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
     }
 
     @Test
+    public void testRefSearchWithOwnedByWithAdditionalOwnerCondition() throws Exception {
+        ObjectFilter objectFilter = queryParser().parseFilter(Referencable.class,
+                ". ownedBy (@type = UserType and @path = accountRef and name = 'xy')");
+        Assertions.assertThat(objectFilter).hasToString(
+                "OWNED-BY(CTD ({.../test/foo-1.xsd}UserType),accountRef,EQUAL: name, PPV(PolyString:xy))");
+    }
+
+    @Test
     public void testRefSearchWithOwnedByAndRefFilter() throws Exception {
         ObjectFilter objectFilter = queryParser().parseFilter(Referencable.class,
                 ". ownedBy (@type = UserType and @path = accountRef)"

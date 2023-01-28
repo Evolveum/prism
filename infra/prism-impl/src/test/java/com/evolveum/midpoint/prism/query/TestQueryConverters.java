@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism.query;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -24,6 +25,7 @@ import org.xml.sax.SAXException;
 import com.evolveum.midpoint.prism.AbstractPrismTest;
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismInternalTestUtil;
+import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.xnode.ListXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
@@ -166,6 +168,21 @@ public class TestQueryConverters extends AbstractPrismTest {
         QueryType convertedQueryType = toQueryType(query);
         System.out.println("Re-converted query type");
         System.out.println(convertedQueryType.debugDump());
+    }
+
+    @Test
+    public void testReferenceSearchFilterRoundtrip() throws SchemaException {
+        given("reference search object filter");
+        ObjectFilter origFilter = queryParser().parseFilter(Referencable.class,
+                ". ownedBy (@type = UserType and @path = accountRef)");
+
+        when("converting it to search filter and back");
+        QueryConverter queryConverter = getPrismContext().getQueryConverter();
+        SearchFilterType searchFilter = queryConverter.createSearchFilterType(origFilter);
+        ObjectFilter finalFilter = queryConverter.createObjectFilter(Referencable.class, searchFilter);
+
+        then("the final filter is still the same like the original one");
+        assertThat(origFilter).isEqualTo(finalFilter);
     }
 
     private ObjectQuery toObjectQuery(Class<? extends Containerable> type, SearchFilterType filterType) throws Exception {
