@@ -878,6 +878,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         Item<V, D> currentItem = object.findItem(getPath());
         if (currentItem == null) {
             return narrowWhenNoItem(object, assumeMissingItems);
+        } else if (currentItem.isIncomplete() && currentItem.hasNoValues() && assumeMissingItems) {
+            return this;
         } else {
             if (isReplace()) {
                 return narrowReplaceDelta(currentItem, plusComparator);
@@ -892,7 +894,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     @Nullable
     private ItemDelta<V, D> narrowWhenNoItem(PrismObject<? extends Objectable> object, boolean assumeMissingItems) {
         if (assumeMissingItems || object.isIncomplete()) {
-            return this; // we know nothing about missing item
+            return this; // we know nothing about missing item; TODO but why we are checking "object.isIncomplete?"
         } else if (valuesToDelete != null) {
             ItemDelta<V, D> clone = clone();
             clone.resetValuesToDelete();
