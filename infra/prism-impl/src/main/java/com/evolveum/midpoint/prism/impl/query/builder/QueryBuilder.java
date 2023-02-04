@@ -101,13 +101,18 @@ public final class QueryBuilder {
         return queryFor(queryClass, prismContext, null);
     }
 
+    /**
+     * Creates a builder for reference search defined by specified owner and reference path.
+     * This creates the necessary owned-by filter and one can immediately write owner nested filter,
+     * or continue with {@link S_FilterEntryOrEmpty#and()} to add additional ref filter for self path,
+     * or finish the query with {@link S_FilterEntryOrEmpty#build()}.
+     */
     public static S_FilterEntryOrEmpty queryForReferenceOwnedBy(
             Class<? extends Containerable> ownerClass, ItemPath referencePath, PrismContext prismContext) {
         PrismReferenceDefinition refDefinition =
                 DefinitionUtil.findItemDefinitionMandatory(
                         prismContext, ownerClass, referencePath, PrismReferenceDefinition.class);
-        return R_Filter
-                .create(
+        return R_Filter.create(
                         new QueryBuilder(Referencable.class, prismContext, null),
                         refDefinition)
                 .ownedBy(ownerClass, referencePath);
