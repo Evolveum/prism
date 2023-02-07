@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 import javax.xml.namespace.QName;
 import java.util.List;
@@ -21,6 +22,9 @@ import java.util.List;
  *
  */
 public interface S_ItemEntry {
+
+    /** Should we skip idempotent item deltas? (Default is `false`.) */
+    @Experimental S_ItemEntry optimizing();
 
     S_ValuesEntry item(QName... names);
     S_ValuesEntry item(Object... namesOrIds);
