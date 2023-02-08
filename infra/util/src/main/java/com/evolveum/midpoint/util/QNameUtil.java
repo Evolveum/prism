@@ -241,13 +241,7 @@ public class QNameUtil {
     }
 
     public static boolean unorderedCollectionMatch(Collection<QName> a, Collection<QName> b) {
-        return MiscUtil.unorderedCollectionCompare(a, b, (o1, o2) -> {
-            if (match(o1, o2)) {
-                return 0;
-            } else {
-                return 1;
-            }
-        });
+        return MiscUtil.unorderedCollectionEquals(a, b, (o1, o2) -> match(o1, o2));
     }
 
     /**

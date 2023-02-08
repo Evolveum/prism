@@ -38,8 +38,6 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import com.evolveum.midpoint.util.exception.*;
-
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
+import com.evolveum.midpoint.util.exception.*;
 
 /**
  * @author semancik
@@ -95,19 +94,25 @@ public class MiscUtil {
 
     /**
      * Only zero vs non-zero value of comparator is important.
+     * Prefer other {@code unorderedCollectionEquals} whenever possible.
+     * If you are provided with comparator for good reason, you may use this.
+     * If you create comparator for this method, you probably should create {@link EqualsChecker} instead.
      */
-    public static <T> boolean unorderedCollectionCompare(Collection<T> a, Collection<T> b, Comparator<T> comparator) {
+    public static <T> boolean unorderedCollectionEqualsWithComparator(
+            Collection<T> a, Collection<T> b, Comparator<T> comparator) {
         if (comparator == null) {
             return unorderedCollectionEquals(a, b);
         } else {
-            return unorderedCollectionEquals(a, b, (xa, xb) -> comparator.compare(xa, xb) == 0);
+            return unorderedCollectionEquals(a, b,
+                    (EqualsChecker<T>) (xa, xb) -> comparator.compare(xa, xb) == 0);
         }
     }
 
     /**
      * Only zero vs non-zero value of comparator is important.
      */
-    public static <A, B> boolean unorderedCollectionEquals(Collection<A> a, Collection<B> b, HeteroComparator<A, B> comparator) {
+    public static <A, B> boolean unorderedCollectionEquals(
+            Collection<A> a, Collection<B> b, HeteroEqualsChecker<A, B> comparator) {
         if (a == null && b == null) {
             return true;
         }
@@ -124,7 +129,7 @@ public class MiscUtil {
             Iterator<B> iterator = outstanding.iterator();
             while (iterator.hasNext()) {
                 B oo = iterator.next();
-                if (comparator.isEquivalent(ao, oo)) {
+                if (comparator.test(ao, oo)) {
                     iterator.remove();
                     found = true;
                     break;
@@ -653,7 +658,8 @@ public class MiscUtil {
         }
     }
 
-    public @NotNull static <T> T extractSingletonRequired(Collection<T> collection) {
+    public @NotNull
+    static <T> T extractSingletonRequired(Collection<T> collection) {
         return extractSingletonRequired(collection,
                 () -> new IllegalArgumentException("Multiple values in " + collection),
                 () -> new IllegalArgumentException("No values"));
@@ -930,7 +936,8 @@ public class MiscUtil {
             Constructor<? extends Throwable> constructor = original.getClass().getConstructor(String.class, Throwable.class);
             //noinspection unchecked
             return (T) constructor.newInstance(message, original);
-        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             // We won't try to be smart. Not possible to instantiate the exception, so won't bother.
             // E.g. if it would not be possible to enclose inner exception in outer one, it's better to keep the original
             // to preserve the stack trace.
@@ -1066,7 +1073,7 @@ public class MiscUtil {
      */
     public static void sleepNonInterruptibly(long delay) {
         long sleepUntil = System.currentTimeMillis() + delay;
-        for (;;) {
+        for (; ; ) {
             long delta = sleepUntil - System.currentTimeMillis();
             if (delta <= 0) {
                 break; // we have slept enough
@@ -1243,7 +1250,7 @@ public class MiscUtil {
     public static String replaceIllegalCharInFileNameOnWindows(String path) {
         if (onWindows()) {
             return path
-                    .replaceAll( "[\\\\|\\*|\\:|\\||\"|\\<|\\>|\\?]+", "_")
+                    .replaceAll("[\\\\|\\*|\\:|\\||\"|\\<|\\>|\\?]+", "_")
                     .replaceAll("_{1,} _{1,}| _{1,}|_{1,} ", " ")
                     .replaceAll("_{2,}", "_");
         } else {

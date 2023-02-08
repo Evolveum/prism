@@ -8,7 +8,6 @@ package com.evolveum.midpoint.prism.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1159,16 +1158,11 @@ public class PrismAsserts {
         for (String expectedValue : expectedValues) {
             expectedCollection.add(new PolyStringType(expectedValue));
         }
-        Comparator<PolyStringType> comparator = new Comparator<PolyStringType>() {
-            @Override
-            public int compare(PolyStringType o1, PolyStringType o2) {
-                String s1 = o1 != null && o1.getOrig() != null ? o1.getOrig() : "";
-                String s2 = o2 != null && o2.getOrig() != null ? o2.getOrig() : "";
-                return s1.compareTo(s2);
-            }
-        };
-        assert MiscUtil.unorderedCollectionCompare(actualCollection, expectedCollection, comparator) : message + ": expected "+expectedCollection+
-                "; was "+actualCollection;
+        assert MiscUtil.unorderedCollectionEquals(actualCollection, expectedCollection, (o1, o2) -> {
+            String s1 = o1 != null && o1.getOrig() != null ? o1.getOrig() : "";
+            String s2 = o2 != null && o2.getOrig() != null ? o2.getOrig() : "";
+            return s1.equals(s2);
+        }) : message + ": expected " + expectedCollection + "; was " + actualCollection;
     }
 
     public static void assertAssignableFrom(Class<?> expected, Class<?> actual) {

@@ -73,7 +73,6 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     protected Collection<V> valuesToDelete = null;
     private Collection<V> estimatedOldValues = null;
 
-
     ItemDeltaImpl(D itemDefinition, PrismContext prismContext) {
         if (itemDefinition == null) {
             throw new IllegalArgumentException("Attempt to create item delta without a definition");
@@ -917,7 +916,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         // changes the state of the target item: values are being updated. So if we use e.g.
         // "ignore metadata" strategy then value metadata can be lost upon delta narrowing.
         if (!currentItem.isIncomplete() &&
-                MiscUtil.unorderedCollectionCompare(currentItem.getValues(), valuesToReplace, comparator)) {
+                MiscUtil.unorderedCollectionEqualsWithComparator(currentItem.getValues(), valuesToReplace, comparator)) {
             return null;
         } else {
             return this;
@@ -1830,7 +1829,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     private void assertDefinitions(boolean tolerateRawValues, Collection<V> values,
-        Supplier<String> sourceDescriptionSupplier) throws SchemaException {
+            Supplier<String> sourceDescriptionSupplier) throws SchemaException {
         if (values == null) {
             return;
         }
@@ -1921,12 +1920,12 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     @Override
     public boolean equivalent(ItemDelta other) {
         if (elementName == null) {
-            if (other.getElementName() != null) { return false; }
+            if (other.getElementName() != null) {return false;}
         } else if (!QNameUtil.match(elementName, other.getElementName())) {
             return false;
         }
         if (parentPath == null) {
-            if (other.getParentPath() != null) { return false; }
+            if (other.getParentPath() != null) {return false;}
         } else if (!parentPath.equivalent(other.getParentPath())) {
             return false;
         }
@@ -1944,22 +1943,22 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) { return true; }
-        if (obj == null) { return false; }
-        if (getClass() != obj.getClass()) { return false; }
+        if (this == obj) {return true;}
+        if (obj == null) {return false;}
+        if (getClass() != obj.getClass()) {return false;}
         ItemDeltaImpl other = (ItemDeltaImpl) obj;
         if (definition == null) {
-            if (other.definition != null) { return false; }
+            if (other.definition != null) {return false;}
         } else if (!definition.equals(other.definition)) {
             return false;
         }
         if (elementName == null) {
-            if (other.elementName != null) { return false; }
+            if (other.elementName != null) {return false;}
         } else if (!elementName.equals(other.elementName)) {
             return false;
         }
         if (parentPath == null) {
-            if (other.parentPath != null) { return false; }
+            if (other.parentPath != null) {return false;}
         } else if (!parentPath.equivalent(other.parentPath)) {                   // or "equals" ?
             return false;
         }
