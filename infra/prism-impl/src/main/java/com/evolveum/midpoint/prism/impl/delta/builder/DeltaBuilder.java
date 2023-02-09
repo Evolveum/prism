@@ -9,6 +9,9 @@ package com.evolveum.midpoint.prism.impl.delta.builder;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,6 +51,9 @@ public class DeltaBuilder<C extends Containerable>
     private final ComplexTypeDefinition containerCTD;
     private final PrismContext prismContext;
 
+    /** Should we skip idempotent item deltas? */
+    @Experimental private final boolean optimizing;
+
     /** Useful if one wants to create definition-ful deltas (e.g. for resource objects). */
     @Nullable private final ItemDefinitionResolver itemDefinitionResolver;
 
@@ -66,18 +72,21 @@ public class DeltaBuilder<C extends Containerable>
         }
         deltas = new ArrayList<>();
         currentDelta = null;
+        optimizing = false;
     }
 
     private DeltaBuilder(
             Class<C> objectClass,
             ComplexTypeDefinition containerCTD,
             PrismContext prismContext,
+            boolean optimizing,
             @Nullable ItemDefinitionResolver itemDefinitionResolver,
             List<ItemDelta<?, ?>> deltas,
             ItemDelta currentDelta) {
         this.objectClass = objectClass;
         this.containerCTD = containerCTD;
         this.prismContext = prismContext;
+        this.optimizing = optimizing;
         this.itemDefinitionResolver = itemDefinitionResolver;
         this.deltas = deltas;
         this.currentDelta = currentDelta;
@@ -89,6 +98,12 @@ public class DeltaBuilder<C extends Containerable>
 
     public PrismContext getPrismContext() {
         return prismContext;
+    }
+
+    @Override
+    public S_ItemEntry optimizing() {
+        return new DeltaBuilder<>(
+                objectClass, containerCTD, prismContext, true, itemDefinitionResolver, deltas, currentDelta);
     }
 
     @Override
@@ -140,10 +155,36 @@ public class DeltaBuilder<C extends Containerable>
             throw new IllegalStateException("Unsupported definition type: " + definition);
         }
         List<ItemDelta<?, ?>> newDeltas = deltas;
-        if (currentDelta != null) {
+        if (shouldApplyCurrent()) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder<>(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
+        return new DeltaBuilder<>(
+                objectClass, containerCTD, prismContext, optimizing, itemDefinitionResolver, newDeltas, newDelta);
+    }
+
+    private boolean shouldApplyCurrent() {
+        if (currentDelta == null) {
+            return false;
+        }
+        if (!optimizing) {
+            return true;
+        }
+        if (currentDelta.isEmpty()) {
+            return false;
+        }
+        Collection<?> estimatedOldValues = currentDelta.getEstimatedOldValues();
+        Collection<?> valuesToAdd = currentDelta.getValuesToAdd();
+        Collection<?> valuesToDelete = currentDelta.getValuesToDelete();
+        Collection<?> valuesToReplace = currentDelta.getValuesToReplace();
+        if (estimatedOldValues == null) {
+            return true; // We cannot tell anything about idempotency of this delta, as old values are unknown
+        }
+        if (valuesToReplace != null) {
+            return !MiscUtil.unorderedCollectionEquals(estimatedOldValues, valuesToReplace);
+        } else {
+            return (valuesToAdd != null && !CollectionUtils.containsAll(estimatedOldValues, valuesToAdd))
+                    || (valuesToDelete != null && CollectionUtils.containsAny(estimatedOldValues, valuesToDelete));
+        }
     }
 
     @Override
@@ -169,7 +210,8 @@ public class DeltaBuilder<C extends Containerable>
         if (currentDelta != null) {
             newDeltas.add(currentDelta);
         }
-        return new DeltaBuilder<>(objectClass, containerCTD, prismContext, itemDefinitionResolver, newDeltas, newDelta);
+        return new DeltaBuilder<>(
+                objectClass, containerCTD, prismContext, optimizing, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     // TODO fix this after ObjectDelta is changed to accept Containerable
@@ -202,7 +244,7 @@ public class DeltaBuilder<C extends Containerable>
     }
 
     private List<ItemDelta<?, ?>> getAllDeltas() {
-        if (currentDelta != null) {
+        if (shouldApplyCurrent()) {
             deltas.add(currentDelta);
         }
         return deltas;
@@ -250,6 +292,7 @@ public class DeltaBuilder<C extends Containerable>
 
     @Override
     public S_ValuesEntry oldRealValues(Collection<?> realValues) {
+        setOldValuesIfNeeded();
         for (Object v : realValues) {
             if (v != null) {
                 currentDelta.addEstimatedOldValue(toPrismValue(currentDelta, v));
@@ -258,8 +301,16 @@ public class DeltaBuilder<C extends Containerable>
         return this;
     }
 
+    private void setOldValuesIfNeeded() {
+        if (currentDelta.getEstimatedOldValues() == null) {
+            //noinspection unchecked
+            currentDelta.setEstimatedOldValues(new ArrayList<>()); // ugly but necessary
+        }
+    }
+
     @Override
     public <T> S_ValuesEntry oldRealValue(T realValue) {
+        setOldValuesIfNeeded();
         if (realValue != null) {
             currentDelta.addEstimatedOldValue(toPrismValue(currentDelta, realValue));
         }
@@ -268,6 +319,7 @@ public class DeltaBuilder<C extends Containerable>
 
     @Override
     public S_ValuesEntry old(PrismValue... values) {
+        setOldValuesIfNeeded();
         for (PrismValue v : values) {
             if (v != null) {
                 currentDelta.addEstimatedOldValue(v);
@@ -278,6 +330,7 @@ public class DeltaBuilder<C extends Containerable>
 
     @Override
     public S_ValuesEntry old(Collection<? extends PrismValue> values) {
+        setOldValuesIfNeeded();
         for (PrismValue v : values) {
             if (v != null) {
                 currentDelta.addEstimatedOldValue(v);
