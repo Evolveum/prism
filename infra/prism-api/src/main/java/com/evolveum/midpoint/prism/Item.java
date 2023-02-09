@@ -500,7 +500,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
      * (or null if no such value exists)
      */
     default V findValue(V value, @NotNull Comparator<V> comparator) {
-        return MiscUtil.find(getValues(), value, comparator);
+        return MiscUtil.findWithComparator(getValues(), value, comparator);
     }
 
     /**

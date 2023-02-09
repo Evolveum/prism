@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2021 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -146,14 +146,13 @@ public class MiscUtil {
     }
 
     public static <T> boolean unorderedArrayEquals(T[] a, T[] b) {
-        Comparator<T> comparator = (o1, o2) -> o1.equals(o2) ? 0 : 1;
-        return unorderedArrayEquals(a, b, comparator);
+        return unorderedArrayEquals(a, b, (o1, o2) -> o1.equals(o2));
     }
 
     /**
      * Only zero vs non-zero value of comparator is important.
      */
-    public static <T> boolean unorderedArrayEquals(T[] a, T[] b, Comparator<T> comparator) {
+    public static <T> boolean unorderedArrayEquals(T[] a, T[] b, EqualsChecker<T> equalsChecker) {
         if (a == null && b == null) {
             return true;
         }
@@ -169,7 +168,7 @@ public class MiscUtil {
             Iterator<T> iterator = outstanding.iterator();
             while (iterator.hasNext()) {
                 T oo = iterator.next();
-                if (comparator.compare(ao, oo) == 0) {
+                if (equalsChecker.test(ao, oo)) {
                     iterator.remove();
                     found = true;
                 }
@@ -185,7 +184,7 @@ public class MiscUtil {
     }
 
     public static <T> int unorderedCollectionHashcode(Collection<T> collection, Predicate<T> filter) {
-        // Stupid implmentation, just add all the hashcodes
+        // Stupid implementation, just add all the hashcodes
         int hashcode = 0;
         for (T item : collection) {
             if (filter != null && !filter.test(item)) {
@@ -339,7 +338,7 @@ public class MiscUtil {
         }
     }
 
-    public static Long asLong(XMLGregorianCalendar xgc) {
+    public static Long asMillis(XMLGregorianCalendar xgc) {
         if (xgc == null) {
             return null;
         } else {
@@ -505,7 +504,7 @@ public class MiscUtil {
         return out;
     }
 
-    public static @NotNull String binaryToHex(@NotNull byte[] bytes) {
+    public static @NotNull String bytesToHex(@NotNull byte[] bytes) {
         StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) {
             sb.append(String.format("%02x", b & 0xff));
@@ -513,7 +512,7 @@ public class MiscUtil {
         return sb.toString();
     }
 
-    public static byte[] hexToBinary(String hex) {
+    public static byte[] hexToBytes(String hex) {
         int l = hex.length();
         byte[] bytes = new byte[l / 2];
         for (int i = 0; i < l; i += 2) {
@@ -530,17 +529,17 @@ public class MiscUtil {
      * and adds length information.
      * Returns null if null array is provided.
      */
-    public static @Nullable String binaryToHexPreview(@Nullable byte[] bytes) {
-        return binaryToHexPreview(bytes, HEX_PREVIEW_LEN);
+    public static @Nullable String bytesToHexPreview(@Nullable byte[] bytes) {
+        return bytesToHexPreview(bytes, HEX_PREVIEW_LEN);
     }
 
     /**
-     * Returns couple of bytes from provided byte array as hexadecimal and adds length information.
+     * Returns a couple of bytes from provided byte array as hexadecimal and adds length information.
      * Returns null if null array is provided.
      *
      * @param previewLen max number of bytes in the hexadecimal preview
      */
-    public static @Nullable String binaryToHexPreview(@Nullable byte[] bytes, int previewLen) {
+    public static @Nullable String bytesToHexPreview(@Nullable byte[] bytes, int previewLen) {
         if (bytes == null) {
             return null;
         }
@@ -560,7 +559,7 @@ public class MiscUtil {
     }
 
     public static String hexToUtf8String(String hex) {
-        return new String(MiscUtil.hexToBinary(hex), StandardCharsets.UTF_8);
+        return new String(hexToBytes(hex), StandardCharsets.UTF_8);
     }
 
     public static <T> void addAllIfNotPresent(List<T> receivingList, List<T> supplyingList) {
@@ -952,9 +951,13 @@ public class MiscUtil {
                 .orElse(null);
     }
 
-    public static <V> V find(Collection<V> values, V value, @NotNull Comparator<V> comparator) {
+    public static <V> V findWithComparator(Collection<V> values, V value, @NotNull Comparator<V> comparator) {
+        return find(values, value, (a, b) -> comparator.compare(a, b) == 0);
+    }
+
+    public static <V> V find(Collection<V> values, V value, @NotNull EqualsChecker<V> equalsChecker) {
         for (V current : values) {
-            if (comparator.compare(value, current) == 0) {
+            if (equalsChecker.test(current, value)) {
                 return current;
             }
         }
