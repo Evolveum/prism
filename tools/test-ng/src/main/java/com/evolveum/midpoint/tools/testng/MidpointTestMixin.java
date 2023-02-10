@@ -10,6 +10,8 @@ import java.time.LocalTime;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.api.AbstractThrowableAssert;
+import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -185,6 +187,11 @@ public interface MidpointTestMixin {
      */
     default void displayExpectedException(Throwable e) {
         displayExpectedException(null, e);
+    }
+
+    default AbstractThrowableAssert<?, Throwable> assertExpectedException(Throwable e) {
+        displayExpectedException(null, e);
+        return Assertions.assertThat(e);
     }
 
     default void displayExpectedException(String message, Throwable e) {
