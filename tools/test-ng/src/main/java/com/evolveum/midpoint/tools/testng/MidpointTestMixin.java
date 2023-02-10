@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -7,11 +7,14 @@
 package com.evolveum.midpoint.tools.testng;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.InstanceOfAssertFactory;
+import org.assertj.core.api.ListAssert;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -297,5 +300,15 @@ public interface MidpointTestMixin {
             display(message);
             throw new SkipException(message);
         }
+    }
+
+    /**
+     * Creates list asserter factory which is handy when {@code extracting()} method is used to get list from object.
+     * Without the factory, the asserter would still be an object asserter without list related support.
+     */
+    @SuppressWarnings({ "rawtypes", "unused" })
+    @NotNull
+    default <T> InstanceOfAssertFactory<List, ListAssert<T>> listAsserterFactory(Class<T> elementType) {
+        return new InstanceOfAssertFactory<>(List.class, Assertions::<T>assertThat);
     }
 }
