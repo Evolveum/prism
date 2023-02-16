@@ -749,7 +749,7 @@ public class QueryConverterImpl implements QueryConverter {
 
     private ExpressionWrapper parseExpression(MapXNodeImpl xmap) throws SchemaException {
         Entry<QName, XNodeImpl> expressionEntry = xmap.getSingleEntryThatDoesNotMatch(
-                ELEMENT_VALUE, ELEMENT_MATCHING, ELEMENT_ANCHOR_START, ELEMENT_ANCHOR_END, ELEMENT_PATH);
+                ELEMENT_VALUE, ELEMENT_MATCHING, ELEMENT_ANCHOR_START, ELEMENT_ANCHOR_END, ELEMENT_PATH, ELEMENT_CONSIDER_OWNER);
         return PrismUtilInternal.parseExpression(expressionEntry, prismContext);
     }
 

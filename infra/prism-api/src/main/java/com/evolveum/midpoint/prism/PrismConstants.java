@@ -137,10 +137,10 @@ public class PrismConstants {
 
     // Path constants
     public static final String T_PARENT_LOCAL_PART = "parent";
-    public static final QName T_PARENT = new QName(NS_TYPES, T_PARENT_LOCAL_PART);
-    public static final QName T_OBJECT_REFERENCE = new QName(NS_TYPES, "objectReference");
+    public static final ItemName T_PARENT = new ItemName(NS_TYPES, T_PARENT_LOCAL_PART);
+    public static final ItemName T_OBJECT_REFERENCE = new ItemName(NS_TYPES, "objectReference");
     public static final String T_ID_LOCAL_PART = "id";
-    public static final QName T_ID = new QName(NS_TYPES, T_ID_LOCAL_PART);
+    public static final ItemName T_ID = new ItemName(NS_TYPES, T_ID_LOCAL_PART);
 
     /**
      * Self is a bit special, because the item path for self (.) is technically an empty path.
