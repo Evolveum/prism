@@ -435,7 +435,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
                 .build();
         ObjectPaging paging = ObjectPagingImpl.createEmptyPaging();
         paging.addOrderingInstruction(UserType.F_NAME, OrderDirection.ASCENDING);
-        paging.addOrderingInstruction(ItemPath.create(PrismConstants.T_ID), OrderDirection.DESCENDING);
+        paging.addOrderingInstruction(PrismConstants.T_ID, OrderDirection.DESCENDING);
         ObjectQuery expected = ObjectQueryImpl.createObjectQuery(
                 createEqual(UserType.F_LOCALITY, UserType.class, null, "Caribbean"),
                 paging);
