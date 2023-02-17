@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 
 package com.evolveum.midpoint.prism;
+
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -16,10 +20,6 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
-
-import org.jetbrains.annotations.Nullable;
-
-import javax.xml.namespace.QName;
 
 /**
  * @author Radovan Semancik
@@ -46,9 +46,9 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
      * expect that the object can disappear when serialization boundary is crossed.
      * The client must expect that the object is null.
      */
-    PrismObject getObject();
+    <O extends Objectable> PrismObject<O> getObject();
 
-    void setObject(PrismObject object);
+    void setObject(PrismObject<?> object);
 
     /**
      * Returns XSD type of the object that this reference refers to. It may be
@@ -63,7 +63,6 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     void setTargetType(QName targetType);
 
     /**
-     * @param targetType
      * @param allowEmptyNamespace This is an ugly hack. See comment in DOMUtil.validateNonEmptyQName.
      */
     void setTargetType(QName targetType, boolean allowEmptyNamespace);
@@ -75,6 +74,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
      * This is NOT an authoritative information. Setting it or changing it will
      * not influence the reference meaning. OID is the only authoritative linking
      * mechanism.
+     *
      * @return cached name of the target object.
      */
     PolyString getTargetName();
@@ -112,7 +112,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
 
     PrismReferenceDefinition getDefinition();
 
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path);
 
     @Override
     void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException;
@@ -147,5 +147,5 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     Referencable getRealValue();
 
     @Experimental
-    <I extends Item<?, ?>> I  findReferencedItem(ItemPath path, Class<I> type);
+    <I extends Item<?, ?>> I findReferencedItem(ItemPath path, Class<I> type);
 }

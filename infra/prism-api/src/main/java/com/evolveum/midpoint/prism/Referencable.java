@@ -59,5 +59,9 @@ public interface Referencable {
 
     SearchFilterType getFilter();
 
+    <O extends Objectable> PrismObject<O> getObject();
+
+    Objectable getObjectable();
+
     Referencable clone();
 }

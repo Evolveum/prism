@@ -7,6 +7,11 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serializable;
+import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.Objectable;
+import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
@@ -14,9 +19,6 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
-
-import javax.xml.namespace.QName;
-import java.io.Serializable;
 
 /**
  * Used when PrismReferenceValue.getRealValue is called, and no referencable is present in the PRV.
@@ -83,6 +85,17 @@ public class DefaultReferencableImpl implements Referencable, Cloneable, Seriali
         SearchFilterType filter = new SearchFilterType();
         filter.setFilterClauseXNode(PrismForJAXBUtil.getReferenceFilterClauseXNode(referenceValue));
         return filter;
+    }
+
+    @Override
+    public <O extends Objectable> PrismObject<O> getObject() {
+        return referenceValue != null ? referenceValue.getObject() : null;
+    }
+
+    @Override
+    public Objectable getObjectable() {
+        PrismObject<Objectable> prismObject = getObject();
+        return prismObject != null ? prismObject.asObjectable() : null;
     }
 
     public DefaultReferencableImpl clone() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Evolveum and contributors
+ * Copyright (C) 2022-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -8,15 +8,9 @@
 package com.evolveum.midpoint.prism.impl.binding;
 
 import java.io.Serializable;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.Objectable;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismReference;
-import com.evolveum.midpoint.prism.PrismReferenceValue;
-import com.evolveum.midpoint.prism.Referencable;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.util.Producer;
@@ -108,10 +102,12 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
         asReferenceValue().setReferentialIntegrity(value);
     }
 
-    public PrismObject getObject() {
+    @Override
+    public <O extends Objectable> PrismObject<O> getObject() {
         return asReferenceValue().getObject();
     }
 
+    @Override
     public Objectable getObjectable() {
         return PrismForJAXBUtil.getReferenceObjectable(asReferenceValue());
     }
@@ -126,8 +122,9 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @SuppressWarnings("unchecked")
-    public<X >X end() {
-        return ((X)((PrismContainerValue<?>)((PrismReference) asReferenceValue().getParent()).getParent()).asContainerable());
+    public <X> X end() {
+        //noinspection DataFlowIssue
+        return ((X) ((PrismReference) asReferenceValue().getParent()).getParent().asContainerable());
     }
 
     @Override
@@ -147,13 +144,13 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
             return false;
         }
 
-        return this.asReferenceValue().equals(((AbstractReferencable)obj).asReferenceValue());
+        return this.asReferenceValue().equals(((AbstractReferencable<?>) obj).asReferenceValue());
     }
 
     @Override
     public abstract AbstractReferencable<T> clone();
 
-    protected <T extends AbstractReferencable<T>> T clone(Producer<T> producer) {
+    protected T clone(Producer<T> producer) {
         T ret = producer.run();
         ret.setupReferenceValue(asReferenceValue().clone());
         return ret;
@@ -161,12 +158,6 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
 
     @Override
     public String toString() {
-        return new StringBuilder(getClass().getSimpleName())
-                .append("[")
-                .append("value=")
-                .append(value)
-                .append("]")
-                .toString();
+        return getClass().getSimpleName() + "[value=" + value + "]";
     }
-
 }
