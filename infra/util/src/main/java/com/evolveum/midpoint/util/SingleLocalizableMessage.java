@@ -23,6 +23,10 @@ public class SingleLocalizableMessage implements LocalizableMessage {
     private final LocalizableMessage fallbackLocalizableMessage;
     private final String fallbackMessage;
 
+    public SingleLocalizableMessage(String key) {
+        this(key, new Object[0], (String) null);
+    }
+
     public SingleLocalizableMessage(String key, Object[] args, LocalizableMessage fallbackLocalizableMessage) {
         super();
         this.key = key;
