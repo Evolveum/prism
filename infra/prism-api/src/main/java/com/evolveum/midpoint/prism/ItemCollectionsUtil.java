@@ -39,7 +39,7 @@ public class ItemCollectionsUtil {
         return false;
     }
 
-    public static <V extends PrismValue, D extends ItemDefinition> boolean containsEquivalentValue(Item<V, D> item, V value, Comparator<V> comparator) {
+    public static <V extends PrismValue, D extends ItemDefinition<?>> boolean containsEquivalentValue(Item<V, D> item, V value, Comparator<V> comparator) {
         return item.valuesStream()
                 .anyMatch(itemValue -> comparator.compare(itemValue, value) == 0);
     }

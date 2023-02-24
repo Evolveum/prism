@@ -260,19 +260,19 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath) {
         //noinspection unchecked
         return findItemDelta(itemPath, ItemDelta.class, Item.class, false);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath, boolean strict) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath, boolean strict) {
         //noinspection unchecked
         return findItemDelta(itemPath, ItemDelta.class, Item.class, strict);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>, DD extends ItemDelta<IV, ID>>
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>, DD extends ItemDelta<IV, ID>>
     DD findItemDelta(ItemPath propertyPath, Class<DD> deltaType, Class<I> itemType, boolean strict) {
         if (changeType == ChangeType.ADD) {
             I item = objectToAdd.findItem(propertyPath, itemType);
@@ -290,7 +290,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
             ItemPath propertyPath) {
         if (changeType == ChangeType.ADD) {
             PartiallyResolvedItem<IV, ID> partialValue = objectToAdd.findPartial(propertyPath);
@@ -428,7 +428,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         if (isModify()) {
             return ItemDeltaCollectionsUtil.findItemDelta(modifications, propertyPath, deltaType, strict);
         } else if (isAdd()) {
-            Item<PrismValue, ItemDefinition> item = getObjectToAdd().findItem(propertyPath);
+            Item<PrismValue, ItemDefinition<?>> item = getObjectToAdd().findItem(propertyPath);
             if (item == null) {
                 return null;
             }
@@ -1347,7 +1347,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     private static boolean subtractFromObject(@NotNull PrismObject<?> object, @NotNull ItemPath itemPath,
             @NotNull PrismValue value, boolean dryRun) {
-        Item<PrismValue, ItemDefinition> item = object.findItem(itemPath);
+        Item<PrismValue, ItemDefinition<?>> item = object.findItem(itemPath);
         if (item == null) {
             return false;
         }
@@ -1370,7 +1370,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     @Override
     public List<PrismValue> getNewValuesFor(ItemPath itemPath) {
         if (isAdd()) {
-            Item<PrismValue, ItemDefinition> item = objectToAdd.findItem(itemPath);
+            Item<PrismValue, ItemDefinition<?>> item = objectToAdd.findItem(itemPath);
             return item != null ? item.getValues() : Collections.emptyList();
         } else if (isDelete()) {
             return Collections.emptyList();

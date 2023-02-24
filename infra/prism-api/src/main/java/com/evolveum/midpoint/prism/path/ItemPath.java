@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import javax.xml.namespace.QName;
 
+import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -153,6 +155,10 @@ public interface ItemPath extends ShortDumpable, Serializable {
      */
     @Nullable
     Object getSegment(int i);
+
+    default ItemPathType toBean() {
+        return new ItemPathType(this);
+    }
 
     //endregion
 

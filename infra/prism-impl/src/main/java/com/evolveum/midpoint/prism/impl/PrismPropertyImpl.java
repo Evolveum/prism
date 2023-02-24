@@ -357,7 +357,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
         if (path == null || path.isEmpty()) {
             return new PartiallyResolvedItem<>((Item<IV, ID>) this, null);
         }

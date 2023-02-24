@@ -63,7 +63,7 @@ public class ItemDeltaUtil {
     }
 
     // TODO move to Item
-    public static <V extends PrismValue, D extends ItemDefinition> ItemDelta<V, D> createAddDeltaFor(Item<V, D> item) {
+    public static <V extends PrismValue, D extends ItemDefinition<?>> ItemDelta<V, D> createAddDeltaFor(Item<V, D> item) {
         ItemDelta<V, D> rv = item.createDelta(item.getPath());
         rv.addValuesToAdd(item.getClonedValues());
         return rv;
@@ -71,7 +71,7 @@ public class ItemDeltaUtil {
 
     // TODO move to Item
     @SuppressWarnings("unchecked")
-    public static <V extends PrismValue, D extends ItemDefinition> ItemDelta<V, D> createAddDeltaFor(Item<V, D> item,
+    public static <V extends PrismValue, D extends ItemDefinition<?>> ItemDelta<V, D> createAddDeltaFor(Item<V, D> item,
             PrismValue value) {
         ItemDelta<V, D> rv = item.createDelta(item.getPath());
         rv.addValueToAdd((V) CloneUtil.clone(value));

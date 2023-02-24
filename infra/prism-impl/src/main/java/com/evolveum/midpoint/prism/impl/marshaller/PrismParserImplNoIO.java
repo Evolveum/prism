@@ -103,7 +103,7 @@ public class PrismParserImplNoIO extends PrismParserImpl implements PrismParserN
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> parseItem() throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> parseItem() throws SchemaException {
         try {
             return doParseItem();
         } catch (IOException e) {

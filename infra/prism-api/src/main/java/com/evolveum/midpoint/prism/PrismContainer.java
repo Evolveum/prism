@@ -132,20 +132,20 @@ public interface PrismContainer<C extends Containerable>
     @Override
     void applyDefinition(PrismContainerDefinition<C> definition) throws SchemaException;
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type);
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type);
 
     @Override
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findCreateItem(QName itemQName, Class<I> type, boolean create) throws SchemaException;
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findCreateItem(QName itemQName, Class<I> type, boolean create) throws SchemaException;
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findItem(ItemPath path, Class<I> type);
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(ItemPath path, Class<I> type);
 
-    <IV extends PrismValue,ID extends ItemDefinition> Item<IV,ID> findItem(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> Item<IV,ID> findItem(ItemPath path);
 
     boolean containsItem(ItemPath itemPath, boolean acceptEmptyItem) throws SchemaException;
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findCreateItem(ItemPath itemPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException;
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findCreateItem(ItemPath itemPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException;
 
     PrismContainerValue<C> findValue(long id);
 
@@ -155,12 +155,12 @@ public interface PrismContainer<C extends Containerable>
 
     PrismReference findReference(ItemPath path);
 
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findOrCreateItem(ItemPath containerPath,
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findOrCreateItem(ItemPath containerPath,
             Class<I> type) throws SchemaException;
 
     // The "definition" parameter provides definition of item to create, in case that the container does not have
     // the definition (e.g. in case of "extension" containers)
-    <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findOrCreateItem(ItemPath containerPath,
+    <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findOrCreateItem(ItemPath containerPath,
             Class<I> type, ID definition) throws SchemaException;
 
     <T extends Containerable> PrismContainer<T> findOrCreateContainer(ItemPath containerPath) throws SchemaException;

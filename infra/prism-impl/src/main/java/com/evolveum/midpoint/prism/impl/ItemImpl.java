@@ -48,7 +48,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
  *
  * @author Radovan Semancik
  */
-public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition> extends AbstractFreezable implements Item<V, D>, TransformableItem {
+public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>> extends AbstractFreezable implements Item<V, D>, TransformableItem {
 
     private static final long serialVersionUID = 510000191615288733L;
 

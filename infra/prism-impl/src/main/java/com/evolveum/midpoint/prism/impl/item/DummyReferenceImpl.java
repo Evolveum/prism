@@ -76,7 +76,7 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(
             ItemPath path) {
         return delegate().findPartial(path);
     }

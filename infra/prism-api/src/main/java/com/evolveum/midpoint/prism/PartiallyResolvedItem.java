@@ -15,7 +15,7 @@ import java.util.Objects;
  *
  * @author semancik
  */
-public class PartiallyResolvedItem<V extends PrismValue,D extends ItemDefinition> {
+public class PartiallyResolvedItem<V extends PrismValue,D extends ItemDefinition<?>> {
 
     private Item<V,D> item;
     private ItemPath residualPath;

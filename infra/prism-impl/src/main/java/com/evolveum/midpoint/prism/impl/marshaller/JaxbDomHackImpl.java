@@ -137,7 +137,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
      * This is used in a form of "fromAny" to parse elements from a JAXB getAny method to prism.
      */
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,C extends Containerable> Item<IV,ID> parseRawElement(Object element,
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,C extends Containerable> Item<IV,ID> parseRawElement(Object element,
             PrismContainerDefinition<C> definition) throws SchemaException {
         Validate.notNull(definition, "Attempt to parse raw element in a container without definition");
 

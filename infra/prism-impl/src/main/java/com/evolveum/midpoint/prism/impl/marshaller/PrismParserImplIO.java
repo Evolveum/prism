@@ -32,7 +32,7 @@ public class PrismParserImplIO extends PrismParserImpl {
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> parseItem() throws SchemaException, IOException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> parseItem() throws SchemaException, IOException {
         return doParseItem();
     }
 

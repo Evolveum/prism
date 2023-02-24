@@ -90,7 +90,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     @NotNull
     Collection<QName> getItemNames();
 
-    <IV extends PrismValue, ID extends ItemDefinition> void add(Item<IV, ID> item) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> void add(Item<IV, ID> item) throws SchemaException;
 
     /**
      * Adds an item to a property container.
@@ -98,29 +98,29 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      * @param item item to add.
      * @throws IllegalArgumentException an attempt to add value that already exists
      */
-    <IV extends PrismValue, ID extends ItemDefinition> void add(Item<IV, ID> item, boolean checkUniqueness) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> void add(Item<IV, ID> item, boolean checkUniqueness) throws SchemaException;
 
     /**
      * Merges the provided item into this item. The values are joined together.
      * Returns true if new item or value was added.
      */
-    <IV extends PrismValue, ID extends ItemDefinition> boolean merge(Item<IV, ID> item) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> boolean merge(Item<IV, ID> item) throws SchemaException;
 
     /**
      * Subtract the provided item from this item. The values of the provided item are deleted
      * from this item.
      * Returns true if this item was changed.
      */
-    <IV extends PrismValue, ID extends ItemDefinition> boolean subtract(Item<IV, ID> item) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> boolean subtract(Item<IV, ID> item) throws SchemaException;
 
     /**
      * Adds an item to a property container. Existing value will be replaced.
      *
      * @param item item to add.
      */
-    <IV extends PrismValue, ID extends ItemDefinition> void addReplaceExisting(Item<IV, ID> item) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> void addReplaceExisting(Item<IV, ID> item) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition> void remove(Item<IV, ID> item);
+    <IV extends PrismValue, ID extends ItemDefinition<?>> void remove(Item<IV, ID> item);
 
     void removeAll();
 
@@ -139,7 +139,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      */
     void addAllReplaceExisting(Collection<? extends Item<?, ?>> itemsToAdd) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition> void replace(Item<IV, ID> oldItem, Item<IV, ID> newItem) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> void replace(Item<IV, ID> oldItem, Item<IV, ID> newItem) throws SchemaException;
 
     void clear();
 
@@ -159,7 +159,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
         return false;
     }
 
-    <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path);
+    <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path);
 
     <X> PrismProperty<X> findProperty(ItemPath propertyPath);
 
@@ -179,32 +179,32 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     PrismReference findReferenceByCompositeObjectElementName(QName elementName);
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(ItemPath itemName, Class<I> type);
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemPath itemName, Class<I> type);
 
 //    <IV extends PrismValue,ID extends ItemDefinition> Item<IV,ID> findItem(String itemName);
 
-    default <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findItem(ItemPath itemPath) {
+    default <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItem(ItemPath itemPath) {
         //noinspection unchecked
         return (Item<IV, ID>) findItem(itemPath, Item.class);
     }
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(ItemDefinition itemDefinition,
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemDefinition itemDefinition,
             Class<I> type);
 
     boolean containsItem(ItemPath propPath, boolean acceptEmptyItem) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
             Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException, RemovedItemDefinitionException;
 
     <T extends Containerable> PrismContainer<T> findOrCreateContainer(QName containerName) throws SchemaException;
 
     PrismReference findOrCreateReference(QName referenceName) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findOrCreateItem(QName containerName) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findOrCreateItem(QName containerName) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(QName containerName, Class<I> type) throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(QName containerName, Class<I> type) throws SchemaException;
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(ItemPath path, Class<I> type,
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(ItemPath path, Class<I> type,
             ID definition) throws SchemaException;
 
     //    <X> PrismProperty<X> findOrCreateProperty(QName propertyQName) throws SchemaException;

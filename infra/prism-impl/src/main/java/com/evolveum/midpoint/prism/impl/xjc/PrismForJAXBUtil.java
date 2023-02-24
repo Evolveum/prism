@@ -189,7 +189,7 @@ public final class PrismForJAXBUtil {
         return createItem(parentValue, name, PrismProperty.class);
     }
 
-    public static <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createItem(PrismContainerValue parentValue, QName name, Class<I> type) {
+    public static <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I createItem(PrismContainerValue parentValue, QName name, Class<I> type) {
         Validate.notNull(parentValue, "Parent container value must not be null.");
         Validate.notNull(name, "QName must not be null.");
         try {

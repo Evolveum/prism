@@ -405,7 +405,7 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type) {
         try {
             return findCreateItem(itemQName, type, false);
         } catch (SchemaException e) {
@@ -447,8 +447,9 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path) {
         if (ItemPath.isEmpty(path)) {
+            //noinspection unchecked
             return new PartiallyResolvedItem<>((Item<IV, ID>) this, null);
         }
 
@@ -463,12 +464,12 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findCreateItem(QName itemQName, Class<I> type, boolean create) throws SchemaException {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findCreateItem(QName itemQName, Class<I> type, boolean create) throws SchemaException {
         return ((PrismContainerValueImpl<C>) this.getValue()).findCreateItem(itemQName, type, null, create);
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findItem(ItemPath path, Class<I> type) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(ItemPath path, Class<I> type) {
         try {
             return findCreateItem(path, type, null, false);
         } catch (SchemaException e) {
@@ -478,7 +479,7 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition> Item<IV,ID> findItem(ItemPath path) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>> Item<IV,ID> findItem(ItemPath path) {
         try {
             return findCreateItem(path, Item.class, null, false);
         } catch (SchemaException e) {
@@ -504,7 +505,7 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findCreateItem(ItemPath itemPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findCreateItem(ItemPath itemPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
         if (ItemPath.isEmpty(itemPath)) {
             throw new IllegalArgumentException("Empty path specified");
         }
@@ -565,7 +566,7 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findOrCreateItem(
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findOrCreateItem(
             ItemPath containerPath, Class<I> type) throws SchemaException {
         return findCreateItem(containerPath, type, null, true);
     }
@@ -573,7 +574,7 @@ public class PrismContainerImpl<C extends Containerable>
     // The "definition" parameter provides definition of item to create, in case that the container does not have
     // the definition (e.g. in case of "extension" containers)
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition,I extends Item<IV,ID>> I findOrCreateItem(
+    public <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findOrCreateItem(
             ItemPath containerPath, Class<I> type, ID definition) throws SchemaException {
         if (PrismObject.class.isAssignableFrom(type)) {
             throw new IllegalArgumentException("It makes no sense to find object in a container (class)");
