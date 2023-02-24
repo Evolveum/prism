@@ -44,7 +44,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 /**
  * @author Radovan Semancik
  */
-public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefinition> extends AbstractFreezable implements ItemDelta<V, D> {
+public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefinition<?>> extends AbstractFreezable implements ItemDelta<V, D> {
 
     private static final Trace LOGGER = TraceManager.getTrace(ItemDeltaImpl.class);
 

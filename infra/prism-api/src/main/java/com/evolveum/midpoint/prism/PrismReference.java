@@ -54,7 +54,7 @@ public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceD
     PrismReferenceValue findValueByOid(String oid);
 
     @Override
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
     @Override
     ReferenceDelta createDelta();

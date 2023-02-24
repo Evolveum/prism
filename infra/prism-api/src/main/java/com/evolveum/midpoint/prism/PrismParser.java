@@ -150,7 +150,7 @@ public interface PrismParser {
      * May return raw property values as part of the prism structure, if definitions are not known.
      * @return The item.
      */
-    <IV extends PrismValue, ID extends ItemDefinition> Item<IV,ID> parseItem() throws SchemaException, IOException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV,ID> parseItem() throws SchemaException, IOException;
 
     /**
      * Parses the input as a prism value. (Container value, reference value, property value.)

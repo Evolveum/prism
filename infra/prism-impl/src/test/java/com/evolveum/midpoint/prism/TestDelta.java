@@ -1083,7 +1083,7 @@ public class TestDelta extends AbstractPrismTest {
         ItemPath itemDeltaPath = UserType.F_GIVEN_NAME;
 
         when();
-        ItemDelta<PrismValue, ItemDefinition> itemDelta = userDelta.findItemDelta(itemDeltaPath);
+        ItemDelta<PrismValue, ItemDefinition<?>> itemDelta = userDelta.findItemDelta(itemDeltaPath);
 
         then();
         PrismAsserts.assertInstanceOf(PropertyDelta.class, itemDelta);
@@ -1101,7 +1101,7 @@ public class TestDelta extends AbstractPrismTest {
         ItemPath itemDeltaPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_ENABLED);
 
         when();
-        ItemDelta<PrismValue, ItemDefinition> itemDelta = userDelta.findItemDelta(itemDeltaPath);
+        ItemDelta<PrismValue, ItemDefinition<?>> itemDelta = userDelta.findItemDelta(itemDeltaPath);
 
         then();
         System.out.println("Item delta:\n" + (itemDelta == null ? "null" : itemDelta.debugDump()));
@@ -1120,7 +1120,7 @@ public class TestDelta extends AbstractPrismTest {
         ItemPath itemDeltaPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_TO);        // not present in the delta
 
         when();
-        ItemDelta<PrismValue, ItemDefinition> itemDelta = userDelta.findItemDelta(itemDeltaPath);
+        ItemDelta<PrismValue, ItemDefinition<?>> itemDelta = userDelta.findItemDelta(itemDeltaPath);
 
         then();
         System.out.println("Item delta:\n" + (itemDelta == null ? "null" : itemDelta.debugDump()));
@@ -1136,7 +1136,7 @@ public class TestDelta extends AbstractPrismTest {
         ItemPath itemDeltaPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_ENABLED);
 
         when();
-        ItemDelta<PrismValue, ItemDefinition> itemDelta = userDelta.findItemDelta(itemDeltaPath);
+        ItemDelta<PrismValue, ItemDefinition<?>> itemDelta = userDelta.findItemDelta(itemDeltaPath);
 
         then();
         System.out.println("Item delta:\n" + (itemDelta == null ? "null" : itemDelta.debugDump()));
@@ -1162,7 +1162,7 @@ public class TestDelta extends AbstractPrismTest {
         ItemPath itemDeltaPath = ItemPath.create(UserType.F_ACTIVATION, ActivationType.F_VALID_TO);        // not present in the delta
 
         when();
-        ItemDelta<PrismValue, ItemDefinition> itemDelta = userDelta.findItemDelta(itemDeltaPath);
+        ItemDelta<PrismValue, ItemDefinition<?>> itemDelta = userDelta.findItemDelta(itemDeltaPath);
 
         then();
         System.out.println("Item delta:\n" + (itemDelta == null ? "null" : itemDelta.debugDump()));

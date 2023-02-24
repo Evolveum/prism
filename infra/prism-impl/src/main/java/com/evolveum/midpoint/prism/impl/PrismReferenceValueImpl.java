@@ -303,7 +303,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path) {
         if (path == null || path.isEmpty()) {
             //noinspection unchecked
             return new PartiallyResolvedItem<>((Item<IV, ID>) getParent(), null);

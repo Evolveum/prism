@@ -456,7 +456,7 @@ public class XmlTypeConverter {
         if (type.equals(String.class)) {
             return (T) stringContent;
         } else if (type.equals(char.class)) {
-            return (T) (new Character(stringContent.charAt(0)));
+            return (T) (Character.valueOf(stringContent.charAt(0)));
         } else if (type.equals(File.class)) {
             return (T) new File(stringContent);
         } else if (type.equals(Integer.class)) {

@@ -108,7 +108,7 @@ public interface PrismProperty<T> extends Item<PrismPropertyValue<T>,PrismProper
     PropertyDelta<T> createDelta(ItemPath path);
 
     @Override
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
     PropertyDelta<T> diff(PrismProperty<T> other);
 

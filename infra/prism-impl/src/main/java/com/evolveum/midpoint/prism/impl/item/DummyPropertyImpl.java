@@ -141,7 +141,7 @@ public class DummyPropertyImpl<T> extends DummyItem<PrismPropertyValue<T>, Prism
         return delegate().createDelta(path);
     }
 
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(
             ItemPath path) {
         return delegate().findPartial(path);
     }

@@ -51,6 +51,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
         return delegate.getPrismContext();
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public ValueMetadata clone() {
         return ValueMetadataAdapter.holding(delegate.clone());
@@ -151,6 +152,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
         delegate.setContainerRealValue(containerName, realValue);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> void setPropertyRealValues(QName propertyName, T... realValues) throws SchemaException {
         delegate.setPropertyRealValues(propertyName, realValues);
@@ -205,31 +207,31 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(QName itemQName,
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(QName itemQName,
             Class<I> type) {
         return delegate.findItem(itemQName, type);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(
             ItemPath path) {
         return delegate.findPartial(path);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findCreateItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findCreateItem(
             QName itemQName, Class<I> type, boolean create) throws SchemaException {
         return delegate.findCreateItem(itemQName, type, create);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(
             ItemPath path, Class<I> type) {
         return delegate.findItem(path, type);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findItem(ItemPath path) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItem(ItemPath path) {
         return delegate.findItem(path);
     }
 
@@ -239,7 +241,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findCreateItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findCreateItem(
             ItemPath itemPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
         return delegate.findCreateItem(itemPath, type, itemDefinition, create);
     }
@@ -265,13 +267,13 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(
             ItemPath containerPath, Class<I> type) throws SchemaException {
         return delegate.findOrCreateItem(containerPath, type);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(
             ItemPath containerPath, Class<I> type, ID definition) throws SchemaException {
         return delegate.findOrCreateItem(containerPath, type, definition);
     }

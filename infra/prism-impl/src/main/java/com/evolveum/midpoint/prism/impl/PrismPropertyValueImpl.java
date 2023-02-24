@@ -252,7 +252,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
         throw new UnsupportedOperationException("Attempt to invoke findPartialItem on a property value");
     }
 
@@ -359,6 +359,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     private PrismPropertyValue<T> parseRawElementToNewValue(
             PrismPropertyValue<T> origValue, PrismPropertyValue<T> definitionSource) throws SchemaException {
         if (definitionSource.getParent() != null && definitionSource.getParent().getDefinition() != null) {
+            //noinspection unchecked,rawtypes
             T parsedRealValue = (T) parseRawElementToNewRealValue(origValue,
                     (PrismPropertyDefinition) definitionSource.getParent().getDefinition());
             PrismPropertyValue<T> newPVal = new PrismPropertyValueImpl<>(parsedRealValue);

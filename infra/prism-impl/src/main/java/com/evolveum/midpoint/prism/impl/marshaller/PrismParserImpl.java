@@ -157,7 +157,7 @@ abstract class PrismParserImpl implements PrismParser {
         }
     }
 
-    <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> doParseItem() throws IOException, SchemaException {
+    <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> doParseItem() throws IOException, SchemaException {
         RootXNodeImpl xnode = getLexicalProcessor().read(source, context);
         return doParseItem(xnode, typeClass);
     }
@@ -227,7 +227,7 @@ abstract class PrismParserImpl implements PrismParser {
     // implementation
 
     @SuppressWarnings("unchecked")
-    private <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> doParseItem(RootXNodeImpl xnode, Class<?> clazz) throws IOException, SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> doParseItem(RootXNodeImpl xnode, Class<?> clazz) throws IOException, SchemaException {
         return (Item) prismContext.getPrismUnmarshaller().parseItem(xnode, itemDefinition, itemName, typeName, clazz, context);
     }
 
@@ -272,7 +272,7 @@ abstract class PrismParserImpl implements PrismParser {
             return getBeanUnmarshaller().unmarshal(root, clazz, context);
         } else if (clazz != null && Objectable.class.isAssignableFrom(clazz)) {
             // we need to NOT strip off OID
-            Item<PrismValue, ItemDefinition> parsed = doParseItem(root, clazz);
+            Item<PrismValue, ItemDefinition<?>> parsed = doParseItem(root, clazz);
             if (parsed instanceof PrismObject) {
                 return (T) ((PrismObject) parsed).asObjectable();
             } else if (context.isCompat() && parsed instanceof PrismProperty) {

@@ -336,7 +336,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> void add(Item<IV, ID> item) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> void add(Item<IV, ID> item) throws SchemaException {
         add(item, true);
     }
 
@@ -347,7 +347,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
      * @throws IllegalArgumentException an attempt to add value that already exists
      */
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> void add(Item<IV, ID> item, boolean checkUniqueness) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> void add(Item<IV, ID> item, boolean checkUniqueness) throws SchemaException {
         checkMutable();
         ItemName itemName = item.getElementName();
         if (itemName == null) {
@@ -371,7 +371,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         simpleAdd(item);
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition> void simpleAdd(Item<IV, ID> item) {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> void simpleAdd(Item<IV, ID> item) {
         @NotNull ItemName itemName = item.getElementName();
         items.put(itemName, item);
         if (QNameUtil.isUnqualified(itemName)) {
@@ -384,7 +384,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
      * Returns true if new item or value was added.
      */
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> boolean merge(Item<IV, ID> item) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> boolean merge(Item<IV, ID> item) throws SchemaException {
         checkMutable();
         Item<IV, ID> existingItem = findItem(item.getElementName(), Item.class);
         if (existingItem == null) {
@@ -410,7 +410,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
      * Returns true if this item was changed.
      */
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> boolean subtract(Item<IV, ID> item) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> boolean subtract(Item<IV, ID> item) throws SchemaException {
         checkMutable();
         Item<IV, ID> existingItem = findItem(item.getElementName(), Item.class);
         if (existingItem == null) {
@@ -432,7 +432,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
      * @param item item to add.
      */
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> void addReplaceExisting(Item<IV, ID> item) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> void addReplaceExisting(Item<IV, ID> item) throws SchemaException {
         checkMutable();
         if (item == null) {
             return;
@@ -442,7 +442,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> void remove(@NotNull Item<IV, ID> item) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> void remove(@NotNull Item<IV, ID> item) {
         checkMutable();
 
         Item<IV, ID> existingItem = findItem(item.getElementName(), Item.class);
@@ -493,7 +493,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> void replace(Item<IV, ID> oldItem, Item<IV, ID> newItem) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> void replace(Item<IV, ID> oldItem, Item<IV, ID> newItem) throws SchemaException {
         remove(oldItem);
         add(newItem);
     }
@@ -544,7 +544,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path) {
         if (path == null || path.isEmpty()) {
             // Incomplete path
             return null;
@@ -611,7 +611,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(ItemPath itemPath, Class<I> type) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemPath itemPath, Class<I> type) {
         try {
             return findCreateItem(itemPath, type, null, false);
         } catch (SchemaException e) {
@@ -621,7 +621,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @SuppressWarnings("unchecked")
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findCreateItem(QName itemName, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findCreateItem(QName itemName, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
         Item<IV, ID> item = findItemByQName(itemName);
         if (item != null) {
             if (type.isAssignableFrom(item.getClass())) {
@@ -643,7 +643,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findItem(ItemDefinition itemDefinition, Class<I> type) {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemDefinition itemDefinition, Class<I> type) {
         if (itemDefinition == null) {
             throw new IllegalArgumentException("No item definition");
         }
@@ -676,7 +676,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     // Expects that "self" path is NOT present in propPath
     @SuppressWarnings("unchecked")
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findCreateItem(ItemPath propPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findCreateItem(ItemPath propPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
         Object first = propPath.first();
         if (!ItemPath.isName(first)) {
             throw new IllegalArgumentException("Attempt to lookup item using a non-name path '" + propPath + "' in " + this);
@@ -736,7 +736,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findItemByQName(QName subName) throws SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemByQName(QName subName) throws SchemaException {
         if (QNameUtil.isUnqualified(subName) || unqualifiedItemNames.contains(subName.getLocalPart())) {
             return findItemByQNameFullScan(subName);
         } else {
@@ -745,7 +745,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findItemByQNameFullScan(QName subName) throws SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemByQNameFullScan(QName subName) throws SchemaException {
 //        LOGGER.warn("Full scan while finding {} in {}", subName, this);
         Item<IV, ID> matching = null;
         for (Item<?, ?> item : items.values()) {
@@ -762,7 +762,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I createDetachedSubItem(QName name,
             Class<I> type, ID itemDefinition, boolean immutable) throws SchemaException, RemovedItemDefinitionException {
         I newItem = createDetachedNewItemInternal(name, type, itemDefinition, true);
         if (immutable) {
@@ -771,7 +771,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return newItem;
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createSubItem(QName name, Class<I> type, ID itemDefinition) throws SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I createSubItem(QName name, Class<I> type, ID itemDefinition) throws SchemaException {
         checkMutable();
         I newItem;
         try {
@@ -783,7 +783,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return newItem;
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I createDetachedNewItemInternal(
+    private <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I createDetachedNewItemInternal(
             QName name, Class<I> type, ID itemDefinition, boolean treatRemovedDefinitions)
             throws SchemaException, RemovedItemDefinitionException {
         I newItem;
@@ -833,17 +833,17 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> findOrCreateItem(QName containerName) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findOrCreateItem(QName containerName) throws SchemaException {
         return findCreateItem(containerName, Item.class, null, true);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(QName containerName, Class<I> type) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(QName containerName, Class<I> type) throws SchemaException {
         return findCreateItem(containerName, type, null, true);
     }
 
     @Override
-    public <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>> I findOrCreateItem(ItemPath path, Class<I> type, ID definition) throws SchemaException {
+    public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findOrCreateItem(ItemPath path, Class<I> type, ID definition) throws SchemaException {
         return findCreateItem(path, type, definition, true);
     }
 
@@ -1101,7 +1101,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         throw new UnsupportedOperationException("Definition-less containers are not supported any more.");
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition> Item<IV, ID> parseRawElement(Object element, PrismContainerDefinition<C> definition) throws SchemaException {
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> parseRawElement(Object element, PrismContainerDefinition<C> definition) throws SchemaException {
         JaxbDomHack jaxbDomHack = ((PrismContextImpl) definition.getPrismContext()).getJaxbDomHack();
         return jaxbDomHack.parseRawElement(element, definition);
     }

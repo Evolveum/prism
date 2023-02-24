@@ -125,14 +125,14 @@ public interface ObjectDelta<O extends Objectable>
      * - If OD contains more than one modification that affects itemPath the results from findItemDelta can be differ
      * from the above definition.
      */
-    <IV extends PrismValue, ID extends ItemDefinition> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath);
+    <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath);
 
-    <IV extends PrismValue, ID extends ItemDefinition> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath, boolean strict);
+    <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDelta<IV, ID> findItemDelta(ItemPath itemPath, boolean strict);
 
-    <IV extends PrismValue, ID extends ItemDefinition, I extends Item<IV, ID>, DD extends ItemDelta<IV, ID>>
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>, DD extends ItemDelta<IV, ID>>
     DD findItemDelta(ItemPath itemPath, Class<DD> deltaType, Class<I> itemType, boolean strict);
 
-    <IV extends PrismValue, ID extends ItemDefinition> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
+    <IV extends PrismValue, ID extends ItemDefinition<?>> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
             ItemPath propertyPath);
 
     boolean hasItemDelta(ItemPath propertyPath);

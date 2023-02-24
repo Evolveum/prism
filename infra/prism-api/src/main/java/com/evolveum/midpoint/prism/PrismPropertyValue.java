@@ -38,7 +38,7 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
 
     void setExpression(@Nullable ExpressionWrapper expression);
 
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
     PrismPropertyValue<T> clone();
 

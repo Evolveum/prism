@@ -47,7 +47,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  *
  * @author Radovan Semancik
  */
-public interface Item<V extends PrismValue, D extends ItemDefinition> extends Itemable, DebugDumpable, Visitable, PathVisitable,
+public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PathVisitable,
         ParentVisitable, Serializable, Revivable, Freezable, PrismContextSensitive {
 
     /**
@@ -546,7 +546,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
      */
     Object find(ItemPath path);
 
-    <IV extends PrismValue,ID extends ItemDefinition> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
+    <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
     /**
      * Creates specific subclass of ItemDelta appropriate for type of item that this definition
@@ -608,19 +608,20 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
     /**
      * Literal clone.
      */
-    Item clone();
+    Item<V, D> clone();
 
-    Item createImmutableClone();
+    Item<V, D> createImmutableClone();
 
     /**
      * Complex clone with different cloning strategies.
      * @see CloneStrategy
      */
-    Item cloneComplex(CloneStrategy strategy);
+    Item<V, D> cloneComplex(CloneStrategy strategy);
 
     static <T extends Item<?,?>>  Collection<T> cloneCollection(Collection<T> items) {
         Collection<T> clones = new ArrayList<>(items.size());
         for (T item: items) {
+            //noinspection unchecked
             clones.add((T) item.copy());
         }
         return clones;
@@ -631,9 +632,8 @@ public interface Item<V extends PrismValue, D extends ItemDefinition> extends It
      * different Containerable.
      */
     @SuppressWarnings("unused")
-    static <T extends Item> Collection<T> resetParentCollection(Collection<T> items) {
+    static <T extends Item<?, ?>> Collection<T> resetParentCollection(Collection<T> items) {
         for (T item: items) {
-            //noinspection unchecked
             item.setParent(null);
         }
         return items;

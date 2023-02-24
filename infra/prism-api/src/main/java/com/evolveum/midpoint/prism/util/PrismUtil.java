@@ -94,7 +94,7 @@ public class PrismUtil {
         if (oldObject == null) {
             return;
         }
-        Item<PrismValue, ItemDefinition> itemOld = oldObject.findItem(itemDelta.getPath());
+        Item<PrismValue, ItemDefinition<?>> itemOld = oldObject.findItem(itemDelta.getPath());
         if (itemOld != null) {
             itemDelta.setEstimatedOldValues((Collection) PrismValueCollectionsUtil.cloneCollection(itemOld.getValues()));
         }

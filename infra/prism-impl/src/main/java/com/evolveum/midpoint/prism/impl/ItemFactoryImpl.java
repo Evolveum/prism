@@ -151,7 +151,7 @@ public class ItemFactoryImpl implements ItemFactory {
     }
 
     @Override
-    public <V extends PrismValue,D extends ItemDefinition> Item<V,D> createDummyItem(Item<V,D> itemOld, D definition, ItemPath path) throws SchemaException {
+    public <V extends PrismValue,D extends ItemDefinition<?>> Item<V,D> createDummyItem(Item<V,D> itemOld, D definition, ItemPath path) throws SchemaException {
         Item<V,D> itemMid;
         if (itemOld == null) {
             itemMid = definition.instantiate();

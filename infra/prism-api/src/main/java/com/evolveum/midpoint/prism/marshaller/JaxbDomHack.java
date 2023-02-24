@@ -15,7 +15,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  */
 public interface JaxbDomHack {
 
-    <IV extends PrismValue,ID extends ItemDefinition,C extends Containerable> Item<IV,ID> parseRawElement(Object element,
+    <IV extends PrismValue,ID extends ItemDefinition<?>,C extends Containerable> Item<IV,ID> parseRawElement(Object element,
             PrismContainerDefinition<C> definition) throws SchemaException;
 
     Object toAny(PrismValue value) throws SchemaException;

@@ -535,27 +535,27 @@ public class PrismAsserts {
         assert false : message+": Delta for "+expectedClass+" of type "+expectedChangeType+" was not found in collection "+deltas;
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoReplace(ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoReplace(ItemDelta<IV,ID> delta) {
         assertNoReplace(null, delta);
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoReplace(String message, ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoReplace(String message, ItemDelta<IV,ID> delta) {
         assertNoSet(message, "replace", delta.getValuesToReplace());
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoAdd(ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoAdd(ItemDelta<IV,ID> delta) {
         assertNoAdd(null, delta);
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoAdd(String message, ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoAdd(String message, ItemDelta<IV,ID> delta) {
         assertNoSet(message, "add", delta.getValuesToAdd());
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoDelete(ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoDelete(ItemDelta<IV,ID> delta) {
         assertNoDelete(null, delta);
     }
 
-    public static <IV extends PrismValue,ID extends ItemDefinition> void assertNoDelete(String message, ItemDelta<IV,ID> delta) {
+    public static <IV extends PrismValue,ID extends ItemDefinition<?>> void assertNoDelete(String message, ItemDelta<IV,ID> delta) {
         assertNoSet(message, "delete", delta.getValuesToDelete());
     }
 
@@ -1236,7 +1236,7 @@ public class PrismAsserts {
 
     @NotNull
     private static List<PrismValue> getValues(PrismContainerValue<?> pcv, ItemPath path) {
-        Item<PrismValue, ItemDefinition> item = pcv.findItem(path);
+        Item<PrismValue, ItemDefinition<?>> item = pcv.findItem(path);
         return item != null ? item.getValues() : Collections.emptyList();
     }
 

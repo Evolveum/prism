@@ -72,5 +72,5 @@ public interface ItemFactory {
      * But such container cannot be used to fit into any prism structure (cannot set parent).
      */
     @Experimental
-    <V extends PrismValue,D extends ItemDefinition> Item<V,D> createDummyItem(Item<V,D> itemOld, D definition, ItemPath path) throws SchemaException;
+    <V extends PrismValue,D extends ItemDefinition<?>> Item<V,D> createDummyItem(Item<V,D> itemOld, D definition, ItemPath path) throws SchemaException;
 }

@@ -18,7 +18,7 @@ import java.util.Objects;
  * @author semancik
  *
  */
-public class PartiallyResolvedDelta<V extends PrismValue,D extends ItemDefinition> implements DebugDumpable {
+public class PartiallyResolvedDelta<V extends PrismValue,D extends ItemDefinition<?>> implements DebugDumpable {
 
     private ItemDelta<V,D> delta;
     private ItemPath residualPath;

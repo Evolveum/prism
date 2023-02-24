@@ -62,7 +62,7 @@ public interface PrismParserNoIO extends PrismParser {
     @NotNull
     <O extends Objectable> PrismObject<O> parse() throws SchemaException;
     @Override
-    <IV extends PrismValue, ID extends ItemDefinition> Item<IV,ID> parseItem() throws SchemaException;
+    <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV,ID> parseItem() throws SchemaException;
     @Override
     <IV extends PrismValue> IV parseItemValue() throws SchemaException;
     @Override
