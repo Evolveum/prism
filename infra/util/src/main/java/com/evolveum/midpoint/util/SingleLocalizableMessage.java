@@ -24,7 +24,7 @@ public class SingleLocalizableMessage implements LocalizableMessage {
     private final String fallbackMessage;
 
     public SingleLocalizableMessage(String key) {
-        this(key, new Object[0]);
+        this(key, new Object[0], key);
     }
 
     public SingleLocalizableMessage(String key, Object[] args) {
