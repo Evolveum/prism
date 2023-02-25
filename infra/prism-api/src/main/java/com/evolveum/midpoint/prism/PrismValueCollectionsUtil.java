@@ -260,4 +260,73 @@ public class PrismValueCollectionsUtil {
         }
         return pValues;
     }
+
+    /**
+     * Returns values present in `collection1` but not in `collection2`.
+     * Values matching by ID are treated as equal without looking at their content.
+     */
+    public static Collection<? extends PrismValue> differenceConsideringIds(
+            @NotNull Collection<? extends PrismValue> collection1,
+            @NotNull Collection<? extends PrismValue> collection2,
+            @NotNull EquivalenceStrategy strategy) {
+        Collection<PrismValue> result = new HashSet<>();
+        main: for (PrismValue value1 : collection1) {
+            for (PrismValue value2 : collection2) {
+                if (matchById(value1, value2) || value1.equals(value2, strategy)) {
+                    continue main;
+                }
+            }
+            result.add(value1);
+        }
+        return result;
+    }
+
+    /**
+     * Returns values that exist (by ID) in both collections but differ in content.
+     */
+    public static Collection<? extends PrismValue> sameIdDifferentContent(
+            @NotNull Collection<? extends PrismValue> collection1,
+            @NotNull Collection<? extends PrismValue> collection2,
+            @NotNull EquivalenceStrategy strategy) {
+        Collection<PrismValue> result = new HashSet<>();
+        main: for (PrismValue value1 : collection1) {
+            for (PrismValue value2 : collection2) {
+                if (matchById(value1, value2) && !value1.equals(value2, strategy)) {
+                    result.add(value1);
+                    continue main;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns values present in `collection1` as well as in `collection2`.
+     * PCV IDs are NOT considered! We are interested here in really matching values.
+     */
+    public static Collection<? extends PrismValue> intersection(
+            @NotNull Collection<? extends PrismValue> collection1,
+            @NotNull Collection<? extends PrismValue> collection2,
+            @NotNull EquivalenceStrategy strategy) {
+        Collection<PrismValue> result = new HashSet<>();
+        main: for (PrismValue value1 : collection1) {
+            for (PrismValue value2 : collection2) {
+                if (value1.equals(value2, strategy)) {
+                    result.add(value1);
+                    continue main;
+                }
+            }
+        }
+        return result;
+    }
+
+    private static boolean matchById(PrismValue value1, PrismValue value2) {
+        Long id1 = getId(value1);
+        Long id2 = getId(value2);
+        return id1 != null && id1.equals(id2);
+    }
+
+    private static Long getId(PrismValue value) {
+        return value instanceof PrismContainerValue<?> ? ((PrismContainerValue<?>) value).getId() : null;
+    }
 }
