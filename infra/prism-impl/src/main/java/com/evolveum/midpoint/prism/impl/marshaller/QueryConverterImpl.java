@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -700,7 +700,7 @@ public class QueryConverterImpl implements QueryConverter {
         ObjectFilter targetFilter = null;
         if (filterXnode instanceof MapXNodeImpl) {
             PrismContainerDefinition<?> targetSchema = null;
-            if (refDef != null) {
+            if (refDef != null && refDef.getTargetTypeName() != null) {
                 targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(refDef.getTargetTypeName());
             }
             targetFilter = parseFilterInternal((MapXNodeImpl) filterXnode, targetSchema, preliminaryParsingOnly, pc);
