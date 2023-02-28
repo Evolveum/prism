@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2010-2022 Evolveum and contributors
+  ~ Copyright (C) 2010-2023 Evolveum and contributors
   ~
   ~ This work is dual-licensed under the Apache License 2.0
   ~ and European Union Public License. See LICENSE file for details.
@@ -211,9 +211,10 @@
     <xsd:element name="less" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="lessOrEqual" substitutionGroup="tns:filterClause" type="tns:PropertySimpleValueFilterClauseType"/>
     <xsd:element name="substring" substitutionGroup="tns:filterClause" type="tns:SubstringFilterClauseType"/>
-    <xsd:element name="fuzzyStringMatch" substitutionGroup="tns:filterClause" type="tns:FuzzyStringMatchClauseType" />
+    <xsd:element name="fuzzyStringMatch" substitutionGroup="tns:filterClause" type="tns:FuzzyStringMatchClauseType"/>
 
     <xsd:element name="ref" substitutionGroup="tns:filterClause" type="tns:RefFilterClauseType"/>
+    <xsd:element name="ownedBy" substitutionGroup="tns:filterClause" type="tns:OwnedByFilterClauseType"/>
 
     <xsd:element name="org" substitutionGroup="tns:filterClause" type="tns:OrgFilterClauseType"/>
     <xsd:element name="inOid" substitutionGroup="tns:filterClause" type="tns:InOidFilterClauseType"/>
@@ -454,18 +455,18 @@
     <xsd:complexType name="FuzzyStringMatchClauseType">
         <xsd:complexContent>
             <xsd:extension base="tns:PropertySimpleValueFilterClauseType">
-                 <xsd:sequence>
-                     <xsd:element name="method" type="tns:FuzzyStringMatchMethodClauseType" minOccurs="1" maxOccurs="1" />
-                 </xsd:sequence>
+                <xsd:sequence>
+                    <xsd:element name="method" type="tns:FuzzyStringMatchMethodClauseType" minOccurs="1" maxOccurs="1"/>
+                </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
 
-    <xsd:complexType name="FuzzyStringMatchMethodClauseType" >
-          <xsd:sequence>
+    <xsd:complexType name="FuzzyStringMatchMethodClauseType">
+        <xsd:sequence>
             <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="lax">
             </xsd:any>
-          </xsd:sequence>
+        </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="ReferencedByFilterClauseType">
