@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.delta.builder;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -54,6 +55,8 @@ public class DeltaBuilder<C extends Containerable>
     /** Should we skip idempotent item deltas? */
     @Experimental private final boolean optimizing;
 
+    @Experimental private final C oldObject;
+
     /** Useful if one wants to create definition-ful deltas (e.g. for resource objects). */
     @Nullable private final ItemDefinitionResolver itemDefinitionResolver;
 
@@ -73,6 +76,7 @@ public class DeltaBuilder<C extends Containerable>
         deltas = new ArrayList<>();
         currentDelta = null;
         optimizing = false;
+        oldObject = null;
     }
 
     private DeltaBuilder(
@@ -80,6 +84,7 @@ public class DeltaBuilder<C extends Containerable>
             ComplexTypeDefinition containerCTD,
             PrismContext prismContext,
             boolean optimizing,
+            C oldObject,
             @Nullable ItemDefinitionResolver itemDefinitionResolver,
             List<ItemDelta<?, ?>> deltas,
             ItemDelta currentDelta) {
@@ -87,6 +92,7 @@ public class DeltaBuilder<C extends Containerable>
         this.containerCTD = containerCTD;
         this.prismContext = prismContext;
         this.optimizing = optimizing;
+        this.oldObject = oldObject;
         this.itemDefinitionResolver = itemDefinitionResolver;
         this.deltas = deltas;
         this.currentDelta = currentDelta;
@@ -103,7 +109,14 @@ public class DeltaBuilder<C extends Containerable>
     @Override
     public S_ItemEntry optimizing() {
         return new DeltaBuilder<>(
-                objectClass, containerCTD, prismContext, true, itemDefinitionResolver, deltas, currentDelta);
+                objectClass, containerCTD, prismContext, true, oldObject, itemDefinitionResolver, deltas, currentDelta);
+    }
+
+    @Override
+    public S_ItemEntry oldObject(Containerable object) {
+        //noinspection unchecked
+        return new DeltaBuilder<>(
+                objectClass, containerCTD, prismContext, optimizing, (C) object, itemDefinitionResolver, deltas, currentDelta);
     }
 
     @Override
@@ -159,12 +172,20 @@ public class DeltaBuilder<C extends Containerable>
             newDeltas.add(currentDelta);
         }
         return new DeltaBuilder<>(
-                objectClass, containerCTD, prismContext, optimizing, itemDefinitionResolver, newDeltas, newDelta);
+                objectClass, containerCTD, prismContext, optimizing, oldObject, itemDefinitionResolver, newDeltas, newDelta);
     }
 
+    /** Also computes old values, if possible. */
     private boolean shouldApplyCurrent() {
         if (currentDelta == null) {
             return false;
+        }
+        if (currentDelta.getEstimatedOldValues() == null && oldObject != null) {
+            Item<?, ?> oldItem = oldObject.asPrismContainerValue().findItem(currentDelta.getPath());
+            //noinspection unchecked
+            currentDelta.setEstimatedOldValues(
+                    oldItem != null ?
+                            CloneUtil.cloneCollectionMembers(oldItem.getValues()) : List.of());
         }
         if (!optimizing) {
             return true;
@@ -211,7 +232,7 @@ public class DeltaBuilder<C extends Containerable>
             newDeltas.add(currentDelta);
         }
         return new DeltaBuilder<>(
-                objectClass, containerCTD, prismContext, optimizing, itemDefinitionResolver, newDeltas, newDelta);
+                objectClass, containerCTD, prismContext, optimizing, oldObject, itemDefinitionResolver, newDeltas, newDelta);
     }
 
     // TODO fix this after ObjectDelta is changed to accept Containerable

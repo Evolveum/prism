@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.delta.builder;
 
+import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
@@ -18,13 +19,13 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import javax.xml.namespace.QName;
 import java.util.List;
 
-/**
- *
- */
 public interface S_ItemEntry {
 
     /** Should we skip idempotent item deltas? (Default is `false`.) */
     @Experimental S_ItemEntry optimizing();
+
+    /** The state of object before the delta is applied. Used to compute estimatedOldValues. */
+    @Experimental S_ItemEntry oldObject(Containerable object);
 
     S_ValuesEntry item(QName... names);
     S_ValuesEntry item(Object... namesOrIds);
