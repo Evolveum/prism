@@ -10,11 +10,15 @@ import java.io.Serializable;
 
 import com.evolveum.midpoint.util.DisplayableValue;
 
-public class DisplayableValueImpl<T> implements DisplayableValue<T>, Serializable{
+public class DisplayableValueImpl<T> implements DisplayableValue<T>, Serializable {
 
     private T value;
     private String label;
     private String description;
+
+    public DisplayableValueImpl(T value, String label) {
+        this(value, label, null);
+    }
 
     public DisplayableValueImpl(T value, String label, String description) {
         this.label = label;
@@ -45,13 +49,13 @@ public class DisplayableValueImpl<T> implements DisplayableValue<T>, Serializabl
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
 
         DisplayableValueImpl<?> that = (DisplayableValueImpl<?>) o;
 
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-        if (label != null ? !label.equals(that.label) : that.label != null) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) {return false;}
+        if (label != null ? !label.equals(that.label) : that.label != null) {return false;}
         return !(description != null ? !description.equals(that.description) : that.description != null);
 
     }
