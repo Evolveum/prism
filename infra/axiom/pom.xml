@@ -23,7 +23,7 @@
     <name>Axiom</name>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>

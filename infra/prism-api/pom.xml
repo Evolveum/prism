@@ -20,10 +20,6 @@
 
     <name>midPoint Infrastructure - prism-api</name>
 
-    <properties>
-        <!--<maven.test.skip>true</maven.test.skip>-->
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.evolveum.commons</groupId>
