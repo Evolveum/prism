@@ -21,6 +21,7 @@ import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1244,26 +1245,14 @@ public class MiscUtil {
 
     /** Crude attempt at replacing all illegal chars with underscores. Maybe too strict. */
     public static String fixFileName(String originalName) {
-        return originalName.replaceAll("[^a-zA-Z0-9.\\-]", "_");
-    }
-
-    /**
-     * Replacing illegal characters in file name on Windows.
-     */
-    public static String replaceIllegalCharInFileNameOnWindows(String path) {
-        if (onWindows()) {
-            return path
-                    .replaceAll("[\\\\|\\*|\\:|\\||\"|\\<|\\>|\\?]+", "_")
-                    .replaceAll("_{1,} _{1,}| _{1,}|_{1,} ", " ")
-                    .replaceAll("_{2,}", "_");
-        } else {
-            return path;
+        if (originalName == null) {
+            return null;
         }
-    }
 
-    /** Are we running on Windows? (Rough estimate.) */
-    public static boolean onWindows() {
-        return File.separatorChar == '\\';
+        String fixed = Normalizer.normalize(originalName, Normalizer.Form.NFKD);
+        fixed = fixed.replaceAll("\\p{M}", "");
+
+        return fixed.replaceAll("[^a-zA-Z0-9.\\-]", "_");
     }
 
     /**
