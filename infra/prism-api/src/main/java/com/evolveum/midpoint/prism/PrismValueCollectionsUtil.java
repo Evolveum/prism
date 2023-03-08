@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.PrismUtil;
+import com.evolveum.midpoint.util.EqualsChecker;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
@@ -41,10 +42,12 @@ public class PrismValueCollectionsUtil {
         return false;
     }
 
-    public static boolean containsValue(Collection<PrismPropertyValue> collection, PrismPropertyValue value,
-            Comparator comparator) {
-        for (PrismPropertyValue<?> colVal: collection) {
-            if (comparator.compare(colVal, value) == 0) {
+    public static <T> boolean containsValue(
+            Collection<PrismPropertyValue<T>> collection,
+            PrismPropertyValue<T> value,
+            EqualsChecker<PrismPropertyValue<T>> checker) {
+        for (PrismPropertyValue<T> colVal: collection) {
+            if (checker.test(colVal, value)) {
                 return true;
             }
         }
