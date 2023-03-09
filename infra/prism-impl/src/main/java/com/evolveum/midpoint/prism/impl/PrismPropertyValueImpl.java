@@ -544,6 +544,11 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             sb.append("expression: ");
             // TODO: nicer output
             sb.append(expression);
+        } else if (rawElement != null) {
+            if (wasIndent) {
+                sb.append("\n");
+            }
+            sb.append(rawElement.debugDump(indent + 1));
         } else {
             if (!wasIndent) {
                 DebugUtil.indentDebugDump(sb, indent);
