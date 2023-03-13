@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2022 Evolveum and contributors
+ * Copyright (C) 2020-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -9,11 +9,13 @@ package com.evolveum.midpoint.prism;
 
 import java.util.Objects;
 import java.util.function.Predicate;
+import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.util.QNameUtil;
 
 /**
  * Selects a value from multivalued item (property, container, reference). A typical use is to select
@@ -46,5 +48,11 @@ public interface ValueSelector<V extends PrismValue> extends Predicate<V> {
 
     static ValueSelector<PrismReferenceValue> refEquals(@NotNull String expectedTargetOid) {
         return ppv -> ppv != null && expectedTargetOid.equals(ppv.getOid());
+    }
+
+    static ValueSelector<PrismReferenceValue> refEquals(@NotNull String expectedTargetOid, QName expectedRelation) {
+        return ppv -> ppv != null
+                && expectedTargetOid.equals(ppv.getOid())
+                && QNameUtil.match(expectedRelation, ppv.getRelation());
     }
 }
