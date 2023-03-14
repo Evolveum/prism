@@ -129,4 +129,9 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
         return delegate().getDiagrams();
     }
 
+    @Override
+    default boolean hasOperationalOnlyItems() {
+        return delegate().hasOperationalOnlyItems();
+    }
+
 }

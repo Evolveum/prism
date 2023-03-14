@@ -698,8 +698,17 @@
         <xsd:annotation>
             <xsd:documentation>
                 EXPERIMENTAL: Value Metadata marker. This annotation marks elements to be considered as value metadata.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
 
+    <xsd:element name="alwaysUseForEquals"  type="xsd:QName">
+        <xsd:annotation>
+            <xsd:documentation>
+                EXPERIMENTAL: Item which should always be used for equals even if it is operational
+                and strategy does not consider operational items.
 
+                USE WITH CARE
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

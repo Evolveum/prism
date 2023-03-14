@@ -7,8 +7,11 @@
 package com.evolveum.midpoint.prism.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
+
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +28,7 @@ import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Definition of a property container.
@@ -57,6 +61,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     // TODO clean up this.
     protected ComplexTypeDefinition complexTypeDefinition;
     protected Class<C> compileTimeClass;
+    private Set<QName> alwaysUseForEquals;
 
     /**
      * The constructors should be used only occasionally (if used at all).
@@ -553,6 +558,16 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     public MutablePrismContainerDefinition<C> toMutable() {
         checkMutableOnExposing();
         return this;
+    }
+
+    @Override
+    public void setAlwaysUseForEquals(@NotNull Collection<QName> keysElem) {
+        alwaysUseForEquals = ImmutableSet.copyOf(keysElem);
+    }
+
+    @Override
+    public Collection<QName> getAlwaysUseForEquals() {
+        return alwaysUseForEquals;
     }
 
     @Override

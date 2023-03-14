@@ -178,4 +178,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     default boolean isItemDefinitionRemoved(QName itemName) {
         return false;
     }
+
+    @Experimental
+    default boolean hasOperationalOnlyItems() {
+        return false;
+    }
 }

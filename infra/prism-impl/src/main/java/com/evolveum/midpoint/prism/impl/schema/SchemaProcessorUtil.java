@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
@@ -78,6 +79,11 @@ public class SchemaProcessorUtil {
             return null;
         }
         return DOMUtil.getQNameValue(element);
+    }
+
+    public static List<QName> getAnnotationQNames(XSAnnotation annotation, QName qname) {
+        List<Element>  elements = getAnnotationElements(annotation, qname);
+        return elements.stream().map(DOMUtil::getQNameValue).collect(Collectors.toList());
     }
 
     /**

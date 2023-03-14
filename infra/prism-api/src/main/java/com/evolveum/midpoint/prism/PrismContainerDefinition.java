@@ -10,11 +10,13 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -125,5 +127,23 @@ public interface PrismContainerDefinition<C extends Containerable>
     @Override
     default Optional<ComplexTypeDefinition> structuredType() {
         return Optional.ofNullable(getComplexTypeDefinition());
+    }
+
+    /**
+     * Returns true, if item is explicitly specified mentioned to be used for equals
+     */
+    @Experimental
+    default boolean isAlwaysUseForEquals(QName name) {
+        return getAlwaysUseForEquals().contains(name);
+    }
+
+    /**
+     * Returns list of items which should be always used for equals, even if
+     * they are operational, and equivalence strategy does not consider
+     * operational data.
+     */
+    @Experimental
+    default Collection<QName> getAlwaysUseForEquals() {
+        return Collections.emptySet();
     }
 }

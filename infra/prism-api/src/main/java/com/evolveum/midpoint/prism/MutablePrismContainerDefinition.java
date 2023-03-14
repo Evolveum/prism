@@ -7,7 +7,13 @@
 
 package com.evolveum.midpoint.prism;
 
+import java.util.Collection;
+
 import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 /**
  *
@@ -27,4 +33,15 @@ public interface MutablePrismContainerDefinition<C extends Containerable> extend
     MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition ctd, int minOccurs, int maxOccurs);
 
     void setComplexTypeDefinition(ComplexTypeDefinition complexTypeDefinition);
+
+    /**
+     *
+     * Experimental: USe only with care, this overrides behavior of listed operational=true items in equivalence strategies
+     * for containers.
+     *
+     */
+    @Experimental
+    default void setAlwaysUseForEquals(@NotNull Collection<QName> keysElem) {
+        // NOOP
+    }
 }

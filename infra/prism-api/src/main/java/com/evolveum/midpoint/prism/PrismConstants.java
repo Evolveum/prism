@@ -123,6 +123,8 @@ public class PrismConstants {
     public static final QName A_MAX_OCCURS = new QName(NS_ANNOTATION, "maxOccurs");
     public static final String MULTIPLICITY_UNBOUNDED = "unbounded";
 
+    public static final QName A_ALWAYS_USE_FOR_EQUALS = new QName(NS_ANNOTATION, "alwaysUseForEquals");
+
     public static final QName A_NAMESPACE = new QName(NS_ANNOTATION, "namespace");
     public static final String A_NAMESPACE_PREFIX = "prefix";
     public static final String A_NAMESPACE_URL = "url";

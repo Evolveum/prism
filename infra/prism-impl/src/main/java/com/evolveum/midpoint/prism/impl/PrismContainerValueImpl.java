@@ -1163,6 +1163,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private boolean isOperationalOnly(Item item, ItemDefinition itemDef) {
+        // If the item is explicitly mentioned in schema to be used for equals
+        // we do not consider it operational for diff purposes.
+        if (getDefinition() != null && getDefinition().isAlwaysUseForEquals(item.getElementName())) {
+            return false;
+        }
+
         if (itemDef != null && itemDef.isOperational()) {
             return true;
         }
