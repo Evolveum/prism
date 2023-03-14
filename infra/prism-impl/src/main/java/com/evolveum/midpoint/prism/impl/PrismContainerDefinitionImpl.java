@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     // TODO clean up this.
     protected ComplexTypeDefinition complexTypeDefinition;
     protected Class<C> compileTimeClass;
-    private Set<QName> alwaysUseForEquals;
+    private Set<QName> alwaysUseForEquals = Collections.emptySet();
 
     /**
      * The constructors should be used only occasionally (if used at all).
