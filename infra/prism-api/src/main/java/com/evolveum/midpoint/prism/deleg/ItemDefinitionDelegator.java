@@ -59,16 +59,6 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default boolean isMandatory() {
-        return delegate().isMandatory();
-    }
-
-    @Override
-    default boolean isOptional() {
-        return delegate().isOptional();
-    }
-
-    @Override
     default boolean isOperational() {
         return delegate().isOperational();
     }

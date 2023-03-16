@@ -44,9 +44,13 @@ public interface ItemDefinition<I extends Item> extends Definition, PrismItemAcc
         return maxOccurs < 0 || maxOccurs > 1;
     }
 
-    boolean isMandatory();
+    default boolean isMandatory() {
+        return getMinOccurs() > 0;
+    }
 
-    boolean isOptional();
+    default boolean isOptional() {
+        return getMinOccurs() == 0;
+    }
 
     boolean isOperational();
 
