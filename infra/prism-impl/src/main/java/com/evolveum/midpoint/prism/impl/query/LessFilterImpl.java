@@ -40,7 +40,7 @@ public final class LessFilterImpl<T> extends ComparativeFilterImpl<T> implements
     @NotNull
     public static <T> LessFilter<T> createLess(@NotNull ItemPath itemPath, PrismPropertyDefinition<T> definition,
             QName matchingRule, Object anyValue, boolean equals, @NotNull PrismContext prismContext) {
-        PrismPropertyValue<T> propertyValue = anyValueToPropertyValue(prismContext, anyValue);
+        PrismPropertyValue<T> propertyValue = anyValueToPropertyValue(anyValue);
         return new LessFilterImpl<>(itemPath, definition, matchingRule, propertyValue, null, null, null, equals);
     }
 

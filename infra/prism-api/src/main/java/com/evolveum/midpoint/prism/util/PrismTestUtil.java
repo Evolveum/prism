@@ -1,10 +1,21 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+
+import org.jetbrains.annotations.TestOnly;
+import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -23,24 +34,12 @@ import com.evolveum.prism.xml.ns._public.query_3.QueryType;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
-import org.jetbrains.annotations.TestOnly;
-import org.xml.sax.SAXException;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Class that statically instantiates the prism contexts and provides convenient static version of the PrismContext
  * and processor classes.
  *
- * This is usable for tests. DO NOT use this in the main code. Although it is placed in "main" for convenience,
- * is should only be used in tests.
+ * This is usable for tests. DO NOT use this in the main code.
+ * Although it is placed in "main" for convenience, it should only be used in tests.
  *
  * @author semancik
  */
@@ -117,7 +116,8 @@ public class PrismTestUtil {
         return getPrismContext().parseObject(xmlString);
     }
 
-    public static <T extends Objectable> T parseObjectable(File file, Class<T> clazz) throws SchemaException, IOException {
+    public static <T extends Objectable> T parseObjectable(File file) throws SchemaException, IOException {
+        //noinspection unchecked
         return (T) parseObject(file).asObjectable();
     }
 
@@ -150,15 +150,13 @@ public class PrismTestUtil {
         return getPrismContext().xmlSerializer().serializeAnyData(o, defaultRootElementName);
     }
 
-    public static String serializeJaxbElementToString(JAXBElement element) throws SchemaException {
+    public static String serializeJaxbElementToString(JAXBElement<?> element) throws SchemaException {
         return serializeAnyData(element.getValue(), element.getName());
     }
 
     public static String serializeAnyDataWrapped(Object o) throws SchemaException {
         return serializeAnyData(o, DEFAULT_ELEMENT_NAME);
     }
-
-
 
     // ==========================
     // == Here was parsing from JAXB.
@@ -184,10 +182,9 @@ public class PrismTestUtil {
         return getSchemaRegistry().findObjectDefinitionByCompileTimeClass(compileTimeClass);
     }
 
+    @Deprecated // simply inline, after 4.7 fromOrig does recomputation
     public static PolyString createPolyString(String orig) {
-        PolyString polyString = new PolyString(orig);
-        polyString.recompute(getPrismContext().getDefaultPolyStringNormalizer());
-        return polyString;
+        return PolyString.fromOrig(orig);
     }
 
     public static PolyString createPolyString(String orig, String norm) {
@@ -216,7 +213,7 @@ public class PrismTestUtil {
     public static void display(String title, DebugDumpable dumpable) {
         System.out.println(OBJECT_TITLE_OUT_PREFIX + title);
         System.out.println(dumpable == null ? "null" : dumpable.debugDump(1));
-        LOGGER.debug(OBJECT_TITLE_LOG_PREFIX + title  + "\n"
+        LOGGER.debug(OBJECT_TITLE_LOG_PREFIX + title + "\n"
                 + (dumpable == null ? "null" : dumpable.debugDump(1)));
     }
 

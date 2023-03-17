@@ -604,8 +604,10 @@ public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStr
         return true;
     }
 
-    public static PolyStringType fromOrig(String name) {
-        return name != null ? new PolyStringType(name) : null;
+    // TODO consider recompute here as well and leave constructor for non-recomputed usages?
+    // see PolyString#fromOrig(value)
+    public static PolyStringType fromOrig(String orig) {
+        return orig != null ? new PolyStringType(orig) : null;
     }
 
     @Override

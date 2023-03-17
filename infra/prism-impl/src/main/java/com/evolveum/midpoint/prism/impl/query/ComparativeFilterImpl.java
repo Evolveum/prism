@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2022 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -57,7 +57,7 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
     }
 
     @Nullable
-    static <T> PrismPropertyValue<T> anyValueToPropertyValue(@NotNull PrismContext prismContext, Object value) {
+    static <T> PrismPropertyValue<T> anyValueToPropertyValue(Object value) {
         List<PrismPropertyValue<T>> values = anyValueToPropertyValueList(value);
         if (values.isEmpty()) {
             return null;
@@ -170,12 +170,7 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
         } else if (value instanceof PolyStringType) {
             return PolyString.toPolyString((PolyStringType) value);
         } else {
-            PolyString polyString = PolyString.fromOrig(toString(value));
-            PrismContext prismContext = getPrismContext();
-            if (prismContext != null) {
-                polyString.recompute(prismContext.getDefaultPolyStringNormalizer());
-            }
-            return polyString;
+            return PolyString.fromOrig(toString(value));
         }
     }
 

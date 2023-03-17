@@ -1,15 +1,21 @@
 /*
- * Copyright (c) 2010-2019 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
  */
 package com.evolveum.midpoint.prism.polystring;
 
-import com.evolveum.midpoint.prism.Matchable;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.Recomputable;
-import com.evolveum.midpoint.prism.Structured;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+import javax.xml.namespace.QName;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -19,16 +25,6 @@ import com.evolveum.midpoint.util.ShortDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringTranslationType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.xml.namespace.QName;
 
 /**
  * Polymorphic string. String that may have more than one representation at
@@ -54,9 +50,9 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
     public static final String F_LANG_LOCAL_PART = F_LANG.getLocalPart();
 
     private String orig;
-    private String norm = null;
+    private String norm;
     private PolyStringTranslationType translation;
-    private Map<String,String> lang;
+    private Map<String, String> lang;
 
     public PolyString(String orig) {
         this(orig, null);
@@ -73,7 +69,7 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         this(orig, norm, translation, null);
     }
 
-    public PolyString(String orig, String norm, PolyStringTranslationType translation, Map<String,String> lang) {
+    public PolyString(String orig, String norm, PolyStringTranslationType translation, Map<String, String> lang) {
         super();
         this.orig = orig;
         this.norm = norm;
@@ -133,20 +129,28 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         return orig == null && norm == null && (translation == null || translation.getKey() == null) && lang == null;
     }
 
-    private boolean isOrigEmpty(){
+    private boolean isOrigEmpty() {
         return StringUtils.isEmpty(orig);
     }
 
-    private boolean isLocalizationKeyEmpty(){
+    private boolean isLocalizationKeyEmpty() {
         return translation == null || StringUtils.isEmpty(translation.getKey());
     }
 
-    private boolean isLanguageMapEmpty(){
+    private boolean isLanguageMapEmpty() {
         return lang == null || lang.isEmpty();
     }
 
     public void recompute(PolyStringNormalizer normalizer) {
         norm = normalizer.normalize(orig);
+    }
+
+    /**
+     * Recomputes normalized value with default normalizer and returns modified `this`.
+     */
+    public PolyString recompute() {
+        recompute(PrismContext.get().getDefaultPolyStringNormalizer());
+        return this;
     }
 
     public boolean isComputed() {
@@ -159,11 +163,11 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
             return this;
         }
         if (subpath.size() > 1) {
-            throw new IllegalArgumentException("Cannot resolve path "+subpath+" on polystring "+this+", the path is too deep");
+            throw new IllegalArgumentException("Cannot resolve path " + subpath + " on polystring " + this + ", the path is too deep");
         }
         Object first = subpath.first();
         if (!ItemPath.isName(first)) {
-            throw new IllegalArgumentException("Cannot resolve non-name path "+subpath+" on polystring "+this);
+            throw new IllegalArgumentException("Cannot resolve non-name path " + subpath + " on polystring " + this);
         }
         QName itemName = ItemPath.toName(first);
         if (QNameUtil.match(F_ORIG, itemName)) {
@@ -175,7 +179,7 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         } else if (QNameUtil.match(F_LANG, itemName)) {
             return lang;
         } else {
-            throw new IllegalArgumentException("Unknown path segment "+itemName);
+            throw new IllegalArgumentException("Unknown path segment " + itemName);
         }
     }
 
@@ -184,12 +188,13 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         if (other == null) {
             return this;
         }
-        return new PolyString(this.orig + other.toString());
+        return new PolyString(this.orig + other);
     }
 
     // Groovy operator overload
+    @SuppressWarnings("unused")
     public PolyString getAt(int index) {
-        return new PolyString(this.orig.substring(index, index+1));
+        return new PolyString(this.orig.substring(index, index + 1));
     }
 
     @Override
@@ -201,24 +206,16 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         return this.orig.compareTo(otherString);
     }
 
-//    public PolyString getAt(Range at) {
-//        // TODO
-//    }
-//
-//    public PolyString getAt(IntRange at) {
-//        // TODO
-//    }
-
     public int length() {
         return orig.length();
     }
 
     public PolyString trim() {
-        return new PolyString(orig.trim(), norm != null ? norm.trim() : norm);
+        return new PolyString(orig.trim(), norm != null ? norm.trim() : null);
     }
 
     public String substring(int from, int to) {
-        return this.orig.substring(from,to);
+        return this.orig.substring(from, to);
     }
 
     /**
@@ -299,12 +296,20 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
 
     @Override
     public boolean equalsOriginalValue(Recomputable obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
         PolyString other = (PolyString) obj;
         if (orig == null) {
-            if (other.orig != null) return false;
+            if (other.orig != null) {
+                return false;
+            }
         } else if (!orig.equals(other.orig)) {
             return false;
         }
@@ -340,19 +345,18 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
 
     @Override
     public void shortDump(StringBuilder sb) {
-        if (MapUtils.isNotEmpty(getLang()) || getTranslation() != null && StringUtils.isNotEmpty(getTranslation().getKey())){
-            sb.append("orig=" + orig);
+        if (MapUtils.isNotEmpty(getLang()) || getTranslation() != null && StringUtils.isNotEmpty(getTranslation().getKey())) {
+            sb.append("orig=").append(orig);
         } else {
             sb.append(orig);
         }
         if (getTranslation() != null) {
-            sb.append("; translation.key=" + getTranslation().getKey());
+            sb.append("; translation.key=").append(getTranslation().getKey());
         }
         if (MapUtils.isNotEmpty(getLang())) {
             sb.append("; lang:");
-            getLang().keySet().forEach(langKey -> {
-                sb.append(" " + langKey + "=" + getLang().get(langKey) + ",");
-            });
+            getLang().keySet().forEach(langKey ->
+                    sb.append(" ").append(langKey).append("=").append(getLang().get(langKey)).append(","));
         }
     }
 
@@ -378,10 +382,16 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
 
     @Override
     public boolean match(PolyString other) {
-        if (this == other) return true;
-        if (other == null) return false;
+        if (this == other) {
+            return true;
+        }
+        if (other == null) {
+            return false;
+        }
         if (norm == null) {
-            if (other.norm != null) return false;
+            if (other.norm != null) {
+                return false;
+            }
         } else if (!norm.equals(other.norm)) {
             return false;
         }
@@ -420,8 +430,14 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         return value != null ? new PolyStringType(value) : null;
     }
 
+    /**
+     * Returns poly-string for the provided `orig` value with `norm` recomputed with default normalizer.
+     * If, for whatever reason, poly-string with only `orig` is needed, use the constructor with `orig` parameter.
+     *
+     * TODO: Recompute added in 4.7, check usages, remove useless recomputes outside and eventually remove this TODO.
+     */
     public static PolyString fromOrig(String orig) {
-        return new PolyString(orig);
+        return new PolyString(orig).recompute();
     }
 
     public PolyString copy() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (C) 2010-2023 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -659,19 +659,17 @@ public class PrismAsserts {
     }
 
     public static void assertEqualsPolyString(String message, String expectedOrig, PolyString actual) {
-        PolyString expected = new PolyString(expectedOrig);
-        expected.recompute(PrismTestUtil.getPrismContext().getDefaultPolyStringNormalizer());
+        PolyString expected = PolyString.fromOrig(expectedOrig);
         assertEquals(message, expected, actual);
     }
 
     public static void assertEqualsPolyStringMulti(String message, Collection<PolyString> actual, String... expectedOrigs) {
-        List<PolyString> expectedPolystrings = new ArrayList<>(expectedOrigs.length);
+        List<PolyString> expectedPolyStrings = new ArrayList<>(expectedOrigs.length);
         for (String expectedOrig : expectedOrigs) {
-            PolyString expected = new PolyString(expectedOrig);
-            expected.recompute(PrismTestUtil.getPrismContext().getDefaultPolyStringNormalizer());
-            expectedPolystrings.add(expected);
+            PolyString expected = PolyString.fromOrig(expectedOrig);
+            expectedPolyStrings.add(expected);
         }
-        assertEqualsCollectionUnordered(message, expectedPolystrings, actual);
+        assertEqualsCollectionUnordered(message, expectedPolyStrings, actual);
     }
 
     public static void assertEqualsPolyString(String message, String expectedOrig, PolyStringType actual) {
@@ -680,8 +678,7 @@ public class PrismAsserts {
         }
         assert actual != null : message + ": null value";
         assert MiscUtil.equals(expectedOrig, actual.getOrig()) : message+"; expected orig '"+expectedOrig+ "' but was '" + actual.getOrig() + "'";
-        PolyString expected = new PolyString(expectedOrig);
-        expected.recompute(PrismTestUtil.getPrismContext().getDefaultPolyStringNormalizer());
+        PolyString expected = PolyString.fromOrig(expectedOrig);
         assert MiscUtil.equals(expected.getNorm(), actual.getNorm()) : message+"; expected norm '"+expected.getNorm()+ "' but was '" + actual.getNorm() + "'";
     }
 
