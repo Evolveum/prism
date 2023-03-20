@@ -75,17 +75,11 @@ public class JavaTypeConverter {
         if (expectedType == boolean.class && rawValue instanceof Boolean) {
             return rawValue;
         }
-        if (expectedType == Boolean.class && rawValue instanceof String) {
+        if ((expectedType == Boolean.class || expectedType == boolean.class) && rawValue instanceof String) {
             return Boolean.parseBoolean((((String) rawValue)).trim());
         }
-        if (expectedType == Boolean.class && rawValue instanceof PolyString) {
+        if ((expectedType == Boolean.class || expectedType == boolean.class) && rawValue instanceof PolyString) {
             return Boolean.parseBoolean((rawValue.toString().trim()));
-        }
-        if (expectedType == boolean.class && rawValue instanceof String) {
-            return Boolean.parseBoolean(((String) rawValue).trim());
-        }
-        if (expectedType == boolean.class && rawValue instanceof PolyString) {
-            return Boolean.parseBoolean((rawValue).toString().trim());
         }
         if (expectedType == String.class && rawValue instanceof Boolean) {
             return rawValue.toString();
@@ -169,6 +163,18 @@ public class JavaTypeConverter {
         if (expectedType == String.class && rawValue instanceof BigInteger) {
             return rawValue.toString().trim();
         }
+        if (expectedType == BigInteger.class && rawValue instanceof Integer) {
+            return BigInteger.valueOf((int) rawValue);
+        }
+        if (expectedType == BigInteger.class && rawValue instanceof Long) {
+            return BigInteger.valueOf((long) rawValue);
+        }
+        if ((expectedType == Integer.class || expectedType == int.class) && rawValue instanceof BigInteger) {
+            return ((BigInteger) rawValue).intValueExact(); // we must throw an exception if the conversion is not possible
+        }
+        if ((expectedType == Long.class || expectedType == long.class) && rawValue instanceof BigInteger) {
+            return ((BigInteger) rawValue).longValueExact(); // we must throw an exception if the conversion is not possible
+        }
 
         if (expectedType == BigDecimal.class && rawValue instanceof String) {
             return new BigDecimal(((String) rawValue).trim());
@@ -208,22 +214,18 @@ public class JavaTypeConverter {
             return new PolyString(((Integer) rawValue).toString());
         }
         if (expectedType == PolyStringType.class && rawValue instanceof PolyString) {
-            PolyStringType polyStringType = new PolyStringType((PolyString) rawValue);
-            return polyStringType;
+            return new PolyStringType((PolyString) rawValue);
         }
         if (expectedType == PolyStringType.class && rawValue instanceof Integer) {
-            PolyStringType polyStringType = new PolyStringType(((Integer) rawValue).toString());
-            return polyStringType;
+            return new PolyStringType(((Integer) rawValue).toString());
         }
 
         // Date and time
         if (expectedType == XMLGregorianCalendar.class && rawValue instanceof Long) {
-            XMLGregorianCalendar xmlCalType = XmlTypeConverter.createXMLGregorianCalendar((Long) rawValue);
-            return xmlCalType;
+            return XmlTypeConverter.createXMLGregorianCalendar((Long) rawValue);
         }
         if (expectedType == XMLGregorianCalendar.class && rawValue instanceof String) {
-            XMLGregorianCalendar xmlCalType = magicDateTimeParse((String) rawValue);
-            return xmlCalType;
+            return magicDateTimeParse((String) rawValue);
         }
         if (expectedType == String.class && rawValue instanceof XMLGregorianCalendar) {
             return ((XMLGregorianCalendar) rawValue).toXMLFormat();
@@ -242,6 +244,7 @@ public class JavaTypeConverter {
 
         // Java Enums
         if (expectedType.isEnum() && rawValue instanceof String) {
+            //noinspection unchecked,rawtypes
             return Enum.valueOf((Class<Enum>) expectedType, ((String) rawValue).trim());
         }
         if (expectedType == String.class && rawValue.getClass().isEnum()) {
