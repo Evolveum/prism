@@ -6,6 +6,10 @@
  */
 package com.evolveum.midpoint.util;
 
+import com.evolveum.midpoint.util.annotation.Experimental;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -45,6 +49,11 @@ public class SingleLocalizableMessage implements LocalizableMessage {
         this.args = args;
         this.fallbackLocalizableMessage = null;
         this.fallbackMessage = fallbackMessage;
+    }
+
+    @Experimental // do we have this functionality elsewhere?
+    public static SingleLocalizableMessage forEnum(@NotNull Enum<?> value) {
+        return new SingleLocalizableMessage(value.getClass().getSimpleName() + "." + value.name());
     }
 
     /**
