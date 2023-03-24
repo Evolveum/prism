@@ -22,9 +22,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * @author Katka Valalikova
- *
- * TODO think about the exact purpose and use of this interface
+ * Common contract for types representing reference real values (not {@link PrismReferenceValue}).
+ * Major example is `ObjectReferenceType` but that one is now in a downstream midPoint project.
+ * Whenever we need to create representation of a reference in Prism we have to use other implementations.
+ * But all these implementations have this interface in common.
+ * Whenever possible, code against this interface.
  */
 public interface Referencable {
 
