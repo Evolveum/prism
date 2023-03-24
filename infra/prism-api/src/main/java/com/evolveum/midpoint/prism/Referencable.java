@@ -44,4 +44,6 @@ public interface Referencable {
     ReferentialIntegrityType getReferentialIntegrity();
 
     SearchFilterType getFilter();
+
+    Referencable clone();
 }
