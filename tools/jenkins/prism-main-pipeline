@@ -58,7 +58,10 @@ podTemplate(
                     // If we get here it's success, test results can change it to UNSTABLE.
                     currentBuild.result = 'SUCCESS'
 
-                    step([$class: 'Publisher', reportFilenamePattern: '**/testng-results.xml'])
+                    step([$class: 'Publisher',
+                        reportFilenamePattern: '**/testng-results.xml',
+                        failureOnFailedTestConfig: true
+                    ])
                 }
             }
         } catch (Exception e) {
