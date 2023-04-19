@@ -43,6 +43,35 @@ public class PrismValueUtil {
         return null;
     }
 
+    /**
+     * Returns the top-most object ({@link Objectable}).
+     */
+    public static @Nullable Objectable getRootObject(@NotNull PrismValue value) {
+        var rootValue = value.getRootValue();
+        if (rootValue instanceof PrismObjectValue) {
+            return ((PrismObjectValue<?>) rootValue).asObjectable();
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the nearest (going upwards) real value of given `type`. Includes the provided `value` itself.
+     */
+    public static <T> T getNearestValueOfType(@Nullable PrismValue value, @NotNull Class<T> type) {
+        for (;;) {
+            if (value == null) {
+                return null;
+            }
+            Class<?> realClass = value.getRealClass();
+            if (realClass != null && type.isAssignableFrom(realClass)) {
+                //noinspection unchecked
+                return (T) value.getRealValue();
+            }
+            value = value.getParentContainerValue();
+        }
+    }
+
     public static <T> PrismProperty<T> createRaw(@NotNull XNode node, @NotNull QName itemName, PrismContext prismContext)
             throws SchemaException {
         Validate.isTrue(!(node instanceof RootXNode));
