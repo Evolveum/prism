@@ -11,16 +11,6 @@ package com.evolveum.midpoint.prism.foo;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.*;
 
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
-
 /**
  * An event handler - typically either a filter, a notifier, a fork (fan-out), or a chain of handlers.
  *
@@ -52,7 +42,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
         EventStatusFilterType.class,
         EventOperationFilterType.class
 })
-public class EventHandlerType implements Serializable, Cloneable, Equals, HashCode {
+public class EventHandlerType implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
     @XmlAttribute(name = "name")
@@ -107,41 +97,15 @@ public class EventHandlerType implements Serializable, Cloneable, Equals, HashCo
      * This is an extension method, produced by the 'ts' xjc plugin
      */
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = 1;
-        String theName;
-        theName = this.getName();
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "name", theName), currentHashCode, theName);
-        return currentHashCode;
-    }
-
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof EventHandlerType)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        final EventHandlerType that = ((EventHandlerType) object);
-        String lhsName;
-        lhsName = this.getName();
-        String rhsName;
-        rhsName = that.getName();
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "name", lhsName), LocatorUtils.property(thatLocator, "name", rhsName), lhsName, rhsName)) {
-            return false;
-        }
-        return true;
-    }
-
+    @Override
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
     /**

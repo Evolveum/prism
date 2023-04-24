@@ -18,23 +18,13 @@ import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EventHandlerChainType", propOrder = {
         "handler"
 })
 public class EventHandlerChainType
         extends EventHandlerType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     public static final QName COMPLEX_TYPE = new QName("http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", "EventHandlerChainType");
 
@@ -108,45 +98,14 @@ public class EventHandlerChainType
         return this.handler;
     }
 
-    /**
-     * Generates a String representation of the contents of this type.
-     * This is an extension method, produced by the 'ts' xjc plugin
-     */
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        List<JAXBElement<? extends EventHandlerType>> theHandler;
-        theHandler = (((this.handler != null) && (!this.handler.isEmpty())) ? this.getHandler() : null);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "handler", theHandler), currentHashCode, theHandler);
-        return currentHashCode;
-    }
-
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof EventHandlerChainType)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
-            return false;
-        }
-        final EventHandlerChainType that = ((EventHandlerChainType) object);
-        List<JAXBElement<? extends EventHandlerType>> lhsHandler;
-        lhsHandler = (((this.handler != null) && (!this.handler.isEmpty())) ? this.getHandler() : null);
-        List<JAXBElement<? extends EventHandlerType>> rhsHandler;
-        rhsHandler = (((that.handler != null) && (!that.handler.isEmpty())) ? that.getHandler() : null);
-        return strategy.equals(LocatorUtils.property(thisLocator, "handler", lhsHandler), LocatorUtils.property(thatLocator, "handler", rhsHandler), lhsHandler, rhsHandler);
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
     /**

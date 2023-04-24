@@ -15,20 +15,13 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EventCategoryFilterType", propOrder = {
         "category"
 })
 public class EventCategoryFilterType
         extends EventHandlerType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
 
@@ -85,20 +78,6 @@ public class EventCategoryFilterType
             category = new ArrayList<>();
         }
         return this.category;
-    }
-
-    /**
-     * Generates a String representation of the contents of this type.
-     * This is an extension method, produced by the 'ts' xjc plugin
-     */
-
-    @Override
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        List<String> theCategory;
-        theCategory = (((this.category != null) && (!this.category.isEmpty())) ? this.getCategory() : null);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "category", theCategory), currentHashCode, theCategory);
-        return currentHashCode;
     }
 
     @Override
