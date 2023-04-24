@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.w3c.dom.Element;

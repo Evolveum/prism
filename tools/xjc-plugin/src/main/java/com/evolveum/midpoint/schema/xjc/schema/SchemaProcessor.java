@@ -38,7 +38,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.io.Serializable;

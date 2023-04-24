@@ -13,7 +13,7 @@ import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.List;

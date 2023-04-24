@@ -9,7 +9,7 @@ package com.evolveum.prism.codegen.impl;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import javax.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessType;
 
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.impl.binding.AbstractReferencable;

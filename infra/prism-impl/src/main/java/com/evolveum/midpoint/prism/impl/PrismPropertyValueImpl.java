@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.collections4.MapUtils;

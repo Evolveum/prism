@@ -6,9 +6,9 @@
  */
 package com.evolveum.prism.codegen.impl;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnumValue;
+import jakarta.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.EnumerationTypeDefinition.ValueDefinition;
 import com.evolveum.prism.codegen.binding.EnumerationContract;

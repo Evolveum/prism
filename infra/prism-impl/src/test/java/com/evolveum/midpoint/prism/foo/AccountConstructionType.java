@@ -17,7 +17,7 @@ package com.evolveum.midpoint.prism.foo;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import com.evolveum.prism.xml.ns._public.types_3.RawType;

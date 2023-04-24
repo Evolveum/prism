@@ -9,7 +9,7 @@ package com.evolveum.prism.xml.ns._public.query_3;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;

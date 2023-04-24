@@ -11,8 +11,8 @@ import static com.evolveum.midpoint.prism.SerializationOptions.getOptions;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.StringUtils;

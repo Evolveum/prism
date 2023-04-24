@@ -17,9 +17,9 @@ package com.evolveum.prism.xml.ns._public.types_3;
 
 import com.evolveum.midpoint.prism.delta.PlusMinusZero;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnumValue;
+import jakarta.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
 @XmlType(name = "PlusMinusZeroType")

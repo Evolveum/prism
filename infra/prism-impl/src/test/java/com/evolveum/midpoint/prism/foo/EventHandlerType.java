@@ -9,7 +9,7 @@
 package com.evolveum.midpoint.prism.foo;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 
 import org.jvnet.jaxb2_commons.lang.Equals;
 import org.jvnet.jaxb2_commons.lang.EqualsStrategy;

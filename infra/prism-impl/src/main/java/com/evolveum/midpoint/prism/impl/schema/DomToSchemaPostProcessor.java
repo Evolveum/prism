@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.bind.annotation.XmlEnumValue;
+import jakarta.xml.bind.annotation.XmlEnumValue;
 import javax.xml.namespace.QName;
 import java.lang.reflect.Field;
 import java.util.ArrayList;

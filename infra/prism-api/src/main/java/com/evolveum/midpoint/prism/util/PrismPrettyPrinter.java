@@ -20,7 +20,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ModificationTypeType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
 import java.util.Iterator;

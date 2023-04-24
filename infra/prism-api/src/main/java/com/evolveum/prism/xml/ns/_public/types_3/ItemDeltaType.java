@@ -18,8 +18,8 @@ import org.w3c.dom.Element;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -194,7 +194,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
                 if (next instanceof JAXBElement) {
                     // Referenced elements without classes.
                     if (((JAXBElement) next).getValue() instanceof String) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<java.lang.String>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<java.lang.String>
                         target.add(copyOfStringElement(((JAXBElement) next)));
                         continue;
                     }
@@ -391,7 +391,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<java.lang.String>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<java.lang.String>} instance.
      *
      * @param e
      *     The instance to copy or {@code null}.

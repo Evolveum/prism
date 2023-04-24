@@ -21,7 +21,7 @@ import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.ArrayList;
