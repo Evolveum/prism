@@ -22,9 +22,6 @@ import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EventCategoryFilterType", propOrder = {
         "category"
@@ -95,6 +92,7 @@ public class EventCategoryFilterType
      * This is an extension method, produced by the 'ts' xjc plugin
      */
 
+    @Override
     public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
         int currentHashCode = super.hashCode(locator, strategy);
         List<String> theCategory;
@@ -103,36 +101,14 @@ public class EventCategoryFilterType
         return currentHashCode;
     }
 
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        throw new UnsupportedOperationException("Not implemented - migration to jakarta.xml.bind");
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof EventCategoryFilterType)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
-            return false;
-        }
-        final EventCategoryFilterType that = ((EventCategoryFilterType) object);
-        List<String> lhsCategory;
-        lhsCategory = (((this.category != null) && (!this.category.isEmpty())) ? this.getCategory() : null);
-        List<String> rhsCategory;
-        rhsCategory = (((that.category != null) && (!that.category.isEmpty())) ? that.getCategory() : null);
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "category", lhsCategory), LocatorUtils.property(thatLocator, "category", rhsCategory), lhsCategory, rhsCategory)) {
-            return false;
-        }
-        return true;
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        throw new UnsupportedOperationException("Not implemented - migration to jakarta.xml.bind");
     }
 
     /**

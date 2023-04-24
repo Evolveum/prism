@@ -16,8 +16,8 @@ import com.evolveum.midpoint.util.MiscUtil;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParseException;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.*;
 import javax.xml.datatype.Duration;
