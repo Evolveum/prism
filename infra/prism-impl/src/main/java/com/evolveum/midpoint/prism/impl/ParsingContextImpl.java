@@ -24,8 +24,10 @@ public class ParsingContextImpl implements ParsingContext {
     private boolean allowMissingRefTypes;
     private boolean convertUnknownTypesToRaw;
     private final List<String> warnings = new ArrayList<>();
+    /** Not checking for duplicates when adding parsed data. For trusted sources. */
+    private boolean fastAddOperations;
 
-    ParsingContextImpl() {
+    private ParsingContextImpl() {
     }
 
     static ParsingContext allowMissingRefTypes() {
@@ -34,12 +36,11 @@ public class ParsingContextImpl implements ParsingContext {
         return pc;
     }
 
-
-    public static ParsingContext createForCompatibilityMode() {
+    static ParsingContext createForCompatibilityMode() {
         return forMode(XNodeProcessorEvaluationMode.COMPAT);
     }
 
-    static ParsingContext forMode(XNodeProcessorEvaluationMode mode) {
+    private static ParsingContext forMode(XNodeProcessorEvaluationMode mode) {
         ParsingContextImpl pc = new ParsingContextImpl();
         pc.setEvaluationMode(mode);
         return pc;
@@ -148,6 +149,17 @@ public class ParsingContextImpl implements ParsingContext {
     @Override
     public ParsingContext convertUnknownTypes(boolean value) {
         convertUnknownTypesToRaw = value;
+        return this;
+    }
+
+    @Override
+    public boolean isFastAddOperations() {
+        return fastAddOperations;
+    }
+
+    @Override
+    public ParsingContext fastAddOperations() {
+        fastAddOperations = true;
         return this;
     }
 }

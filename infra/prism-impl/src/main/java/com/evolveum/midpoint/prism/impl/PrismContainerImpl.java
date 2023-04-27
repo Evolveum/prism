@@ -196,13 +196,13 @@ public class PrismContainerImpl<C extends Containerable>
         if (getDefinition() != null) {
             if (getDefinition().isSingleValue()) {
                 clear();
-                add(value);
+                addIgnoringEquivalents(value);
             } else {
                 throw new IllegalStateException("Attempt to set single value to a multivalued container "+ getElementName());
             }
         } else {
             clear();
-            add(value);
+            addIgnoringEquivalents(value);
         }
     }
 

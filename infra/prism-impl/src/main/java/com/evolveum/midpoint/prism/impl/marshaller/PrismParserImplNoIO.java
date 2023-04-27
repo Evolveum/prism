@@ -68,6 +68,11 @@ public class PrismParserImplNoIO extends PrismParserImpl implements PrismParserN
         return (PrismParserNoIO) super.compat();
     }
 
+    @Override
+    public @NotNull PrismParserNoIO fastAddOperations() {
+        return (PrismParserNoIO) super.fastAddOperations();
+    }
+
     @NotNull
     @Override
     public PrismParserNoIO definition(ItemDefinition<?> itemDefinition) {
