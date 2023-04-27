@@ -107,6 +107,12 @@ public interface PrismParser {
     PrismParser compat();
 
     /**
+     * Does not check for existing values during parsing. To be used in situations where the data can be trusted
+     * to not contain duplicates - for example, when reading from the repository.
+     */
+    @NotNull PrismParser fastAddOperations();
+
+    /**
      * Tells parser which definition to use when parsing item (or an item value). Optional.
      * @param itemDefinition The definition
      * @return Updated parser.

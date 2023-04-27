@@ -46,6 +46,8 @@ public interface PrismParserNoIO extends PrismParser {
     @NotNull
     PrismParserNoIO compat();
     @Override
+    @NotNull PrismParserNoIO fastAddOperations();
+    @Override
     @NotNull
     PrismParserNoIO definition(ItemDefinition<?> itemDefinition);
     @Override
