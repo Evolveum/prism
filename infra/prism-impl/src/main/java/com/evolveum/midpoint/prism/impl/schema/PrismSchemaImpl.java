@@ -69,6 +69,13 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @NotNull private final Map<QName, TypeDefinition> typeDefinitionMap = new HashMap<>();
 
     /**
+     * Type definitions contained in this schema, stored in a map for faster access.
+     *
+     * The key is the compile-time class.
+     */
+    @NotNull private final Map<Class<?>, TypeDefinition> typeDefinitionByCompileTimeClassMap = new HashMap<>();
+
+    /**
      * Namespace for items defined in this schema.
      */
     @NotNull protected final String namespace;
@@ -165,6 +172,16 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
                 throw new IllegalArgumentException("Unqualified definition of type " + typeName + " cannot be added to " + this);
             }
             typeDefinitionMap.put(typeName, (TypeDefinition) def);
+        }
+    }
+
+    @Override
+    public void registerCompileTimeClass(Class<?> compileTimeClass, TypeDefinition typeDefinition) {
+        if (compileTimeClass != null) {
+            var previous = typeDefinitionByCompileTimeClassMap.put(compileTimeClass, typeDefinition);
+            stateCheck(previous == null,
+                    "Multiple type definitions for %s: %s and %s",
+                    compileTimeClass, previous, typeDefinition);
         }
     }
 
@@ -500,16 +517,14 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @Override
     public <TD extends TypeDefinition> TD findTypeDefinitionByCompileTimeClass(
             @NotNull Class<?> compileTimeClass, @NotNull Class<TD> definitionClass) {
-        // TODO: check for multiple definition with the same type
-        for (Definition definition : definitions) {
-            if (definitionClass.isAssignableFrom(definition.getClass())
-                    && compileTimeClass.equals(((TD) definition).getCompileTimeClass())) {
-                return (TD) definition;
-            }
+        TypeDefinition typeDefinition = typeDefinitionByCompileTimeClassMap.get(compileTimeClass);
+        if (typeDefinition != null
+                && definitionClass.isAssignableFrom(typeDefinition.getClass())) {
+            return (TD) typeDefinition;
+        } else {
+            return null;
         }
-        return null;
     }
-
     //endregion
 
     @Override

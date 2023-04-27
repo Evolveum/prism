@@ -247,6 +247,7 @@ class DomToSchemaPostProcessor {
 
         Class<?> compileTimeClass = getSchemaRegistry().determineCompileTimeClass(ctd.getTypeName());
         ctd.setCompileTimeClass(compileTimeClass);
+        schema.registerCompileTimeClass(compileTimeClass, ctd);
 
         definitionFactory.finishComplexTypeDefinition(ctd, complexType, prismContext,
                 complexType.getAnnotation());
