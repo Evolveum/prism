@@ -10,6 +10,7 @@ import static com.evolveum.midpoint.util.MiscUtil.argCheck;
 import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.HashMultimap;
@@ -94,10 +95,24 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      */
     private final Multimap<QName, ItemDefinition<?>> substitutions = HashMultimap.create();
 
+    /**
+     * Caches the result of {@link #findItemDefinitionsByCompileTimeClass(Class, Class)} queries.
+     *
+     * Just to be sure, this map is created as thread-safe. Normally, all additions to a prism schema occur before the
+     * regular operation is started. But we cannot assume this will be always the case.
+     *
+     * Temporary. The method is not quite sound anyway.
+     */
+    private final Map<Class<?>, List<ItemDefinition<?>>> itemDefinitionsByCompileTimeClassMap = new ConcurrentHashMap<>();
+
     public PrismSchemaImpl(@NotNull String namespace) {
         argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
         this.namespace = namespace;
         this.prismContext = PrismContext.get();
+    }
+
+    private void invalidateCaches() {
+        itemDefinitionsByCompileTimeClassMap.clear();
     }
 
     //region Trivia
@@ -130,6 +145,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     public void addDelayedItemDefinition(DefinitionSupplier supplier) {
         checkMutable();
         delayedItemDefinitions.add(supplier);
+        invalidateCaches();
     }
 
     @NotNull
@@ -173,6 +189,8 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
             }
             typeDefinitionMap.put(typeName, (TypeDefinition) def);
         }
+
+        invalidateCaches();
     }
 
     @Override
@@ -373,28 +391,60 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @NotNull
     public <ID extends ItemDefinition> List<ID> findItemDefinitionsByCompileTimeClass(
             @NotNull Class<?> compileTimeClass, @NotNull Class<ID> definitionClass) {
-        List<ID> found = new ArrayList<>();
+        var cached = itemDefinitionsByCompileTimeClassMap.get(compileTimeClass);
+        if (cached != null) {
+            return narrowIfNeeded(cached, definitionClass);
+        }
+        var fresh = findItemDefinitionsByCompileTimeClassInternal(compileTimeClass);
+        itemDefinitionsByCompileTimeClassMap.put(compileTimeClass, fresh);
+        return narrowIfNeeded(fresh, definitionClass);
+    }
+
+    /**
+     * Narrows the list of definitions (expected to be short) by given class. We expect that for the most of the time,
+     * all members would be matching. Hence, we first check, and only in the case of mismatch we create a narrowed list.
+     *
+     * TODO get rid of list management altogether
+     */
+    private <ID extends ItemDefinition<?>> List<ID> narrowIfNeeded(
+            @NotNull List<ItemDefinition<?>> definitions, @NotNull Class<ID> definitionClass) {
+        for (ItemDefinition<?> definition : definitions) {
+            if (!definitionClass.isAssignableFrom(definition.getClass())) {
+                return narrow(definitions, definitionClass);
+            }
+        }
+        //noinspection unchecked
+        return (List<ID>) definitions;
+    }
+
+    private <ID extends ItemDefinition<?>> List<ID> narrow(List<ItemDefinition<?>> definitions, Class<ID> definitionClass) {
+        List<ID> narrowed = new ArrayList<>();
+        for (ItemDefinition<?> definition : definitions) {
+            if (definitionClass.isAssignableFrom(definition.getClass())) {
+                //noinspection unchecked
+                narrowed.add((ID) definition);
+            }
+        }
+        return narrowed;
+    }
+
+    private @NotNull List<ItemDefinition<?>> findItemDefinitionsByCompileTimeClassInternal(@NotNull Class<?> compileTimeClass) {
+        List<ItemDefinition<?>> found = new ArrayList<>();
         for (Definition def : definitions) {
-            if (definitionClass.isAssignableFrom(def.getClass())) {
-                if (def instanceof PrismContainerDefinition) {
-                    @SuppressWarnings("unchecked")
-                    ID contDef = (ID) def;
-                    if (compileTimeClass.equals(((PrismContainerDefinition<?>) contDef).getCompileTimeClass())) {
-                        found.add(contDef);
-                    }
-                } else if (def instanceof PrismPropertyDefinition) {
-                    if (compileTimeClass.equals(prismContext.getSchemaRegistry().determineClassForType(def.getTypeName()))) {
-                        @SuppressWarnings("unchecked")
-                        ID itemDef = (ID) def;
-                        found.add(itemDef);
-                    }
-                } else {
-                    // Skipping the definition, PRD is not supported here.
-                    // Currently, this does not work sensibly for midPoint because it has multiple top-level
-                    // elements for ObjectReferenceType (not to mention it's common-3, not Prism ORT).
-                    // Instead, use findItemDefinitionsByElementName(...) to find the reference definition
-                    // by well-known top-level element name .
+            if (def instanceof PrismContainerDefinition) {
+                if (compileTimeClass.equals(((PrismContainerDefinition<?>) def).getCompileTimeClass())) {
+                    found.add((ItemDefinition<?>) def);
                 }
+            } else if (def instanceof PrismPropertyDefinition) {
+                if (compileTimeClass.equals(prismContext.getSchemaRegistry().determineClassForType(def.getTypeName()))) {
+                    found.add((ItemDefinition<?>) def);
+                }
+            } else {
+                // Skipping the definition, PRD is not supported here.
+                // Currently, this does not work sensibly for midPoint because it has multiple top-level
+                // elements for ObjectReferenceType (not to mention it's common-3, not Prism ORT).
+                // Instead, use findItemDefinitionsByElementName(...) to find the reference definition
+                // by well-known top-level element name .
             }
         }
         return found;
