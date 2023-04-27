@@ -575,28 +575,26 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
     boolean diffInternal(Item<V, D> other, Collection<? extends ItemDelta> deltas, boolean rootValuesOnly,
             ParameterizedEquivalenceStrategy strategy, boolean exitOnDiff) {
-        ItemDelta delta = createDelta();
+        ItemDelta delta = exitOnDiff ? null : createDelta();
         if (other == null) {
             // Early exit for equals use case
-            if (exitOnDiff && hasAnyValue()) {
-                return true;
+            if (exitOnDiff) {
+                return hasAnyValue();
             }
-
-            if (delta.getDefinition() == null && this.getDefinition() != null) {
-                delta.setDefinition(this.getDefinition().clone());
-            }
-            //other doesn't exist, so delta means delete all values
+            // other doesn't exist, so delta means delete all values
             for (PrismValue value : getValues()) {
                 PrismValue valueClone = value.clone();
                 delta.addValueToDelete(valueClone);
             }
         } else {
-            if (delta.getDefinition() == null && other.getDefinition() != null) {
-                delta.setDefinition(other.getDefinition().clone());
+            if (delta != null && delta.getDefinition() == null) {
+                D otherDefinition = other.getDefinition();
+                if (otherDefinition != null) {
+                    delta.setDefinition(otherDefinition.clone()); // TODO why cloning?
+                }
             }
             // the other exists, this means that we need to compare the values one by one
-            Collection<PrismValue> outstandingOtherValues = new ArrayList<>(other.getValues().size());
-            outstandingOtherValues.addAll(other.getValues());
+            Collection<PrismValue> outstandingOtherValues = new ArrayList<>(other.getValues());
             for (PrismValue thisValue : getValues()) {
                 Iterator<PrismValue> iterator = outstandingOtherValues.iterator();
                 boolean found = false;
@@ -605,43 +603,45 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
                     if (!rootValuesOnly && thisValue.representsSameValue(otherValue, true)) {
                         found = true;
                         // Matching IDs, look inside to figure out internal deltas
-                        boolean different = ((PrismValueImpl) thisValue).diffMatchingRepresentation(otherValue, deltas, strategy, exitOnDiff);
+                        boolean different =
+                                ((PrismValueImpl) thisValue).diffMatchingRepresentation(otherValue, deltas, strategy, exitOnDiff);
                         if (exitOnDiff && different) {
                             return true;
                         }
-
-                        // No need to process this value again
-                        iterator.remove();
+                        iterator.remove(); // No need to process this value again
                         break;
                     } else if (thisValue.equals(otherValue, strategy)) {
                         found = true;
-                        // same values. No delta
-                        // No need to process this value again
-                        iterator.remove();
+                        iterator.remove(); // Same values. No delta. No need to process this value again.
                         break;
                     }
                 }
                 if (!found) {
                     if (exitOnDiff) {
                         return true;
+                    } else {
+                        assert delta != null;
+                        // We have the value and the other does not, this is delete of the entire value
+                        delta.addValueToDelete(thisValue.clone());
                     }
-                    // We have the value and the other does not, this is delete of the entire value
-                    delta.addValueToDelete(thisValue.clone());
                 }
             }
             // outstandingOtherValues are those values that the other has and we could not
             // match them to any of our values. These must be new values to add
-            if (exitOnDiff && !outstandingOtherValues.isEmpty()) {
-                return true;
+            if (exitOnDiff) {
+                if (!outstandingOtherValues.isEmpty()) {
+                    return true;
+                }
+            } else {
+                assert delta != null;
+                for (PrismValue outstandingOtherValue : outstandingOtherValues) {
+                    delta.addValueToAdd(outstandingOtherValue.clone());
+                }
+                // Some deltas may need to be polished a bit. E.g. transforming add/delete delta to a replace delta.
+                delta = fixupDelta(delta, other);
             }
-            for (PrismValue outstandingOtherValue : outstandingOtherValues) {
-                delta.addValueToAdd(outstandingOtherValue.clone());
-            }
-            // Some deltas may need to be polished a bit. E.g. transforming
-            // add/delete delta to a replace delta.
-            delta = fixupDelta(delta, other);
         }
-        if (ItemDelta.isEmpty(delta)) {
+        if (exitOnDiff || ItemDelta.isEmpty(delta)) {
             return false;
         } else {
             ((Collection) deltas).add(delta);
