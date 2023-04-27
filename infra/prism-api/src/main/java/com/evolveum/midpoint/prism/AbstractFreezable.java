@@ -10,8 +10,10 @@ public abstract class AbstractFreezable implements Freezable {
 
     @Override
     public final void freeze() {
-        performFreeze();
-        this.frozen = true;
+        if (!frozen) {
+            performFreeze();
+            this.frozen = true;
+        }
     }
 
     protected void freeze(Freezable child) {
