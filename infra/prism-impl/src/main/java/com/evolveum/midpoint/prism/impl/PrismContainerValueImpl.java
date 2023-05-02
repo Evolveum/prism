@@ -737,7 +737,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemByQName(QName subName) throws SchemaException {
-        if (QNameUtil.isUnqualified(subName) || unqualifiedItemNames.contains(subName.getLocalPart())) {
+        // We assume that "unqualifiedItemNames" is empty most of the time. Hence, we do not want to spend time
+        // calling .contains(..) method unnecessarily.
+        if (QNameUtil.isUnqualified(subName) ||
+                !unqualifiedItemNames.isEmpty() && unqualifiedItemNames.contains(subName.getLocalPart())) {
             return findItemByQNameFullScan(subName);
         } else {
             //noinspection unchecked
