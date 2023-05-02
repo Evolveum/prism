@@ -46,7 +46,7 @@ public class QNameUtil {
     // ThreadLocal "safe mode" override for the above value (MID-2218)
     // This can be set to true for raw reads, allowing to manually fix broken objects
     private static final ThreadLocal<Boolean> TEMPORARILY_TOLERATE_UNDECLARED_PREFIXES = new ThreadLocal<>();
-    private static final Splitter PREFIXED_NAME = Splitter.on(':');
+    private static final char PREFIX_SEPARATOR = ':';
 
     public static String qNameToUri(QName qname) {
         return qNameToUri(qname, true);
@@ -137,18 +137,13 @@ public class QNameUtil {
     }
 
     public static PrefixedName parsePrefixedName(String name) {
-        Iterator<String> splitted = PREFIXED_NAME.split(name).iterator();
-        Preconditions.checkState(splitted.hasNext());
-        String first = splitted.next();
-        final PrefixedName ret;
-        if (splitted.hasNext()) {
-            ret = new PrefixedName(first, splitted.next());
-        } else {
-            ret = new PrefixedName("", first);
+        int first = name.indexOf(PREFIX_SEPARATOR);
+        if (first < 0) {
+            return new PrefixedName("", name);
         }
-        Preconditions.checkArgument(!splitted.hasNext(), "Name '%s' is not in format prefix:localName", name);
-        return ret;
-
+        int second = name.indexOf(PREFIX_SEPARATOR, first + 1);
+        Preconditions.checkArgument(second < 0, "Name '%s' is not in format prefix:localName", name);
+        return new PrefixedName(name.substring(0, first), name.substring(first + 1));
     }
 
     public static QNameInfo qnameToQnameInfo(QName name) {
