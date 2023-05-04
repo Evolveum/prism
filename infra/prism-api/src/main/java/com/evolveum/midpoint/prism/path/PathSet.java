@@ -66,6 +66,10 @@ public class PathSet implements Set<ItemPath> {
         return o instanceof ItemPath && ItemPathCollectionsUtil.containsEquivalent(content, (ItemPath) o);
     }
 
+    public boolean containsSubpathOrEquivalent(@NotNull ItemPath path) {
+        return ItemPathCollectionsUtil.containsSubpathOrEquivalent(this, path);
+    }
+
     @NotNull
     @Override
     public Iterator<ItemPath> iterator() {

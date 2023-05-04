@@ -18,15 +18,34 @@ public class FilterCreationUtil {
         return prismContext.queryFactory();
     }
 
+    private static QueryFactory queryFactory() {
+        return PrismContext.get().queryFactory();
+    }
+
+    @Deprecated
     public static AllFilter createAll(PrismContext prismContext) {
         return queryFactory(prismContext).createAll();
     }
 
+    public static AllFilter createAll() {
+        return queryFactory().createAll();
+    }
+
+    @Deprecated
     public static NoneFilter createNone(PrismContext prismContext) {
         return queryFactory(prismContext).createNone();
     }
 
+    public static NoneFilter createNone() {
+        return queryFactory().createNone();
+    }
+
+    @Deprecated
     public static ObjectFilter createUndefined(PrismContext prismContext) {
         return queryFactory(prismContext).createUndefined();
+    }
+
+    public static ObjectFilter createUndefined() {
+        return queryFactory().createUndefined();
     }
 }

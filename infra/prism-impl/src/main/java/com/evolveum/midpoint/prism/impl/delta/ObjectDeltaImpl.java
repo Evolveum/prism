@@ -336,14 +336,14 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
-    public boolean hasItemOrSubitemDelta(ItemPath propertyPath) {
+    public boolean hasItemOrSubitemDelta(ItemPath itemPath) {
         if (changeType == ChangeType.ADD) {
             // Easy case. Even if there is a sub-sub-property there must be also a container.
-            Item item = objectToAdd.findItem(propertyPath, Item.class);
-            return item != null;
+            //noinspection unchecked
+            return objectToAdd.findItem(itemPath, Item.class) != null;
         } else if (changeType == ChangeType.MODIFY) {
-            for (ItemDelta<?, ?> delta : getModifications()) {
-                CompareResult compare = delta.getPath().compareComplex(propertyPath);
+            for (ItemDelta<?, ?> modification : getModifications()) {
+                CompareResult compare = modification.getPath().compareComplex(itemPath);
                 if (compare == CompareResult.EQUIVALENT || compare == CompareResult.SUBPATH) {
                     return true;
                 }
