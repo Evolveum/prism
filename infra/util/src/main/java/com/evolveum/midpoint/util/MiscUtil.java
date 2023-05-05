@@ -1027,6 +1027,14 @@ public class MiscUtil {
         }
     }
 
+    public static <T> T argNonNull(T value, String template, Object... arguments) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new IllegalArgumentException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
     public static <T> T stateNonNull(T value, Supplier<String> messageSupplier) {
         if (value != null) {
             return value;
