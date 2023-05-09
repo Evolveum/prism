@@ -95,6 +95,8 @@ public interface PrismContainer<C extends Containerable>
 
     PrismContainerValue<C> getValue(Long id);
 
+    @NotNull List<PrismContainerValue<C>> getValues();
+
     <T> void setPropertyRealValue(QName propertyName, T realValue) throws SchemaException;
 
     <C extends Containerable> void setContainerRealValue(QName containerName, C realValue) throws SchemaException;
