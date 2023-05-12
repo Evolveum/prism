@@ -8,47 +8,50 @@
 package com.evolveum.midpoint.prism.path;
 
 import java.util.*;
+import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.util.annotation.Experimental;
+import com.evolveum.midpoint.util.QNameUtil;
 
 /**
- * A "safe" set of {@link ItemPath} - i.e. the one where (e.g.) presence is checked using {@link ItemPath#equivalent(ItemPath)},
+ * A "safe" set of {@link QName} - i.e. the one where (e.g.) presence is checked using {@link QNameUtil#match(QName, QName)},
  * not {@link Object#equals(Object)} method.
  *
  * Slower than standard set! Operations are evaluated in `O(n)` time.
+ *
+ * @see PathSet
  */
-@Experimental
-public class PathSet implements Set<ItemPath> {
+public class NameSet<N extends QName> implements Set<N> {
 
-    private static final PathSet EMPTY = new PathSet(List.of(), false);
+    private static final NameSet<QName> EMPTY = new NameSet<>(List.of(), false);
 
     /** Can be mutable or immutable. */
-    @NotNull private final List<ItemPath> content;
+    @NotNull private final List<N> content;
 
-    private PathSet(@NotNull List<ItemPath> initialContent, boolean cloneOnCreation) {
+    private NameSet(@NotNull List<N> initialContent, boolean cloneOnCreation) {
         content = cloneOnCreation ?
                 new ArrayList<>(initialContent) : initialContent;
     }
 
-    public PathSet() {
+    public NameSet() {
         this(List.of(), true);
     }
 
-    public PathSet(@NotNull Collection<ItemPath> initialContent) {
+    public NameSet(@NotNull Collection<N> initialContent) {
         this(new ArrayList<>(initialContent), false);
     }
 
-    public static PathSet empty() {
+    public static NameSet<QName> empty() {
         return EMPTY;
     }
 
     /**
-     * TODO maybe we should return immutable {@link PathSet} here.
+     * TODO maybe we should return immutable {@link NameSet} here.
      */
-    public static @NotNull PathSet of(ItemPath... paths) {
-        return new PathSet(List.of(paths), true);
+    @SafeVarargs
+    public static <N extends QName> @NotNull NameSet<N> of(N... names) {
+        return new NameSet<>(List.of(names), true);
     }
 
     @Override
@@ -63,16 +66,12 @@ public class PathSet implements Set<ItemPath> {
 
     @Override
     public boolean contains(Object o) {
-        return o instanceof ItemPath && ItemPathCollectionsUtil.containsEquivalent(content, (ItemPath) o);
-    }
-
-    public boolean containsSubpathOrEquivalent(@NotNull ItemPath path) {
-        return ItemPathCollectionsUtil.containsSubpathOrEquivalent(this, path);
+        return o instanceof ItemPath && QNameUtil.contains(content, (QName) o);
     }
 
     @NotNull
     @Override
-    public Iterator<ItemPath> iterator() {
+    public Iterator<N> iterator() {
         return content.iterator();
     }
 
@@ -87,23 +86,22 @@ public class PathSet implements Set<ItemPath> {
     @NotNull
     @Override
     public <T> T[] toArray(@NotNull T[] a) {
-        //noinspection SuspiciousToArrayCall
         return content.toArray(a);
     }
 
     @Override
-    public boolean add(@NotNull ItemPath itemPath) {
+    public boolean add(@NotNull N name) {
         //noinspection SimplifiableIfStatement
-        if (contains(itemPath)) {
+        if (contains(name)) {
             return false;
         } else {
-            return content.add(itemPath);
+            return content.add(name);
         }
     }
 
     @Override
     public boolean remove(Object o) {
-        return content.removeIf(path -> o instanceof ItemPath && path.equivalent((ItemPath) o));
+        return content.removeIf(name -> o instanceof QName && QNameUtil.match(name, (QName) o));
     }
 
     @Override
@@ -118,7 +116,7 @@ public class PathSet implements Set<ItemPath> {
     }
 
     @Override
-    public boolean addAll(@NotNull Collection<? extends ItemPath> c) {
+    public boolean addAll(@NotNull Collection<? extends N> c) {
         c.forEach(this::add);
         return true; // fixme
     }
@@ -137,20 +135,6 @@ public class PathSet implements Set<ItemPath> {
     @Override
     public void clear() {
         content.clear();
-    }
-
-    /**
-     * Factors the path set on the first segment of the paths.
-     *
-     * Assumes that each of the paths begins with a name.
-     */
-    public @NotNull NameKeyedMap<ItemName, PathSet> factor() {
-        NameKeyedMap<ItemName, PathSet> map = new NameKeyedMap<>();
-        for (ItemPath path : this) {
-            map.computeIfAbsent(path.firstNameOrFail(), k -> new PathSet())
-                    .add(path.rest());
-        }
-        return map;
     }
 
     @Override

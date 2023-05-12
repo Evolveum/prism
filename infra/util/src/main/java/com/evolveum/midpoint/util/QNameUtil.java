@@ -99,12 +99,14 @@ public class QNameUtil {
      * Finds value in the map by QName key using {@link #match(QName, QName)}.
      * Fails if multiple matches are found.
      * Returns {@code null} if no match is found.
+     *
+     * !!! EXPECTS THAT THE MAP CONTAINS QUALIFIED NAMES (if querying by qualified key) !!!
      */
-    public static <V> V getByQName(@NotNull Map<QName, V> map, @NotNull QName key) {
+    public static <K extends QName, V> V getByQName(@NotNull Map<K, V> map, @NotNull K key) {
         if (hasNamespace(key)) {
             return map.get(key);
         }
-        List<Map.Entry<QName, V>> matching = map.entrySet().stream()
+        List<Map.Entry<K, V>> matching = map.entrySet().stream()
                 .filter(e -> match(e.getKey(), key))
                 .collect(Collectors.toList());
         if (matching.isEmpty()) {
