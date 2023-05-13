@@ -130,7 +130,7 @@ public class QueryConverterImpl implements QueryConverter {
     public ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull Class<?> clazz) throws SchemaException {
         ItemDefinition<?> def = getItemDefinitionForTypeClass(clazz);
         if (def == null) {
-            throw new SchemaException("Cannot find container definition for " + clazz);
+            throw new SchemaException("Cannot find item definition for " + clazz);
         }
         return parseFilter(filter, def);
     }
