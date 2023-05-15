@@ -173,7 +173,15 @@ public class XmlTypeConverter {
         if (cal == null) {
             return null;
         }
-        return createXMLGregorianCalendar(cal.toGregorianCalendar()); // TODO find a better way
+        return getDatatypeFactory().newXMLGregorianCalendar(
+                cal.getYear(),
+                cal.getMonth(),
+                cal.getDay(),
+                cal.getHour(),
+                cal.getMinute(),
+                cal.getSecond(),
+                cal.getMillisecond(),
+                cal.getTimezone());
     }
 
     @TestOnly

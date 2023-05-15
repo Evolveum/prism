@@ -103,6 +103,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      */
     private final List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
 
+    /** Map for fast lookup of schema descriptions by class or package. */
+    private final Map<Package, SchemaDescriptionImpl> schemaDescriptionMap = new HashMap<>();
+
     /**
      * Schema descriptions for a given namespace.
      * In case of extension schemas there can be more schema descriptions with the same namespace!
@@ -421,6 +424,12 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
         parsedSchemas.put(desc.getNamespace(), desc);
         schemaDescriptions.add(desc);
+        Package pkg = desc.getCompileTimeClassesPackage();
+        if (pkg != null) {
+            schemaDescriptionMap.put(pkg, desc);
+        }
+        desc.setRegistered();
+
         invalidateCaches();
     }
 
@@ -1314,14 +1323,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass) {
         Package compileTimePackage = compileTimeClass.getPackage();
         if (compileTimePackage == null) {
-            return null;            // e.g. for arrays
+            return null; // e.g. for arrays
         }
-        for (SchemaDescription desc : schemaDescriptions) {
-            if (compileTimePackage.equals(desc.getCompileTimeClassesPackage())) {
-                return desc.getSchema();
-            }
-        }
-        return null;
+        var schemaDescription = schemaDescriptionMap.get(compileTimePackage);
+        return schemaDescription != null ? schemaDescription.getSchema() : null;
     }
 
     @Override

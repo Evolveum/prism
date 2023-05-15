@@ -47,4 +47,8 @@ public interface ParsingContext extends Cloneable {
     boolean isConvertUnknownTypes();
 
     ParsingContext convertUnknownTypes(boolean value);
+
+    boolean isFastAddOperations();
+
+    ParsingContext fastAddOperations();
 }

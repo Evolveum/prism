@@ -19,6 +19,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
+
 /**
  * Schema (prism or non-prism) with additional information.
  *
@@ -37,6 +39,7 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
     private boolean isDeclaredByDefault = false;
     private PrismSchema schema;
     private Package compileTimeClassesPackage;
+    private boolean registered;
 
     private String defaultPrefix;
 
@@ -133,7 +136,13 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
 
     void setCompileTimeClassesPackage(Package compileTimeClassesPackage) {
         checkMutable();
+        stateCheck(!registered, "Not possible to set compile time classes package after registration: %s", this);
         this.compileTimeClassesPackage = compileTimeClassesPackage;
+    }
+
+    synchronized void setRegistered() {
+        stateCheck(!registered, "Already registered: %s", this);
+        registered = true;
     }
 
     @Override

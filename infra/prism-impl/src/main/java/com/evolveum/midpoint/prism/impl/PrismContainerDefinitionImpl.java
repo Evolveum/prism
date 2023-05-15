@@ -201,13 +201,15 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
             @NotNull QName firstName, @NotNull ItemPath rest, @NotNull Class<ID> clazz) {
 
-        for (ItemDefinition<?> def : getDefinitions()) {
-            if (QNameUtil.match(firstName, def.getItemName())) {
+        var ctd = complexTypeDefinition;
+        if (ctd != null) {
+            var def = ctd.findLocalItemDefinition(firstName);
+            if (def != null) {
                 return def.findItemDefinition(rest, clazz);
             }
         }
 
-        if (complexTypeDefinition != null && complexTypeDefinition.isXsdAnyMarker()) {
+        if (ctd != null && ctd.isXsdAnyMarker()) {
             SchemaRegistry schemaRegistry = getSchemaRegistry();
             if (schemaRegistry != null) {
                 ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);

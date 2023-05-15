@@ -37,4 +37,7 @@ public interface MutablePrismSchema extends PrismSchema {
     void addDelayedItemDefinition(DefinitionSupplier o);
 
     void addSubstitution(QName substitutionHead, ItemDefinition<?> definition);
+
+    // Temporary (to be replaced by something serious)
+    void registerCompileTimeClass(Class<?> compileTimeClass, TypeDefinition typeDefinition);
 }

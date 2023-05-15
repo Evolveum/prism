@@ -392,7 +392,9 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
                 }
             }
             if (!mayBeEmpty) {
-                throw new IllegalStateException("Neither OID, object nor filter specified in reference value "+this+" ("+myPath+" in "+rootItem+")");
+                throw new IllegalStateException(String.format(
+                        "Neither OID, object, filter, nor target name specified in reference value %s (%s in %s)",
+                        this, myPath, rootItem));
             }
         }
 

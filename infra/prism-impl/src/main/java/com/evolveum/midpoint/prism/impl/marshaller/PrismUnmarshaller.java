@@ -224,8 +224,12 @@ public class PrismUnmarshaller {
         if (node instanceof IncompleteMarkerXNodeImpl) {
             container.setIncomplete(true);
         } else {
-            container.add(
-                    parseContainerValue(node, container.getDefinition(), pc));
+            PrismContainerValue<C> newValue = parseContainerValue(node, container.getDefinition(), pc);
+            if (pc.isFastAddOperations()) {
+                container.addIgnoringEquivalents(newValue);
+            } else {
+                container.add(newValue);
+            }
             if (node instanceof MapXNodeImpl && container instanceof PrismObject) {
                 MapXNodeImpl map = (MapXNodeImpl) node;
                 PrismObject<?> object = (PrismObject<?>) container;
@@ -477,7 +481,11 @@ public class PrismUnmarshaller {
             PrismPropertyValue<T> pval = parsePropertyValue(node, itemDefinition, pc);
             if (pval != null) {
                 try {
-                    property.add(pval);
+                    if (pc.isFastAddOperations()) {
+                        property.addIgnoringEquivalents(pval);
+                    } else {
+                        property.add(pval);
+                    }
                 } catch (SchemaException e) {
                     if (pc.isCompat()) {
                         // Most probably the "apply definition" call while adding the value failed. This occurs for raw
@@ -502,10 +510,15 @@ public class PrismUnmarshaller {
         return property;
     }
 
-    private <V extends PrismValue, D extends ItemDefinition<?>> void addItemValueIfPossible(Item<V, D> item, V value, ParsingContext pc) throws SchemaException {
+    private <V extends PrismValue, D extends ItemDefinition<?>> void addItemValueIfPossible(
+            Item<V, D> item, V value, ParsingContext pc) throws SchemaException {
         if (value != null) {
             try {
-                item.add(value);
+                if (pc.isFastAddOperations()) {
+                    item.addIgnoringEquivalents(value);
+                } else {
+                    item.add(value);
+                }
             } catch (SchemaException e) {
                 pc.warnOrThrow(LOGGER, "Couldn't add a value of " + value + " to the containing item: " + e.getMessage(), e);
             }
@@ -554,11 +567,20 @@ public class PrismUnmarshaller {
     }
 
     private void parseMetadataNodes(PrismValue prismValue, List<MapXNode> metadataNodes, ParsingContext pc) throws SchemaException {
+        if (metadataNodes.isEmpty()) {
+            return;
+        }
+        ValueMetadata valueMetadata = prismValue.getValueMetadata();
         for (MapXNode metadataNode : metadataNodes) {
             PrismContainerValue pcv =
                     parseContainerValueFromMap((MapXNodeImpl) metadataNode, schemaRegistry.getValueMetadataDefinition(), pc);
-            //noinspection unchecked
-            prismValue.getValueMetadata().add(pcv);
+            if (pc.isFastAddOperations()) {
+                //noinspection unchecked
+                valueMetadata.addIgnoringEquivalents(pcv);
+            } else {
+                //noinspection unchecked
+                valueMetadata.add(pcv);
+            }
         }
     }
 
@@ -619,11 +641,21 @@ public class PrismUnmarshaller {
                 if (subNode instanceof IncompleteMarkerXNodeImpl) {
                     ref.setIncomplete(true);
                 } else {
-                    ref.add(parseReferenceValueFromXNode(subNode, definition, itemName, pc));
+                    PrismReferenceValue subValue = parseReferenceValueFromXNode(subNode, definition, itemName, pc);
+                    if (pc.isFastAddOperations()) {
+                        ref.addIgnoringEquivalents(subValue);
+                    } else {
+                        ref.add(subValue);
+                    }
                 }
             }
         } else if (node instanceof MapXNodeImpl) {
-            ref.add(parseReferenceValueFromXNode(node, definition, itemName, pc));
+            PrismReferenceValue newValue = parseReferenceValueFromXNode(node, definition, itemName, pc);
+            if (pc.isFastAddOperations()) {
+                ref.addIgnoringEquivalents(newValue);
+            } else {
+                ref.add(newValue);
+            }
         } else if (node instanceof PrimitiveXNodeImpl) {
             // empty
         } else if (node instanceof IncompleteMarkerXNodeImpl) {
