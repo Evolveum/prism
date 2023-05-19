@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.metadata.MidpointOriginMetadata;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -25,6 +26,7 @@ import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -199,6 +201,16 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
         }
     }
 
+    @Nullable
+    @Experimental
+    default Object getRealValueIfExists() {
+        if (hasRealClass()) {
+            return getRealValue();
+        } else {
+            return null;
+        }
+    }
+
     // Returns a root of PrismValue tree. For example, if we have a AccessCertificationWorkItemType that has a parent (owner)
     // of AccessCertificationCaseType, which has a parent of AccessCertificationCampaignType, this method returns the PCV
     // of AccessCertificationCampaignType.
@@ -237,4 +249,11 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
 
     @Experimental
     void setTransient(boolean value);
+
+    /** Ignores untyped values (considers them non-matching). Supports non-static types. (May be slower.) */
+    @Experimental
+    default boolean isOfType(@NotNull QName expectedTypeName) {
+        QName actualTypeName = Objects.requireNonNullElse(getTypeName(), DOMUtil.XSD_ANYTYPE);
+        return PrismContext.get().getSchemaRegistry().isAssignableFromGeneral(expectedTypeName, actualTypeName);
+    }
 }

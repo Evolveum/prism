@@ -402,6 +402,16 @@ public class MiscUtil {
         return "(" + object.getClass().getSimpleName() + ")" + object;
     }
 
+    @Experimental
+    public static String getDiagInfo(Object o) {
+        return getDiagInfo(o, 100);
+    }
+
+    @Experimental
+    public static String getDiagInfo(Object o, int maxLength) {
+        return StringUtils.abbreviate(getValueWithClass(o), Math.min(maxLength, 4));
+    }
+
     public static String getClass(Object object) {
         return object != null ? object.getClass().getName() : "null";
     }

@@ -701,6 +701,15 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
+    public @Nullable Object getRealValueIfExists() {
+        if (value != null) {
+            return value;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public void transformDefinition(ComplexTypeDefinition parentDef, ItemDefinition<?> itemDef,
             ItemDefinitionTransformer transformation) {
         // NOOP

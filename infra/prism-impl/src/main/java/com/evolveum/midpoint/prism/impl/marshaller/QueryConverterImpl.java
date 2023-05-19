@@ -137,12 +137,27 @@ public class QueryConverterImpl implements QueryConverter {
 
     private ItemDefinition<?> getItemDefinitionForTypeClass(@NotNull Class<?> clazz) {
         if (Referencable.class.isAssignableFrom(clazz)) {
-            return PrismContext.get().definitionFactory().createReferenceDefinition(
+            return prismContext.definitionFactory().createReferenceDefinition(
                     PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE);
-        } else {
-            return prismContext.getSchemaRegistry()
-                    .findItemDefinitionByCompileTimeClass(clazz, ItemDefinition.class);
         }
+
+        var itemDef = prismContext.getSchemaRegistry()
+                .findItemDefinitionByCompileTimeClass(clazz, ItemDefinition.class);
+        if (itemDef != null) {
+            return itemDef;
+        }
+
+        if (Containerable.class.isAssignableFrom(clazz)) {
+            //noinspection unchecked
+            var typeDef = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(
+                    (Class<? extends Containerable>) clazz);
+            if (typeDef != null) {
+                // Ugly hack: construct fake PCD
+                return prismContext.definitionFactory().createContainerDefinition(PrismConstants.T_SELF, typeDef);
+            }
+        }
+
+        return null;
     }
 
     @Override

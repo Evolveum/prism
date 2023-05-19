@@ -364,7 +364,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public QName getTypeName() {
-        ItemDefinition definition = getDefinition();
+        ItemDefinition<?> definition = getDefinition();
         return definition != null ? definition.getTypeName() : null;
     }
 
