@@ -9,7 +9,7 @@ package com.evolveum.midpoint.prism.impl.marshaller;
 
 import java.lang.reflect.Field;
 
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlValue;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ParsingContext;

@@ -12,5 +12,5 @@
 // Generated on: 2012.05.20 at 05:41:15 PM CEST
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://prism.evolveum.com/xml/ns/public/types-3", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://prism.evolveum.com/xml/ns/public/types-3", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package com.evolveum.prism.xml.ns._public.types_3;

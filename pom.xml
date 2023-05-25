@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>2.7.3</version>
+        <version>3.0.6</version>
         <!-- This parent also declares dependencies listed here:
         https://docs.spring.io/spring-boot/docs/2.7.3/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
@@ -92,25 +92,22 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
-        <snakeyaml.version>1.33</snakeyaml.version> <!-- fixes CVE-2022-25857 -->
-        <jackson.version>2.13.4</jackson.version> <!-- fixes CVE-2022-42004 -->
         <!-- END of Spring Boot dependencies overrides -->
 
         <!-- Dependencies global versions -->
-        <commons.io.version>2.11.0</commons.io.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
-        <testng.version>7.6.1</testng.version>
-        <xml.resolver.version>1.2</xml.resolver.version>
-        <classgraph.version>4.8.147</classgraph.version>
-        <!-- 5.1.0 does not have no_aop classifier version -->
+        <!-- <slf4j.version>1.7.36</slf4j.version> -->
+        <!-- Non Spring Boot Dependencies -->
         <guice.version>4.2.1</guice.version>
+        <xml.resolver.version>1.2</xml.resolver.version>
+        <commons.io.version>2.11.0</commons.io.version>
         <guava.version>31.1-jre</guava.version>
+        <testng.version>7.6.1</testng.version>
         <checkstyle.version>3.1.2</checkstyle.version>
+        <classgraph.version>4.8.147</classgraph.version>
         <xerces.version>2.12.2</xerces.version>
+        
         <plexus.container.version>1.7.1</plexus.container.version>
         <plexus.classworlds.version>2.6.0</plexus.classworlds.version>
-
         <maven.api.version>3.8.5</maven.api.version>
         <!-- With M6 we get [WARNING] Corrupted channel by directly writing to native stream in forked JVM 1, we will try later versions. -->
         <surefire.version>3.0.0-M5</surefire.version>
@@ -418,7 +415,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>4.9.2</version>
+                <version>4.10.1</version>
             </dependency>
 
             <dependency>
@@ -701,7 +698,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.6.1</version>
+                    <version>3.8.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

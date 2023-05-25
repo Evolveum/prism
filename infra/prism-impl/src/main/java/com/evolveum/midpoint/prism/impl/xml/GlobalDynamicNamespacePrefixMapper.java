@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
 
 /**
  * Maps namespaces to preferred prefixes. Should be used through the code to

@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.Validate;

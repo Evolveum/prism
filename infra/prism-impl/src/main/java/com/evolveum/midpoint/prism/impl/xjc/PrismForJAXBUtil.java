@@ -10,8 +10,8 @@ package com.evolveum.midpoint.prism.impl.xjc;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlAnyElement;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.Validate;

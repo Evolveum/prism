@@ -14,7 +14,7 @@ import com.evolveum.midpoint.schema.xjc.PrefixMapper;
 import com.sun.codemodel.*;
 import com.sun.tools.xjc.model.CClassInfo;
 import org.apache.commons.lang3.Validate;
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 import java.io.StringWriter;
 import java.lang.reflect.Field;

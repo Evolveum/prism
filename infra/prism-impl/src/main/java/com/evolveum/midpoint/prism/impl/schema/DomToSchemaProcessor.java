@@ -17,12 +17,16 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import com.sun.xml.xsom.XSSchemaSet;
 import com.sun.xml.xsom.parser.XSOMParser;
 import com.sun.xml.xsom.util.DomAnnotationParserFactory;
+
+import ch.qos.logback.core.joran.spi.XMLUtil;
+
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -142,7 +146,9 @@ class DomToSchemaProcessor {
     }
 
     private XSOMParser createSchemaParser() {
-        XSOMParser parser = new XSOMParser();
+        var saxParser = SAXParserFactory.newInstance();
+        saxParser.setNamespaceAware(true);
+        XSOMParser parser = new XSOMParser(saxParser);
         if (entityResolver == null) {
             entityResolver = ((PrismContextImpl) prismContext).getEntityResolver();
             if (entityResolver == null) {
@@ -150,6 +156,7 @@ class DomToSchemaProcessor {
                         "Entity resolver is not set (even tried to pull it from prism context)");
             }
         }
+
         SchemaHandler errorHandler = new SchemaHandler(entityResolver);
         parser.setErrorHandler(errorHandler);
         parser.setAnnotationParser(new DomAnnotationParserFactory());

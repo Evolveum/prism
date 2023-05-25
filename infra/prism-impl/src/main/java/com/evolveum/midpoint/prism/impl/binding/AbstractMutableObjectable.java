@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.binding;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Objectable;

@@ -13,10 +13,10 @@ import com.evolveum.midpoint.prism.JaxbVisitor;
 import com.evolveum.midpoint.prism.Raw;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.ArrayList;

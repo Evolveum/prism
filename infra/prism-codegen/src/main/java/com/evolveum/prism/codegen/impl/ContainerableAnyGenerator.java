@@ -8,7 +8,7 @@ package com.evolveum.prism.codegen.impl;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.codegen.binding.ContainerableAnyContract;

@@ -10,7 +10,7 @@ package com.evolveum.midpoint.prism.impl.binding;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlAnyElement;
 
 import org.jetbrains.annotations.Nullable;
 

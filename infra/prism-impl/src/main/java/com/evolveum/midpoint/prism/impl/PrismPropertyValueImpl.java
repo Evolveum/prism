@@ -12,14 +12,13 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import javax.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jvnet.jaxb2_commons.lang.Equals;
 import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.*;
@@ -474,8 +473,6 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                     // we compare prefixes as well
                     return thisRealValue.equals(otherRealValue) &&
                             StringUtils.equals(((QName) thisRealValue).getPrefix(), ((QName) otherRealValue).getPrefix());
-                } else if (thisRealValue instanceof Equals && otherRealValue instanceof Equals) {
-                    return ((Equals) thisRealValue).equals(null, null, otherRealValue, LiteralEqualsStrategy.INSTANCE);
                 } else if (thisRealValue instanceof PlainStructured && otherRealValue instanceof PlainStructured) {
                     return ((PlainStructured) thisRealValue).equals(otherRealValue, StructuredEqualsStrategy.LITERAL);
                 }

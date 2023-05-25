@@ -16,7 +16,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import javax.xml.bind.annotation.XmlEnumValue;
+import jakarta.xml.bind.annotation.XmlEnumValue;
 import javax.xml.datatype.*;
 import javax.xml.namespace.QName;
 

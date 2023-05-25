@@ -6,7 +6,7 @@
  */
 package com.evolveum.prism.codegen.impl;
 
-import javax.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessType;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismContainer;

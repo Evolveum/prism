@@ -15,9 +15,9 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
