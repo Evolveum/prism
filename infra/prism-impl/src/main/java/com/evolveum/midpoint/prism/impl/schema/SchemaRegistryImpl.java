@@ -1180,11 +1180,11 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             Map<ComplexTypeDefinition, ItemDefinition> notInherited = found.entrySet().stream()
                     .filter(e -> !e.getValue().isInherited())
                     .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-            if (notInherited.isEmpty()) {
+            if (notInherited.size() > 1) {
                 throw new IllegalStateException(
                         "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found: "
                                 + notInherited);
-            } else if (notInherited.size() > 1) {
+            } else if (notInherited.isEmpty()) {
                 throw new IllegalStateException(
                         "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found - and all are inherited: "
                                 + found);
@@ -1613,7 +1613,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         if (cls2.isAssignableFrom(cls1)) {
             return type1;
         }
-        // poly string vs string
+        // poly string vs string FIXME is this correct? e.g., shouldn't there be '&&' instead of '||'?
         if (PolyStringType.class.equals(cls1) || String.class.equals(cls2)) {
             return type1;
         }

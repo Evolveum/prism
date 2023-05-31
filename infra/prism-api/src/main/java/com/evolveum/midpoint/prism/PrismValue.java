@@ -256,4 +256,8 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
         QName actualTypeName = Objects.requireNonNullElse(getTypeName(), DOMUtil.XSD_ANYTYPE);
         return PrismContext.get().getSchemaRegistry().isAssignableFromGeneral(expectedTypeName, actualTypeName);
     }
+
+    default @NotNull PrismValue cloneIfImmutable() {
+        return isImmutable() ? clone() : this;
+    }
 }

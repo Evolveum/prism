@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.path;
 
 import java.util.*;
 
+import com.evolveum.midpoint.prism.AbstractFreezable;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -20,12 +22,12 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  * Slower than standard set! Operations are evaluated in `O(n)` time.
  */
 @Experimental
-public class PathSet implements Set<ItemPath> {
+public class PathSet extends AbstractFreezable implements Set<ItemPath> {
 
     private static final PathSet EMPTY = new PathSet(List.of(), false);
 
     /** Can be mutable or immutable. */
-    @NotNull private final List<ItemPath> content;
+    @NotNull private List<ItemPath> content;
 
     private PathSet(@NotNull List<ItemPath> initialContent, boolean cloneOnCreation) {
         content = cloneOnCreation ?
@@ -87,7 +89,6 @@ public class PathSet implements Set<ItemPath> {
     @NotNull
     @Override
     public <T> T[] toArray(@NotNull T[] a) {
-        //noinspection SuspiciousToArrayCall
         return content.toArray(a);
     }
 
@@ -153,8 +154,24 @@ public class PathSet implements Set<ItemPath> {
         return map;
     }
 
+    public @NotNull PathSet remainder(@NotNull ItemPath prefix) {
+        return new PathSet(
+                ItemPathCollectionsUtil.remainder(this, prefix, true),
+                false); // the list returned by the callee is not shared
+    }
+
     @Override
     public String toString() {
         return content.toString();
+    }
+
+    @Override
+    protected void performFreeze() {
+        content = Collections.unmodifiableList(content);
+    }
+
+    /** Returns `true` it the set (at least partially) covers given item. */
+    public boolean containsRelated(@NotNull ItemPath path) {
+        return ItemPathCollectionsUtil.containsRelated(this, path);
     }
 }

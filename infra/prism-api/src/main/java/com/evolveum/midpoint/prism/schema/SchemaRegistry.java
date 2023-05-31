@@ -168,7 +168,18 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
     <ID extends ItemDefinition> ID selectMoreSpecific(ID def1, ID def2)
             throws SchemaException;
 
-    QName selectMoreSpecific(QName type1, QName type2) throws SchemaException;
+    /**
+     * Selects the type that is more specific of the two.
+     *
+     * For example, if the input is `FocusType` and `UserType`, the output is `UserType`.
+     * Returns `null` if there's no such type.
+     *
+     * Limitations/specific handling:
+     *
+     * - Assumes both types have compile-time representation. May return `null` if that's not true.
+     * - The treatment of `PolyStringType` vs `String` is rather strange. Should be reviewed. FIXME
+     */
+    QName selectMoreSpecific(@Nullable QName type1, @Nullable QName type2) throws SchemaException;
 
     /**
      * @return true if the typeName corresponds to statically-typed class that is Containerable.
@@ -225,7 +236,11 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
     boolean isAssignableFromGeneral(@NotNull QName superType, @NotNull QName subType);
 
     /**
-     * Returns most specific common supertype for these two. If any of input params is null, it means it is ignored
+     * Returns most specific common supertype for these two. If any of input params is null, it means it is ignored.
+     *
+     * FIXME is the implementation correct regarding this spec? E.g. for `UserType` and `RoleType` it should return
+     *  `FocusType` but it returns `null` instead!
+     *
      * @return null if unification cannot be done (or if both input types are null)
      */
     QName unifyTypes(QName type1, QName type2);

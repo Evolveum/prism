@@ -403,13 +403,18 @@ public class MiscUtil {
     }
 
     @Experimental
+    public static Object getDiagInfoLazy(Object o) {
+        return DebugUtil.lazy(() -> getDiagInfo(o, 100));
+    }
+
+    @Experimental
     public static String getDiagInfo(Object o) {
         return getDiagInfo(o, 100);
     }
 
     @Experimental
     public static String getDiagInfo(Object o, int maxLength) {
-        return StringUtils.abbreviate(getValueWithClass(o), Math.min(maxLength, 4));
+        return StringUtils.abbreviate(getValueWithClass(o), Math.max(maxLength, 4));
     }
 
     public static String getClass(Object object) {

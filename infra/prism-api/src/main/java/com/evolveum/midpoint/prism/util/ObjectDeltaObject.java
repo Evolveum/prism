@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,12 +83,24 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         return oldObject;
     }
 
+    public @NotNull PrismObject<O> getOldObjectRequired() {
+        return MiscUtil.stateNonNull(
+                getOldObject(),
+                () -> "No old object in odo " + this);
+    }
+
     public ObjectDelta<O> getObjectDelta() {
         return delta;
     }
 
     public PrismObject<O> getNewObject() {
         return newObject;
+    }
+
+    public @NotNull PrismObject<O> getNewObjectRequired() {
+        return MiscUtil.stateNonNull(
+                getNewObject(),
+                () -> "No new object in odo " + this);
     }
 
     public boolean hasAnyObject() {
@@ -109,6 +123,12 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
             return newObject;
         }
         return oldObject;
+    }
+
+    public @NotNull PrismObject<O> getAnyObjectRequired() {
+        return MiscUtil.stateNonNull(
+                getAnyObject(),
+                () -> "No object in odo " + this);
     }
 
     @Override

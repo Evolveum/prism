@@ -8,7 +8,7 @@
 package com.evolveum.midpoint.prism.path;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -20,7 +20,7 @@ import java.util.*;
 public class ItemPathCollectionsUtil {
 
     /**
-     * Returns true if the collection contains a path equivalent to pathToBeFound.
+     * Returns true if the collection contains a path equivalent to `pathToBeFound`.
      */
     public static boolean containsEquivalent(Collection<? extends ItemPath> paths, ItemPath pathToBeFound) {
         for (ItemPath path : paths) {
@@ -32,13 +32,16 @@ public class ItemPathCollectionsUtil {
     }
 
     /**
-     * Returns true if the collection contains a superpath of the given path.
-     * I.e. having collection = { A/B, A/C }
-     * then the method for this collection and 'path' returns:
-     *  - path = A/B -&gt; false
-     *  - path = A -&gt; false
-     *  - path = A/B/C -&gt; true
-     *  - path = X -&gt; false
+     * Returns true if the collection contains a sub-path (prefix) of the given path.
+     *
+     * I.e. having collection = { `A/B`, `A/C` }
+     *
+     * then the method for this collection and `path` returns:
+     *
+     *  - `path` = `A/B` -> `false`
+     *  - `path` = `A` -> `false`
+     *  - `path` = `A/B/C` -> `true` as `A/B` is a sub-path (prefix) for `A/B/C`
+     *  - `path` = `X` -> `false`
      */
     public static boolean containsSubpath(Collection<? extends ItemPath> paths, ItemPath pathToBeFound) {
         for (ItemPath path : paths) {
@@ -97,6 +100,29 @@ public class ItemPathCollectionsUtil {
     public static boolean containsSubpathOrEquivalent(Collection<? extends ItemPath> paths, ItemPath pathToBeFound) {
         for (ItemPath path : paths) {
             if (path.isSubPathOrEquivalent(pathToBeFound)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if the collection contains a path related to (overlapping) the given one. By related-to/overlapping
+     * we mean that the set covers the given path either fully (i.e. it contains an equivalent path or a sub-path),
+     * or partially (i.e. it contains a super-path).
+     *
+     * I.e. having collection = { `A/B`, `A/C` }
+     *
+     * then the method for this collection and `path` returns:
+     *
+     *  - `path` = `A/B` -> `true`
+     *  - `path` = `A` -> `true`
+     *  - `path` = `A/B/C` -> `true`
+     *  - `path` = `X` -> `false`
+     */
+    public static boolean containsRelated(Collection<? extends ItemPath> paths, ItemPath pathToBeFound) {
+        for (ItemPath path : paths) {
+            if (path.compareComplex(pathToBeFound) != ItemPath.CompareResult.NO_RELATION) {
                 return true;
             }
         }
