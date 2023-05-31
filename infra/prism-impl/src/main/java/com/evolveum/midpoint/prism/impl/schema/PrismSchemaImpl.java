@@ -223,10 +223,24 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
 
     // TODO: cleanup this chaos
     // Currently used for connector schema (at least in production code)
-    public static PrismSchema parse(Element element, boolean isRuntime, String shortDescription, PrismContext prismContext) throws SchemaException {
-        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
-        return parse(element, ((PrismContextImpl) prismContext).getEntityResolver(), schema, isRuntime, shortDescription,
-                false, prismContext);
+    public static PrismSchema parse(Element element, boolean isRuntime, String shortDescription, PrismContext prismContext)
+            throws SchemaException {
+        // We need to synchronize, because the DOM structures are not thread-safe, even for reading.
+        // Here, DOMUtil.getSchemaTargetNamespace gets an exception, see MID-8860.
+        //
+        // We intentionally synchronize on the schema element. Note that synchronizing e.g. on the owning ConnectorType object
+        // is not sufficient, because of not cloning the embedded schema (59bee63b1b8eb933db39e8a9b61a4023b25ec4c0 - wrong
+        // decision at that time) we usually have different connector objects (in parallel threads) sharing the same schema
+        // DOM element.
+        //
+        // FIXME this should be resolved more seriously; maybe we will have to put the schema cloning back?
+        //
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (element) {
+            PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
+            return parse(element, ((PrismContextImpl) prismContext).getEntityResolver(), schema, isRuntime, shortDescription,
+                    false, prismContext);
+        }
     }
 
     // used for parsing prism schemas; only in exceptional cases
