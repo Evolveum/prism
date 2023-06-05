@@ -1034,6 +1034,15 @@ public class MiscUtil {
     }
 
     // TODO better name?
+    public static <T> T configNonNull(T value, String template, Object... arguments) throws ConfigurationException {
+        if (value != null) {
+            return value;
+        } else {
+            throw new ConfigurationException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
+    // TODO better name?
     public static <T> T argNonNull(T value, Supplier<String> messageSupplier) {
         if (value != null) {
             return value;
