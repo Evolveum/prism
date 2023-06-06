@@ -59,7 +59,7 @@ class DomIterativeReader {
             if (eventType != XMLStreamConstants.START_ELEMENT) {
                 throw new SystemException("StAX Malfunction?");
             }
-            DOMConverter domConverter = new DOMConverter();
+            DOMConverter domConverter = new DOMConverter(DOMUtil.createDocumentBuilder());
             Map<String, String> rootNamespaceDeclarations = new HashMap<>();
 
             QName objectsMarker = schemaRegistry.getPrismContext().getObjectsElementName();

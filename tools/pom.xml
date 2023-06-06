@@ -23,7 +23,6 @@
 
     <modules>
         <module>test-ng</module>
-        <module>xjc-plugin</module>
         <module>schema-dist-maven-plugin</module>
     </modules>
 </project>

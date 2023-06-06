@@ -5,5 +5,5 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package com.evolveum.midpoint.prism.foo;

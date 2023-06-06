@@ -32,13 +32,11 @@ import com.sun.tools.xjc.reader.xmlschema.bindinfo.BIXPluginCustomization;
 import com.sun.tools.xjc.reader.xmlschema.bindinfo.BindInfo;
 import com.sun.xml.xsom.*;
 import org.jetbrains.annotations.NotNull;
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.HashCode;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.io.Serializable;
@@ -124,8 +122,7 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
                     List.class, Objectable.class, StringBuilder.class, XmlAccessorType.class, XmlElement.class, XmlType.class,
                     XmlAttribute.class, XmlAnyAttribute.class, XmlAnyElement.class,
                     PrismContainer.class, PrismContainerImpl.class,
-                    Equals.class,
-                    PrismContainerArrayList.class, HashCode.class, PrismContainerDefinition.class, Containerable.class,
+                    PrismContainerArrayList.class, PrismContainerDefinition.class, Containerable.class,
                     Referencable.class, Raw.class, Enum.class, XmlEnum.class, PolyStringType.class, XmlTypeConverter.class,
                     PrismObjectValue.class, PrismObjectValueImpl.class);
 
@@ -395,15 +392,6 @@ public class SchemaProcessor extends BaseSchemaProcessor implements Processor {
             if (qname == null || (!hasParentAnnotation(classOutline, A_PRISM_OBJECT)
                     && !hasParentAnnotation(classOutline, A_PRISM_CONTAINER))) {
                 continue;
-            }
-
-            JDefinedClass definedClass = classOutline.implClass;
-            Iterator<JClass> iterator = definedClass._implements();
-            while (iterator.hasNext()) {
-                JClass clazz = iterator.next();
-                if (clazz.equals(CLASS_MAP.get(Equals.class)) || clazz.equals(CLASS_MAP.get(HashCode.class))) {
-                    iterator.remove();
-                }
             }
 
             boolean isMidpointContainer = hasParentAnnotation(classOutline, A_PRISM_OBJECT);

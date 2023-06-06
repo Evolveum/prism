@@ -26,14 +26,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.activation.MimeType;
+import jakarta.activation.MimeTypeParseException;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -323,7 +323,7 @@ public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStr
                 if (next instanceof JAXBElement) {
                     // Referenced elements without classes.
                     if (((JAXBElement) next).getValue() instanceof String) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<java.lang.String>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<java.lang.String>
                         target.add(copyOfStringElement(((JAXBElement) next)));
                         continue;
                     }
@@ -520,7 +520,7 @@ public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStr
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<java.lang.String>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<java.lang.String>} instance.
      *
      * @param e
      *     The instance to copy or {@code null}.

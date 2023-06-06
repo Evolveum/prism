@@ -11,22 +11,12 @@ package com.evolveum.midpoint.prism.foo;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EventHandlerChainType", propOrder = {
@@ -34,7 +24,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 })
 public class EventHandlerChainType
         extends EventHandlerType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     public static final QName COMPLEX_TYPE = new QName("http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", "EventHandlerChainType");
 
@@ -87,19 +77,19 @@ public class EventHandlerChainType
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link SimpleWorkflowNotifierType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link SimpleResourceObjectNotifierType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventHandlerChainType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link DummyNotifierType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link UserPasswordNotifierType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link AccountPasswordNotifierType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventCategoryFilterType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventHandlerType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventStatusFilterType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventExpressionFilterType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventHandlerForkType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link EventOperationFilterType }{@code >}
-     * {@link javax.xml.bind.JAXBElement }{@code <}{@link SimpleUserNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link SimpleWorkflowNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link SimpleResourceObjectNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventHandlerChainType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link DummyNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link UserPasswordNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link AccountPasswordNotifierType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventCategoryFilterType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventHandlerType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventStatusFilterType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventExpressionFilterType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventHandlerForkType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link EventOperationFilterType }{@code >}
+     * {@link jakarta.xml.bind.JAXBElement }{@code <}{@link SimpleUserNotifierType }{@code >}
      */
     public List<JAXBElement<? extends EventHandlerType>> getHandler() {
         if (handler == null) {
@@ -108,45 +98,14 @@ public class EventHandlerChainType
         return this.handler;
     }
 
-    /**
-     * Generates a String representation of the contents of this type.
-     * This is an extension method, produced by the 'ts' xjc plugin
-     */
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        List<JAXBElement<? extends EventHandlerType>> theHandler;
-        theHandler = (((this.handler != null) && (!this.handler.isEmpty())) ? this.getHandler() : null);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "handler", theHandler), currentHashCode, theHandler);
-        return currentHashCode;
-    }
-
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof EventHandlerChainType)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
-            return false;
-        }
-        final EventHandlerChainType that = ((EventHandlerChainType) object);
-        List<JAXBElement<? extends EventHandlerType>> lhsHandler;
-        lhsHandler = (((this.handler != null) && (!this.handler.isEmpty())) ? this.getHandler() : null);
-        List<JAXBElement<? extends EventHandlerType>> rhsHandler;
-        rhsHandler = (((that.handler != null) && (!that.handler.isEmpty())) ? that.getHandler() : null);
-        return strategy.equals(LocatorUtils.property(thisLocator, "handler", lhsHandler), LocatorUtils.property(thatLocator, "handler", rhsHandler), lhsHandler, rhsHandler);
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
     /**
@@ -164,27 +123,27 @@ public class EventHandlerChainType
                 if (next instanceof JAXBElement) {
                     // Referenced elements without classes.
                     if (((JAXBElement) next).getValue() instanceof EventOperationFilterType) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventOperationFilterType>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventOperationFilterType>
                         target.add(copyOfEventOperationFilterTypeElement(((JAXBElement) next)));
                         continue;
                     }
                     if (((JAXBElement) next).getValue() instanceof EventStatusFilterType) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventStatusFilterType>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventStatusFilterType>
                         target.add(copyOfEventStatusFilterTypeElement(((JAXBElement) next)));
                         continue;
                     }
                     if (((JAXBElement) next).getValue() instanceof EventCategoryFilterType) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventCategoryFilterType>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventCategoryFilterType>
                         target.add(copyOfEventCategoryFilterTypeElement(((JAXBElement) next)));
                         continue;
                     }
                     if (((JAXBElement) next).getValue() instanceof EventHandlerChainType) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerChainType>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerChainType>
                         target.add(copyOfEventHandlerChainTypeElement(((JAXBElement) next)));
                         continue;
                     }
                     if (((JAXBElement) next).getValue() instanceof EventHandlerType) {
-                        // CElementInfo: javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerType>
+                        // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerType>
                         target.add(copyOfEventHandlerTypeElement(((JAXBElement) next)));
                         continue;
                     }
@@ -196,7 +155,7 @@ public class EventHandlerChainType
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventOperationFilterType>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventOperationFilterType>} instance.
      *
      * @param e The instance to copy or {@code null}.
      * @return A deep copy of {@code e} or {@code null} if {@code e} is {@code null}.
@@ -215,7 +174,7 @@ public class EventHandlerChainType
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventStatusFilterType>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventStatusFilterType>} instance.
      *
      * @param e The instance to copy or {@code null}.
      * @return A deep copy of {@code e} or {@code null} if {@code e} is {@code null}.
@@ -233,7 +192,7 @@ public class EventHandlerChainType
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventCategoryFilterType>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventCategoryFilterType>} instance.
      *
      * @param e The instance to copy or {@code null}.
      * @return A deep copy of {@code e} or {@code null} if {@code e} is {@code null}.
@@ -251,7 +210,7 @@ public class EventHandlerChainType
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerChainType>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerChainType>} instance.
      *
      * @param e The instance to copy or {@code null}.
      * @return A deep copy of {@code e} or {@code null} if {@code e} is {@code null}.
@@ -269,7 +228,7 @@ public class EventHandlerChainType
     }
 
     /**
-     * Creates and returns a deep copy of a given {@code javax.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerType>} instance.
+     * Creates and returns a deep copy of a given {@code jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerType>} instance.
      *
      * @param e The instance to copy or {@code null}.
      * @return A deep copy of {@code e} or {@code null} if {@code e} is {@code null}.

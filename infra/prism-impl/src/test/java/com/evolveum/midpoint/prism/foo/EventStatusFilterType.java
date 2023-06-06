@@ -11,19 +11,9 @@ package com.evolveum.midpoint.prism.foo;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
-import org.jvnet.jaxb2_commons.lang.Equals;
-import org.jvnet.jaxb2_commons.lang.EqualsStrategy;
-import org.jvnet.jaxb2_commons.lang.HashCode;
-import org.jvnet.jaxb2_commons.lang.HashCodeStrategy;
-import org.jvnet.jaxb2_commons.locator.ObjectLocator;
-import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import com.evolveum.midpoint.util.xml.DomAwareEqualsStrategy;
-import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for EventStatusFilterType complex type.
@@ -48,7 +38,7 @@ import com.evolveum.midpoint.util.xml.DomAwareHashCodeStrategy;
 })
 public class EventStatusFilterType
         extends EventHandlerType
-        implements Serializable, Cloneable, Equals, HashCode {
+        implements Serializable, Cloneable {
 
     private static final long serialVersionUID = 201105211233L;
     protected List<String> status;
@@ -111,44 +101,15 @@ public class EventStatusFilterType
      * This is an extension method, produced by the 'ts' xjc plugin
      */
 
-    public int hashCode(ObjectLocator locator, HashCodeStrategy strategy) {
-        int currentHashCode = super.hashCode(locator, strategy);
-        List<String> theStatus;
-        theStatus = (((this.status != null) && (!this.status.isEmpty())) ? this.getStatus() : null);
-        currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "status", theStatus), currentHashCode, theStatus);
-        return currentHashCode;
-    }
 
+    @Override
     public int hashCode() {
-        final HashCodeStrategy strategy = DomAwareHashCodeStrategy.INSTANCE;
-        return this.hashCode(null, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
-    public boolean equals(ObjectLocator thisLocator, ObjectLocator thatLocator, Object object, EqualsStrategy strategy) {
-        if (!(object instanceof EventStatusFilterType)) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (!super.equals(thisLocator, thatLocator, object, strategy)) {
-            return false;
-        }
-        final EventStatusFilterType that = ((EventStatusFilterType) object);
-        List<String> lhsStatus;
-        lhsStatus = (((this.status != null) && (!this.status.isEmpty())) ? this.getStatus() : null);
-        List<String> rhsStatus;
-        rhsStatus = (((that.status != null) && (!that.status.isEmpty())) ? that.getStatus() : null);
-        if (!strategy.equals(LocatorUtils.property(thisLocator, "status", lhsStatus), LocatorUtils.property(thatLocator, "status", rhsStatus), lhsStatus, rhsStatus)) {
-            return false;
-        }
-        return true;
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
     public boolean equals(Object object) {
-        final EqualsStrategy strategy = DomAwareEqualsStrategy.INSTANCE;
-        return equals(null, null, object, strategy);
+        throw new UnsupportedOperationException("Not implemented javax - jakarta");
     }
 
     /**
