@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.path;
 
+import java.io.Serializable;
 import java.util.*;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
@@ -22,7 +23,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  * Slower than standard set! Operations are evaluated in `O(n)` time.
  */
 @Experimental
-public class PathSet extends AbstractFreezable implements Set<ItemPath> {
+public class PathSet extends AbstractFreezable implements Set<ItemPath>, Serializable {
 
     private static final PathSet EMPTY = new PathSet(List.of(), false);
 
