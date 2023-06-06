@@ -216,7 +216,7 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     // of AccessCertificationCampaignType.
     //
     // Generally, this method returns either "this" (PrismValue) or a PrismContainerValue.
-    PrismValue getRootValue();
+    @NotNull PrismValue getRootValue();
 
     PrismContainerValue<?> getParentContainerValue();
 

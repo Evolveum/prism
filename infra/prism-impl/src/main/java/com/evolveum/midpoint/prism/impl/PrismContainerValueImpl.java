@@ -6,9 +6,6 @@
  */
 package com.evolveum.midpoint.prism.impl;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
-
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Supplier;
@@ -1725,8 +1722,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValue<?> getRootValue() {
-        return (PrismContainerValue) super.getRootValue();
+    public @NotNull PrismContainerValue<?> getRootValue() {
+        return (PrismContainerValue<?>) super.getRootValue();
     }
 
     public static <C extends Containerable> List<PrismContainerValue<C>> asPrismContainerValues(List<C> containerables) {

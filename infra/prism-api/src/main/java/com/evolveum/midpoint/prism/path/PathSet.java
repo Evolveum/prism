@@ -42,6 +42,7 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath> {
         this(new ArrayList<>(initialContent), false);
     }
 
+    /** Returns immutable empty path set. */
     public static PathSet empty() {
         return EMPTY;
     }

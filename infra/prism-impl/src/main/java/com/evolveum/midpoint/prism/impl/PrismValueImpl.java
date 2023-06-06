@@ -21,8 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.namespace.QName;
 import java.util.*;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 /**
@@ -346,7 +344,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     //
     // Generally, this method returns either "this" (PrismValue) or a PrismContainerValue.
     @Override
-    public PrismValue getRootValue() {
+    public @NotNull PrismValue getRootValue() {
         PrismValue current = this;
         for (;;) {
             PrismContainerValue<?> parent = PrismValueUtil.getParentContainerValue(current);

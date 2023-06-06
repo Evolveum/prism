@@ -311,7 +311,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     void mergeContent(@NotNull PrismContainerValue<?> other, @NotNull List<QName> overwrite) throws SchemaException;
 
     @Override
-    PrismContainerValue<?> getRootValue();
+    @NotNull PrismContainerValue<?> getRootValue();
 
     static <C extends Containerable> List<PrismContainerValue<C>> asPrismContainerValues(List<C> containerables) {
         //noinspection unchecked
