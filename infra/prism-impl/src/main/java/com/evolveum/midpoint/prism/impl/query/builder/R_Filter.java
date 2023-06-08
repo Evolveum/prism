@@ -126,7 +126,9 @@ public class R_Filter implements S_FilterEntryOrEmpty {
         if (logicalSymbol == null || logicalSymbol == LogicalSymbol.OR) {
             updatedFilter.addCondition(AndFilterImpl.createAnd(subfilter));
         } else if (logicalSymbol == LogicalSymbol.AND) {
-            ((AndFilter) updatedFilter.getLastCondition()).addCondition(subfilter);
+            // This guards against wrong API usage like block().and().xyz().endBlock()
+            Objects.requireNonNull((AndFilter) updatedFilter.getLastCondition(), "no condition to add conjunct to")
+                    .addCondition(subfilter);
         } else {
             throw new IllegalStateException("Unknown logical symbol: " + logicalSymbol);
         }
