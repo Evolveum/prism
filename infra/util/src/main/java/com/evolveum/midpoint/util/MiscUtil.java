@@ -57,6 +57,7 @@ public class MiscUtil {
     private static final int BUFFER_SIZE = 2048;
 
     private static final DatatypeFactory DATATYPE_FACTORY;
+    private static final int DEFAULT_DIAG_INFO_LENGTH = 300;
 
     static {
         try {
@@ -404,12 +405,12 @@ public class MiscUtil {
 
     @Experimental
     public static Object getDiagInfoLazy(Object o) {
-        return DebugUtil.lazy(() -> getDiagInfo(o, 100));
+        return DebugUtil.lazy(() -> getDiagInfo(o, DEFAULT_DIAG_INFO_LENGTH));
     }
 
     @Experimental
     public static String getDiagInfo(Object o) {
-        return getDiagInfo(o, 100);
+        return getDiagInfo(o, DEFAULT_DIAG_INFO_LENGTH);
     }
 
     @Experimental
