@@ -57,6 +57,7 @@ public class MiscUtil {
     private static final int BUFFER_SIZE = 2048;
 
     private static final DatatypeFactory DATATYPE_FACTORY;
+    private static final int DEFAULT_DIAG_INFO_LENGTH = 300;
 
     static {
         try {
@@ -400,6 +401,40 @@ public class MiscUtil {
             return "null";
         }
         return "(" + object.getClass().getSimpleName() + ")" + object;
+    }
+
+    @Experimental
+    public static Object getDiagInfoLazy(Object o) {
+        return DebugUtil.lazy(() -> getDiagInfo(o, DEFAULT_DIAG_INFO_LENGTH));
+    }
+
+    @Experimental
+    public static String getDiagInfo(Collection<?> objects, int maxItems, int maxLengthPerObject) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (Object object : objects) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            if (i != maxItems) {
+                sb.append(getDiagInfo(object, maxLengthPerObject));
+                i++;
+            } else {
+                sb.append("...");
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    @Experimental
+    public static String getDiagInfo(Object o) {
+        return getDiagInfo(o, DEFAULT_DIAG_INFO_LENGTH);
+    }
+
+    @Experimental
+    public static String getDiagInfo(Object o, int maxLength) {
+        return StringUtils.abbreviate(getValueWithClass(o), Math.max(maxLength, 4));
     }
 
     public static String getClass(Object object) {
@@ -1019,11 +1054,28 @@ public class MiscUtil {
     }
 
     // TODO better name?
+    public static <T> T configNonNull(T value, String template, Object... arguments) throws ConfigurationException {
+        if (value != null) {
+            return value;
+        } else {
+            throw new ConfigurationException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
+    // TODO better name?
     public static <T> T argNonNull(T value, Supplier<String> messageSupplier) {
         if (value != null) {
             return value;
         } else {
             throw new IllegalArgumentException(messageSupplier.get());
+        }
+    }
+
+    public static <T> T argNonNull(T value, String template, Object... arguments) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new IllegalArgumentException(Strings.lenientFormat(template, arguments));
         }
     }
 
