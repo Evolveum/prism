@@ -122,13 +122,21 @@ public interface QueryFactory {
 
     @NotNull
     default ObjectFilter createAndOptimized(List<ObjectFilter> conditions) {
-        if (conditions.isEmpty()) {
+        List<ObjectFilter> nonTrivialConjuncts = conditions.stream()
+                .filter(c -> c != null && !(c instanceof AllFilter))
+                .toList();
+        if (nonTrivialConjuncts.isEmpty()) {
             return createAll();
-        } else if (conditions.size() == 1) {
-            return conditions.get(0);
+        } else if (nonTrivialConjuncts.size() == 1) {
+            return nonTrivialConjuncts.get(0);
         } else {
-            return createAnd(conditions);
+            return createAnd(nonTrivialConjuncts);
         }
+    }
+
+    @NotNull
+    default ObjectFilter createAndOptimized(ObjectFilter... conditions) {
+        return createAndOptimized(List.of(conditions));
     }
 
     @NotNull

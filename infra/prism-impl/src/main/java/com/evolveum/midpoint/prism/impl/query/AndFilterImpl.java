@@ -23,7 +23,7 @@ public class AndFilterImpl extends NaryLogicalFilterImpl implements AndFilter {
         super(condition);
     }
 
-    public static AndFilter createAnd(ObjectFilter... conditions){
+    public static AndFilter createAnd(ObjectFilter... conditions) {
         List<ObjectFilter> filters = new ArrayList<>(conditions.length);
         Collections.addAll(filters, conditions);
         return new AndFilterImpl(filters);
