@@ -409,6 +409,25 @@ public class MiscUtil {
     }
 
     @Experimental
+    public static String getDiagInfo(Collection<?> objects, int maxItems, int maxLengthPerObject) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (Object object : objects) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            if (i != maxItems) {
+                sb.append(getDiagInfo(object, maxLengthPerObject));
+                i++;
+            } else {
+                sb.append("...");
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    @Experimental
     public static String getDiagInfo(Object o) {
         return getDiagInfo(o, DEFAULT_DIAG_INFO_LENGTH);
     }

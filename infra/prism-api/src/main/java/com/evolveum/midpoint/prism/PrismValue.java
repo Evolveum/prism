@@ -260,4 +260,14 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     default @NotNull PrismValue cloneIfImmutable() {
         return isImmutable() ? clone() : this;
     }
+
+    /**
+     * Returns `true` if this value represents a {@link PrismObject} value.
+     *
+     * Temporary implementation that uses real value to do the check, as {@link PrismObjectValue} can mask itself
+     * as a {@link PrismContainerValue}, at least for now.
+     */
+    default boolean isObjectable() {
+        return getRealValueIfExists() instanceof Objectable;
+    }
 }
