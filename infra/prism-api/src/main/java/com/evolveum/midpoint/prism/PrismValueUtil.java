@@ -46,13 +46,9 @@ public class PrismValueUtil {
     /**
      * Returns the top-most object ({@link Objectable}).
      */
+    @Deprecated // use value.getRootObjectable() directly
     public static @Nullable Objectable getRootObject(@NotNull PrismValue value) {
-        var rootValue = value.getRootValue();
-        if (rootValue instanceof PrismObjectValue) {
-            return ((PrismObjectValue<?>) rootValue).asObjectable();
-        } else {
-            return null;
-        }
+        return value.getRootObjectable();
     }
 
     /**

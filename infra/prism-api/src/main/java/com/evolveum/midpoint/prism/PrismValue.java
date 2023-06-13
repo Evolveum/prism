@@ -218,6 +218,18 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     // Generally, this method returns either "this" (PrismValue) or a PrismContainerValue.
     @NotNull PrismValue getRootValue();
 
+    /**
+     * Returns the top-most object ({@link Objectable}).
+     */
+    default @Nullable Objectable getRootObjectable() {
+        var realValue = getRootValue().getRealValueIfExists();
+        return realValue instanceof Objectable objectable ? objectable : null;
+    }
+
+    default @Nullable <T> T getNearestValueOfType(@NotNull Class<T> type) {
+        return PrismValueUtil.getNearestValueOfType(this, type);
+    }
+
     PrismContainerValue<?> getParentContainerValue();
 
     QName getTypeName();
