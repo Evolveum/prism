@@ -1087,6 +1087,14 @@ public class MiscUtil {
         }
     }
 
+    public static <T> T stateNonNull(T value, String template, Object... arguments) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new IllegalStateException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
     public static boolean isSingleNull(Object[] values) {
         return values.length == 1 && values[0] == null;
     }
