@@ -314,6 +314,12 @@ public interface ObjectDelta<O extends Objectable>
     @Experimental
     void removeEstimatedOldValues();
 
+    /** Checks if the delta is of given type (including subtypes). */
+    default boolean isOfType(@NotNull Class<? extends Objectable> objectType) {
+        var clazz = getObjectTypeClass();
+        return clazz != null && objectType.isAssignableFrom(clazz);
+    }
+
     class FactorOutResultMulti<T extends Objectable> {
         public final ObjectDelta<T> remainder;
         public final List<ObjectDelta<T>> offsprings = new ArrayList<>();

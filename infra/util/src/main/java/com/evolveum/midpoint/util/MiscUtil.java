@@ -806,12 +806,13 @@ public class MiscUtil {
                 }
             });
         } catch (TunnelException te) {
-            return unwrapTunnelledException(te);        // return is just for formal reasons -- this throws exceptions only
+            unwrapTunnelledException(te);
+            throw new NotHereAssertionError();
         }
     }
 
     @SuppressWarnings("WeakerAccess")
-    public static <T> T unwrapTunnelledException(TunnelException te) throws CommonException {
+    public static <T> void unwrapTunnelledException(TunnelException te) throws CommonException {
         Throwable cause = te.getCause();
         if (cause instanceof CommonException) {
             throw (CommonException) cause;
@@ -822,7 +823,7 @@ public class MiscUtil {
         }
     }
 
-    public static <T> T unwrapTunnelledExceptionToRuntime(TunnelException te) {
+    public static <T> void unwrapTunnelledExceptionToRuntime(TunnelException te) {
         Throwable cause = te.getCause();
         if (cause instanceof RuntimeException) {
             throw (RuntimeException) cause;
