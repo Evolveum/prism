@@ -51,8 +51,7 @@ public class ItemName extends QName implements ItemPath {
     @NotNull
     @Override
     public List<?> getSegments() {
-        // TODO eliminate QName construction while avoiding endless recursion
-        return Collections.singletonList(new QName(getNamespaceURI(), getLocalPart(), getPrefix()));
+        return Collections.singletonList(this);
     }
 
     @Override
