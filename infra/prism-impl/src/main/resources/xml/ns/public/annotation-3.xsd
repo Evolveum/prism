@@ -319,6 +319,18 @@
                 Marks deprecated parts of the schema.
                 Deprecated parts are supposed to work, but their use is discouraged.
                 Deprecated functionality may be removed in any future release.
+                If there's a decision to remove deprecated part, it's firstly marked as "removed".
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="removed" type="xsd:boolean">
+        <xsd:annotation>
+            <xsd:documentation>
+                Marks removed parts of the schema.
+                Removed parts will not work, code related to such configuration and data structures was removed.
+                Parts marked removed are present in the schema to simplify upgrade.
+                Parts marked removed will be removed from schema in LTS comming after LTS that has such part marked "removed".
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
