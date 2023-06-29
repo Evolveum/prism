@@ -180,12 +180,12 @@ class UniformItemPathImpl implements UniformItemPath {
     private void add(Object object) {
         if (object instanceof UniformItemPathImpl) {
             segments.addAll(((UniformItemPathImpl) object).segments);
+        } else if (object instanceof QName) {
+            add((QName) object);
         } else if (object instanceof ItemPath) {
             addAll(((ItemPath) object).getSegments());
         } else if (object instanceof ItemPathSegment) {
             add((ItemPathSegment) object);
-        } else if (object instanceof QName) {
-            add((QName) object);
         } else if (object instanceof String) {
             add(stringToQName((String) object));
         } else if (object == null || object instanceof Long) {
