@@ -456,6 +456,14 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="removedSince" type="xsd:string">
+        <xsd:annotation>
+            <xsd:documentation>
+                Version of data model in which was the item marked as removed.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="plannedRemoval" type="xsd:string">
         <xsd:annotation>
             <xsd:documentation>
