@@ -99,6 +99,10 @@ public interface Definition
 
     boolean isDeprecated();
 
+    boolean isRemoved();
+
+    String getRemovedSince();
+
     /**
      * Experimental functionality is not stable and it may be changed in any
      * future release without any warning. Use at your own risk.

@@ -20,6 +20,10 @@ public interface MutableDefinition extends Definition {
 
     void setDeprecated(boolean deprecated);
 
+    void setRemoved(boolean removed);
+
+    void setRemovedSince(String removedSince);
+
     void setExperimental(boolean experimental);
 
     void setEmphasized(boolean emphasized);

@@ -95,6 +95,15 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
+    default boolean isRemoved() {
+        return delegate().isRemoved();
+    }
+    @Override
+    default String getRemovedSince() {
+        return delegate().getRemovedSince();
+    }
+
+    @Override
     default boolean isExperimental() {
         return delegate().isExperimental();
     }

@@ -246,6 +246,16 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
+    public boolean isRemoved() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getRemovedSince() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isExperimental() {
         throw new UnsupportedOperationException();
     }

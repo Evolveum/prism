@@ -1143,6 +1143,18 @@ class DomToSchemaPostProcessor {
             itemDef.setDeprecatedSince(deprecatedSince.getTextContent());
         }
 
+        // removed
+        Boolean removed = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_REMOVED);
+        if (removed != null) {
+            itemDef.setRemoved(removed);
+        }
+
+        // removed since
+        Element removedSince = SchemaProcessorUtil.getAnnotationElement(annotation, A_REMOVED_SINCE);
+        if (removedSince != null) {
+            itemDef.setRemovedSince(removedSince.getTextContent());
+        }
+
         // experimental
         Boolean experimental = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_EXPERIMENTAL);
         if (experimental != null) {

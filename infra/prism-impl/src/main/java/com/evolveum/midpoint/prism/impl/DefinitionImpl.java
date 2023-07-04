@@ -62,6 +62,8 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     protected String documentation;
     protected boolean deprecated = false;
     protected String deprecatedSince;
+    protected boolean removed = false;
+    protected String removedSince;
     protected String plannedRemoval;
     protected boolean experimental = false;
     protected boolean elaborate = false;
@@ -143,6 +145,26 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDeprecatedSince(String deprecatedSince) {
         checkMutable();
         this.deprecatedSince = deprecatedSince;
+    }
+
+    @Override
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed) {
+        checkMutable();
+        this.removed = removed;
+    }
+
+    @Override
+    public String getRemovedSince() {
+        return removedSince;
+    }
+
+    public void setRemovedSince(String removedSince) {
+        checkMutable();
+        this.removedSince = removedSince;
     }
 
     @Override
