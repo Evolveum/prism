@@ -1209,26 +1209,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
         if (isReplace()) {
             switch (mode) {
-                case PLUS:
-                    setSubtract(out, valuesToReplace, estimatedOldValues);
-                    break;
-                case MINUS:
-                    setSubtract(out, estimatedOldValues, valuesToReplace);
-                    break;
-                case ZERO:
-                    setIntersection(out, valuesToReplace, estimatedOldValues);
+                case PLUS -> setSubtract(out, valuesToReplace, estimatedOldValues);
+                case MINUS -> setSubtract(out, estimatedOldValues, valuesToReplace);
+                case ZERO -> setIntersection(out, valuesToReplace, estimatedOldValues);
             }
         } else {
             switch (mode) {
-                case PLUS:
-                    setAddAll(out, valuesToAdd);
-                    break;
-                case MINUS:
-                    setAddAll(out, valuesToDelete);
-                    break;
-                case ZERO:
-                    setAddAll(out, estimatedOldValues);
-                    break;
+                case PLUS -> setAddAll(out, valuesToAdd);
+                case MINUS -> setAddAll(out, valuesToDelete);
+                case ZERO -> setAddAll(out, estimatedOldValues);
             }
         }
 
