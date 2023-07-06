@@ -26,6 +26,14 @@ public class FreezableList<T> extends AbstractFreezable implements Serializable,
 
     private List<T> list = new ArrayList<>();
 
+    public FreezableList() {
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    public FreezableList(Collection<T> initialContent) {
+        list.addAll(initialContent);
+    }
+
     @Override
     protected void performFreeze() {
         // To be sure that there's no reference to original (mutable) list obtained e.g. via iterator() call.

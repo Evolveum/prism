@@ -275,4 +275,19 @@ public class CloneUtil {
             return pcvClone.asContainerable();
         }
     }
+
+    /**
+     * Returns a (mutable) list of input items after being processed by {@link #toImmutableContainerable(Containerable)} method.
+     */
+    @Contract("null -> null; !null -> !null")
+    public static <C extends Containerable> List<C> toImmutableContainerablesList(@Nullable Collection<C> inputCollection) {
+        if (inputCollection == null) {
+            return null;
+        }
+        List<C> clonedCollection = new ArrayList<>(inputCollection.size());
+        for (C element : inputCollection) {
+            clonedCollection.add(toImmutableContainerable(element));
+        }
+        return clonedCollection;
+    }
 }

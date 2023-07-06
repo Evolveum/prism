@@ -7,10 +7,19 @@
 
 package com.evolveum.midpoint.prism;
 
+import java.util.Collection;
+
 /**
  * List that freezes its members as well.
  */
 public class DeeplyFreezableList<T> extends FreezableList<T> {
+
+    public DeeplyFreezableList() {
+    }
+
+    public DeeplyFreezableList(Collection<T> initialContent) {
+        super(initialContent);
+    }
 
     @Override
     protected void performFreeze() {
