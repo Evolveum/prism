@@ -49,10 +49,16 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
     }
 
     /**
-     * TODO maybe we should return immutable {@link PathSet} here.
+     * Returns immutable {@link PathSet}.
+     * (The immutability is because of similarity with {@link List#of()} and similar methods.)
      */
     public static @NotNull PathSet of(ItemPath... paths) {
-        return new PathSet(List.of(paths), true);
+        if (paths.length == 0) {
+            return EMPTY;
+        }
+        var set = new PathSet(List.of(paths), true);
+        set.freeze();
+        return set;
     }
 
     @Override
@@ -156,6 +162,10 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
         return map;
     }
 
+    /**
+     * Strips the prefix from a set of paths.
+     * Non-matching (unrelated) paths are ignored, i.e. _NOT_ transformed to empty path.
+     */
     public @NotNull PathSet remainder(@NotNull ItemPath prefix) {
         return new PathSet(
                 ItemPathCollectionsUtil.remainder(this, prefix, true),
