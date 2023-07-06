@@ -26,7 +26,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.assertj.core.api.Assertions;
+import com.evolveum.midpoint.prism.ItemPathSerializer;
+
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -270,6 +271,10 @@ public class ItemPathTest extends AbstractPrismTest {
 
         UniformItemPath xpath1 = itemPathHolder1.toItemPath();
         UniformItemPath xpath2 = itemPathHolder2.toItemPath();
+
+        ItemPathSerializer serializer = getPrismContext().itemPathSerializer();
+        displayValue("Path 1", serializer.serializeStandalone(xpath1));
+        displayValue("Path 2", serializer.serializeStandalone(xpath2));
         assertTrue("Paths are not equivalent", xpath1.equivalent(xpath2));
     }
 
