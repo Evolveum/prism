@@ -10,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAnyElement;
@@ -34,9 +35,9 @@ public final class JAXBUtil {
 
     private static final Trace LOGGER = TraceManager.getTrace(JAXBUtil.class);
 
-    private static final Map<Package, String> PACKAGE_NAMESPACES = new HashMap<>();
-    private static final Map<QName, Class> CLASS_QNAMES = new HashMap<>();
-    private static final Set<String> SCANNED_PACKAGES = new HashSet<>();
+    private static final Map<Package, String> PACKAGE_NAMESPACES = new ConcurrentHashMap<>();
+    private static final Map<QName, Class> CLASS_QNAMES = new ConcurrentHashMap<>();
+    private static final Set<String> SCANNED_PACKAGES = ConcurrentHashMap.newKeySet();
 
     public static String getSchemaNamespace(Package pkg) {
         XmlSchema xmlSchemaAnn = pkg.getAnnotation(XmlSchema.class);
@@ -212,12 +213,15 @@ public final class JAXBUtil {
         return null;
     }
 
+    // TODO clean-up this method
     public static <T> Class<T> findClassForType(QName typeName, Package pkg) {
         String namespace = PACKAGE_NAMESPACES.get(pkg);
         if (namespace == null) {
             XmlSchema xmlSchemaAnnotation = pkg.getAnnotation(XmlSchema.class);
             if (xmlSchemaAnnotation == null) {
-                LOGGER.error("Package namespace unknown, there is also no XmlSchema annotation on package {}, type {}", pkg.getName(), typeName);
+                LOGGER.error("Package namespace unknown, there is also no XmlSchema annotation on package {}, type {}",
+                        pkg.getName(), typeName);
+                return null;
             }
 
             namespace = xmlSchemaAnnotation.namespace();
@@ -247,7 +251,7 @@ public final class JAXBUtil {
                     foundClass = c;
                 }
             }
-            return foundClass;          // may be null but that's OK
+            return foundClass; // may be null but that's OK
         }
 
         return null;
