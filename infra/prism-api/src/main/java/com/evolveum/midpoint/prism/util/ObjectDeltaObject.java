@@ -69,6 +69,10 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         }
     }
 
+    public static <O extends Objectable> ObjectDeltaObject<O> forUnchanged(@NotNull PrismObject<O> prismObject) {
+        return new ObjectDeltaObject<>(prismObject, null, prismObject, prismObject.getDefinition());
+    }
+
     private PrismObjectDefinition<O> determineDefinition() {
         if (newObject != null && newObject.getDefinition() != null) {
             return newObject.getDefinition();

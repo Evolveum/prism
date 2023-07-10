@@ -34,7 +34,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  *
  * @author Radovan Semancik
  */
-public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> implements DebugDumpable, Serializable {
+public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> implements DebugDumpable, Serializable {
 
     private Item<V,D> itemOld;
     private ItemDelta<V,D> delta;
@@ -57,7 +57,6 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> imp
     protected ItemDeltaItem() { }
 
     public ItemDeltaItem(Item<V,D> itemOld, ItemDelta<V,D> delta, Item<V,D> itemNew, D definition) {
-        super();
         validate(itemOld, "itemOld");
         validate(delta);
         validate(itemNew, "itemNew");
@@ -76,6 +75,16 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> imp
 
     }
 
+    public static ItemDeltaItem<?, ?> forUnchanged(@NotNull Item<?, ?> item) {
+        return new ItemDeltaItem<>(item);
+    }
+
+    /** Presumably for "value creation" delta. The object must be recomputed after returning from the method. */
+    public static <V extends PrismValue, D extends ItemDefinition<?>> ItemDeltaItem<V, D> forDelta(
+            @NotNull ItemDelta<V, D> delta) {
+        return new ItemDeltaItem<>(null, delta, null, delta.getDefinition());
+    }
+
     private D determineDefinition() {
         if (itemNew != null && itemNew.getDefinition() != null) {
             return itemNew.getDefinition();
@@ -90,7 +99,6 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> imp
     }
 
     public ItemDeltaItem(ItemDeltaItem<V,D> idi) {
-        super();
         this.itemOld = idi.getItemOld();
         validate(itemOld, "itemOld");
         this.itemNew = idi.getItemNew();
@@ -102,7 +110,6 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> imp
     }
 
     public ItemDeltaItem(Item<V,D> item) {
-        super();
         this.itemOld = item;
         this.itemNew = item;
         validate(itemOld, "item");
@@ -112,7 +119,6 @@ public class ItemDeltaItem<V extends PrismValue,D extends ItemDefinition<?>> imp
     }
 
     public ItemDeltaItem(Item<V,D> item, D definition) {
-        super();
         this.itemOld = item;
         this.itemNew = item;
         validate(itemOld, "item");
