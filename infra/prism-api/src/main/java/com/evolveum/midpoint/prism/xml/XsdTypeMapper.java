@@ -47,8 +47,6 @@ public class XsdTypeMapper {
     private static final Map<Class<?>, QName> JAVA_TO_XSD_TYPE_MAP = new HashMap<>();
     private static final Map<QName, Class<?>> XSD_TO_JAVA_TYPE_MAP = new HashMap<>();
     private static final Map<String, QName> XSD_TYPE_QUALIFICATION_MAP = new HashMap<>();
-    private static final Map<Class<?>, QName> JAVA_TO_XSD_TYPE_MAP_EXT = new HashMap<>();
-    private static final Map<QName, Class<?>> XSD_TO_JAVA_TYPE_MAP_EXT = new HashMap<>();
 
     private static final Trace LOGGER = TraceManager.getTrace(XsdTypeMapper.class);
     private static final String MULTIPLICITY_UNBOUNDED = "unbounded";
@@ -88,7 +86,6 @@ public class XsdTypeMapper {
 
         addMapping(PolyString.class, PrismConstants.POLYSTRING_TYPE_QNAME, true);
         addMapping(RawType.class,  DOMUtil.XSD_STRING, false);
-        addMappingExt(ItemPathType.class, ItemPathType.COMPLEX_TYPE, true);                // TODO remove
 
         addXsdToJavaMapping(DOMUtil.XSD_ANYURI, String.class);
     }
@@ -105,15 +102,6 @@ public class XsdTypeMapper {
         XSD_TO_JAVA_TYPE_MAP.put(xsdType, javaClass);
         XSD_TO_JAVA_TYPE_MAP.put(QNameUtil.nullNamespace(xsdType), javaClass);
         XSD_TYPE_QUALIFICATION_MAP.put(xsdType.getLocalPart(), xsdType);
-    }
-
-    private static void addMappingExt(Class javaClass, QName xsdType, boolean alsoXsdToJava) {
-        LOGGER.trace("Adding 'ext' XSD type mapping {} {} {} ", javaClass, alsoXsdToJava ? "<->" : " ->", xsdType);
-        JAVA_TO_XSD_TYPE_MAP_EXT.put(javaClass, xsdType);
-        if (alsoXsdToJava) {
-            XSD_TO_JAVA_TYPE_MAP_EXT.put(xsdType, javaClass);
-            XSD_TO_JAVA_TYPE_MAP_EXT.put(QNameUtil.nullNamespace(xsdType), javaClass);
-        }
     }
 
     @NotNull
@@ -177,16 +165,6 @@ public class XsdTypeMapper {
     @Nullable
     public static <T> Class<T> toJavaTypeIfKnown(@NotNull QName xsdType) {
         return toJavaType(XSD_TO_JAVA_TYPE_MAP, xsdType, false);
-    }
-
-    // experimental feature - covers all the classes
-    public static <T> Class<T> toJavaTypeIfKnownExt(@NotNull QName xsdType) {
-        Class<T> cls = toJavaType(XSD_TO_JAVA_TYPE_MAP, xsdType, false);
-        if (cls != null) {
-            return cls;
-        } else {
-            return toJavaType(XSD_TO_JAVA_TYPE_MAP_EXT, xsdType, false);
-        }
     }
 
     @Nullable
