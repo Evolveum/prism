@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism;
 
 import javax.xml.namespace.QName;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -20,6 +21,8 @@ import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 import com.evolveum.prism.xml.ns._public.types_3.EvaluationTimeType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
+
+import java.util.Objects;
 
 /**
  * @author Radovan Semancik
@@ -67,6 +70,21 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
      */
     void setTargetType(QName targetType, boolean allowEmptyNamespace);
 
+    /** Determines the type name from the value or from its definition (if known). */
+    default @Nullable QName determineTargetTypeName() {
+        QName explicitTypeName = getTargetType();
+        if (explicitTypeName != null) {
+            return explicitTypeName;
+        }
+
+        PrismReferenceDefinition definition = getDefinition();
+        if (definition != null) {
+            return definition.getTargetTypeName();
+        }
+
+        return null;
+    }
+
     /**
      * Returns cached name of the target object.
      * This is a ephemeral value.
@@ -103,6 +121,10 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     void setFilter(SearchFilterType filter);
 
     EvaluationTimeType getResolutionTime();
+
+    default @NotNull EvaluationTimeType getEffectiveResolutionTime() {
+        return Objects.requireNonNullElse(getResolutionTime(), EvaluationTimeType.IMPORT);
+    }
 
     void setResolutionTime(EvaluationTimeType resolutionTime);
 
