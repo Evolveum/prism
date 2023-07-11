@@ -17,22 +17,18 @@ public class PrismStaticConfiguration {
     }
 
     public static int indexEnableThreshold() {
-        return propertyIndexEnabled ? propertyIndexThreshold :  Integer.MAX_VALUE;
+        return propertyIndexEnabled ? propertyIndexThreshold : Integer.MAX_VALUE;
     }
 
     public static void setJavaSerializationProxiesEnabled(boolean value) {
-        serializationProxiesEnabled  = value;
+        serializationProxiesEnabled = value;
     }
 
     public static void setPropertyIndexEnabled(boolean value) {
-        propertyIndexEnabled  = value;
+        propertyIndexEnabled = value;
     }
 
     public static void setPropertyIndexThreshold(int value) {
-        if (value < 0) {
-            value = 0;
-        }
-        propertyIndexThreshold  = value;
+        propertyIndexThreshold = Math.max(0, value);
     }
-
 }

@@ -620,15 +620,14 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      *
      * Index is only enabled when:
      * - property never contained any raw value or expression
-     * - property has more than {@link #INDEX_ENABLE_TRESHOLD} items TODO fix, not used, deleted
+     * - property has more than {@link PrismStaticConfiguration#indexEnableThreshold()} items
      *
      * Index is disabled when:
      * - raw value is inserted
      */
     private void enableOrDisableIndex(PrismPropertyValue<T> valueToAdd, boolean createIndexIfNecessary) {
         if (valueToAdd.isRaw() || valueToAdd.getExpression() != null) {
-            // Index is not usable anymore, since value may change its hashCode during
-            // lifetime
+            // Index is not usable anymore, since value may change its hashCode during lifetime
             this.indexAvailable = false;
             this.valueIndex = null;
             return;
