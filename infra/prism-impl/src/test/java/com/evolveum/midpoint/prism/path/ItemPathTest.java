@@ -232,53 +232,6 @@ public class ItemPathTest extends AbstractPrismTest {
     }
 
     @Test
-    public void xpathFromQNameTest() {
-        // GIVEN
-        QName qname = new QName(NS_FOO, "foo");
-        ItemPathHolder xpath = ItemPathHolder.createForTesting(qname);
-        QName elementQName = new QName(NS_BAR, "bar");
-
-        // WHEN
-        Element element = xpath.toElement(elementQName, DOMUtil.getDocument());
-
-        // THEN
-        System.out.println("XPath from Qname:");
-        System.out.println(DOMUtil.serializeDOMToString(element));
-
-        assertEquals("Wrong element name", "bar", element.getLocalName());
-        assertEquals("Wrong element namespace", NS_BAR, element.getNamespaceURI());
-        Map<String, String> nsdecls = DOMUtil.getNamespaceDeclarations(element);
-//        assertEquals("Wrong declaration for prefix "+XPathHolder.DEFAULT_PREFIX, NS_FOO, nsdecls.get(XPathHolder.DEFAULT_PREFIX));
-        String prefix = nsdecls.keySet().iterator().next();
-        assertEquals("Wrong element content", prefix + ":foo", element.getTextContent());
-    }
-
-    @Test
-    public void testXPathSerializationToDom() {
-        // GIVEN
-        QName qname1 = new QName(NS_C, "extension");
-        QName qname2 = new QName(NS_FOO, "foo");
-        ItemPathHolder itemPathHolder1 = ItemPathHolder.createForTesting(qname1, qname2);
-        QName elementQName = new QName(NS_BAR, "bar");
-
-        // WHEN
-        Element element = itemPathHolder1.toElement(elementQName, DOMUtil.getDocument());
-        ItemPathHolder itemPathHolder2 = ItemPathHolder.createForTesting(element);
-
-        // THEN
-        System.out.println("XPath from QNames:");
-        System.out.println(DOMUtil.serializeDOMToString(element));
-
-        UniformItemPath xpath1 = itemPathHolder1.toItemPath();
-        UniformItemPath xpath2 = itemPathHolder2.toItemPath();
-
-        ItemPathSerializer serializer = getPrismContext().itemPathSerializer();
-        displayValue("Path 1", serializer.serializeStandalone(xpath1));
-        displayValue("Path 2", serializer.serializeStandalone(xpath2));
-        assertTrue("Paths are not equivalent", xpath1.equivalent(xpath2));
-    }
-
-    @Test
     public void parseSpecial() {
         final String D = "declare namespace x='http://xyz.com/'; ";
         AssertJUnit.assertEquals("..", TrivialItemPathParser.parse("..").getPureItemPathString());

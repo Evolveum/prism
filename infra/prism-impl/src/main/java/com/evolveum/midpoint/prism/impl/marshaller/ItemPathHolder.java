@@ -13,17 +13,13 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.impl.xml.GlobalDynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.path.*;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
-import com.evolveum.midpoint.util.exception.SystemException;
 
 /**
  * Holds internal (parsed) form of midPoint-style XPath-like expressions.
@@ -44,7 +40,7 @@ public final class ItemPathHolder {
 
     //region Parsing
 
-    public static UniformItemPath parseFromString(String path) {
+    static UniformItemPath parseFromString(String path) {
         return new ItemPathHolder(path).toItemPath();
     }
 
@@ -52,7 +48,7 @@ public final class ItemPathHolder {
         return new ItemPathHolder(path, namespaces).toItemPath();
     }
 
-    public static UniformItemPath parseFromElement(Element element) {
+    static UniformItemPath parseFromElement(Element element) {
         return new ItemPathHolder(element).toItemPath();
     }
 
@@ -172,15 +168,9 @@ public final class ItemPathHolder {
 
     private String findNamespace(String prefix, Node domNode, Map<String, String> namespaceMap) {
 
-        String ns = null;
+        String ns;
 
-        if (explicitNamespaceDeclarations != null) {
-            if (prefix == null) {
-                ns = explicitNamespaceDeclarations.get("");
-            } else {
-                ns = explicitNamespaceDeclarations.get(prefix);
-            }
-        }
+        ns = explicitNamespaceDeclarations.get(Objects.requireNonNullElse(prefix, ""));
         if (ns != null) {
             return ns;
         }
@@ -381,44 +371,12 @@ public final class ItemPathHolder {
         return namespaceMap;
     }
 
-    public static Element serializeToElement(ItemPath path, QName elementQName, Document document) {
-        return new ItemPathHolder(UniformItemPath.from(path)).toElement(elementQName, document);
-    }
-
-    public Element toElement(QName elementQName, Document document) {
-        return toElement(elementQName.getNamespaceURI(), elementQName.getLocalPart(), document);
-    }
-
-    // really ugly implementation... (ignores overall context of serialization, so produces <c:path> elements even if common is default namespace) TODO rework [med]
-    public Element toElement(String elementNamespace, String localElementName, Document document) {
-        Element element = document.createElementNS(elementNamespace, localElementName);
-        if (!StringUtils.isBlank(elementNamespace)) {
-            String prefix = GlobalDynamicNamespacePrefixMapper.getPreferredPrefix(elementNamespace);
-            if (!StringUtils.isBlank(prefix)) {
-                try {
-                    element.setPrefix(prefix);
-                } catch (DOMException e) {
-                    throw new SystemException("Error setting XML prefix '" + prefix + "' to element {" + elementNamespace + "}" + localElementName + ": " + e.getMessage(), e);
-                }
-            }
-        }
-        element.setTextContent(getXPathWithDeclarations());
-        Map<String, String> namespaceMap = getNamespaceMap();
-        if (namespaceMap != null) {
-            for (Entry<String, String> entry : namespaceMap.entrySet()) {
-                DOMUtil.setNamespaceDeclaration(element, entry.getKey(), entry.getValue());
-            }
-        }
-        return element;
-    }
-
     public List<PathHolderSegment> toSegments() {
         // FIXME !!!
         return Collections.unmodifiableList(segments);
     }
 
-    @NotNull
-    public UniformItemPath toItemPath() {
+    private @NotNull UniformItemPath toItemPath() {
         List<PathHolderSegment> xsegments = toSegments();
         List<ItemPathSegment> segments = new ArrayList<>(xsegments.size());
         for (PathHolderSegment segment : xsegments) {
@@ -532,17 +490,5 @@ public final class ItemPathHolder {
     public static ItemPathHolder createForTesting(Element element) {
         return new ItemPathHolder(element);
     }
-
-    public static ItemPathHolder createForTesting(QName... segmentQNames) {
-        ItemPathHolder rv = new ItemPathHolder();
-        rv.segments = new ArrayList<>();
-        for (QName segmentQName : segmentQNames) {
-            PathHolderSegment segment = new PathHolderSegment(segmentQName);
-            rv.segments.add(segment);
-        }
-        rv.absolute = false;
-        return rv;
-    }
-
     //endregion
 }
