@@ -7,72 +7,118 @@
 package com.evolveum.midpoint.prism.util;
 
 import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
+import static com.evolveum.midpoint.prism.path.ItemPath.EMPTY_PATH;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.lang3.Validate;
+import com.evolveum.midpoint.util.MiscUtil;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
- * A class defining old item state (before change), delta (change) and new item state (after change).
- * This is a useful class used to describe how the item has changed without the need to re-apply the delta
+ * A class defining old item state (before change), delta (change) and new item state (after change). This is a useful
+ * class used to describe how the item has changed or is going to be changed without the need to re-apply the delta
  * several times. The delta can be applied once, and then all the rest of the code will have all the data
  * available. This is mostly just a convenience class that groups those three things together.
  * There is only a very little logic on top of that.
  *
+ * @param <V> type of value that the item holds
+ * @param <D> type of definition of the item
+ *
  * @author Radovan Semancik
  */
-public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> implements DebugDumpable, Serializable {
+public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> implements AbstractItemDeltaItem<D> {
 
-    private Item<V,D> itemOld;
-    private ItemDelta<V,D> delta;
-    private Item<V,D> itemNew;
-    // We need explicit definition, because source may be completely null.
-    // No item, no delta, nothing. In that case we won't be able to crete properly-typed
-    // variable from the source.
-    private D definition;
-    private ItemPath resolvePath = ItemPath.EMPTY_PATH;
+    /** The "before" state. Null if the item did not exist. */
+    @Nullable private final Item<V,D> itemOld;
 
-    // Residual path is a temporary solution to Structured attributes in 3.x and 4.x.
-    // It should disappear in 5.x.
-    private ItemPath residualPath = null;
+    /** The delta, if any. It is perfectly legal to have no delta here. */
+    @Nullable private final ItemDelta<V,D> delta;
 
-    // The deltas in sub-items. E.g. if this object represents "ContainerDeltaContainer"
-    // this property contains property deltas that may exist inside the container.
-    private Collection<? extends ItemDelta<?,?>> subItemDeltas;
+    /** The "after" state. Null if the item did not exist. Not final, as it is manipulated by {@link #recompute()}. */
+    @Nullable private Item<V,D> itemNew;
 
-    // For clone and ObjectDeltaObject
-    protected ItemDeltaItem() { }
+    /**
+     * We need explicit definition, because source may be completely null.
+     * No item, no delta, nothing. In that case we won't be able to crete properly-typed
+     * variable from the source.
+     */
+    @NotNull private final D definition;
 
-    public ItemDeltaItem(Item<V,D> itemOld, ItemDelta<V,D> delta, Item<V,D> itemNew, D definition) {
+    /** The current path (of embedding objects) at which we are, after application of all the {@link #findIdi(ItemPath)} calls. */
+    @NotNull private final ItemPath resolvePath;
+
+    /**
+     * Residual path is a temporary solution to {@link Structured} attributes in 3.x and 4.x.
+     * It points to a sub-property value inside a structured property present in {@link #itemOld},
+     * {@link #itemNew}, or {@link #delta}. I.e. these values are {@link Structured} ones, so the residual path
+     * should be still applied to them. See e.g. `TestExpressionUtil.testResolvePathPolyStringOdoNorm`.
+     *
+     * It should disappear in 5.x.
+     */
+    private final ItemPath residualPath;
+
+    /**
+     * The deltas in sub-items. E.g. if this object represents "ContainerDeltaContainer"
+     * this property contains property deltas that may exist inside the container.
+     */
+    private final Collection<? extends ItemDelta<?,?>> subItemDeltas;
+
+    /** For internal use (e.g., cloning); we do not do any checks here. */
+    protected ItemDeltaItem(
+            @Nullable Item<V, D> itemOld,
+            @Nullable ItemDelta<V, D> delta,
+            @Nullable Item<V, D> itemNew,
+            @NotNull D definition,
+            @NotNull ItemPath resolvePath,
+            @Nullable ItemPath residualPath,
+            @Nullable Collection<? extends ItemDelta<?, ?>> subItemDeltas) {
+        this.itemOld = itemOld;
+        this.delta = delta;
+        this.itemNew = itemNew;
+        this.definition = definition;
+        this.resolvePath = resolvePath;
+        this.residualPath = residualPath;
+        this.subItemDeltas = subItemDeltas;
+    }
+
+    /**
+     * For {@link ObjectDeltaObject}.
+     */
+    protected ItemDeltaItem(@NotNull D definition) {
+        this.itemOld = null;
+        this.delta = null;
+        this.definition = Objects.requireNonNull(definition, "No definition");
+        this.resolvePath = EMPTY_PATH;
+        this.residualPath = null;
+        this.subItemDeltas = null;
+    }
+
+    public ItemDeltaItem(
+            @Nullable Item<V,D> itemOld,
+            @Nullable ItemDelta<V,D> delta,
+            @Nullable Item<V,D> itemNew,
+            @Nullable D explicitDefinition) {
         validate(itemOld, "itemOld");
         validate(delta);
         validate(itemNew, "itemNew");
         this.itemOld = itemOld;
         this.delta = delta;
         this.itemNew = itemNew;
-        if (definition == null) {
-            // Try to automatically determine definition from content.
-            this.definition = determineDefinition();
-            if (this.definition == null) {
-                throw new IllegalArgumentException("Cannot determine definition from content in "+this);
-            }
-        } else {
-            this.definition = definition;
-        }
-
+        this.definition = determineDefinition(itemOld, delta, itemNew, explicitDefinition);
+        this.resolvePath = EMPTY_PATH;
+        this.residualPath = null;
+        this.subItemDeltas = null;
     }
 
     public static ItemDeltaItem<?, ?> forUnchanged(@NotNull Item<?, ?> item) {
@@ -85,7 +131,12 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return new ItemDeltaItem<>(null, delta, null, delta.getDefinition());
     }
 
-    private D determineDefinition() {
+    @SuppressWarnings("DuplicatedCode")
+    protected static @NotNull <V extends PrismValue, D extends ItemDefinition<?>> D determineDefinition(
+            Item<V, D> itemOld, ItemDelta<V, D> delta, Item<V, D> itemNew, D explicitDefinition) {
+        if (explicitDefinition != null) {
+            return explicitDefinition;
+        }
         if (itemNew != null && itemNew.getDefinition() != null) {
             return itemNew.getDefinition();
         }
@@ -95,52 +146,53 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         if (delta != null && delta.getDefinition() != null) {
             return delta.getDefinition();
         }
-        return null;
+        throw new IllegalArgumentException(
+                "Cannot determine definition from content for IDI %s + %s -> %s".formatted(itemOld, delta, itemNew));
     }
 
-    public ItemDeltaItem(ItemDeltaItem<V,D> idi) {
-        this.itemOld = idi.getItemOld();
-        validate(itemOld, "itemOld");
-        this.itemNew = idi.getItemNew();
-        validate(itemNew, "itemNew");
-        this.delta = idi.getDelta();
-        validate(delta);
-        this.definition = idi.getDefinition();
-        Validate.notNull(this.definition, "No definition in source IDI, cannot create IDI");
-    }
-
-    public ItemDeltaItem(Item<V,D> item) {
+    public ItemDeltaItem(@NotNull Item<V,D> item) {
         this.itemOld = item;
         this.itemNew = item;
         validate(itemOld, "item");
         this.delta = null;
-        this.definition = item.getDefinition();
-        Validate.notNull(this.definition, "No definition in item, cannot create IDI");
+        this.definition = Objects.requireNonNull(item.getDefinition(), "No definition in item, cannot create IDI");
+        this.resolvePath = EMPTY_PATH;
+        this.residualPath = null;
+        this.subItemDeltas = null;
     }
 
-    public ItemDeltaItem(Item<V,D> item, D definition) {
+    public ItemDeltaItem(@Nullable Item<V,D> item, @NotNull D definition) {
         this.itemOld = item;
         this.itemNew = item;
         validate(itemOld, "item");
         this.delta = null;
-        this.definition = definition;
-        Validate.notNull(this.definition, "No definition in item, cannot create IDI");
+        this.definition = Objects.requireNonNull(definition, "No definition in item, cannot create IDI");
+        this.resolvePath = EMPTY_PATH;
+        this.residualPath = null;
+        this.subItemDeltas = null;
     }
 
-    public Item<V,D> getItemOld() {
+    public ItemDeltaItem(
+            @Nullable Item<V,D> item,
+            @NotNull D definition,
+            @NotNull ItemPath resolvePath,
+            @Nullable Collection<? extends ItemDelta<?, ?>> subItemDeltas) {
+        this.itemOld = item;
+        this.itemNew = item;
+        validate(itemOld, "item");
+        this.delta = null;
+        this.definition = Objects.requireNonNull(definition, "No definition in item, cannot create IDI");
+        this.resolvePath = resolvePath;
+        this.residualPath = null;
+        this.subItemDeltas = subItemDeltas;
+    }
+
+    public @Nullable Item<V,D> getItemOld() {
         return itemOld;
     }
 
-    public void setItemOld(Item<V,D> itemOld) {
-        this.itemOld = itemOld;
-    }
-
-    public ItemDelta<V,D> getDelta() {
+    public @Nullable ItemDelta<V,D> getDelta() {
         return delta;
-    }
-
-    public void setDelta(ItemDelta<V,D> delta) {
-        this.delta = delta;
     }
 
     /**
@@ -152,12 +204,8 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
      * This method may return dummy items or similar items that are not usable.
      * Values in the items should be OK, but they may need cloning.
      */
-    public Item<V,D> getItemNew() {
+    public @Nullable Item<V,D> getItemNew() {
         return itemNew;
-    }
-
-    public void setItemNew(Item<V,D> itemNew) {
-        this.itemNew = itemNew;
     }
 
     public Item<V,D> getAnyItem() {
@@ -171,28 +219,17 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return residualPath;
     }
 
-    public void setResidualPath(ItemPath residualPath) {
-        this.residualPath = residualPath;
-    }
-
-    public ItemPath getResolvePath() {
+    public @NotNull ItemPath getResolvePath() {
         return resolvePath;
-    }
-
-    public void setResolvePath(ItemPath resolvePath) {
-        this.resolvePath = resolvePath;
     }
 
     public Collection<? extends ItemDelta<?,?>> getSubItemDeltas() {
         return subItemDeltas;
     }
 
-    public void setSubItemDeltas(Collection<? extends ItemDelta<?,?>> subItemDeltas) {
-        this.subItemDeltas = subItemDeltas;
-    }
-
+    @Override
     public boolean isNull() {
-        return itemOld == null && itemNew == null && delta == null && subItemDeltas == null;
+        return itemOld == null && itemNew == null && delta == null && subItemDeltas == null; // FIXME !null
     }
 
     public QName getElementName() {
@@ -206,16 +243,12 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return null;
     }
 
-    @NotNull        // FIXME beware, ObjectDeltaObject.getDefinition seems to return null sometimes (probably should be fixed there)
-    public D getDefinition() {
+    @Override
+    public @NotNull D getDefinition() {
         return definition;
     }
 
-//    public void setDefinition(@NotNull D definition) {
-//        Validate.notNull(definition, "Attempt to set null IDI definition");
-//        this.definition = definition;
-//    }
-
+    @Override
     public void recompute() throws SchemaException {
         if (delta == null && (subItemDeltas == null || subItemDeltas.isEmpty())) {
             itemNew = itemOld;
@@ -246,11 +279,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         }
     }
 
-    public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(@NotNull ItemPath path)
-            throws SchemaException {
-        return findIdi(path, null);
-    }
-
+    @Override
     public <IV extends PrismValue, ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(
             @NotNull ItemPath path, @Nullable DefinitionResolver<D, ID> additionalDefinitionResolver) throws SchemaException {
         if (path.isEmpty()) {
@@ -291,10 +320,12 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         ItemDelta<IV,ID> subDelta = null;
         if (delta != null) {
             if (delta instanceof ContainerDelta<?>) {
-                subDelta = (ItemDelta<IV,ID>) ((ContainerDelta<?>)delta).getSubDelta(path);
+                //noinspection unchecked
+                subDelta = (ItemDelta<IV,ID>) delta.getSubDelta(path);
             } else {
                 CompareResult compareComplex = delta.getPath().compareComplex(newResolvePath);
                 if (compareComplex == CompareResult.EQUIVALENT || compareComplex == CompareResult.SUBPATH) {
+                    //noinspection unchecked
                     subDelta = (ItemDelta<IV,ID>) delta;
                 }
             }
@@ -302,7 +333,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
 
         ID subDefinition;
         if (definition instanceof PrismContainerDefinition<?>) {
-            subDefinition = ((PrismContainerDefinition<?>)definition).findItemDefinition(path);
+            subDefinition = ((PrismContainerDefinition<?>) definition).findItemDefinition(path);
         } else {
             throw new IllegalArgumentException("Attempt to resolve definition on non-container " + definition + " in " +this);
         }
@@ -319,19 +350,16 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
             subDefinition = additionalDefinitionResolver.resolve(definition, path);
         }
         if (subDefinition == null) {
-            throw new SchemaException("No definition for item "+path+" in "+this);
+            throw new SchemaException("No definition for item " + path + " in " + this);
         }
 
-        ItemDeltaItem<IV,ID> subIdi = new ItemDeltaItem<>(subItemOld, subDelta, subItemNew, subDefinition);
-        subIdi.setResidualPath(subResidualPath);
-        subIdi.resolvePath = newResolvePath;
-
+        Item<IV, ID> subItemAny = MiscUtil.getFirstNonNull(subItemOld, subItemNew);
+        Collection<ItemDelta<?,?>> subSubItemDeltas = null;
         if (subItemDeltas != null) {
-            Item<IV,ID> subAnyItem = subIdi.getAnyItem();
-            Collection<ItemDelta<?,?>> subSubItemDeltas = new ArrayList<>();
-            if (subAnyItem != null) {
+            subSubItemDeltas = new ArrayList<>();
+            if (subItemAny != null) {
                 for (ItemDelta<?, ?> subItemDelta : subItemDeltas) {
-                    CompareResult compareComplex = subItemDelta.getPath().compareComplex(subAnyItem.getPath());
+                    CompareResult compareComplex = subItemDelta.getPath().compareComplex(subItemAny.getPath());
                     if (compareComplex == CompareResult.EQUIVALENT || compareComplex == CompareResult.SUBPATH) {
                         subSubItemDeltas.add(subItemDelta);
                     }
@@ -341,25 +369,24 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
                 // Niceness optimization
                 if (subDelta == null && subSubItemDeltas.size() == 1) {
                     ItemDelta<?,?> subSubItemDelta = subSubItemDeltas.iterator().next();
-                    if (subSubItemDelta.isApplicableTo(subAnyItem)) {
+                    if (subSubItemDelta.isApplicableTo(subItemAny)) {
+                        //noinspection unchecked
                         subDelta = (ItemDelta<IV,ID>) subSubItemDelta;
-                        subIdi.setDelta(subDelta);
-                    } else {
-                        subIdi.setSubItemDeltas(subSubItemDeltas);
+                        subSubItemDeltas = null;
                     }
-                } else {
-                    subIdi.setSubItemDeltas(subSubItemDeltas);
                 }
             }
         }
 
-        return subIdi;
+        return new ItemDeltaItem<>(
+                subItemOld, subDelta, subItemNew, subDefinition, newResolvePath, subResidualPath, subSubItemDeltas);
     }
 
     public PrismValueDeltaSetTriple<V> toDeltaSetTriple() throws SchemaException {
         return ItemDeltaUtil.toDeltaSetTriple(itemOld, delta);
     }
 
+    @Override
     public boolean isContainer() {
         Item<V,D> item = getAnyItem();
         if (item != null) {
@@ -371,6 +398,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return false;
     }
 
+    @Override
     public boolean isProperty() {
         Item<V,D> item = getAnyItem();
         if (item != null) {
@@ -382,6 +410,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return false;
     }
 
+    @Override
     public boolean isStructuredProperty() {
         if (!isProperty()) {
             return false;
@@ -392,6 +421,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
             return realValue instanceof Structured;
         }
         PropertyDelta<?> delta = (PropertyDelta<?>) getDelta();
+        //noinspection DataFlowIssue
         realValue = delta.getAnyRealValue();
         if (realValue != null) {
             return realValue instanceof Structured;
@@ -399,64 +429,68 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return false;
     }
 
-    // Assumes that this IDI represents structured property
+    /**
+     * Assumes that this IDI represents structured property
+     */
     public <X> ItemDeltaItem<PrismPropertyValue<X>,PrismPropertyDefinition<X>> resolveStructuredProperty(
-            ItemPath resolvePath, PrismPropertyDefinition outputDefinition,
-            PrismContext prismContext) {
-        ItemDeltaItem<PrismPropertyValue<Structured>,PrismPropertyDefinition<Structured>> thisIdi = (ItemDeltaItem<PrismPropertyValue<Structured>,PrismPropertyDefinition<Structured>>)this;
-        PrismProperty<X> outputPropertyNew = resolveStructuredPropertyItem((PrismProperty<Structured>) thisIdi.getItemNew(), resolvePath, outputDefinition);
-        PrismProperty<X> outputPropertyOld = resolveStructuredPropertyItem((PrismProperty<Structured>) thisIdi.getItemOld(), resolvePath, outputDefinition);
-        PropertyDelta<X> outputDelta = resolveStructuredPropertyDelta((PropertyDelta<Structured>) thisIdi.getDelta(), resolvePath, outputDefinition, prismContext);
-        return new ItemDeltaItem<>(outputPropertyOld, outputDelta, outputPropertyNew, outputDefinition);
+            ItemPath resolvePath, PrismPropertyDefinition<X> outputDefinition) {
+        //noinspection unchecked
+        ItemDeltaItem<PrismPropertyValue<Structured>, PrismPropertyDefinition<Structured>> thisIdi =
+                (ItemDeltaItem<PrismPropertyValue<Structured>, PrismPropertyDefinition<Structured>>) this;
+        return new ItemDeltaItem<>(
+                resolveStructuredPropertyItem((PrismProperty<Structured>) thisIdi.getItemOld(), resolvePath, outputDefinition),
+                resolveStructuredPropertyDelta((PropertyDelta<Structured>) thisIdi.getDelta(), resolvePath, outputDefinition),
+                resolveStructuredPropertyItem((PrismProperty<Structured>) thisIdi.getItemNew(), resolvePath, outputDefinition),
+                outputDefinition);
     }
 
-    private <X> PrismProperty<X> resolveStructuredPropertyItem(PrismProperty<Structured> sourceProperty, ItemPath resolvePath, PrismPropertyDefinition outputDefinition) {
+    private <X> PrismProperty<X> resolveStructuredPropertyItem(
+            PrismProperty<Structured> sourceProperty, ItemPath resolvePath, PrismPropertyDefinition<X> outputDefinition) {
         if (sourceProperty == null) {
             return null;
         }
         PrismProperty<X> outputProperty = outputDefinition.instantiate();
         for (Structured sourceRealValue: sourceProperty.getRealValues()) {
+            //noinspection unchecked
             X outputRealValue = (X) sourceRealValue.resolve(resolvePath);
             outputProperty.addRealValue(outputRealValue);
         }
         return outputProperty;
     }
 
-    private <X> PropertyDelta<X> resolveStructuredPropertyDelta(PropertyDelta<Structured> sourceDelta, ItemPath resolvePath,
-            PrismPropertyDefinition outputDefinition, PrismContext prismContext) {
+    private <X> PropertyDelta<X> resolveStructuredPropertyDelta(
+            PropertyDelta<Structured> sourceDelta, ItemPath resolvePath, PrismPropertyDefinition<X> outputDefinition) {
         if (sourceDelta == null) {
             return null;
         }
         // Path in output delta has no meaning anyway. The delta will never be applied, as it references sub-property object.
-        //noinspection unchecked
-        PropertyDelta<X> outputDelta = (PropertyDelta<X>) outputDefinition.createEmptyDelta(ItemPath.EMPTY_PATH);
-        Collection<PrismPropertyValue<X>> outputValuesToAdd = resolveStructuredDeltaSet(sourceDelta.getValuesToAdd(), resolvePath, prismContext);
+        PropertyDelta<X> outputDelta = outputDefinition.createEmptyDelta(ItemPath.EMPTY_PATH);
+        Collection<PrismPropertyValue<X>> outputValuesToAdd = resolveStructuredDeltaSet(sourceDelta.getValuesToAdd(), resolvePath);
         if (outputValuesToAdd != null) {
             outputDelta.addValuesToAdd(outputValuesToAdd);
         }
-        Collection<PrismPropertyValue<X>> outputValuesToDelete = resolveStructuredDeltaSet(sourceDelta.getValuesToDelete(), resolvePath,
-                prismContext);
+        Collection<PrismPropertyValue<X>> outputValuesToDelete = resolveStructuredDeltaSet(sourceDelta.getValuesToDelete(), resolvePath);
         if (outputValuesToDelete != null) {
             outputDelta.addValuesToDelete(outputValuesToDelete);
         }
-        Collection<PrismPropertyValue<X>> outputValuesToReplace = resolveStructuredDeltaSet(sourceDelta.getValuesToReplace(), resolvePath,
-                prismContext);
+        Collection<PrismPropertyValue<X>> outputValuesToReplace = resolveStructuredDeltaSet(sourceDelta.getValuesToReplace(), resolvePath);
         if (outputValuesToReplace != null) {
             outputDelta.setValuesToReplace(outputValuesToReplace);
         }
         return outputDelta;
     }
 
-    private <X> Collection<PrismPropertyValue<X>> resolveStructuredDeltaSet(Collection<PrismPropertyValue<Structured>> set,
-            ItemPath resolvePath, PrismContext prismContext) {
+    private <X> Collection<PrismPropertyValue<X>> resolveStructuredDeltaSet(
+            Collection<PrismPropertyValue<Structured>> set, ItemPath resolvePath) {
         if (set == null) {
             return null;
         }
         Collection<PrismPropertyValue<X>> outputSet = new ArrayList<>(set.size());
         for (PrismPropertyValue<Structured> structuredPVal: set) {
             Structured structured = structuredPVal.getValue();
+            //noinspection unchecked
             X outputRval = (X) structured.resolve(resolvePath);
-            outputSet.add(prismContext.itemFactory().createPropertyValue(outputRval));
+            outputSet.add(PrismContext.get().itemFactory().createPropertyValue(outputRval));
         }
         return outputSet;
     }
@@ -473,28 +507,17 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         }
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
     public ItemDeltaItem<V,D> clone() {
-        ItemDeltaItem<V,D> clone = new ItemDeltaItem<>();
-        copyValues(clone);
-        return clone;
-    }
-
-    protected void copyValues(ItemDeltaItem<V,D> clone) {
-        if (this.itemNew != null) {
-            clone.itemNew = this.itemNew.clone();
-        }
-        if (this.delta != null) {
-            clone.delta = this.delta.clone();
-        }
-        if (this.itemOld != null) {
-            clone.itemOld = this.itemOld.clone();
-        }
-        clone.definition = this.definition;
-        clone.residualPath = this.residualPath;
-        clone.resolvePath = this.resolvePath;
-        if (this.subItemDeltas != null) {
-            clone.subItemDeltas = ItemDeltaCollectionsUtil.cloneCollection(this.subItemDeltas);
-        }
+        return new ItemDeltaItem<>(
+                itemOld != null ? itemOld.clone() : null,
+                delta != null ? delta.clone() : null,
+                itemNew != null ? itemNew.clone() : null,
+                definition,
+                resolvePath,
+                residualPath,
+                subItemDeltas != null ? ItemDeltaCollectionsUtil.cloneCollection(this.subItemDeltas) : null);
     }
 
     @Override
@@ -502,7 +525,13 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ItemDeltaItem<?, ?> that = (ItemDeltaItem<?, ?>) o;
-        return Objects.equals(itemOld, that.itemOld) && Objects.equals(delta, that.delta) && Objects.equals(itemNew, that.itemNew) && Objects.equals(definition, that.definition) && Objects.equals(resolvePath, that.resolvePath) && Objects.equals(residualPath, that.residualPath) && Objects.equals(subItemDeltas, that.subItemDeltas);
+        return Objects.equals(itemOld, that.itemOld)
+                && Objects.equals(delta, that.delta)
+                && Objects.equals(itemNew, that.itemNew)
+                && Objects.equals(definition, that.definition)
+                && Objects.equals(resolvePath, that.resolvePath)
+                && Objects.equals(residualPath, that.residualPath)
+                && Objects.equals(subItemDeltas, that.subItemDeltas);
     }
 
     @Override
@@ -545,7 +574,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
 
     private void validate(Item<V, D> item, String desc) {
         if (item != null && item.getDefinition() == null) {
-            throw new IllegalArgumentException("Attempt to set "+desc+" without definition");
+            throw new IllegalArgumentException("Attempt to set " + desc + " without definition");
         }
     }
 

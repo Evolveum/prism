@@ -11,79 +11,75 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.MiscUtil;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.evolveum.midpoint.prism.Item;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.Objectable;
-import com.evolveum.midpoint.prism.PartiallyResolvedItem;
-import com.evolveum.midpoint.prism.PrismContainer;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismObjectDefinition;
-import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.ChangeType;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
- * A class defining old object state (before change), delta (change) and new object state (after change).
- * This is a useful class used to describe how the object has changed without the need to re-apply the delta
+ * A class defining old object state (before change), delta (change) and new object state (after change). This is a useful
+ * class used to describe how the object has changed or is going to be changed without the need to re-apply the delta
  * several times. The delta can be applied once, and then all the rest of the code will have all the data
  * available. This is mostly just a convenience class that groups those three things together.
  * There is only a very little logic on top of that.
  *
  * @author Radovan Semancik
- *
  */
-public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<PrismContainerValue<O>,PrismObjectDefinition<O>> implements DebugDumpable {
+public class ObjectDeltaObject<O extends Objectable>
+        implements AbstractItemDeltaItem<PrismObjectDefinition<O>> {
 
-    private PrismObject<O> oldObject;
-    private ObjectDelta<O> delta;
-    private PrismObject<O> newObject;
-    // We need explicit definition, because source may be completely null.
-    // No item, no delta, nothing. In that case we won't be able to crete properly-typed
-    // variable from the source.
-    private PrismObjectDefinition<O> definition;
+    @Nullable private final PrismObject<O> oldObject;
 
-    public ObjectDeltaObject(PrismObject<O> oldObject, ObjectDelta<O> delta, PrismObject<O> newObject, PrismObjectDefinition<O> definition) {
-        super();
+    /**
+     * Delta cannot be `final` because of {@link #update(ItemDelta)} method. That method is wicked anyway, and should be
+     * perhaps replaced. But not now.
+     */
+    @Nullable private ObjectDelta<O> delta;
+    @Nullable private PrismObject<O> newObject;
+    @NotNull private final PrismObjectDefinition<O> definition;
+
+    public ObjectDeltaObject(
+            @Nullable PrismObject<O> oldObject,
+            @Nullable ObjectDelta<O> delta,
+            @Nullable PrismObject<O> newObject,
+            @Nullable PrismObjectDefinition<O> explicitDefinition) {
         this.oldObject = oldObject;
         this.delta = delta;
         this.newObject = newObject;
-        if (definition == null) {
-            this.definition = determineDefinition();
-            if (this.definition == null) {
-                throw new IllegalArgumentException("Cannot determine definition from content in "+this);
-            }
-        } else {
-            this.definition = definition;
-        }
+        this.definition = determineDefinition(explicitDefinition, oldObject, newObject);
     }
 
     public static <O extends Objectable> ObjectDeltaObject<O> forUnchanged(@NotNull PrismObject<O> prismObject) {
         return new ObjectDeltaObject<>(prismObject, null, prismObject, prismObject.getDefinition());
     }
 
-    private PrismObjectDefinition<O> determineDefinition() {
+    @SuppressWarnings("DuplicatedCode")
+    private static @NotNull <O extends Objectable> PrismObjectDefinition<O> determineDefinition(
+            PrismObjectDefinition<O> explicitDefinition,
+            PrismObject<O> oldObject,
+            PrismObject<O> newObject) {
+        if (explicitDefinition != null) {
+            return explicitDefinition;
+        }
         if (newObject != null && newObject.getDefinition() != null) {
             return newObject.getDefinition();
         }
         if (oldObject != null && oldObject.getDefinition() != null) {
             return oldObject.getDefinition();
         }
-        return null;
+        throw new IllegalStateException("No definition");
     }
 
-    public PrismObject<O> getOldObject() {
+    public @Nullable PrismObject<O> getOldObject() {
         return oldObject;
     }
 
@@ -97,7 +93,7 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         return delta;
     }
 
-    public PrismObject<O> getNewObject() {
+    public @Nullable PrismObject<O> getNewObject() {
         return newObject;
     }
 
@@ -105,10 +101,6 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         return MiscUtil.stateNonNull(
                 getNewObject(),
                 () -> "No new object in odo " + this);
-    }
-
-    public boolean hasAnyObject() {
-        return oldObject != null || newObject != null;
     }
 
     // FIXME fragile!!! better don't use if you don't have to
@@ -136,13 +128,13 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
     }
 
     @Override
-    public ItemDelta<PrismContainerValue<O>,PrismObjectDefinition<O>> getDelta() {
-        throw new UnsupportedOperationException("You probably wanted to call getObjectDelta()");
+    public boolean isNull() {
+        return oldObject == null && newObject == null && delta == null;
     }
 
     @Override
-    public void setDelta(ItemDelta<PrismContainerValue<O>,PrismObjectDefinition<O>> delta) {
-        throw new UnsupportedOperationException("You probably wanted to call setObjectDelta()");
+    public @NotNull PrismObjectDefinition<O> getDefinition() {
+        return definition;
     }
 
     @Override
@@ -151,34 +143,18 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
     }
 
     @Override
-    public PrismObjectDefinition<O> getDefinition() {
-        if (definition != null) {
-            return definition;
-        }
-        PrismObject<O> anyObject = getAnyObject();
-        if (anyObject != null) {
-            return anyObject.getDefinition();
-        }
-        if (delta != null) {
-            return delta.getPrismContext().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(delta.getObjectTypeClass());
-        }
-        return null;
+    public boolean isProperty() {
+        return false;
     }
 
-    public Class<O> getObjectCompileTimeClass() {
-        PrismObject<O> anyObject = getAnyObject();
-        if (anyObject != null) {
-            return anyObject.getCompileTimeClass();
-        }
-        if (delta != null) {
-            return delta.getObjectTypeClass();
-        }
-        return null;
+    @Override
+    public boolean isStructuredProperty() {
+        return false;
     }
 
     @Override
     public <IV extends PrismValue,ID extends ItemDefinition<?>> ItemDeltaItem<IV,ID> findIdi(
-            @NotNull ItemPath path, @Nullable  DefinitionResolver<PrismObjectDefinition<O>,ID> additionalDefinitionResolver)
+            @NotNull ItemPath path, @Nullable DefinitionResolver<PrismObjectDefinition<O>,ID> additionalDefinitionResolver)
             throws SchemaException {
         Item<IV,ID> subItemOld = null;
         ItemPath subResidualPath = null;
@@ -229,27 +205,29 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
                     ItemPath.CompareResult compareComplex = modification.getPath().compareComplex(path);
                     if (compareComplex == ItemPath.CompareResult.EQUIVALENT) {
                         if (itemDelta != null) {
-                            throw new IllegalStateException("Conflicting modification in delta "+delta+": "+itemDelta+" and "+modification);
+                            throw new IllegalStateException(
+                                    "Conflicting modification in delta " + delta + ": " + itemDelta + " and " + modification);
                         }
+                        //noinspection unchecked
                         itemDelta = (ItemDelta<IV,ID>) modification;
                     } else if (compareComplex == ItemPath.CompareResult.SUPERPATH) {
                         if (subSubItemDeltas == null) {
                             subSubItemDeltas = new ArrayList<>();
                         }
+                        //noinspection unchecked,rawtypes
                         ((Collection)subSubItemDeltas).add(modification);
                     } else if (compareComplex == ItemPath.CompareResult.SUBPATH) {
                         if (itemDelta != null) {
-                            throw new IllegalStateException("Conflicting modification in delta "+delta+": "+itemDelta+" and "+modification);
+                            throw new IllegalStateException(
+                                    "Conflicting modification in delta " + delta + ": " + itemDelta + " and " + modification);
                         }
+                        //noinspection unchecked
                         itemDelta = (ItemDelta<IV,ID>) modification.getSubDelta(path.remainder(modification.getPath()));
                     }
                 }
             }
         }
-        ID subDefinition = null;
-        if (definition != null) {
-            subDefinition = definition.findItemDefinition(path);
-        }
+        ID subDefinition = definition.findItemDefinition(path);
         if (subDefinition == null) {
             // This may be a bit redundant, because IDI constructor does similar logic.
             // But we want to know the situation here, so we can provide better error message.
@@ -264,20 +242,17 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
                 subDefinition = additionalDefinitionResolver.resolve(definition, path);
             }
             if (subDefinition == null) {
-                throw new SchemaException("Cannot find definition of a subitem "+path+" of "+this);
+                throw new SchemaException("Cannot find definition of a sub-item "+path+" of "+this);
             }
         }
-        ItemDeltaItem<IV,ID> subIdi = new ItemDeltaItem<>(subItemOld, itemDelta, subItemNew, subDefinition);
-        subIdi.setSubItemDeltas(subSubItemDeltas);
-        subIdi.setResolvePath(path);
-        subIdi.setResidualPath(subResidualPath);
-        return subIdi;
+        return new ItemDeltaItem<>(
+                subItemOld, itemDelta, subItemNew, subDefinition, path, subResidualPath, subSubItemDeltas);
     }
 
     public void recompute() throws SchemaException {
         if (delta == null) {
             // TODO: do we need clone() here? new object may be read-only
-            newObject = oldObject.clone();
+            newObject = oldObject != null ? oldObject.clone() : null;
             return;
         }
         if (delta.isAdd()) {
@@ -300,7 +275,7 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
             if (newObject == null) {
                 if (deep) {
                     // TODO: do we need clone() here? new object may be read-only
-                    newObject = oldObject.clone();
+                    newObject = oldObject != null ? oldObject.clone() : null;
                 } else {
                     newObject = oldObject;
                 }
@@ -326,25 +301,16 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         }
     }
 
-    public static <T extends Objectable> ObjectDeltaObject<T> create(PrismObject<T> oldObject, ObjectDelta<T> delta) throws SchemaException {
-        PrismObject<T> newObject = oldObject.clone();
-        delta.applyTo(newObject);
-        return new ObjectDeltaObject<>(oldObject, delta, newObject, oldObject.getDefinition());
-    }
-
-    public static <T extends Objectable> ObjectDeltaObject<T> create(PrismObject<T> oldObject, ItemDelta<?,?>... itemDeltas) throws SchemaException {
-        ObjectDelta<T> objectDelta = oldObject.createDelta(ChangeType.MODIFY);
-        objectDelta.addModifications(itemDeltas);
-        return create(oldObject, objectDelta);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ObjectDeltaObject<?> that = (ObjectDeltaObject<?>) o;
-        return Objects.equals(oldObject, that.oldObject) && Objects.equals(delta, that.delta) && Objects.equals(newObject, that.newObject) && Objects.equals(definition, that.definition);
+        return Objects.equals(oldObject, that.oldObject)
+                && Objects.equals(delta, that.delta)
+                && Objects.equals(newObject, that.newObject)
+                && Objects.equals(definition, that.definition);
     }
 
     @Override
@@ -392,14 +358,13 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         return "ObjectDeltaObject(" + oldObject + " + " + delta + " = " + newObject + ")";
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public ObjectDeltaObject<O> clone() {
-        ObjectDeltaObject<O> clone = new ObjectDeltaObject<>(
+        return new ObjectDeltaObject<>(
                 CloneUtil.clone(oldObject),
                 CloneUtil.clone(delta),
                 CloneUtil.clone(newObject),
                 definition);
-        // TODO what about the internals?
-        return clone;
     }
 
     public ObjectDeltaObject<O> normalizeValuesToDelete(boolean doClone) {
@@ -409,7 +374,7 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         boolean foundIdOnlyDeletion = false;
         main: for (ItemDelta<?, ?> itemDelta : delta.getModifications()) {
             for (PrismValue valueToDelete : CollectionUtils.emptyIfNull(itemDelta.getValuesToDelete())) {
-                if (valueToDelete instanceof PrismContainerValue && ((PrismContainerValue) valueToDelete).isIdOnly()) {
+                if (valueToDelete instanceof PrismContainerValue<?> pcv && pcv.isIdOnly()) {
                     foundIdOnlyDeletion = true;
                     break main;
                 }
@@ -421,19 +386,21 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
         ObjectDeltaObject<O> object = doClone ? this.clone() : this;
 
         boolean anyRealChange = false;
-        for (ItemDelta<?, ?> itemDelta : object.delta.getModifications()) {
+        for (ItemDelta<?, ?> itemDelta : Objects.requireNonNull(object.delta).getModifications()) {
             if (itemDelta.getValuesToDelete() == null) {
                 continue;
             }
             boolean itemDeltaChanged = false;
             List<PrismValue> newValuesToDelete = new ArrayList<>();
             for (PrismValue valueToDelete : itemDelta.getValuesToDelete()) {
-                if (valueToDelete instanceof PrismContainerValue && ((PrismContainerValue) valueToDelete).isIdOnly()
+                if (valueToDelete instanceof PrismContainerValue<?> pcv
+                        && pcv.isIdOnly()
                         && object.oldObject != null /* should always be */) {
                     Object oldItem = object.oldObject.find(itemDelta.getPath());
                     if (oldItem instanceof PrismContainer) {
-                        PrismContainerValue oldValue = ((PrismContainer) oldItem)
-                                .getValue(((PrismContainerValue) valueToDelete).getId());
+                        PrismContainerValue<?> oldValue =
+                                ((PrismContainer<?>) oldItem)
+                                        .getValue(((PrismContainerValue<?>) valueToDelete).getId());
                         if (oldValue != null) {
                             newValuesToDelete.add(oldValue.clone());
                             itemDeltaChanged = true;
@@ -445,7 +412,7 @@ public class ObjectDeltaObject<O extends Objectable> extends ItemDeltaItem<Prism
             }
             if (itemDeltaChanged) {
                 itemDelta.resetValuesToDelete();
-                //noinspection unchecked
+                //noinspection unchecked,rawtypes
                 ((ItemDelta) itemDelta).addValuesToDelete(newValuesToDelete);
                 anyRealChange = true;
             }

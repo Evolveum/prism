@@ -74,6 +74,15 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     Class<? extends ObjectType> getCompileTimeClassForObjectType(QName objectType);
 
+    default @NotNull Class<? extends ObjectType> getCompileTimeClassForObjectTypeRequired(@NotNull QName objectType) {
+        Class<? extends ObjectType> clazz = getCompileTimeClassForObjectType(objectType);
+        if (clazz != null) {
+            return clazz;
+        } else {
+            throw new IllegalStateException("No compile-time class for " + objectType);
+        }
+    }
+
     ItemDefinition findItemDefinitionByElementName(QName elementName, @Nullable List<String> ignoredNamespaces);
 
     <T> Class<T> determineCompileTimeClass(QName typeName);
