@@ -125,6 +125,10 @@ public class PrismTestUtil {
         return getPrismContext().parserFor(file).parseObjects();
     }
 
+    public static List<PrismObject<? extends Objectable>> parseObjectsCompat(File file) throws SchemaException, IOException {
+        return getPrismContext().parserFor(file).compat().parseObjects();
+    }
+
     // ==========================
     // == Serializing
     // ==========================
