@@ -16,7 +16,6 @@ import javax.xml.namespace.QName;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
-import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.axiom.lang.antlr.AxiomAntlrLiterals;
 import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
@@ -57,8 +56,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
 
     public interface ItemFilterFactory {
-        ObjectFilter create(ItemDefinition<?> parentDef,
-                ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
+        ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
                 QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException;
     }
 
@@ -112,7 +110,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private abstract class PropertyFilterFactory implements ItemFilterFactory {
 
         @Override
-        public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath path, ItemDefinition<?> definition,
+        public ObjectFilter create(QueryParsingContext.Local parent, ItemPath path, ItemDefinition<?> definition,
                 QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
             schemaCheck(definition != null, "Path %s is not property", path);
             schemaCheck(subfilterOrValue != null, "Value or subfilter is missing");
@@ -123,6 +121,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             if (expression != null) {
                 var expressionWrapper = parseExpression(expression);
                 return expressionFilter(propDef, path, matchingRule, expressionWrapper);
+            }
+
+            var placeholder = subfilterOrValue.placeholder();
+            if (placeholder instanceof AnonPlaceholderContext) {
+                var boundValue = parent.root().createOrResolvePlaceholder(placeholder, propDef);
+                return valueFilter(propDef, path, matchingRule, boundValue);
             }
 
             var valueSet = subfilterOrValue.valueSet();
@@ -139,11 +143,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             SingleValueContext valueSpec = subfilterOrValue.singleValue();
             schemaCheck(valueSpec != null, "Single value is required.");
             if (valueSpec.path() != null) {
-                ItemPath rightPath = path(parentDef, valueSpec.path());
+                ItemPath rightPath = path(parent.itemDef(), valueSpec.path());
                 if (isVariablePath(valueSpec.path())) {
                     return expressionFilter(propDef, path, matchingRule, parseExpression(rightPath));
                 } else {
-                    PrismPropertyDefinition<?> rightDef = findDefinition(parentDef, typeDef, rightPath, PrismPropertyDefinition.class);
+                    PrismPropertyDefinition<?> rightDef = parent.findDefinition(rightPath, PrismPropertyDefinition.class);
                     schemaCheck(rightDef != null, "Path %s does not reference property", rightPath);
                     return propertyFilter(propDef, path, matchingRule, rightPath, rightDef);
                 }
@@ -182,7 +186,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         @Override
-        public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef,
+        public ObjectFilter create(QueryParsingContext.Local context,
                 ItemPath itemPath, ItemDefinition<?> itemDef, QName matchingRule,
                 SubfilterOrValueContext subfilterOrValue) throws SchemaException {
             schemaCheck(subfilterOrValue.valueSet() != null, "Filter %s requires set of arguments", filterName);
@@ -210,14 +214,14 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
 
         @Override
-        public ObjectFilter create(ItemDefinition<?> parentDef,
-                ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
+        public ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
                 QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
             schemaCheck(itemPath.isEmpty(), "Only '.' is supported for %s", filterName);
-            return create(parentDef, matchingRule, subfilterOrValue);
+            // Add intermediate matches / exists filter, which will wrap body
+            return create(context, matchingRule, subfilterOrValue);
         }
 
-        protected abstract ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+        protected abstract ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                 SubfilterOrValueContext subfilterOrValue) throws SchemaException;
 
     }
@@ -255,7 +259,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private final ItemFilterFactory equalFilter = new PropertyFilterFactory() {
 
         @Override
-        public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath path,
+        public ObjectFilter create(QueryParsingContext.Local context, ItemPath path,
                 ItemDefinition<?> definition, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
                 throws SchemaException {
             schemaCheck(subfilterOrValue != null, "Value or subfilter is missing");
@@ -269,12 +273,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 if (subfilterOrValue.expression() != null) {
                     return RefFilterImpl.createReferenceEqual(path, refDef, parseExpression(subfilterOrValue.expression()));
                 } else if (isVariablePath(subfilterOrValue.singleValue())) {
-                    var rightPath = path(parentDef, subfilterOrValue.singleValue().path());
+                    var rightPath = path(context.itemDef(), subfilterOrValue.singleValue().path());
                     return RefFilterImpl.createReferenceEqual(path, refDef, parseExpression(rightPath));
                 }
             }
 
-            return super.create(parentDef, typeDef, path, definition, matchingRule, subfilterOrValue);
+            return super.create(context, path, definition, matchingRule, subfilterOrValue);
         }
 
         @Override
@@ -333,9 +337,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(NOT_EQUAL, new ItemFilterFactory() {
 
                 @Override
-                public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath, ItemDefinition<?> itemDef,
+                public ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
                         QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
-                    return NotFilterImpl.createNot(equalFilter.create(parentDef, typeDef, itemPath, itemDef, matchingRule, subfilterOrValue));
+                    return NotFilterImpl.createNot(equalFilter.create(context, itemPath, itemDef, matchingRule, subfilterOrValue));
                 }
             })
             .put(GREATER, new PropertyFilterFactory() {
@@ -420,15 +424,15 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(MATCHES, this::matchesFilter)
             .put(EXISTS, new ItemFilterFactory() {
                 @Override
-                public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath,
+                public ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath,
                         ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) {
-                    return ExistsFilterImpl.createExists(itemPath, parentDef, null);
+                    return ExistsFilterImpl.createExists(itemPath, context.itemDef(), null);
                 }
             })
             .put(FULL_TEXT, new SelfFilterFactory("fullText") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
                     return FullTextFilterImpl.createFullText(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
@@ -436,7 +440,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(IN_OID, new SelfFilterFactory("inOid") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
                     return InOidFilterImpl.createInOid(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
@@ -444,7 +448,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(OWNED_BY_OID, new SelfFilterFactory("ownedByOid") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
                     return InOidFilterImpl.createOwnerHasOidIn(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
@@ -452,7 +456,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(IN_ORG, new SelfFilterFactory("inOrg") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
                     Scope scope = Scope.SUBTREE;
                     if (matchingRule != null) {
@@ -464,7 +468,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(IS_ROOT, new SelfFilterFactory("isRoot") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) {
                     return OrgFilterImpl.createRootOrg();
                 }
@@ -472,7 +476,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(TYPE, new SelfFilterFactory("type") {
 
                 @Override
-                protected ObjectFilter create(ItemDefinition<?> parentDef, QName matchingRule,
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
                     QName type = requireLiteral(QName.class, filterName, subfilterOrValue.singleValue());
                     return TypeFilterImpl.createType(type, null);
@@ -481,8 +485,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             .put(REFERENCED_BY, new SelfFilterFactory(REFERENCED_BY) {
 
                 @Override
-                protected ObjectFilter create(
-                        ItemDefinition<?> parentDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
+                protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
+                        SubfilterOrValueContext subfilterOrValue)
                         throws SchemaException {
                     var subfilter = subfilterOrValue.subfilterSpec().filter();
 
@@ -494,9 +498,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
                     QName relation = consumeFromAnd(QName.class, "@relation", andChildren);
 
-                    var referrerSchema = context.getSchemaRegistry().findComplexTypeDefinitionByType(type);
-                    var reffererCont = context.getSchemaRegistry().findContainerDefinitionByType(type);
-                    ObjectFilter filter = andFilter(reffererCont, referrerSchema, andChildren);
+                    var referrerSchema = context.findComplexTypeDefinitionByType(type);
+                    var reffererCont = context.findContainerDefinitionByType(type);
+                    ObjectFilter filter = andFilter(context.referenced(reffererCont, referrerSchema), andChildren);
                     return ReferencedByFilterImpl.create(type, path, filter, relation);
                 }
 
@@ -505,7 +509,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
                 @Override
                 protected ObjectFilter create(
-                        ItemDefinition<?> parentDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
+                        QueryParsingContext.Local context, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
                         throws SchemaException {
                     var subfilter = subfilterOrValue.subfilterSpec().filter();
 
@@ -514,8 +518,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
                     QName type = consumeFromAnd(QName.class, "@type", andChildren);
                     ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
-                    var referrerSchema = context.getSchemaRegistry().findComplexTypeDefinitionByType(type);
-                    ObjectFilter filter = andFilter(null, referrerSchema, andChildren);
+                    var referrerSchema = context.findComplexTypeDefinitionByType(type);
+                    ObjectFilter filter = andFilter(context.referenced(null, referrerSchema), andChildren);
                     return OwnedByFilterImpl.create(type, path, allFilterToNull(filter));
                 }
 
@@ -557,13 +561,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private final Map<QName, ItemFilterFactory> notFilterFactories = ImmutableMap.<QName, ItemFilterFactory>builder()
             .put(EXISTS, new ItemFilterFactory() {
                 @Override
-                public ObjectFilter create(ItemDefinition<?> parentDef, ComplexTypeDefinition typeDef, ItemPath itemPath,
+                public ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath,
                         ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) {
                     if (itemDef instanceof PrismPropertyDefinition<?>) {
                         return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<?>) itemDef,
                                 matchingRule);
                     }
-                    return NotFilterImpl.createNot(ExistsFilterImpl.createExists(itemPath, parentDef, null));
+                    return NotFilterImpl.createNot(ExistsFilterImpl.createExists(itemPath, context.itemDef(), null));
                 }
             })
             .build();
@@ -624,7 +628,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return singleValue != null && isVariablePath(singleValue.path());
     }
 
-    public boolean isVariablePath(PathContext path) {
+    private boolean isVariablePath(PathContext path) {
         return path.getText().contains("$");
     }
 
@@ -676,7 +680,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return expressionParser.parseScript(namespaceContext, scriptLang, scriptText);
     }
 
-    public Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
+    private Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
         if (propDef.getTypeClass() != null) {
             // shortcut
             return parseLiteral(propDef.getTypeClass(), literalValue);
@@ -731,47 +735,83 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return parseQuery(definition, AxiomQuerySource.from(query));
     }
 
-    private ObjectFilter parseQuery(ItemDefinition<?> contextDef, AxiomQuerySource source)
-            throws SchemaException {
+
+    @Deprecated
+    private ObjectFilter parseQuery(ItemDefinition<?> contextDef, AxiomQuerySource source) throws SchemaException {
+        return parse(contextDef, source, false).toFilter();
+    }
+
+    @Override
+    public <T> PreparedPrismQuery parse(Class<T> typeClass, String query) throws SchemaException {
+        SchemaRegistry schemaRegistry = context.getSchemaRegistry();
+        ItemDefinition<?> definition = Referencable.class.isAssignableFrom(typeClass)
+                ? PrismContext.get().definitionFactory().createReferenceDefinition(
+                PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE)
+                : schemaRegistry.findItemDefinitionByCompileTimeClass(typeClass, ItemDefinition.class);
+        if (definition == null) {
+            throw new IllegalArgumentException("Couldn't find definition for type " + typeClass);
+        }
+        return parse(definition, query);
+    }
+
+    @Override
+    public PreparedPrismQuery parse(ItemDefinition<?> definition, String query) throws SchemaException {
+        return parse(definition, AxiomQuerySource.from(query), true);
+    }
+
+    protected PreparedPrismQuery parse(ItemDefinition<?> contextDef, AxiomQuerySource source, boolean placeholdersEnabled) throws SchemaException {
         ComplexTypeDefinition typeDef = contextDef instanceof PrismContainerDefinition
                 ? ((PrismContainerDefinition<?>) contextDef).getComplexTypeDefinition()
                 : null;
-        return parseFilter(contextDef, typeDef, source.root());
+        var context = new QueryParsingContext(source, contextDef, typeDef, placeholdersEnabled);
+        return parse(context);
     }
+
+
+    private PreparedPrismQuery parse(QueryParsingContext context) throws SchemaException {
+        ObjectFilter maybeFilter = parseFilter(context.root(), context.source().root());
+        if (!context.hasPlaceholders()) {
+            return context.completed(maybeFilter);
+        }
+        return context.withPlaceholders(this);
+    }
+
+    protected ObjectFilter parseBound(QueryParsingContext context) throws SchemaException {
+        return parseFilter(context.root(), context.source().root());
+    }
+
 
     /**
      * Internal parse method branching on the current filter root.
      *
-     * @param contextDef current context item definition, e.g. a PCD or PRD for reference search
-     * @param typeDef current context type definition which can be dynamically narrowed, e.g. by TYPE filter
+     * @param context current context query item definition and type definition, e.g. a PCD or PRD for reference search
+     *
      */
     private ObjectFilter parseFilter(
-            ItemDefinition<?> contextDef, @Nullable ComplexTypeDefinition typeDef, FilterContext root)
+            QueryParsingContext.Local context, FilterContext root)
             throws SchemaException {
         if (root instanceof AndFilterContext) {
-            return andFilter(contextDef, typeDef, (AndFilterContext) root);
+            return andFilter(context, (AndFilterContext) root);
         } else if (root instanceof OrFilterContext) {
-            return orFilter(contextDef, typeDef, (OrFilterContext) root);
+            return orFilter(context, (OrFilterContext) root);
         } else if (root instanceof GenFilterContext) {
-            return itemFilter(contextDef, typeDef, ((GenFilterContext) root).itemFilter());
+            return itemFilter(context, ((GenFilterContext) root).itemFilter());
         } else if (root instanceof SubFilterContext) {
-            return parseFilter(contextDef, typeDef, ((SubFilterContext) root).subfilterSpec().filter());
+            return parseFilter(context, ((SubFilterContext) root).subfilterSpec().filter());
         }
         throw new IllegalStateException("Unsupported Filter Context");
     }
 
     private ObjectFilter andFilter(
-            ItemDefinition<?> contextDef, ComplexTypeDefinition typeDef, AndFilterContext root)
+            QueryParsingContext.Local context, AndFilterContext root)
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
 
         expand(unparsed, AndFilterContext.class, AndFilterContext::filter, root.filter());
-        return andFilter(contextDef, typeDef, unparsed);
+        return andFilter(context, unparsed);
     }
 
-    private ObjectFilter andFilter(
-            ItemDefinition<?> contextDef, ComplexTypeDefinition typeDef, List<FilterContext> unparsed)
-            throws SchemaException {
+    private ObjectFilter andFilter(QueryParsingContext.Local context, List<FilterContext> unparsed) throws SchemaException {
         ImmutableList.Builder<ObjectFilter> filters = ImmutableList.builder();
 
         // Context override - change of item definition
@@ -779,14 +819,15 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         TypeFilter typeFilter = null;
         OwnedByFilter ownedByFilter = null;
         var iterator = unparsed.iterator();
+
         while (iterator.hasNext()) {
             var next = iterator.next();
             if (next instanceof GenFilterContext) {
                 ItemFilterContext itemFilter = ((GenFilterContext) next).itemFilter();
                 // If AND contains type filter, we extract it out in order to determine
                 // more specific type
-                if (itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter))) {
-                    typeFilter = (TypeFilter) itemFilter(contextDef, typeDef, itemFilter);
+                if (isTypeFilter(itemFilter)) {
+                    typeFilter = (TypeFilter) itemFilter(context, itemFilter);
                     // Removed to avoid reparsing and we move the rest of AND inside it (see lower).
                     iterator.remove();
                 }
@@ -795,34 +836,38 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 // do the parsing part only (and minimal necessary type deduction) and not interpret
                 // the filter for special case usages like reference search.
                 if (itemFilter.negation() == null && OWNED_BY.equals(filterName(itemFilter))) {
-                    ownedByFilter = (OwnedByFilter) itemFilter(contextDef, typeDef, itemFilter);
+                    ownedByFilter = (OwnedByFilter) itemFilter(context, itemFilter);
                     iterator.remove(); // We will add this explicitly later, just avoiding re-parse.
                 }
             }
         }
         // Reference OwnedBy filter must have path, otherwise we don't care.
         if (ownedByFilter != null && ownedByFilter.getPath() != null) {
-            contextDef = ownedByFilter.getType().findItemDefinition(ownedByFilter.getPath());
+            // We override item definition of context
+            context.itemDef(ownedByFilter.getType().findItemDefinition(ownedByFilter.getPath()));
             // TODO not related to refs: can we utilize ownedBy to set more specific typeDef as well?
         }
         if (typeFilter != null) {
-            typeDef = PrismContext.get().getSchemaRegistry()
-                    .findComplexTypeDefinitionByType(typeFilter.getType());
+            context.typeDef(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(typeFilter.getType()));
         }
         for (FilterContext filter : unparsed) {
-            filters.add(parseFilter(contextDef, typeDef, filter));
+            filters.add(parseFilter(context, filter));
         }
         if (ownedByFilter != null) {
             filters.add(ownedByFilter); // already parsed
         }
 
         // TODO Now ownedBy goes to typeFilter if both are used. Do we want to keep both top-level?
-        ObjectFilter andFilter = context.queryFactory().createAndOptimized(filters.build());
+        ObjectFilter andFilter = PrismContext.get().queryFactory().createAndOptimized(filters.build());
         if (typeFilter != null) {
             typeFilter.setFilter(andFilter);
             return typeFilter;
         }
         return andFilter;
+    }
+
+    private boolean isTypeFilter(ItemFilterContext itemFilter) {
+        return itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter));
     }
 
     private <E extends FilterContext> void expand(List<FilterContext> expanded,
@@ -844,42 +889,37 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
     }
 
-    private ObjectFilter orFilter(ItemDefinition<?> complexType, ComplexTypeDefinition typeDef, OrFilterContext root)
+    private ObjectFilter orFilter(QueryParsingContext.Local context, OrFilterContext root)
             throws SchemaException {
         List<FilterContext> unparsed = new ArrayList<>();
         expand(unparsed, OrFilterContext.class, OrFilterContext::filter, root.filter());
 
         Builder<ObjectFilter> filters = ImmutableList.builder();
         for (FilterContext filterContext : unparsed) {
-            filters.add(parseFilter(complexType, typeDef, filterContext));
+            filters.add(parseFilter(context, filterContext));
         }
-        return context.queryFactory().createOrOptimized(filters.build());
+        return PrismContext.get().queryFactory().createOrOptimized(filters.build());
     }
 
-    private ObjectFilter itemFilter(
-            ItemDefinition<?> parentDef,
-            @Nullable ComplexTypeDefinition typeDef,
-            ItemFilterContext itemFilter)
-            throws SchemaException {
+    private ObjectFilter itemFilter(QueryParsingContext.Local context, ItemFilterContext itemFilter) throws SchemaException {
         QName filterName = filterName(itemFilter);
         QName matchingRule = itemFilter.matchingRule() != null
                 ? toFilterName(MATCHING_RULE_NS, itemFilter.matchingRule().prefixedName())
                 : null;
-        ItemPath path = path(parentDef, itemFilter.path());
-        ItemDefinition<?> itemDefinition = findDefinition(parentDef, typeDef, path, ItemDefinition.class);
-        schemaCheck(itemDefinition != null, "Path %s is not present in type %s", path,
-                typeDef != null ? typeDef.getTypeName() : parentDef.getTypeName());
+        ItemPath path = path(context.itemDef(), itemFilter.path());
+
+        ItemDefinition<?> itemDefinition = context.findDefinition(path, ItemDefinition.class);
+        schemaCheck(itemDefinition != null, "Path %s is not present in type %s", path, context.typeName());
         ItemFilterFactory factory = filterFactories.get(filterName);
         schemaCheck(factory != null, "Unknown filter %s", filterName);
 
         if (itemFilter.negation() != null) {
             ItemFilterFactory notFactory = notFilterFactories.get(filterName);
             if (notFactory != null) {
-                return notFactory.create(parentDef, typeDef, path, itemDefinition, matchingRule, itemFilter.subfilterOrValue());
+                return notFactory.create(context, path, itemDefinition, matchingRule, itemFilter.subfilterOrValue());
             }
         }
-        ObjectFilter filter = createItemFilter(factory, parentDef, typeDef, path, itemDefinition, matchingRule,
-                itemFilter.subfilterOrValue());
+        ObjectFilter filter = createItemFilter(context, factory, path, itemDefinition, matchingRule, itemFilter.subfilterOrValue());
         if (itemFilter.negation() != null) {
             return new NotFilterImpl(filter);
         }
@@ -887,27 +927,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     }
 
-    private <T extends ItemDefinition<?>> T findDefinition(
-            ItemDefinition<?> parent, @Nullable ComplexTypeDefinition typeDef, ItemPath path, Class<T> type)
-            throws SchemaException {
-        if (path.isEmpty() && type.isInstance(parent)) {
-            return type.cast(parent);
-        }
-        if (parent instanceof PrismReferenceDefinition) {
-            return parent.findItemDefinition(path, type);
-        }
-
-        // OR parent == null is necessary to resolve additional conditions in ownedBy (e.g. name = 'xy')
-        schemaCheck(typeDef != null && (parent instanceof PrismContainerDefinition || parent == null),
-                "Only references and containers are supported");
-        return typeDef.findItemDefinition(path, type);
-    }
-
     private ObjectFilter createItemFilter(
-            ItemFilterFactory factory, ItemDefinition<?> parent, ComplexTypeDefinition typeDef, ItemPath path,
-            ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
+            QueryParsingContext.Local context, ItemFilterFactory factory,
+            ItemPath path, ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue)
             throws SchemaException {
-        return factory.create(parent, typeDef, path, itemDef, matchingRule, subfilterOrValue);
+        return factory.create(context, path, itemDef, matchingRule, subfilterOrValue);
     }
 
     private ItemPath path(ItemDefinition<?> complexType, PathContext path) {
@@ -954,16 +978,20 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return string.getText();
     }
 
-    private ObjectFilter matchesFilter(ItemDefinition<?> parent, ComplexTypeDefinition typeDef, ItemPath path, ItemDefinition<?> definition,
+    private ObjectFilter matchesFilter(
+            QueryParsingContext.Local context, ItemPath path, ItemDefinition<?> definition,
             QName matchingRule, SubfilterOrValueContext subfilterOrValue) throws SchemaException {
         schemaCheck(subfilterOrValue.subfilterSpec() != null, "matches filter requires subfilter");
         if (definition instanceof PrismContainerDefinition<?>) {
             PrismContainerDefinition<?> containerDef = (PrismContainerDefinition<?>) definition;
+
             FilterContext subfilterTree = subfilterOrValue.subfilterSpec().filter();
-            ObjectFilter subfilter = parseFilter(containerDef, containerDef.getComplexTypeDefinition(), subfilterTree);
-            return ExistsFilterImpl.createExists(path, parent, subfilter);
+
+
+            ObjectFilter subfilter = parseFilter(context.nested(containerDef), subfilterTree);
+            return ExistsFilterImpl.createExists(path, context.itemDef(), subfilter);
         } else if (definition instanceof PrismReferenceDefinition) {
-            return matchesReferenceFilter(path, (PrismReferenceDefinition) definition,
+            return matchesReferenceFilter(context, path, (PrismReferenceDefinition) definition,
                     subfilterOrValue.subfilterSpec().filter());
         } else if (definition instanceof PrismPropertyDefinition<?>) {
             if (PolyString.class.isAssignableFrom(definition.getTypeClass())) {
@@ -1024,7 +1052,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     /**
      * oidAsAny targetAsAny relationshipAsAny
      */
-    private ObjectFilter matchesReferenceFilter(ItemPath path, PrismReferenceDefinition definition,
+    private ObjectFilter matchesReferenceFilter(QueryParsingContext.Local context, ItemPath path, PrismReferenceDefinition definition,
             FilterContext filter) throws SchemaException {
         List<FilterContext> andChildren = new ArrayList<>();
         expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(filter));
@@ -1040,9 +1068,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         if (targetType == null) {
             targetType = type;
         } else {
-            targetType = context.getSchemaRegistry().selectMoreSpecific(type, targetType);
+            targetType = PrismContext.get().getSchemaRegistry().selectMoreSpecific(type, targetType);
         }
-
         ObjectFilter targetFilter = null;
         if (andChildren.size() == 1) {
             var targetCtx = consumeFromAnd(REF_TARGET_ALIAS, MATCHES, andChildren);
@@ -1052,8 +1079,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             if (targetCtx == null) {
                 throw new SchemaException("Additional unsupported filter specified: " + andChildren.get(0).getText());
             }
-            var targetSchema = context.getSchemaRegistry().findObjectDefinitionByType(targetType);
-            targetFilter = parseFilter(targetSchema, targetSchema.getComplexTypeDefinition(), targetCtx.subfilterOrValue().subfilterSpec().filter());
+            var targetSchema = context.findObjectDefinitionByType(targetType);
+
+            var nested = context.referenced(targetSchema);
+            targetFilter = parseFilter(nested, targetCtx.subfilterOrValue().subfilterSpec().filter());
         }
 
         PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);

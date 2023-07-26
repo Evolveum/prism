@@ -23,4 +23,8 @@ public interface PrismQueryLanguageParser {
     <T> ObjectFilter parseFilter(Class<T> typeClass, String query) throws SchemaException;
 
     ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException;
+
+    PreparedPrismQuery parse(ItemDefinition<?> definition, String query) throws SchemaException;
+
+    <T> PreparedPrismQuery parse(Class<T> typeClass, String query) throws SchemaException;
 }
