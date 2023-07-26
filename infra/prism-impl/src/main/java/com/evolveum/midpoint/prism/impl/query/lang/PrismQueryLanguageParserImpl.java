@@ -1020,10 +1020,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
         if (orig != null) {
             return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME, new PolyString(orig));
-        } else if (norm != null) {
-            return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME, new PolyString(norm, norm));
         }
-        throw new SchemaException("Incorrect syntax for matches polystring");
+        return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME, new PolyString(norm, norm));
     }
 
     @SuppressWarnings("unchecked")
@@ -1116,24 +1114,6 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             throw new SchemaException("Only 'equals' and 'and' filters are supported.");
         }
         return result;
-    }
-
-    private void collectAndChildren(FilterContext filter, Collection<FilterContext> result) {
-        if (filter instanceof AndFilterContext) {
-            var and = (AndFilterContext) filter;
-            collectAndChildren(and.left, result);
-            collectAndChildren(and.right, result);
-
-        } else if (filter instanceof SubFilterContext) {
-            FilterContext child = ((SubFilterContext) filter).subfilterSpec().filter();
-            if (child instanceof AndFilterContext) {
-                collectAndChildren(child, result);
-            } else {
-                result.add(filter);
-            }
-        } else {
-            result.add(filter);
-        }
     }
 
     private <T> T consumeFromAnd(Class<T> valueType, String path, Collection<FilterContext> andFilters) throws SchemaException {
