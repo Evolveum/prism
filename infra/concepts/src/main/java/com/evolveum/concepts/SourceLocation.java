@@ -6,6 +6,7 @@
  */
 package com.evolveum.concepts;
 
+// FIXME: Rename to LinedSourceLocation
 public class SourceLocation {
 
     private static final SourceLocation UNKNOWN = new SourceLocation("unknown", 0, 0) {
@@ -56,7 +57,7 @@ public class SourceLocation {
     }
 
     public SourceLocation offset(int offsetLine, int character) {
-        if(offsetLine == 0) {
+        if (offsetLine == 0) {
             return from(sourceName, this.line, this.character + character);
         }
         return from(sourceName, this.line + offsetLine, character);
@@ -64,7 +65,7 @@ public class SourceLocation {
 
     @Override
     public String toString() {
-        return sourceName + (line >= 0 ? "["+ line + ":" + character + "]" : "");
+        return sourceName + (line >= 0 ? "[" + line + ":" + character + "]" : "");
     }
 
     public interface Aware {
