@@ -87,6 +87,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         assertFilterEquals(xnodeFilter, expectedFilter);
     }
 
+
+
     private void assertFilterEquals(ObjectFilter actual, ObjectFilter expectedFilter) {
         if (!expectedFilter.equals(actual, false)) {
             throw new AssertionError("Filters not equal. Expected: " + expectedFilter + " Actual: " + actual);
@@ -95,20 +97,22 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     private void verify(String query, ObjectFilter original, PrismObject<?> user, boolean checkToString) throws SchemaException {
         ObjectFilter dslFilter = parse(query);
-        boolean javaResult = ObjectQuery.match(user, original, MATCHING_RULE_REGISTRY);
-        boolean dslResult = ObjectQuery.match(user, dslFilter, MATCHING_RULE_REGISTRY);
-        if (checkToString) {
-            assertEquals(dslFilter.toString(), original.toString());
-        }
-        assertEquals(dslResult, javaResult, "Filters do not match.");
-
         //String javaSerialized = serialize(original);
+        verify(dslFilter, original, user, checkToString);
         String dslSerialized = serialize(dslFilter);
 
         //assertEquals(javaSerialized, query);
         if (checkToString) {
             assertEquals(dslSerialized, query);
         }
+    }
+    private void verify(ObjectFilter dslFilter, ObjectFilter original, PrismObject<?> user, boolean checkToString) throws SchemaException {
+        boolean javaResult = ObjectQuery.match(user, original, MATCHING_RULE_REGISTRY);
+        boolean dslResult = ObjectQuery.match(user, dslFilter, MATCHING_RULE_REGISTRY);
+        if (checkToString) {
+            assertEquals(dslFilter.toString(), original.toString());
+        }
+        assertEquals(dslResult, javaResult, "Filters do not match.");
     }
 
     private String serialize(ObjectFilter original) {
@@ -467,6 +471,29 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                         + " and (activation/validTo < '2020-07-06T00:00:00.000+02:00'"
                         + " or activation/validFrom > '2020-07-06T00:00:00.000+02:00'))"
                 , filter);
+
+        try {
+            verifyPlaceholders(AccountType.class, filter, ". referencedBy (@type = UserType and @path = accountRef"
+                            + " and (activation/validTo < ? or activation/validFrom > ?))",
+                    "2020-07-06T00:00:00.000+02:00", "2020-07-06T00:00:00.000+02:00"
+            );
+        } catch (SchemaException e) {
+            assertTrue(e.getMessage().contains(XMLGregorianCalendar.class.getSimpleName()), "error message must mention incorrect type");
+        }
+        XMLGregorianCalendar date = XmlTypeConverter.createXMLGregorianCalendar("2020-07-06T00:00:00.000+02:00");
+        verifyPlaceholders(AccountType.class, filter, ". referencedBy (@type = UserType and @path = accountRef"
+                        + " and (activation/validTo < ? or activation/validFrom > ?))",date, date);
+    }
+
+    private void verifyPlaceholders(Class<? extends Containerable> typeClass, ObjectFilter filter, String query, Object... args) throws SchemaException {
+        var prepared = getPrismContext().createQueryParser().parse(typeClass, query);
+        assertTrue(!prepared.allPlaceholdersBound(), "None of placeholders should be bound.");
+        for (var arg: args) {
+            prepared.bindValue(arg);
+        }
+        var queryFilter = prepared.toFilter();
+        assertFilterEquals(queryFilter, filter);
+
     }
 
     @Test   // MID-4217
