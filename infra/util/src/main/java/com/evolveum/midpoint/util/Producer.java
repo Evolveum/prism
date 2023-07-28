@@ -9,7 +9,7 @@ package com.evolveum.midpoint.util;
 import java.io.Serializable;
 
 /**
- * Almost the same as java.util.function.Supplier, but this one is Serializable.
+ * Almost the same as {@link java.util.function.Supplier}, but this one is {@link Serializable}.
  * That is very useful especially in use in Wicket models.
  *
  * @author Radovan Semancik
@@ -17,6 +17,6 @@ import java.io.Serializable;
 @FunctionalInterface
 public interface Producer<T> extends Serializable {
 
-    T run();        // todo shouldn't be 'get'?
+    T run(); // todo shouldn't be 'get'?
 
 }
