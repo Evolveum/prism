@@ -362,6 +362,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         this.emphasized = source.isEmphasized();
         this.experimental = source.isExperimental();
         this.elaborate = source.isElaborate();
+        this.removed = source.isRemoved();
         Map<QName, Object> annotations = source.getAnnotations();
         if (annotations != null) {
             this.annotations.putAll(annotations);
