@@ -739,6 +739,10 @@ public class MiscUtil {
         return list != null ? list : Collections.emptyList();
     }
 
+    public static @NotNull <K, V> Map<K, V> emptyIfNull(Map<K, V> map) {
+        return map != null ? map : Map.of();
+    }
+
     @NotNull
     public static <T> Collection<T> emptyIfNull(Collection<T> collection) {
         return collection != null ? collection : Collections.emptyList();
