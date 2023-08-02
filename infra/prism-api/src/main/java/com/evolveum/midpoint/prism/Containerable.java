@@ -15,9 +15,8 @@ import java.io.Serializable;
 
 /**
  * @author semancik
- *
  */
-public interface Containerable extends Serializable, DebugDumpable, Freezable {
+public interface Containerable extends Serializable, DebugDumpable, Freezable, Cloneable {
 
     static <T extends Containerable> PrismContainerValue<T> asPrismContainerValue(Containerable containerable) {
         //noinspection unchecked

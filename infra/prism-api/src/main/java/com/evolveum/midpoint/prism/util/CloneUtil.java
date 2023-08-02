@@ -12,14 +12,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.LocalizableMessage;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -132,9 +130,13 @@ public class CloneUtil {
         }
     }
 
+    @Contract("null -> null; !null -> !null")
     public static <T extends Cloneable> T cloneCloneable(T cloneable) {
         if (cloneable != null) {
-            return javaLangClone(cloneable);
+            return MiscUtil.stateNonNull(
+                    javaLangClone(cloneable),
+                    "Cloneable is not really cloneable? %s",
+                    cloneable);
         } else {
             return null;
         }
