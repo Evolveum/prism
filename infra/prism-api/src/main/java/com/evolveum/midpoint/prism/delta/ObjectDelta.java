@@ -139,6 +139,19 @@ public interface ObjectDelta<O extends Objectable>
 
     boolean hasItemOrSubitemDelta(ItemPath propertyPath);
 
+    /**
+     * Returns `true` if the delta may have an effect on the specified item.
+     *
+     * - For `ADD` deltas, returns `true` if the object has the specified item.
+     * - For `DELETE` deltas, returns `false` (as we don't know the object).
+     * - For `MODIFY` deltas, returns `true` if there is any overlap between the specified item and the modified items
+     * (either exact match, sub- or super-path match).
+     *
+     * May not be quite precise when multivalued containers are involved, e.g. if we are asking about `assignment[1]/targetRef`
+     * and the delta contains an addition of `assignment` with a different PCV ID, e.g. [2]. The result would be a false positive.
+     */
+    boolean hasRelatedDelta(ItemPath itemPath);
+
     boolean hasCompleteDefinition();
 
     Class<O> getObjectTypeClass();

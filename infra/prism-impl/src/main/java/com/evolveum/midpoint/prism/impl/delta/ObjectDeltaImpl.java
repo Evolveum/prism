@@ -353,6 +353,22 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
+    public boolean hasRelatedDelta(ItemPath itemPath) {
+        if (changeType == ChangeType.ADD) {
+            //noinspection unchecked
+            return objectToAdd.findItem(itemPath, Item.class) != null;
+        } else if (changeType == ChangeType.MODIFY) {
+            for (ItemDelta<?, ?> modification : getModifications()) {
+                CompareResult compare = modification.getPath().compareComplex(itemPath);
+                if (compare != CompareResult.NO_RELATION) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean hasCompleteDefinition() {
         if (isAdd()) {
             return getObjectToAdd().hasCompleteDefinition();
