@@ -135,7 +135,7 @@ class QueryParsingContext {
         public void bindValue(Object realValue) throws SchemaException {
             // TODO: Should we try to create PrismPropertyValue?
             // TODO: Should we try to parse string to actual type? (if type is lost?)
-            schemaCheck(def.getTypeClass().isInstance(realValue), "Binding value must be instance of ", def.getTypeClass().getSimpleName());
+            schemaCheck(def.getTypeClass().isInstance(realValue), "Binding value must be instance of %s", def.getTypeClass().getSimpleName());
             this.value = realValue;
         }
     }
