@@ -11,10 +11,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Element;
@@ -119,6 +122,8 @@ public final class PrismContextImpl implements PrismContext {
     // ugly hack
     private QName defaultReferenceTypeName;
     private PrismQueryExpressionFactory queryExpressionFactory;
+
+    private Multimap<QName, ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupHelpers = ArrayListMultimap.create();
 
     static {
         PrismPrettyPrinter.initialize();
@@ -753,5 +758,15 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public PrismQuerySerializer querySerializer() {
         return new PrismQuerySerializerImpl();
+    }
+
+    @Override
+    public void registerValueBasedDefinitionLookup(ValueBasedDefinitionLookupHelper lookup) {
+        valueBasedDefinitionLookupHelpers.put(lookup.baseTypeName(), lookup);
+    }
+
+    @Override
+    public Collection<ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupsForType(QName typeName) {
+        return valueBasedDefinitionLookupHelpers.get(typeName);
     }
 }

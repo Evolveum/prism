@@ -9,9 +9,7 @@ package com.evolveum.midpoint.prism;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -441,6 +439,12 @@ public interface PrismContext extends ProtectorCreator {
     }
 
     void registerQueryExpressionFactory(PrismQueryExpressionFactory factory);
+
+    @Experimental
+    void registerValueBasedDefinitionLookup(ValueBasedDefinitionLookupHelper lookup);
+
+    @Experimental
+    Collection<ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupsForType(QName typeName);
 
     PrismQueryLanguageParser createQueryParser(Map<String, String> prefixToNamespace);
 

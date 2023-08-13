@@ -808,7 +808,82 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         List<FilterContext> unparsed = new ArrayList<>();
 
         expand(unparsed, AndFilterContext.class, AndFilterContext::filter, root.filter());
+        // TODO: And filter context is probably best place to do type detection and rewrites
+
+
         return andFilter(context, unparsed);
+    }
+
+    private abstract class FilterBasedOverride<T extends ObjectFilter> implements DefinitionOverrideContext {
+
+        T filter;
+
+
+        @Override
+        public void process(QueryParsingContext.Local local, ItemFilterContext itemFilter) throws SchemaException {
+            filter = (T) itemFilter(local, itemFilter);
+        }
+
+        @Override
+        public boolean shouldRemove(ItemFilterContext itemFilter) {
+            return true;
+        }
+
+        @Override
+        public T toFilter() {
+            return filter;
+        }
+
+        @Override
+        public boolean isComplete() {
+            return filter != null;
+        }
+
+        @Override
+        public boolean addsFilter() {
+            return filter != null;
+        }
+    }
+
+    private class TypeOverride extends FilterBasedOverride<TypeFilter> {
+        @Override
+        public boolean isApplicable(QueryParsingContext.Local context, ItemFilterContext itemFilter) {
+            // Also probably we should check path
+            return itemFilter.negation() == null && FilterNames.TYPE.equals(filterName(itemFilter));
+        }
+
+        @Override
+        public void apply(QueryParsingContext.Local context) {
+            context.typeDef(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(toFilter().getType()));
+        }
+
+        @Override
+        public boolean addsFilter() {
+            return false;
+        }
+    }
+
+    private class OwnedByOverride extends FilterBasedOverride<OwnedByFilter> {
+
+        @Override
+        public boolean isApplicable(QueryParsingContext.Local context, ItemFilterContext itemFilter) {
+            // For reference search we would expect only one OWNED-BY filter, but let Axiom
+            // do the parsing part only (and minimal necessary type deduction) and not interpret
+            // the filter for special case usages like reference search.
+
+            return OWNED_BY.equals(filterName(itemFilter));
+        }
+
+        @Override
+        public void apply(QueryParsingContext.Local context) {
+            var ownedByFilter = toFilter();
+            // Reference OwnedBy filter must have path, otherwise we don't care.
+            if (ownedByFilter != null && ownedByFilter.getPath() != null) {
+                // We override item definition of context
+                context.itemDef(ownedByFilter.getType().findItemDefinition(ownedByFilter.getPath()));
+                // TODO not related to refs: can we utilize ownedBy to set more specific typeDef as well?
+            }
+        }
     }
 
     private ObjectFilter andFilter(QueryParsingContext.Local context, List<FilterContext> unparsed) throws SchemaException {
@@ -816,9 +891,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         // Context override - change of item definition
         // Type override - change of type definition (or narrower type if determined)
-        TypeFilter typeFilter = null;
-        OwnedByFilter ownedByFilter = null;
+        TypeOverride typeOverride = new TypeOverride();
+        // If the type is ShadowType - enable
+
+        List<DefinitionOverrideContext> overrideContexts = new ArrayList<>();
+        overrideContexts.add(typeOverride);
+        overrideContexts.add(new OwnedByOverride());
+        overrideContexts.addAll(externalOverridesFor(context));
+
         var iterator = unparsed.iterator();
+
 
         while (iterator.hasNext()) {
             var next = iterator.next();
@@ -826,44 +908,72 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 ItemFilterContext itemFilter = ((GenFilterContext) next).itemFilter();
                 // If AND contains type filter, we extract it out in order to determine
                 // more specific type
-                if (isTypeFilter(itemFilter)) {
-                    typeFilter = (TypeFilter) itemFilter(context, itemFilter);
-                    // Removed to avoid reparsing and we move the rest of AND inside it (see lower).
-                    iterator.remove();
-                }
 
-                // For reference search we would expect only one OWNED-BY filter, but let Axiom
-                // do the parsing part only (and minimal necessary type deduction) and not interpret
-                // the filter for special case usages like reference search.
-                if (itemFilter.negation() == null && OWNED_BY.equals(filterName(itemFilter))) {
-                    ownedByFilter = (OwnedByFilter) itemFilter(context, itemFilter);
-                    iterator.remove(); // We will add this explicitly later, just avoiding re-parse.
+                if (itemFilter.negation() != null) {
+                    // We do not process negations
+                    continue;
+                }
+                boolean removed = false;
+                for (var override : overrideContexts) {
+                    // We check each applicable override definition, if it uses statement
+                    if (override.isApplicable(context, itemFilter)) {
+                        // We let override to process statement and update its internal state
+                        override.process(context, itemFilter);
+                        // If override asks us to remove parsed statement, we remove it and do not process it anymore.
+                        if (override.shouldRemove(itemFilter) && !removed) {
+                            iterator.remove();
+                            removed = true;
+                        }
+                    }
                 }
             }
         }
-        // Reference OwnedBy filter must have path, otherwise we don't care.
-        if (ownedByFilter != null && ownedByFilter.getPath() != null) {
-            // We override item definition of context
-            context.itemDef(ownedByFilter.getType().findItemDefinition(ownedByFilter.getPath()));
-            // TODO not related to refs: can we utilize ownedBy to set more specific typeDef as well?
+
+        // We let complete overrides to apply their changes to definition in order of appeareance
+        for (var override : overrideContexts) {
+            if (override.isComplete()) {
+                override.apply(context);
+            }
         }
-        if (typeFilter != null) {
-            context.typeDef(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(typeFilter.getType()));
-        }
+
+
+
+        // We parse rest of filters using definitions augmented by overrides.
         for (FilterContext filter : unparsed) {
             filters.add(parseFilter(context, filter));
         }
-        if (ownedByFilter != null) {
-            filters.add(ownedByFilter); // already parsed
+
+        // If overrides adds filters we add them to nested and filters
+        for (var override : overrideContexts) {
+            if (override.addsFilter()) {
+                var filter = override.toFilter();
+                if (filter !=  null) {
+                    filters.add(filter);
+                }
+            }
         }
 
-        // TODO Now ownedBy goes to typeFilter if both are used. Do we want to keep both top-level?
         ObjectFilter andFilter = PrismContext.get().queryFactory().createAndOptimized(filters.build());
-        if (typeFilter != null) {
+        if (typeOverride.isComplete()) {
+            var typeFilter = typeOverride.toFilter();
             typeFilter.setFilter(andFilter);
             return typeFilter;
         }
         return andFilter;
+    }
+
+    private Collection<DefinitionOverrideContext> externalOverridesFor(QueryParsingContext.Local context) {
+        var typeDef = context.typeDef();
+        if (typeDef != null) {
+            var lookups = PrismContext.get().valueBasedDefinitionLookupsForType(typeDef.getTypeName());
+            List<DefinitionOverrideContext> ret = new ArrayList<>(lookups.size());
+            for (var lookup : lookups) {
+                ret.add(new ExternalDefinitionOverrideContext(this, typeDef, lookup.valuePaths(),lookup));
+            }
+            return ret;
+        }
+
+        return Collections.emptyList();
     }
 
     private boolean isTypeFilter(ItemFilterContext itemFilter) {
@@ -901,7 +1011,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return PrismContext.get().queryFactory().createOrOptimized(filters.build());
     }
 
-    private ObjectFilter itemFilter(QueryParsingContext.Local context, ItemFilterContext itemFilter) throws SchemaException {
+    ObjectFilter itemFilter(QueryParsingContext.Local context, ItemFilterContext itemFilter) throws SchemaException {
         QName filterName = filterName(itemFilter);
         QName matchingRule = itemFilter.matchingRule() != null
                 ? toFilterName(MATCHING_RULE_NS, itemFilter.matchingRule().prefixedName())
@@ -934,12 +1044,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         return factory.create(context, path, itemDef, matchingRule, subfilterOrValue);
     }
 
-    private ItemPath path(ItemDefinition<?> complexType, PathContext path) {
+    ItemPath path(ItemDefinition<?> complexType, PathContext path) {
         // FIXME: Implement proper parsing of decomposed item path from Antlr
         return ItemPathHolder.parseFromString(path.getText(), namespaceContext);
     }
 
-    private QName filterName(ItemFilterContext filter) {
+    QName filterName(ItemFilterContext filter) {
         if (filter.filterNameAlias() != null) {
             return FilterNames.fromAlias(filter.filterNameAlias().getText()).orElseThrow();
         }
