@@ -124,7 +124,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             }
 
             var placeholder = subfilterOrValue.placeholder();
-            if (placeholder instanceof AnonPlaceholderContext) {
+            if (placeholder != null) {
                 var boundValue = parent.root().createOrResolvePlaceholder(placeholder, propDef);
                 return valueFilter(propDef, path, matchingRule, boundValue);
             }

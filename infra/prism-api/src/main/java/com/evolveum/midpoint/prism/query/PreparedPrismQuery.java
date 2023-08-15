@@ -23,6 +23,15 @@ public interface PreparedPrismQuery {
     void bindValue(Object realValue) throws SchemaException;
 
     /**
+     * Binds named placeholder to provided value
+     *
+     * @param name Name of named placeholder
+     * @param realValue Real Value to be bound
+     * @throws SchemaException If provided value is invalid according to schema definition (type of value
+     * @throws IllegalStateException If there is no positional value to be bound
+     */
+    void set(String name, Object realValue) throws SchemaException;
+    /**
      * Returns complete filter with values bound
      *
      * @return Object Filter parser from Axiom

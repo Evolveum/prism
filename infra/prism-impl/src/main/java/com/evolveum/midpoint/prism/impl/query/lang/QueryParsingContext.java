@@ -27,7 +27,8 @@ class QueryParsingContext {
     private final AxiomQuerySource source;
     private Local rootContext;
     private boolean placeholdersSupported;
-    private SortedMap<Placeholder, Placeholder> placeholders = new TreeMap<>();
+    private SortedMap<Placeholder, Placeholder> anonymousPlaceholders = new TreeMap<>();
+    private Map<String, Placeholder> namedPlaceholders = new HashMap<>();
 
     public QueryParsingContext(AxiomQuerySource source, ItemDefinition<?> contextDef, ComplexTypeDefinition typeDef, boolean supportsPlaceholders) {
         this.source = source;
@@ -40,17 +41,39 @@ class QueryParsingContext {
     }
 
     Object createOrResolvePlaceholder(AxiomQueryParser.PlaceholderContext placeholder, PrismPropertyDefinition<?> propDef) throws SchemaException {
+
+        if (placeholder instanceof AxiomQueryParser.AnonPlaceholderContext anon) {
+            return createOrResolveAnonymous(anon, propDef);
+        } else if (placeholder instanceof AxiomQueryParser.NamedPlaceholderContext named) {
+            return createOrResolveNamed(named, propDef);
+        }
+        throw new AssertionError("Not supported");
+    }
+
+     private Object createOrResolveAnonymous(AxiomQueryParser.AnonPlaceholderContext placeholder, PrismPropertyDefinition<?> propDef) throws SchemaException {
         // Here we add / register placeholders
-
         schemaCheck(placeholdersSupported, "Placeholders are not supported.");
-
         var lookup = new Placeholder(placeholder, propDef);
-        if (placeholders.containsKey(lookup)) {
+        if (anonymousPlaceholders.containsKey(lookup)) {
             // Placeholder was already registered we should try to dereference it?
-            return placeholders.get(lookup).value;
+            return anonymousPlaceholders.get(lookup).value;
         }
         // We register placeholder for further use
-        placeholders.put(lookup, lookup);
+        anonymousPlaceholders.put(lookup, lookup);
+        return null;
+    }
+
+    private Object createOrResolveNamed(AxiomQueryParser.NamedPlaceholderContext placeholder, PrismPropertyDefinition<?> propDef) throws SchemaException {
+        // Here we add / register placeholders
+        schemaCheck(placeholdersSupported, "Placeholders are not supported.");
+        var lookup = placeholder.IDENTIFIER().getText();
+        if (namedPlaceholders.containsKey(lookup)) {
+            // Placeholder was already registered we should try to dereference it?
+            return namedPlaceholders.get(lookup).value;
+        }
+        // We register placeholder for further use
+        var named = new Placeholder(placeholder, propDef);
+        namedPlaceholders.put(lookup, named);
         return null;
     }
 
@@ -59,7 +82,7 @@ class QueryParsingContext {
     }
 
     boolean hasPlaceholders() {
-        return !placeholders.isEmpty();
+        return !anonymousPlaceholders.isEmpty() || !namedPlaceholders.isEmpty();
     }
 
     PreparedPrismQuery completed(ObjectFilter maybeFilter) {
@@ -208,6 +231,11 @@ class QueryParsingContext {
         }
 
         @Override
+        public void set(String name, Object realValue) throws SchemaException {
+            throw new IllegalArgumentException("No values to set");
+        }
+
+        @Override
         public ObjectFilter toFilter() {
             return filter;
         }
@@ -229,12 +257,20 @@ class QueryParsingContext {
 
         @Override
         public void bindValue(Object realValue) throws SchemaException {
-            var first = placeholders.entrySet().stream().filter(v -> !v.getValue().isBound()).findFirst();
+            var first = anonymousPlaceholders.entrySet().stream().filter(v -> !v.getValue().isBound()).findFirst();
             if (first.isEmpty()) {
                 throw new IllegalStateException("All placeholders are already bound");
             }
-
             first.get().getValue().bindValue(realValue);
+        }
+
+        @Override
+        public void set(String name, Object realValue) throws SchemaException {
+            var found = namedPlaceholders.get(name);
+            if (found == null) {
+                throw new IllegalArgumentException("Placeholder named '" + name + "' does not exists.");
+            }
+            found.bindValue(realValue);
         }
 
         @Override
@@ -245,7 +281,8 @@ class QueryParsingContext {
 
         @Override
         public boolean allPlaceholdersBound() {
-            return placeholders.entrySet().stream().allMatch(v -> v.getValue().isBound());
+            return  namedPlaceholders.entrySet().stream().allMatch(v -> v.getValue().isBound())
+                    && anonymousPlaceholders.entrySet().stream().allMatch(v -> v.getValue().isBound());
         }
     }
 
