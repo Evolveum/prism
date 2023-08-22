@@ -163,5 +163,9 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
         return delegate().structuredType();
     }
 
+    @Override
+    default boolean isSearchable() {
+        return delegate().isSearchable();
+    }
 
 }

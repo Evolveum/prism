@@ -135,7 +135,10 @@ class QueryParsingContext {
         public void bindValue(Object realValue) throws SchemaException {
             // TODO: Should we try to create PrismPropertyValue?
             // TODO: Should we try to parse string to actual type? (if type is lost?)
-            schemaCheck(def.getTypeClass().isInstance(realValue), "Binding value must be instance of %s", def.getTypeClass().getSimpleName());
+            var expected = def.getTypeClass();
+            if (expected != null) {
+                schemaCheck(def.getTypeClass().isInstance(realValue), "Binding value must be instance of %s", def.getTypeClass().getSimpleName());
+            }
             this.value = realValue;
         }
     }
@@ -191,8 +194,7 @@ class QueryParsingContext {
             }
 
             // OR parent == null is necessary to resolve additional conditions in ownedBy (e.g. name = 'xy')
-            schemaCheck(typeDef != null && (itemDef instanceof PrismContainerDefinition || itemDef == null),
-                    "Only references and containers are supported");
+            schemaCheck(typeDef != null, "Only references, containers and complex properties are supported");
             return typeDef.findItemDefinition(path, type);
         }
 
@@ -214,6 +216,10 @@ class QueryParsingContext {
 
         public Local nested(PrismContainerDefinition<?> containerDef) {
             return new Local(containerDef, containerDef.getComplexTypeDefinition());
+        }
+
+        public Local nested(ItemDefinition<?> origItemDef, @Nullable ComplexTypeDefinition overwriteTypeDef) {
+            return new Local(origItemDef, overwriteTypeDef);
         }
     }
 

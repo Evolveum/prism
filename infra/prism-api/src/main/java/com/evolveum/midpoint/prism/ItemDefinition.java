@@ -197,5 +197,7 @@ public interface ItemDefinition<I extends Item>
      * @return
      */
     @Experimental
-    boolean isSearchable();
+    default boolean isSearchable() {
+        return false;
+    }
 }

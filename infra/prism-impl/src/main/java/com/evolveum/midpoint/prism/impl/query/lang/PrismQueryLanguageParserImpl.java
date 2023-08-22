@@ -1094,29 +1094,43 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         schemaCheck(subfilterOrValue.subfilterSpec() != null, "matches filter requires subfilter");
         if (definition instanceof PrismContainerDefinition<?>) {
             PrismContainerDefinition<?> containerDef = (PrismContainerDefinition<?>) definition;
-
             FilterContext subfilterTree = subfilterOrValue.subfilterSpec().filter();
-
-
             ObjectFilter subfilter = parseFilter(context.nested(containerDef), subfilterTree);
             return ExistsFilterImpl.createExists(path, context.itemDef(), subfilter);
         } else if (definition instanceof PrismReferenceDefinition) {
             return matchesReferenceFilter(context, path, (PrismReferenceDefinition) definition,
                     subfilterOrValue.subfilterSpec().filter());
         } else if (definition instanceof PrismPropertyDefinition<?>) {
-            if (PolyString.class.isAssignableFrom(definition.getTypeClass())) {
+            var typeClass = definition.getTypeClass();
+            var typeName = definition.getTypeName();
+            // for properties, typeClass may be null in case of enums, so we need to check to avoid NPE in isAssignableFrom
+            if (typeClass != null && PolyString.class.isAssignableFrom(typeClass)) {
+                // Polystring requires special handling, since it is composite, but it is processed by EqualFilter with matching
                 return matchesPolystringFilter(path, (PrismPropertyDefinition<?>) definition,
                         subfilterOrValue.subfilterSpec().filter());
+            }
+            if (typeClass == null && typeName != null && definition.isSearchable()) {
+                // is complex type inside property?
+
+                var typeDef = context.findComplexTypeDefinitionByType(typeName);
+                if (typeDef != null) {
+                    FilterContext subfilterTree = subfilterOrValue.subfilterSpec().filter();
+                    ObjectFilter subfilter = parseFilter(context.nested(definition, typeDef), subfilterTree);
+                    return ExistsFilterImpl.createExists(path, context.itemDef(), subfilter);
+                }
             }
         }
         throw new UnsupportedOperationException("Unknown schema type");
     }
 
     /**
+     * Creates {@link EqualFilter} for PolyString for matches. Based on specified orig and/or norm selects appropriate
+     * matching rule.
+     *
      * <code>
-     * name matches (orig = "foo")
-     * name matches (norm = "bar")
-     * name matches (orig = "foo" and norm = "bar")
+     * name matches (orig = "foo") // polyStringOrig
+     * name matches (norm = "bar") // polyStringNorm
+     * name matches (orig = "foo" and norm = "bar") // polyStringStrict
      * </code>
      */
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
@@ -1158,6 +1172,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     /**
+     * Creates {@link RefFilter} for Reference matches.
+     * If oid is not specified sets oidAsAny
+     * If target is not specified sets targetAsAny
+     * If relationship is not specified sets relationshipAsAny
+     *
+     *
      * oidAsAny targetAsAny relationshipAsAny
      */
     private ObjectFilter matchesReferenceFilter(QueryParsingContext.Local context, ItemPath path, PrismReferenceDefinition definition,
