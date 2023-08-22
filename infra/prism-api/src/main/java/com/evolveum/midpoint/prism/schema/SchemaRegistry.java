@@ -30,6 +30,10 @@ import java.util.function.Function;
  */
 public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, GlobalDefinitionsStore {
 
+    static SchemaRegistry get() {
+        return PrismContext.get().getSchemaRegistry();
+    }
+
     /**
      * @return System-wide "standard prefixes" registry.
      */
