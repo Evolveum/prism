@@ -62,6 +62,8 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     private boolean indexOnly = false;
 
+    private boolean isSearchable = false;
+
     private final transient SerializationProxy serializationProxy;
 
     // TODO: annotations
@@ -461,6 +463,16 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     public void setIndexOnly(boolean indexOnly) {
         checkMutable();
         this.indexOnly = indexOnly;
+    }
+
+    @Override
+    public boolean isSearchable() {
+        return isSearchable;
+    }
+
+    @Override
+    public void setSearchable(boolean searchable) {
+        isSearchable = searchable;
     }
 
     @Override

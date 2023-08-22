@@ -191,4 +191,11 @@ public interface ItemDefinition<I extends Item>
      */
     @Experimental
     Optional<ComplexTypeDefinition> structuredType();
+
+    /**
+     * Returns true if item definition is searchable.
+     * @return
+     */
+    @Experimental
+    boolean isSearchable();
 }

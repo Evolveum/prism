@@ -1204,6 +1204,11 @@ class DomToSchemaPostProcessor {
             itemDef.setEmphasized(emphasized);
         }
 
+        Boolean searchable = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_SEARCHABLE);
+        if (searchable != null) {
+            itemDef.setSearchable(searchable);
+        }
+
         // documentation
         extractDocumentation(itemDef, annotation);
 

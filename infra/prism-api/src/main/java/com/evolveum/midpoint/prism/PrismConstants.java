@@ -122,6 +122,7 @@ public class PrismConstants {
     public static final QName SCHEMA_ANNOTATION = new QName(W3C_XML_SCHEMA_NS_URI, "annotation");
     public static final QName SCHEMA_APP_INFO = new QName(W3C_XML_SCHEMA_NS_URI, "appinfo");
 
+    public static final QName A_SEARCHABLE = new QName(NS_ANNOTATION, "searchable");
     public static final QName A_MAX_OCCURS = new QName(NS_ANNOTATION, "maxOccurs");
     public static final String MULTIPLICITY_UNBOUNDED = "unbounded";
 

@@ -132,6 +132,16 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="searchable" type="xsd:boolean">
+        <xsd:annotation>
+            <xsd:documentation>
+                Item marker annotation: searchable item. Marks item and its value as available for search.
+                WARNING: Item may not be searchable in all contexts, primary use is to provide checks and additional hints
+                during filter parsing.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="indexOnly" type="xsd:boolean">
         <xsd:annotation>
             <xsd:documentation>

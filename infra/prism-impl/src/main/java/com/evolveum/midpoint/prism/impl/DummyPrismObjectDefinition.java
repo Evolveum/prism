@@ -281,6 +281,11 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
+    public boolean isSearchable() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getDisplayName() {
         throw new UnsupportedOperationException();
     }

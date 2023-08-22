@@ -51,4 +51,6 @@ public interface MutableItemDefinition<I extends Item> extends ItemDefinition<I>
     void setIndexOnly(boolean value);
 
     void setInherited(boolean value);
+
+    void setSearchable(boolean value);
 }
