@@ -146,7 +146,7 @@ public final class PrismForJAXBUtil {
         PrismContainer<T> container = parent.findItem(ItemName.fromQName(fieldName), PrismContainer.class);
         if (container != null) {
             // Special case: immutable empty container should not create it inner value
-            if (container.isEmpty() && container.isImmutable()) {
+            if (container.hasNoValues() && container.isImmutable()) {
                 return null;
             }
 
