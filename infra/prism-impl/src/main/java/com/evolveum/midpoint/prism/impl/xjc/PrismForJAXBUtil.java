@@ -144,7 +144,17 @@ public final class PrismForJAXBUtil {
         Validate.notNull(fieldName, "Field QName must not be null.");
 
         PrismContainer<T> container = parent.findItem(ItemName.fromQName(fieldName), PrismContainer.class);
-        return container != null ? container.getValue() : null;
+        if (container != null) {
+            // Special case: immutable empty container should not create it inner value
+            if (container.isEmpty() && container.isImmutable()) {
+                return null;
+            }
+
+            return container.getValue();
+        }
+
+
+        return null;
     }
 
     public static <T extends Containerable> T getFieldSingleContainerable(PrismContainerValue<?> parent, QName fieldName, Class<T> fieldClass) {
