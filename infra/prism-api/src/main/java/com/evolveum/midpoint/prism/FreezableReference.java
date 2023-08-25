@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * A reference that can be made immutable.
@@ -39,5 +40,22 @@ public class FreezableReference<T extends Serializable>
     public void setAndFreeze(T value) {
         setValue(value);
         freeze();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FreezableReference<?> that = (FreezableReference<?>) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }
