@@ -192,16 +192,30 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     @Override
     public void applyDefinition(ItemDefinition definition) throws SchemaException {
         PrismPropertyDefinition propertyDefinition = (PrismPropertyDefinition) definition;
-        if (propertyDefinition != null && !propertyDefinition.isAnyType() && rawElement != null) {
-            T maybeValue = (T) parseRawElementToNewRealValue(this, propertyDefinition);
-            if (maybeValue != null) {
-                setValue(maybeValue);
-            } else {
-                // Be careful here. Expression element can be legal sub-element of complex properties.
-                // Therefore parse expression only if there is no legal value.
-                expression = PrismUtilInternal.parseExpression(rawElement, getPrismContext());
+        if (propertyDefinition != null && !propertyDefinition.isAnyType()) {
+            if (rawElement != null) {
+                T maybeValue = (T) parseRawElementToNewRealValue(this, propertyDefinition);
+                if (maybeValue != null) {
+                    setValue(maybeValue);
+                } else {
+                    // Be careful here. Expression element can be legal sub-element of complex properties.
+                    // Therefore parse expression only if there is no legal value.
+                    expression = PrismUtilInternal.parseExpression(rawElement, getPrismContext());
+                }
+                rawElement = null;
             }
-            rawElement = null;
+            if (value != null && propertyDefinition.getTypeClass() != null) {
+                var type = definition.getTypeClass();
+                if (PolyStringType.class.equals(type)) {
+                    type = PolyString.class;
+                }
+                if (type.isPrimitive()) {
+                    type = Primitives.wrap(type);
+                }
+                if (!type.isInstance(value)) {
+                    throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                }
+            }
         }
     }
 
