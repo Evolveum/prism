@@ -334,6 +334,13 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     @Override
     public void applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException {
         super.applyDefinition(definition, force);
+
+        var defTargetType = definition.getTargetTypeName();
+        if (targetType != null && defTargetType != null) {
+            // Check if targetType is type or subtype of defTargetType
+            PrismContext.get().getSchemaRegistry().isAssignableFrom(defTargetType, targetType);
+
+        }
         if (object == null) {
             return;
         }
