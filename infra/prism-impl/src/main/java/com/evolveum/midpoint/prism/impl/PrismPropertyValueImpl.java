@@ -212,7 +212,13 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                     type = Primitives.wrap(type);
                 }
                 if (!type.isInstance(value)) {
-                    throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                    // Here if the schema is runtime and type is string, type was lost somewhere along the way.
+                    if (XmlTypeConverter.canConvert(type) && propertyDefinition.isRuntimeSchema() && value instanceof String) {
+                        value = (T) XmlTypeConverter.toJavaValue((String) value, type);
+
+                    } else {
+                        throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                    }
                 }
             }
         }
