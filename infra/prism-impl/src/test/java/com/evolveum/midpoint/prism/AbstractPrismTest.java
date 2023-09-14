@@ -178,8 +178,8 @@ public abstract class AbstractPrismTest extends AbstractUnitTest {
         PrismObject<UserType> user = userDef.instantiate();
         user.setOid(USER_FOO_OID);
         user.setPropertyRealValue(UserType.F_NAME, createPolyString("foo"));
-        PrismProperty<PolyString> anamesProp = user.findOrCreateProperty(UserType.F_ADDITIONAL_NAMES);
-        anamesProp.addRealValue(createPolyString("foobar"));
+        PrismProperty<String> anamesProp = user.findOrCreateProperty(UserType.F_ADDITIONAL_NAMES);
+        anamesProp.addRealValue("foobar");
 
         return user;
     }

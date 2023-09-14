@@ -577,15 +577,14 @@ public class TestDelta extends AbstractPrismTest {
 
         //Delta
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
-                .createModificationAddProperty(UserType.class, USER_FOO_OID, UserType.F_ADDITIONAL_NAMES,
-                        PrismTestUtil.createPolyString("baz"));
+                .createModificationAddProperty(UserType.class, USER_FOO_OID, UserType.F_ADDITIONAL_NAMES, "baz");
 
         when();
         userDelta.applyTo(user);
 
         then();
         assertEquals("Wrong OID", USER_FOO_OID, user.getOid());
-        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("baz"), PrismTestUtil.createPolyString("foobar"));
+        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES,"baz", "foobar");
         PrismContainer<AssignmentType> assignment = user.findContainer(UserType.F_ASSIGNMENT);
         assertNotNull("No assignment", assignment);
         assertEquals("Unexpected number of assignment values", 1, assignment.size());
@@ -613,7 +612,7 @@ public class TestDelta extends AbstractPrismTest {
         System.out.println("User after delta application:");
         System.out.println(user.debugDump());
         assertEquals("Wrong OID", USER_FOO_OID, user.getOid());
-        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("foobar"));
+        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES,("foobar"));
         PrismContainer<AssignmentType> assignment = user.findContainer(UserType.F_ASSIGNMENT);
         assertNotNull("No assignment", assignment);
         assertEquals("Unexpected number of assignment values", 1, assignment.size());
@@ -995,7 +994,7 @@ public class TestDelta extends AbstractPrismTest {
         System.out.println("User after delta application:");
         System.out.println(user.debugDump());
         assertEquals("Wrong OID", USER_FOO_OID, user.getOid());
-        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("foobar"));
+        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, "foobar");
         PrismContainer<AssignmentType> assignment = user.findContainer(UserType.F_ASSIGNMENT);
         assertNotNull("No assignment", assignment);
         assertEquals("Unexpected number of assignment values", 1, assignment.size());
@@ -1399,13 +1398,13 @@ public class TestDelta extends AbstractPrismTest {
         ObjectDelta<UserType> userDelta0 = DeltaFactory.Object.createAddDelta(user);
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddProperty(UserType.class, USER_FOO_OID,
-                        UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("baz"));
+                        UserType.F_ADDITIONAL_NAMES, ("baz"));
         ObjectDelta<UserType> userDelta2 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationReplaceProperty(UserType.class, USER_FOO_OID,
-                        UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("foo"));
+                        UserType.F_ADDITIONAL_NAMES, ("foo"));
         ObjectDelta<UserType> userDelta3 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddProperty(UserType.class, USER_FOO_OID,
-                        UserType.F_ADDITIONAL_NAMES, PrismTestUtil.createPolyString("bar"));
+                        UserType.F_ADDITIONAL_NAMES, ("bar"));
 
         when();
         ObjectDelta<UserType> userDeltaSum = ObjectDeltaCollectionsUtil.summarize(userDelta0, userDelta1, userDelta2, userDelta3);
@@ -1416,7 +1415,7 @@ public class TestDelta extends AbstractPrismTest {
         PrismObject<UserType> userSum = userDeltaSum.getObjectToAdd();
         assert user != userSum : "User was not cloned";
         PrismAsserts.assertPropertyValue(userSum, UserType.F_ADDITIONAL_NAMES,
-                PrismTestUtil.createPolyString("foo"), PrismTestUtil.createPolyString("bar"));
+                "foo", "bar");
     }
 
     @Test
