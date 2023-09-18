@@ -15,6 +15,7 @@ import java.util.function.BiConsumer;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.google.common.primitives.Primitives;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
