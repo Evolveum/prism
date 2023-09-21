@@ -10,7 +10,7 @@ RIGHT_BRACE : '}';
 COLON : ':';
 PLUS : '+';
 LINE_COMMENT :  [ \n\r\t]* ('//' (~[\r\n]*)) [ \n\r\t]* -> channel(HIDDEN);
-SEP: [ \n\r\t]+ -> channel(HIDDEN);
+SEP: [ \n\r\t]+;
 
 AND_KEYWORD: 'and'|'AND';
 OR_KEYWORD: 'or'|'OR';
