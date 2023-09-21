@@ -111,6 +111,8 @@ public final class PrismContextImpl implements PrismContext {
 
     private QName defaultRelation;
 
+    private QName defaultReferenceTargetType;
+
     private QName objectsElementName;
 
     /**
@@ -326,6 +328,15 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public void setDefaultRelation(QName defaultRelation) {
         this.defaultRelation = defaultRelation;
+    }
+
+    public void setDefaultReferenceTargetType(QName defaultTargetType) {
+        this.defaultReferenceTargetType = defaultTargetType;
+    }
+
+    @Override
+    public QName getDefaultReferenceTargetType() {
+        return defaultReferenceTargetType;
     }
 
     @Override
