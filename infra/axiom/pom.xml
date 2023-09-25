@@ -86,5 +86,20 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/antlr4</directory>
+                <includes>
+                    <include>com/evolveum/axiom/lang/antlr/query/AxiomQueryLexer.g4</include>
+                    <include>com/evolveum/axiom/lang/antlr/query/AxiomQueryParser.g4</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 </project>
