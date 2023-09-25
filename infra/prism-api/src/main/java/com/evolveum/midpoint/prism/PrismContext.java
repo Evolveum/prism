@@ -288,6 +288,11 @@ public interface PrismContext extends ProtectorCreator {
 
     boolean isDefaultRelation(QName relation);
 
+    /**
+     * Define default reference target type for cases, when missing it in schema for reference item.
+     */
+    QName getDefaultReferenceTargetType();
+
     // TODO improve this method to avoid false positives when unqualified relations are defined (minor priority, as that's unsupported anyway)
     boolean relationsEquivalent(QName relation1, QName relation2);
 

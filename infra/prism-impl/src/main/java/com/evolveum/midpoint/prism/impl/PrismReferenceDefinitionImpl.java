@@ -121,6 +121,9 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
                     targetType = typeHint.get();
                 }
             }
+            if (targetType == null) {
+                targetType = getPrismContext().getDefaultReferenceTargetType();
+            }
             PrismObjectDefinition<?> referencedObjectDefinition =
                     getSchemaRegistry().determineReferencedObjectDefinition(targetType, rest);
             return ((ItemDefinition<?>) referencedObjectDefinition).findItemDefinition(rest, clazz);
