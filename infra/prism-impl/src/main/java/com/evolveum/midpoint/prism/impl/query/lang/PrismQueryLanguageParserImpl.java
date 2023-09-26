@@ -434,6 +434,18 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+
+                    if (subfilterOrValue.expression() != null) {
+                        var expression = parseExpression(subfilterOrValue.expression());
+                        return FullTextFilterImpl.createFullText(expression);
+                    }
+                    if (isVariablePath(subfilterOrValue.singleValue())) {
+                        var rightPath = path(context.itemDef(), subfilterOrValue.singleValue().path());
+                        var expression = parseExpression(rightPath);
+                        return FullTextFilterImpl.createFullText(expression);
+                    }
+
+
                     return FullTextFilterImpl.createFullText(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
             })
@@ -629,7 +641,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     private boolean isVariablePath(PathContext path) {
-        return path.getText().contains("$");
+        return path != null && path.getText().contains("$");
     }
 
     public PrismQueryLanguageParserImpl(PrismContext context, Map<String, String> namespaceContext) {
