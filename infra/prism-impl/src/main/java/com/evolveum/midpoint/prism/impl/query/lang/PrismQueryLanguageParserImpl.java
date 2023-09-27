@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.function.Function;
 import javax.xml.namespace.QName;
 
+import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -144,8 +146,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             schemaCheck(valueSpec != null, "Single value is required.");
             if (valueSpec.path() != null) {
                 ItemPath rightPath = path(parent.itemDef(), valueSpec.path());
+
                 if (isVariablePath(valueSpec.path())) {
                     return expressionFilter(propDef, path, matchingRule, parseExpression(rightPath));
+                } else if (ItemPathType.COMPLEX_TYPE.equals(definition.getTypeName())) {
+                    // Special case property is of type itemPath, so let's assume item path is value of property?
+                    // This is for example midpoint audit changedItem property
+                    return valueFilter(propDef, path, matchingRule, new ItemPathType(rightPath));
                 } else {
                     PrismPropertyDefinition<?> rightDef = parent.findDefinition(rightPath, PrismPropertyDefinition.class);
                     schemaCheck(rightDef != null, "Path %s does not reference property", rightPath);
