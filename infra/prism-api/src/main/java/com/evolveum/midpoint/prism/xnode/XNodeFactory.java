@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism.xnode;
 
+import com.evolveum.midpoint.prism.PrismNamespaceContext;
+
 import javax.xml.namespace.QName;
 import java.util.Map;
 
@@ -34,6 +36,12 @@ public interface XNodeFactory {
     MapXNode map(Map<QName, XNode> source);
 
     MapXNode map(QName key, XNode value);
+
+    MapXNode map(PrismNamespaceContext namespaceContext);
+
+    MapXNode map(PrismNamespaceContext namespaceContext, Map<QName, XNode> source);
+
+    MapXNode map(PrismNamespaceContext namespaceContext, QName key, XNode value);
 
     ListXNode list(XNode... nodes);
 }

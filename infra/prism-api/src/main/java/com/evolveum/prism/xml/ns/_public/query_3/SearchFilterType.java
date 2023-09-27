@@ -158,7 +158,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
             if (filterMap.size() > 1) {
                 throw new SchemaException("Filter clause has more than one item: " + filterMap);
             }
-            this.filterClauseXNode = prismContext.xnodeFactory().map(filterMap);
+            this.filterClauseXNode = prismContext.xnodeFactory().map(xmap.namespaceContext(), filterMap);
             prismContext.getQueryConverter().parseFilterPreliminarily(this.filterClauseXNode, pc);
         }
     }

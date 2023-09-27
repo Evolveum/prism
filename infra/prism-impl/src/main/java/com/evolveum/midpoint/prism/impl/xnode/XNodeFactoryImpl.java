@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.xnode;
 
+import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.xnode.*;
 
 import javax.xml.namespace.QName;
@@ -80,6 +81,25 @@ public class XNodeFactoryImpl implements XNodeFactory {
         map.put(key, (XNodeImpl) value);
         return map;
     }
+
+    public MapXNode map(PrismNamespaceContext namespaceContext) {
+        return new MapXNodeImpl(namespaceContext);
+    }
+
+    @Override
+    public MapXNode map(PrismNamespaceContext namespaceContext, Map<QName, XNode> source) {
+        MapXNodeImpl map = new MapXNodeImpl(namespaceContext);
+        source.forEach((k, v) -> map.put(k, (XNodeImpl) v));
+        return map;
+    }
+
+    @Override
+    public MapXNode map(PrismNamespaceContext namespaceContext, QName key, XNode value) {
+        MapXNodeImpl map = new MapXNodeImpl(namespaceContext);
+        map.put(key, (XNodeImpl) value);
+        return map;
+    }
+
 
     @Override
     public ListXNode list(XNode... nodes) {

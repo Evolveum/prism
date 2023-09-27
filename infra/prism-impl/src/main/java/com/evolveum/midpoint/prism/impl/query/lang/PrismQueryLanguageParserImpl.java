@@ -1173,7 +1173,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         if (QName.class.isAssignableFrom(type)) {
             PathContext path = subfilterOrValue.singleValue().path();
             schemaCheck(path != null, "QName value expected");
-            return (T) XmlTypeConverter.toJavaValue(path.getText(), new HashMap<>(), QName.class);
+            return (T) XmlTypeConverter.toJavaValue(path.getText(), namespaceContext, QName.class);
 
         }
         var singleValue = subfilterOrValue.singleValue();
