@@ -146,19 +146,26 @@ public class FilterSerializers {
 
     static void fullTextFilter(FullTextFilterImpl source, QueryWriter target)
             throws NotSupportedException {
-        checkSupported(false, "Filter FullTextFilterImpl Not Supported");
-        checkExpressionSupported(source.getExpression());
         target.writeSelf();
         target.writeFilterName(FULL_TEXT);
-        target.writeRawValues(source.getValues());
 
+        if (source.getExpression() != null) {
+            target.writeExpression(source.getExpression());
+        } else {
+            target.writeRawValues(source.getValues());
+        }
     }
 
     static void inOidFilter(InOidFilterImpl source, QueryWriter target) throws NotSupportedException {
-        checkExpressionSupported(source.getExpression());
         target.writeSelf();
         target.writeFilterName(source.isConsiderOwner() ? OWNED_BY_OID : IN_OID);
-        target.writeRawValues(source.getOids());
+
+        var expression = source.getExpression();
+        if (expression != null) {
+            target.writeExpression(expression);
+        } else {
+            target.writeRawValues(source.getOids());
+        }
     }
 
     static void andFilter(AndFilterImpl source, QueryWriter target) throws NotSupportedException {
@@ -309,10 +316,19 @@ public class FilterSerializers {
     }
 
     private static boolean isPolystringMatchesFilter(EqualFilterImpl<?> source) {
+        if (source.getExpression() != null) {
+            return false;
+        }
         return source.getValues().size() == 1 && source.getValues().get(0).getRealValue() instanceof PolyString;
     }
 
     private static boolean isNotExistsFilter(EqualFilterImpl<?> source) {
+        if (source.getExpression() != null) {
+            return false;
+        }
+        if (source.getRightHandSidePath() != null) {
+            return false;
+        }
         return source.getRightHandSidePath() == null && (source.getValues() == null || source.getValues().isEmpty());
     }
 
@@ -332,9 +348,13 @@ public class FilterSerializers {
     }
 
     static void refFilter(RefFilterImpl source, QueryWriter target) throws NotSupportedException {
-        checkSupported(source.getValues().size() == 1, "Only one reference is supported");
-        checkExpressionSupported(source.getExpression());
         target.writePath(source.getFullPath());
+        if (source.getExpression() != null) {
+            target.writeFilterName(EQUAL);
+            target.writeExpression(source.getExpression());
+            return;
+        }
+        checkSupported(source.getValues().size() == 1, "Only one reference is supported");
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
         for (PrismReferenceValue value : source.getValues()) {
@@ -370,10 +390,6 @@ public class FilterSerializers {
         target.writeRawValues(args);
     }
 
-    private static void checkExpressionSupported(@Nullable ExpressionWrapper expression) throws NotSupportedException {
-        checkSupported(expression == null, "Expression serialization not supported yet");
-    }
-
     private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
             boolean emitAnd) {
         if (skipNull && value == null) {
@@ -389,14 +405,17 @@ public class FilterSerializers {
     }
 
     private static void valueFilter(QName name, PropertyValueFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
-        checkExpressionSupported(source.getExpression());
         target.writePath(source.getFullPath());
         target.writeFilterName(name);
         target.writeMatchingRule(source.getDeclaredMatchingRule());
 
+
+        var expression = source.getExpression();
         @Nullable
         ItemPath right = source.getRightHandSidePath();
-        if(right != null) {
+        if (expression != null) {
+            target.writeExpression(expression);
+        } else if (right != null) {
             target.writePath(right);
         } else {
             target.writeValues(source.getValues());

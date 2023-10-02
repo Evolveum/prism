@@ -11,16 +11,27 @@ import java.util.Map;
 import com.evolveum.axiom.concepts.Builder;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
 
 public class PrismQuerySerializerImpl implements PrismQuerySerializer {
 
-    @Override
+    private final PrismQueryExpressionFactory expressionFactory;
+
+    public PrismQuerySerializerImpl() {
+        this(null);
+    }
+
+    public PrismQuerySerializerImpl(PrismQueryExpressionFactory factory) {
+        this.expressionFactory = factory;
+    }
+
+        @Override
     public PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context)
             throws NotSupportedException {
-        QueryWriter output = new QueryWriter(new SimpleBuilder(context));
+        QueryWriter output = new QueryWriter(new SimpleBuilder(context), expressionFactory);
         output.writeFilter(filter);
         return output.build();
     }

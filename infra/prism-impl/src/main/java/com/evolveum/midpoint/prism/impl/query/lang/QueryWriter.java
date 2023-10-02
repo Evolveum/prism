@@ -15,6 +15,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ExpressionWrapper;
+
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.binding.TypeSafeEnum;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
+
+import com.evolveum.midpoint.util.exception.SchemaException;
+
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.Nullable;
@@ -29,15 +37,20 @@ import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 
-public class QueryWriter implements Builder<PrismQuerySerialization> {
+public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQueryExpressionFactory.ExpressionWriter {
 
     public static final String SELF_PATH_SYMBOL = ".";
+
     private static final String MATCHING_RULE_NS = PrismQueryLanguageParserImpl.MATCHING_RULE_NS;
 
+    private static final String BACKTICK = "`";
     private final PrismQuerySerializerImpl.SimpleBuilder target;
+    private final PrismQueryExpressionFactory expressionFactory;
 
-    public QueryWriter(PrismQuerySerializerImpl.SimpleBuilder target) {
+
+    public QueryWriter(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory) {
         this.target = target;
+        this.expressionFactory = expressionFactory;
     }
 
     public void writeSelf() {
@@ -115,6 +128,10 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
             writeQName((QName) rawValue);
             return;
         }
+        if (rawValue instanceof TypeSafeEnum enumValue) {
+            writeString(enumValue.value());
+            return;
+        }
         if (rawValue instanceof Number || rawValue instanceof Boolean) {
             // FIXME: we should have some common serialization utility
             target.emit(rawValue.toString());
@@ -158,7 +175,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
     }
 
     QueryWriter negated() {
-        return new Negated(target);
+        return new Negated(target, expressionFactory);
     }
 
     private <T> void writeList(Collection<? extends T> values, Consumer<? super T> writer) {
@@ -186,6 +203,18 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
         writeRawValue(rawValue);
     }
 
+    public void writeExpression(ExpressionWrapper wrapper) throws NotSupportedException {
+        if (expressionFactory == null) {
+            throw new PrismQuerySerialization.NotSupportedException("Expressions not supported");
+        }
+        try {
+            target.emitSpace();
+            expressionFactory.serializeExpression(this, wrapper);
+        } catch (SchemaException e) {
+            throw new NotSupportedException("External serialization failed.",e);
+        }
+    }
+
     private void writeString(Object rawValue) {
         target.emit(AxiomStrings.toSingleQuoted(rawValue.toString()));
     }
@@ -194,10 +223,41 @@ public class QueryWriter implements Builder<PrismQuerySerialization> {
         emitQName(rawValue, null);
     }
 
+    @Override
+    public void writeConst(String name) {
+        target.emit("@");
+        target.emit(name);
+    }
+
+    @Override
+    public void writeScript(String language, String script) {
+        target.emitSpace();
+        if (language != null) {
+            target.emit(language);
+        }
+        if (isSingleLine(script)) {
+            target.emit(AxiomStrings.toSingleBacktick(script));
+        } else {
+            target.emit(AxiomStrings.TRIPLE_BACKTICK);
+            target.emit("\n");
+            target.emit(script);
+            target.emit(AxiomStrings.TRIPLE_BACKTICK);
+        }
+    }
+
+    private boolean isSingleLine(String script) {
+        return !script.contains("\n");
+    }
+
+    @Override
+    public void writeVariable(ItemPath path) {
+        writePath(path);
+    }
+
     class Negated extends QueryWriter {
 
-        public Negated(PrismQuerySerializerImpl.SimpleBuilder target) {
-            super(target);
+        public Negated(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory) {
+            super(target, expressionFactory);
         }
 
         @Override

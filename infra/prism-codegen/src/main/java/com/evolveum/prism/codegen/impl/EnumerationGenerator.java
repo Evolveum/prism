@@ -6,6 +6,8 @@
  */
 package com.evolveum.prism.codegen.impl;
 
+import com.evolveum.midpoint.prism.binding.TypeSafeEnum;
+
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
@@ -34,6 +36,7 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
 
         String fullyqualifiedName = contract.fullyQualifiedName();
         JDefinedClass clazz = codeModel()._class(JMod.PUBLIC, fullyqualifiedName, ClassType.ENUM);
+        clazz._implements(TypeSafeEnum.class);
         applyDocumentation(clazz.javadoc(), contract.getDocumentation());
         clazz.annotate(XmlType.class).param("name", contract.getQName().getLocalPart());
         clazz.annotate(XmlEnum.class);
@@ -58,7 +61,9 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
         constructor.body().assign(valueField, param);
 
         // public method value()
-        clazz.method(JMod.PUBLIC, String.class, "value").body()._return(valueField);
+        var valueMethod = clazz.method(JMod.PUBLIC, String.class, "value");
+        valueMethod.annotate(Override.class);
+        valueMethod.body()._return(valueField);
 
         // from value method
         JMethod fromValue = clazz.method(JMod.PUBLIC | JMod.STATIC, clazz, "fromValue");

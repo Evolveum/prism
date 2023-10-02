@@ -768,7 +768,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public PrismQuerySerializer querySerializer() {
-        return new PrismQuerySerializerImpl();
+        return new PrismQuerySerializerImpl(queryExpressionFactory);
     }
 
     @Override
