@@ -32,7 +32,9 @@ import static com.evolveum.midpoint.prism.SimpleTypeDefinition.DerivationMethod.
  */
 public class SchemaDefinitionFactory {
 
-    private static final QName TYPESAFE_ENUM_MEMBER = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
+    private static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
+    private static final QName TYPESAFE_ENUM_MEMBER_LEGACY = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
+
     private static final String ENUMERATION_FACET = "enumeration";
 
     public MutableComplexTypeDefinition createComplexTypeDefinition(XSComplexType complexType,
@@ -171,7 +173,12 @@ public class SchemaDefinitionFactory {
             }
             Element appInfo = SchemaProcessorUtil.getAnnotationElement(annotation, DOMUtil.XSD_APPINFO_ELEMENT);
             if (appInfo != null) {
+                // Jakarta namespace
                 Element typeSetEnum = DOMUtil.getChildElement(appInfo, TYPESAFE_ENUM_MEMBER);
+                if (typeSetEnum == null) {
+                    // SUN JAXB namespace
+                    typeSetEnum = DOMUtil.getChildElement(appInfo, TYPESAFE_ENUM_MEMBER_LEGACY);
+                }
                 if (typeSetEnum != null) {
                     constantName = typeSetEnum.getAttribute("name");
                     // Make sure to have NULL in constant name is string is blank
