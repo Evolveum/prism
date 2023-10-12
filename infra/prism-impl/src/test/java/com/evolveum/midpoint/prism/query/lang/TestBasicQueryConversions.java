@@ -126,6 +126,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         }
     }
 
+
+
     @Test
     public void testMatchAndFilter() throws SchemaException, IOException {
         ObjectFilter filter =
@@ -239,6 +241,17 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .item(UserType.F_NAME).isNull()
                 .buildFilter();
         verify("name not exists", filter);
+
+        ObjectFilter propertyExists = getPrismContext().queryFor(UserType.class)
+                .not().item(UserType.F_NAME).isNull()
+                .buildFilter();
+        verify("name exists", propertyExists);
+
+        ObjectFilter notPropertyExists = getPrismContext().queryFor(UserType.class)
+                .not().item(UserType.F_NAME).isNull()
+                .buildFilter();
+        // This should be serialized back as name exists
+        verify("not (name not exists)", propertyExists, false);
     }
 
     @Test

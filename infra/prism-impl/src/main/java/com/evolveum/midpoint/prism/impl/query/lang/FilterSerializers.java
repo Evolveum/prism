@@ -121,17 +121,26 @@ public class FilterSerializers {
 
     static void notFilter(NotFilterImpl source, QueryWriter target) throws NotSupportedException {
         ObjectFilter nested = source.getFilter();
-        if (nested instanceof EqualFilterImpl<?>) {
-            valueFilter(NOT_EQUAL, (EqualFilterImpl<?>) nested, target);
+        if (nested instanceof EqualFilterImpl<?> equalFilter) {
+            // Equal does not have expression, nor values, so it checks if property is null - this is exists filter
+            if (equalFilter.getExpression() == null && equalFilter.getRightHandSidePath() == null && (equalFilter.getValues() == null || equalFilter.getValues().isEmpty())) {
+                existsFilter(equalFilter.getFullPath(), target);
+            } else {
+                valueFilter(NOT_EQUAL, equalFilter, target);
+            }
         } else {
             target.writeNegatedFilter(source.getFilter());
         }
     }
 
     static void allFilter(AllFilterImpl source, QueryWriter target) throws NotSupportedException {
-        checkSupported(false, "Filter AllFilterImpl Not Supported");
+        // NOOP: ALl filter is empty string
     }
 
+    static void existsFilter(ItemPath path, QueryWriter target) {
+        target.writePath(path);
+        target.writeFilterName(EXISTS);
+    }
     static void existsFilter(ExistsFilterImpl source, QueryWriter target) throws NotSupportedException {
         target.writePath(source.getFullPath());
 

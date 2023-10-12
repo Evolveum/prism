@@ -433,6 +433,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 public ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath,
                         ItemDefinition<?> itemDef, QName matchingRule, SubfilterOrValueContext subfilterOrValue) {
+                    if (itemDef instanceof PrismPropertyDefinition<?>) {
+                        return NotFilterImpl.createNot(EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<?>) itemDef, matchingRule));
+                    }
                     return ExistsFilterImpl.createExists(itemPath, context.itemDef(), null);
                 }
             })
@@ -809,16 +812,24 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter parseFilter(
             QueryParsingContext.Local context, FilterContext root)
             throws SchemaException {
-        if (root instanceof AndFilterContext) {
-            return andFilter(context, (AndFilterContext) root);
-        } else if (root instanceof OrFilterContext) {
-            return orFilter(context, (OrFilterContext) root);
+        if (root instanceof AndFilterContext andFilter) {
+            return andFilter(context, andFilter);
+        } else if (root instanceof OrFilterContext orFilter) {
+            return orFilter(context, orFilter);
+        } else if (root instanceof NotFilterContext notFilter) {
+            return notFilter(context, notFilter);
         } else if (root instanceof GenFilterContext) {
             return itemFilter(context, ((GenFilterContext) root).itemFilter());
         } else if (root instanceof SubFilterContext) {
             return parseFilter(context, ((SubFilterContext) root).subfilterSpec().filter());
         }
         throw new IllegalStateException("Unsupported Filter Context");
+    }
+
+    private ObjectFilter notFilter(QueryParsingContext.Local context, NotFilterContext notFilter) throws SchemaException {
+        schemaCheck(notFilter.subfilterSpec() != null, "not filter must uses () ");
+        schemaCheck(notFilter.subfilterSpec().filter() != null, "not filter must specify inner filter ");
+        return NotFilterImpl.createNot(parseFilter(context, notFilter.subfilterSpec().filter()));
     }
 
     private ObjectFilter andFilter(
