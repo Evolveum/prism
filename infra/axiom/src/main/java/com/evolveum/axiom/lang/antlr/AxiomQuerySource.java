@@ -4,15 +4,14 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.FilterContext;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 
 public class AxiomQuerySource {
 
-    private final FilterContext root;
+    private final AxiomQueryParser.RootContext root;
 
-    public AxiomQuerySource(FilterContext root) {
+    public AxiomQuerySource(AxiomQueryParser.RootContext root) {
         this.root = root;
     }
 
@@ -28,10 +27,10 @@ public class AxiomQuerySource {
         if (root.filter() == null) {
             throw new IllegalArgumentException("Unable to parse query: " + query);
         }
-        return new AxiomQuerySource(root.filter());
+        return new AxiomQuerySource(root);
     }
 
-    public FilterContext root() {
+    public AxiomQueryParser.RootContext root() {
         return root;
     }
 }

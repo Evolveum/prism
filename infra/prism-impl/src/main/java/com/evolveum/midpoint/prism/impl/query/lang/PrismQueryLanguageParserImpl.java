@@ -791,7 +791,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
 
     private PreparedPrismQuery parse(QueryParsingContext context) throws SchemaException {
-        ObjectFilter maybeFilter = parseFilter(context.root(), context.source().root());
+        ObjectFilter maybeFilter = parseFilter(context.root(), context.source().root().filter());
         if (!context.hasPlaceholders()) {
             return context.completed(maybeFilter);
         }
@@ -799,7 +799,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     protected ObjectFilter parseBound(QueryParsingContext context) throws SchemaException {
-        return parseFilter(context.root(), context.source().root());
+        return parseFilter(context.root(), context.source().root().filter());
     }
 
 
