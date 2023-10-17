@@ -13,7 +13,7 @@
     <parent>
         <artifactId>prism</artifactId>
         <groupId>com.evolveum.prism</groupId>
-        <version>4.8</version>
+        <version>4.9-SNAPSHOT</version>
     </parent>
 
     <artifactId>prism-codegen</artifactId>
