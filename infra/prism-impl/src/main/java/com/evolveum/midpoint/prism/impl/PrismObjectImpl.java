@@ -187,7 +187,8 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     private ItemName getNamePropertyElementName() {
-        return new ItemName(getElementName().getNamespaceURI(), PrismConstants.NAME_LOCAL_NAME);
+
+        return new ItemName(PrismContext.get().getSchemaRegistry().getDefaultNamespace(), PrismConstants.NAME_LOCAL_NAME);
     }
 
     @Override
