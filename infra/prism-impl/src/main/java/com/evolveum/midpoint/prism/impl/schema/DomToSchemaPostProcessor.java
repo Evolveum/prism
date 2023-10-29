@@ -539,6 +539,8 @@ class DomToSchemaPostProcessor {
             // is deterministic
             definition.setTypeName(typeName);
         }
+        Annotation.processAnnotation(definition, annotation, Annotation.OBJECT_REFERENCE_TARGET_TYPE);
+
         Element targetTypeAnnotationElement = SchemaProcessorUtil.getAnnotationElement(annotation,
                 A_OBJECT_REFERENCE_TARGET_TYPE);
         if (targetTypeAnnotationElement != null
@@ -1119,6 +1121,8 @@ class DomToSchemaPostProcessor {
         if (annotation == null || annotation.getAnnotation() == null) {
             return;
         }
+
+        Annotation.processAnnotations(itemDef, annotation);
 
         // ignore
         Boolean ignore = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_IGNORE);

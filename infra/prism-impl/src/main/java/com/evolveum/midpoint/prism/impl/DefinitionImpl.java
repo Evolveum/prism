@@ -292,10 +292,10 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public <A> A getAnnotation(QName qname) {
         if (annotations == null) {
             return null;
-        } else {
-            //noinspection unchecked
-            return (A) annotations.get(qname);
         }
+
+        //noinspection unchecked
+        return (A) annotations.get(qname);
     }
 
     @Override
@@ -365,6 +365,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         this.removed = source.isRemoved();
         Map<QName, Object> annotations = source.getAnnotations();
         if (annotations != null) {
+            if (this.annotations == null) {
+                this.annotations = new HashMap<>();
+            }
             this.annotations.putAll(annotations);
         }
         List<SchemaMigration> migrations = source.getSchemaMigrations();
