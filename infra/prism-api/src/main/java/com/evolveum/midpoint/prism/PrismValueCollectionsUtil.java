@@ -54,11 +54,10 @@ public class PrismValueCollectionsUtil {
         return false;
     }
 
-    public static <T> Collection<PrismPropertyValue<T>> createCollection(PrismContext prismContext,
-            Collection<T> realValueCollection) {
+    public static <T> Collection<PrismPropertyValue<T>> createCollection(Collection<T> realValueCollection) {
         Collection<PrismPropertyValue<T>> pvalCol = new ArrayList<>(realValueCollection.size());
         for (T realValue: realValueCollection) {
-            pvalCol.add(prismContext.itemFactory().createPropertyValue(realValue));
+            pvalCol.add(PrismContext.get().itemFactory().createPropertyValue(realValue));
         }
         return pvalCol;
     }
