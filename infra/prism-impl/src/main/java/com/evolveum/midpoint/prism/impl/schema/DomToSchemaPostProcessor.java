@@ -54,9 +54,7 @@ class DomToSchemaPostProcessor {
 
     private static final Trace LOGGER = TraceManager.getTrace(DomToSchemaPostProcessor.class);
 
-
     private static final String ENUMERATION = "enumeration";
-
 
     private final XSSchemaSet xsSchemaSet;
     private final PrismContext prismContext;
@@ -89,7 +87,9 @@ class DomToSchemaPostProcessor {
     /**
      * Main entry point.
      */
-    void postprocessSchema(MutablePrismSchema prismSchema, boolean isRuntime, boolean allowDelayedItemDefinitions, String shortDescription) throws SchemaException {
+    void postprocessSchema(
+            MutablePrismSchema prismSchema, boolean isRuntime, boolean allowDelayedItemDefinitions, String shortDescription)
+            throws SchemaException {
         this.schema = prismSchema;
         this.isRuntime = isRuntime;
         this.allowDelayedItemDefinitions = allowDelayedItemDefinitions;
@@ -153,24 +153,21 @@ class DomToSchemaPostProcessor {
             throws SchemaException {
 
         SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
-        MutableComplexTypeDefinition ctd = definitionFactory.createComplexTypeDefinition(complexType, prismContext, complexType.getAnnotation());
+        MutableComplexTypeDefinition ctd = definitionFactory.createComplexTypeDefinition(
+                complexType, prismContext, complexType.getAnnotation());
 
         ComplexTypeDefinition existingComplexTypeDefinition = schema.findComplexTypeDefinitionByType(ctd.getTypeName());
         if (existingComplexTypeDefinition != null) {
-            // We already have this in schema. So avoid redundant work and
-            // infinite loops;
+            // We already have this in schema. So avoid redundant work and infinite loops.
             return existingComplexTypeDefinition;
         }
-        // Add to the schema right now to avoid loops - even if it is not
-        // complete yet
-        // The definition may reference itself
+        // Add to the schema right now to avoid loops - even if it is not complete yet. The definition may reference itself.
         schema.add(ctd);
 
         XSContentType content = complexType.getContentType();
         XSContentType explicitContent = complexType.getExplicitContent();
         if (content != null) {
             XSParticle particle = content.asParticle();
-
 
             // We need this in order for properly distinguish between containers and plain complex types
             if (isPropertyContainer(complexType)) {
@@ -192,11 +189,11 @@ class DomToSchemaPostProcessor {
             XSAnnotation annotation = complexType.getAnnotation();
             Element extensionAnnotationElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_EXTENSION);
             if (extensionAnnotationElement != null) {
-                QName extensionType = DOMUtil.getQNameAttribute(extensionAnnotationElement,
-                        A_EXTENSION_REF.getLocalPart());
+                QName extensionType = DOMUtil.getQNameAttribute(extensionAnnotationElement, A_EXTENSION_REF.getLocalPart());
                 if (extensionType == null) {
-                    throw new SchemaException("The " + A_EXTENSION + "annotation on " + ctd.getTypeName()
-                            + " complex type does not have " + A_EXTENSION_REF.getLocalPart() + " attribute",
+                    throw new SchemaException(
+                            "The %s annotation on %s complex type does not have %s attribute".formatted(
+                                    A_EXTENSION, ctd.getTypeName(), A_EXTENSION_REF.getLocalPart()),
                             A_EXTENSION_REF);
                 }
                 ctd.setContainerMarker(true);
@@ -236,7 +233,6 @@ class DomToSchemaPostProcessor {
             if (isAny(complexType, Optional.of(XSWildcard.STRTICT))) {
                 ctd.setStrictAnyMarker(true);
             }
-
         }
 
         if (isList(complexType)) {
@@ -249,42 +245,28 @@ class DomToSchemaPostProcessor {
         ctd.setCompileTimeClass(compileTimeClass);
         schema.registerCompileTimeClass(compileTimeClass, ctd);
 
-        definitionFactory.finishComplexTypeDefinition(ctd, complexType, prismContext,
-                complexType.getAnnotation());
-
-        // Attempt to create object or container definition from this complex
-        // type
-
-        PrismContainerDefinition<?> defFromComplexType = getDefinitionFactory()
-                .createExtraDefinitionFromComplexType(complexType, ctd, prismContext,
-                        complexType.getAnnotation());
-
-        if (defFromComplexType != null) {
-            markRuntime(defFromComplexType);
-            schema.add(defFromComplexType);
-        }
+        definitionFactory.finishComplexTypeDefinition(
+                ctd, complexType, prismContext, complexType.getAnnotation());
 
         parseAttributes(ctd, complexType);
 
         return ctd;
-
     }
 
     private void parseAttributes(MutableComplexTypeDefinition ctd, XSComplexType complexType) throws SchemaException {
-        // TODO Auto-generated method stub
         List<PrismPropertyDefinition<?>> definitions = new ArrayList<>();
-        for(XSAttributeUse attributeUse : complexType.getAttributeUses()) {
+        for (XSAttributeUse attributeUse : complexType.getAttributeUses()) {
 
             var attributeDecl = attributeUse.getDecl();
             ItemName name = new ItemName(ctd.getTypeName().getNamespaceURI(), attributeDecl.getName());
             QName type = getType(attributeDecl.getType());
-            var attributeDef = getDefinitionFactory().createPropertyDefinition(name, type, null, prismContext, null,  null);
+            var attributeDef = getDefinitionFactory().createPropertyDefinition(
+                    name, type, null, prismContext, null,  null);
             attributeDef.toMutable().setMinOccurs(0);
             attributeDef.toMutable().setMaxOccurs(1);
             definitions.add(attributeDef);
         }
         ctd.setAttributeDefinitions(definitions);
-
     }
 
     private void setInstantiationOrder(MutableTypeDefinition typeDefinition, XSAnnotation annotation) throws SchemaException {
