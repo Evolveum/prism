@@ -22,6 +22,7 @@ public class AxiomQuerySource {
         // DO NOT log to STDIN
         lexer.removeErrorListeners();
         parser.removeErrorListeners();
+        parser.addErrorListener(AxiomQueryErrorListener.INSTANCE);
 
         var root = parser.root();
         if (root.filter() == null) {

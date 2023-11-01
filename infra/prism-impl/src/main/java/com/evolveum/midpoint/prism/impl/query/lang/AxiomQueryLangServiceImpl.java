@@ -4,6 +4,7 @@ import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
 
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 
 import static com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
@@ -29,10 +30,14 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
     }
 
     public List<String> queryCompletion(String query) {
-        AxiomQueryCompletionVisitor axiomQueryCompletionVisitor = new AxiomQueryCompletionVisitor();
         AxiomQuerySource axiomQuerySource = AxiomQuerySource.from(query);
-        RuleNode ruleNode = (RuleNode) axiomQueryCompletionVisitor.visitChildren(axiomQuerySource.root());
-//        return FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, );
+        AxiomQueryCompletionVisitor axiomQueryCompletionVisitor = new AxiomQueryCompletionVisitor();
+        axiomQueryCompletionVisitor.visit(axiomQuerySource.root());
+        // last type in tree
+        axiomQueryCompletionVisitor.getLastType();
+        // last tokens in tree
+        axiomQueryCompletionVisitor.getLastNode().getParent().getParent().getParent().getText();
+
         return null;
     }
 }
