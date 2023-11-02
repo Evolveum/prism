@@ -12,19 +12,19 @@ import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
 /**
- * TODO DOC
+ * Helper class to process annotations containing enum values.
  */
-public class EnumAnnotationConverter<T extends Enum<?>> implements AnnotationConverter<T> {
+public class EnumAnnotationProcessor<T extends Enum<?>> extends AnnotationProcessor {
 
     private final Class<T> type;
 
-    public EnumAnnotationConverter(Class<T> type) {
+    public EnumAnnotationProcessor(Class<T> type) {
         this.type = type;
     }
 
     @Override
-    public @Nullable T convert(@NotNull Element annotation) {
-        String value = annotation.getTextContent();
+    public @Nullable T convert(@NotNull Annotation annotation, @NotNull Element element) {
+        String value = element.getTextContent();
         if (value == null) {
             return null;
         }

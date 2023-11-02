@@ -50,7 +50,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     @NotNull protected ItemName itemName;
     private int minOccurs = 1;
     private int maxOccurs = 1;
-    private boolean operational = false;
     private boolean dynamic;
     private boolean canAdd = true;
     private boolean canRead = true;
@@ -62,7 +61,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     private boolean indexOnly = false;
 
-    private boolean isSearchable = false;
 
     private final transient SerializationProxy serializationProxy;
 
@@ -142,13 +140,13 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     @Override
     public boolean isOperational() {
-        return operational;
+        return getAnnotation(PrismConstants.A_OPERATIONAL, false);
     }
 
     @Override
     public void setOperational(boolean operational) {
         checkMutable();
-        this.operational = operational;
+        setAnnotation(PrismConstants.A_OPERATIONAL, operational);
     }
 
     @Override
@@ -313,7 +311,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         this.canAdd = source.canAdd();
         this.canRead = source.canRead();
         this.canModify = source.canModify();
-        this.operational = source.isOperational();
         this.valueEnumerationRef = source.getValueEnumerationRef(); // clone?
         this.indexOnly = source.isIndexOnly();
     }
@@ -339,7 +336,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         ItemDefinitionImpl<?> that = (ItemDefinitionImpl<?>) o;
         return minOccurs == that.minOccurs
                 && maxOccurs == that.maxOccurs
-                && operational == that.operational
+                && isOperational() == that.isOperational()
                 && dynamic == that.dynamic
                 && canAdd == that.canAdd
                 && canRead == that.canRead
@@ -354,7 +351,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), itemName, minOccurs, maxOccurs, operational, dynamic, canAdd, canRead, canModify,
+        return Objects.hash(super.hashCode(), itemName, minOccurs, maxOccurs, isOperational(), dynamic, canAdd, canRead, canModify,
                 inherited, substitutionHead, heterogeneousListItem, valueEnumerationRef, indexOnly);
     }
 
@@ -467,12 +464,12 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     @Override
     public boolean isSearchable() {
-        return isSearchable;
+        return getAnnotation(PrismConstants.A_SEARCHABLE, false);
     }
 
     @Override
     public void setSearchable(boolean searchable) {
-        isSearchable = searchable;
+        setAnnotation(PrismConstants.A_SEARCHABLE, searchable);
     }
 
     @Override

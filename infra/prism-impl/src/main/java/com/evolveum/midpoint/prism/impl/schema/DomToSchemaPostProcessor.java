@@ -355,10 +355,13 @@ class DomToSchemaPostProcessor {
         return false;
     }
 
-    private void extractDocumentation(Definition definition, XSAnnotation annotation) {
+    private void extractDocumentation(Definition definition, XSAnnotation annotation) throws SchemaException {
         if (annotation == null) {
             return;
         }
+
+        Annotation.processAnnotation(definition.toMutable(), annotation, Annotation.DOCUMENTATION);
+
         Element documentationElement = SchemaProcessorUtil.getAnnotationElement(annotation, DOMUtil.XSD_DOCUMENTATION_ELEMENT);
         if (documentationElement != null) {
             // The documentation may be HTML-formatted. Therefore we want to
@@ -541,14 +544,6 @@ class DomToSchemaPostProcessor {
         }
         Annotation.processAnnotation(definition, annotation, Annotation.OBJECT_REFERENCE_TARGET_TYPE);
 
-        Element targetTypeAnnotationElement = SchemaProcessorUtil.getAnnotationElement(annotation,
-                A_OBJECT_REFERENCE_TARGET_TYPE);
-        if (targetTypeAnnotationElement != null
-                && !StringUtils.isEmpty(targetTypeAnnotationElement.getTextContent())) {
-            // Explicit definition of target type overrides previous logic
-            QName targetType = DOMUtil.getQNameValue(targetTypeAnnotationElement);
-            definition.setTargetTypeName(targetType);
-        }
         setMultiplicity(definition, elementParticle, annotation, false);
         Boolean composite = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_COMPOSITE);
         if (composite != null) {
@@ -1123,90 +1118,6 @@ class DomToSchemaPostProcessor {
         }
 
         Annotation.processAnnotations(itemDef, annotation);
-
-        // ignore
-        Boolean ignore = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_IGNORE);
-        if (ignore != null) {
-            itemDef.setProcessing(ItemProcessing.IGNORE);
-        }
-
-        Element processing = SchemaProcessorUtil.getAnnotationElement(annotation, A_PROCESSING);
-        if (processing != null) {
-            itemDef.setProcessing(ItemProcessing.findByValue(processing.getTextContent()));
-        }
-
-        // deprecated
-        Boolean deprecated = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_DEPRECATED);
-        if (deprecated != null) {
-            itemDef.setDeprecated(deprecated);
-        }
-
-        // deprecated since
-        Element deprecatedSince = SchemaProcessorUtil.getAnnotationElement(annotation, A_DEPRECATED_SINCE);
-        if (deprecatedSince != null) {
-            itemDef.setDeprecatedSince(deprecatedSince.getTextContent());
-        }
-
-        // removed
-        Boolean removed = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_REMOVED);
-        if (removed != null) {
-            itemDef.setRemoved(removed);
-        }
-
-        // removed since
-        Element removedSince = SchemaProcessorUtil.getAnnotationElement(annotation, A_REMOVED_SINCE);
-        if (removedSince != null) {
-            itemDef.setRemovedSince(removedSince.getTextContent());
-        }
-
-        // experimental
-        Boolean experimental = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_EXPERIMENTAL);
-        if (experimental != null) {
-            itemDef.setExperimental(experimental);
-        }
-
-        // planned removal
-        Element plannedRemoval = SchemaProcessorUtil.getAnnotationElement(annotation, A_PLANNED_REMOVAL);
-        if (plannedRemoval != null) {
-            itemDef.setPlannedRemoval(plannedRemoval.getTextContent());
-        }
-
-        // elaborate
-        Boolean elaborate = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_ELABORATE);
-        if (elaborate != null) {
-            itemDef.setElaborate(elaborate);
-        }
-
-        // operational
-        Boolean operational = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_OPERATIONAL);
-        if (operational != null) {
-            itemDef.setOperational(operational);
-        }
-
-        // displayName
-        Element attributeDisplayName = SchemaProcessorUtil.getAnnotationElement(annotation, A_DISPLAY_NAME);
-        if (attributeDisplayName != null) {
-            itemDef.setDisplayName(attributeDisplayName.getTextContent());
-        }
-
-        // displayOrder
-        Element displayOrderElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_DISPLAY_ORDER);
-        if (displayOrderElement != null) {
-            Integer displayOrder = DOMUtil.getIntegerValue(displayOrderElement);
-            itemDef.setDisplayOrder(displayOrder);
-        }
-
-        // help
-        Element help = SchemaProcessorUtil.getAnnotationElement(annotation, A_HELP);
-        if (help != null) {
-            itemDef.setHelp(help.getTextContent());
-        }
-
-        // emphasized
-        Boolean emphasized = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_EMPHASIZED);
-        if (emphasized != null) {
-            itemDef.setEmphasized(emphasized);
-        }
 
         Boolean searchable = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_SEARCHABLE);
         if (searchable != null) {

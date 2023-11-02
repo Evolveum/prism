@@ -7,10 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import java.util.Optional;
-
-import javax.xml.namespace.QName;
-
 import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
@@ -22,6 +18,9 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
 
 import org.jetbrains.annotations.NotNull;
+
+import javax.xml.namespace.QName;
+import java.util.Optional;
 
 /**
  * Object Reference Schema Definition.
@@ -38,12 +37,10 @@ import org.jetbrains.annotations.NotNull;
  * {@link Definition} for more details.
  *
  * @author Radovan Semancik
- *
  */
 public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismReference> implements MutablePrismReferenceDefinition {
 
     private static final long serialVersionUID = 2427488779612517600L;
-    private QName targetTypeName;
     private QName compositeObjectElementName;
     private boolean isComposite = false;
 
@@ -56,7 +53,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     public PrismReferenceDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
         super(elementName, typeName, definedInType);
         structuredType = Lazy.from(() ->
-            Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
+                Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
@@ -71,13 +68,13 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
      */
     @Override
     public QName getTargetTypeName() {
-        return targetTypeName;
+        return getAnnotation(PrismConstants.A_OBJECT_REFERENCE_TARGET_TYPE);
     }
 
     @Override
     public void setTargetTypeName(QName targetTypeName) {
         checkMutable();
-        this.targetTypeName = targetTypeName;
+        setAnnotation(PrismConstants.A_OBJECT_REFERENCE_TARGET_TYPE, targetTypeName);
     }
 
     @Override
@@ -161,7 +158,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
             if (!(parent instanceof PrismReference)) {
                 return false;
             }
-            return canBeDefinitionOf((PrismReference)parent);
+            return canBeDefinitionOf((PrismReference) parent);
         } else {
             return true;
         }
@@ -188,13 +185,12 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
 
     protected void copyDefinitionDataFrom(PrismReferenceDefinition source) {
         super.copyDefinitionDataFrom(source);
-        targetTypeName = source.getTargetTypeName();
         compositeObjectElementName = source.getCompositeObjectElementName();
         isComposite = source.isComposite();
     }
 
     /**
-     * Return a human readable name of this class suitable for logs.
+     * Return a human-readable name of this class suitable for logs.
      */
     @Override
     public String getDebugDumpClassName() {

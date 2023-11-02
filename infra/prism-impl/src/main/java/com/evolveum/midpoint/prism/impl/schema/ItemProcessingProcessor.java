@@ -7,16 +7,16 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
-import com.evolveum.midpoint.prism.ItemProcessing;
-
 import org.jetbrains.annotations.NotNull;
 
-/**
- * TODO DOC
- */
-public class ItemProcessingConverter extends EnumAnnotationConverter<ItemProcessing> {
+import com.evolveum.midpoint.prism.ItemProcessing;
 
-    public ItemProcessingConverter() {
+/**
+ * Processor for {@link com.evolveum.midpoint.prism.PrismConstants#A_PROCESSING} annotation with {@link ItemProcessing} values.
+ */
+public class ItemProcessingProcessor extends EnumAnnotationProcessor<ItemProcessing> {
+
+    public ItemProcessingProcessor() {
         super(ItemProcessing.class);
     }
 

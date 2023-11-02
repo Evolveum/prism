@@ -506,6 +506,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             sb.append(",ext:");
             sb.append(PrettyPrinter.prettyPrint(extensionForType));
         }
+        ItemProcessing processing = getProcessing();
         if (processing != null) {
             sb.append(",").append(processing);
         }
