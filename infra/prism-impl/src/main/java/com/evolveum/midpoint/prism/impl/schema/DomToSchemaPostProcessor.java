@@ -361,14 +361,6 @@ class DomToSchemaPostProcessor {
         }
 
         Annotation.processAnnotation(definition.toMutable(), annotation, Annotation.DOCUMENTATION);
-
-        Element documentationElement = SchemaProcessorUtil.getAnnotationElement(annotation, DOMUtil.XSD_DOCUMENTATION_ELEMENT);
-        if (documentationElement != null) {
-            // The documentation may be HTML-formatted. Therefore we want to
-            // keep the formatting and tag names
-            String documentationText = DOMUtil.serializeElementContent(documentationElement);
-            definition.toMutable().setDocumentation(documentationText);
-        }
     }
 
     /**
@@ -1119,18 +1111,8 @@ class DomToSchemaPostProcessor {
 
         Annotation.processAnnotations(itemDef, annotation);
 
-        Boolean searchable = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_SEARCHABLE);
-        if (searchable != null) {
-            itemDef.setSearchable(searchable);
-        }
-
         // documentation
         extractDocumentation(itemDef, annotation);
-
-        Boolean heterogeneousListItem = SchemaProcessorUtil.getAnnotationBooleanMarker(annotation, A_HETEROGENEOUS_LIST_ITEM);
-        if (heterogeneousListItem != null) {
-            itemDef.setHeterogeneousListItem(heterogeneousListItem);
-        }
 
         // schemaMigration
         parseSchemaMigrations(itemDef, annotation);

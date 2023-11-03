@@ -26,35 +26,13 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  */
 public enum Annotation {
 
-    IGNORE(A_IGNORE, ItemProcessing.class, null, new IgnoreProcessor()),
-
-    PROCESSING(A_PROCESSING, ItemProcessing.class, null, new ItemProcessingProcessor()),
-
     DEPRECATED(A_DEPRECATED, Boolean.class, true),
 
     DEPRECATED_SINCE(A_DEPRECATED_SINCE, String.class),
 
-    REMOVED(A_REMOVED, Boolean.class, true),
-
-    REMOVED_SINCE(A_REMOVED_SINCE, String.class),
-
-    EXPERIMENTAL(A_EXPERIMENTAL, Boolean.class, true),
-
-    PLANNED_REMOVAL(A_PLANNED_REMOVAL, String.class),
-
-    ELABORATE(A_ELABORATE, Boolean.class, true),
-
-    OPERATIONAL(A_OPERATIONAL, Boolean.class, true),
-
     DISPLAY_NAME(A_DISPLAY_NAME, String.class),
 
     DISPLAY_ORDER(A_DISPLAY_ORDER, Integer.class),
-
-    HELP(A_HELP, String.class),
-
-    EMPHASIZED(A_EMPHASIZED, Boolean.class, true),
-
-    SEARCHABLE(A_SEARCHABLE, Boolean.class, true),
 
     DOCUMENTATION(DOMUtil.XSD_DOCUMENTATION_ELEMENT, String.class, null, new AnnotationProcessor() {
 
@@ -64,19 +42,39 @@ public enum Annotation {
         }
     }),
 
+    ELABORATE(A_ELABORATE, Boolean.class, true),
+
+    EMPHASIZED(A_EMPHASIZED, Boolean.class, true),
+
+    EXPERIMENTAL(A_EXPERIMENTAL, Boolean.class, true),
+
+    HELP(A_HELP, String.class),
+
     HETEROGENEOUS_LIST_ITEM(A_HETEROGENEOUS_LIST_ITEM, Boolean.class, true),
 
-    // todo schema migration
-
-    // todo diagrams?
+    IGNORE(A_IGNORE, ItemProcessing.class, null, new IgnoreProcessor()),
 
     OBJECT_REFERENCE_TARGET_TYPE(A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, null, new AnnotationProcessor() {
 
         protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
             return DOMUtil.getQNameValue(element);
         }
-    });
+    }),
 
+    OPERATIONAL(A_OPERATIONAL, Boolean.class, true),
+
+    PLANNED_REMOVAL(A_PLANNED_REMOVAL, String.class),
+
+    PROCESSING(A_PROCESSING, ItemProcessing.class, null, new ItemProcessingProcessor()),
+
+    REMOVED(A_REMOVED, Boolean.class, true),
+
+    REMOVED_SINCE(A_REMOVED_SINCE, String.class),
+
+    SEARCHABLE(A_SEARCHABLE, Boolean.class, true);
+
+    // todo schema migration
+    // todo diagrams?
     // todo others?
 
     final QName name;
