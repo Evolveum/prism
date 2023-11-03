@@ -40,7 +40,7 @@ public enum Annotation {
 
     EXPERIMENTAL(A_EXPERIMENTAL, Boolean.class, true),
 
-    PLANNED_REMOVAL(A_PLANNED_REMOVAL, Boolean.class, true),
+    PLANNED_REMOVAL(A_PLANNED_REMOVAL, String.class),
 
     ELABORATE(A_ELABORATE, Boolean.class, true),
 
