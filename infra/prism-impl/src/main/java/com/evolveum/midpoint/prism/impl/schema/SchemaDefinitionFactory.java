@@ -93,17 +93,6 @@ public class SchemaDefinitionFactory {
     }
 
     /**
-     * Create optional extra definition form a top-level complex type definition.
-     * This is used e.g. to create object class definitions in midPoint
-     */
-    public <C extends Containerable> PrismContainerDefinition<C> createExtraDefinitionFromComplexType(XSComplexType complexType,
-            ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext,
-            XSAnnotation annotation) throws SchemaException {
-        // Create nothing by default
-        return null;
-    }
-
-    /**
      * Called after the complex type definition is filled with items. It may be used to finish building
      * the definition, e.g. by adding data that depends on existing internal definitions.
      */

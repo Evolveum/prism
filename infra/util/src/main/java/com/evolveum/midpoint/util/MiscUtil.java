@@ -652,6 +652,16 @@ public class MiscUtil {
         return null;
     }
 
+    @SafeVarargs
+    public static @NotNull <T> T getFirstNonNullRequired(T... values) {
+        for (T value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        throw new IllegalStateException("All values are null");
+    }
+
     // TODO better name
     public static <T> T getFirstNonNullFromList(List<T> values) {
         for (T value : values) {
