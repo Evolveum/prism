@@ -176,13 +176,13 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public boolean isEmphasized() {
-        return getAnnotation(PrismConstants.A_EMPHASIZED, false);
+        return getAnnotation(PrismConstants.A_DISPLAY, null) == Display.EMPHASIZED;
     }
 
     @Override
     public void setEmphasized(boolean emphasized) {
         checkMutable();
-        setAnnotation(PrismConstants.A_EMPHASIZED, emphasized);
+        setAnnotation(PrismConstants.A_DISPLAY, emphasized ? Display.EMPHASIZED : null);
     }
 
     @Override

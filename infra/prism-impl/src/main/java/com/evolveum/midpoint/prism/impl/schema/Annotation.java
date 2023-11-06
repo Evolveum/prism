@@ -11,6 +11,8 @@ import static com.evolveum.midpoint.prism.PrismConstants.*;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.Display;
+
 import com.sun.xml.xsom.XSAnnotation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +46,16 @@ public enum Annotation {
 
     ELABORATE(A_ELABORATE, Boolean.class, true),
 
+    @Deprecated
     EMPHASIZED(A_EMPHASIZED, Boolean.class, true),
+
+    DISPLAY(A_DISPLAY, Display.class, null, new AnnotationProcessor() {
+
+        @Override
+        protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
+            return Display.findByValue(element.getTextContent());
+        }
+    }),
 
     EXPERIMENTAL(A_EXPERIMENTAL, Boolean.class, true),
 

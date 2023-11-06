@@ -78,7 +78,7 @@
                         <a:displayName>ObjectType.name</a:displayName>
                         <a:displayOrder>0</a:displayOrder>
                         <a:help>Short unique name of the object</a:help>
-                        <a:emphasized>true</a:emphasized>
+                        <a:display>emphasized</a:display>
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
@@ -123,7 +123,7 @@
                                 <a:displayName>UserType.fullName</a:displayName>
                                 <a:displayOrder>10</a:displayOrder>
                                 <a:help>User full name</a:help>
-                                <a:emphasized>true</a:emphasized>
+                                <a:display>emphasized</a:display>
                             </xsd:appinfo>
                         </xsd:annotation>
                     </xsd:element>
@@ -131,7 +131,7 @@
                     <xsd:element name="familyName" type="xsd:string" minOccurs="0">
                         <xsd:annotation>
                             <xsd:appinfo>
-                                <a:emphasized>true</a:emphasized>
+                                <a:display>emphasized</a:display>
                             </xsd:appinfo>
                         </xsd:annotation>
                     </xsd:element>

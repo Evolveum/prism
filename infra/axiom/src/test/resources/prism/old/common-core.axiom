@@ -59,7 +59,7 @@ model common-core {
             """;
             // <a:displayName>ObjectType.name</a:displayName>
             // <a:displayOrder>0</a:displayOrder>
-            // <a:emphasized>true</a:emphasized>
+            // <a:display>emphasized</a:display>
         }
 
         // Note: the description property is referenced from various contexts (e.g. Object and Assignment).
@@ -571,7 +571,7 @@ model common-core {
             """;
             // <a:displayName>UserType.fullName</a:displayName>
             // <a:displayOrder>100</a:displayOrder>
-            // <a:emphasized>true</a:emphasized>
+            // <a:display>emphasized</a:display>
         }
 
         item givenName {
@@ -590,7 +590,7 @@ model common-core {
             """;
             // <a:displayName>UserType.givenName</a:displayName>
             // <a:displayOrder>110</a:displayOrder>
-            // <a:emphasized>true</a:emphasized>
+            // <a:display>emphasized</a:display>
         }
 
         item familyName {
@@ -609,7 +609,7 @@ model common-core {
             """;
             // <a:displayName>UserType.familyName</a:displayName>
             // <a:displayOrder>120</a:displayOrder>
-            // <a:emphasized>true</a:emphasized>
+            // <a:display>emphasized</a:display>
         }
 
         item additionalName {

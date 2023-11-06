@@ -163,6 +163,43 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="display" type="tns:DisplayType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Enumeration annotation that specifies how the item should be displayed.
+
+                It is a replacement for the old "emphasized" annotation.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:simpleType name="DisplayType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Display hints for an item.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <jaxb:typesafeEnumClass/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="hidden">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="HIDDEN"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="emphasized">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="EMPHASIZED"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:element name="index" type="tns:IndexType">
         <xsd:annotation>
             <xsd:documentation>
@@ -299,6 +336,8 @@
 
                 The example of operation properties are modification timestamps, create timestamps,
                 user that made the last change, etc.
+
+                Items marked with `operational` = true also get `display` = hidden by default.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
@@ -374,6 +413,8 @@
                  Set true for definitions that are more important than others and that should be emphasized
                  during presentation. E.g. the emphasized definitions will always be displayed in the user
                  interfaces (even if they are empty), they will always be included in the dumps, etc.
+
+                 REMOVED: Use display=emphasized instead.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
