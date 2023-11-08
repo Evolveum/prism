@@ -16,9 +16,30 @@ import java.util.Arrays;
  */
 public enum Display {
 
+    /**
+     * Item shouldn't be visible.
+     */
     HIDDEN("hidden"),
 
-    EMPHASIZED("emphasized");
+    /**
+     * Item should be visible, standard visibility behaviour for item.
+     */
+    REGULAR("regular"),
+
+    /**
+     * Item should be visible and emphasized. E.g. it should be displayed in bold.
+     */
+    EMPHASIZED("emphasized"),
+
+    /**
+     * Item should be visible and collapsed. E.g. it should be displayed in collapsed form. Applicable only for containers.
+     */
+    COLLAPSED("collapsed"),
+
+    /**
+     * Item should be visible and expanded. E.g. it should be displayed in expanded form. Applicable only for containers.
+     */
+    EXPANDED("expanded");
 
     final String value;
 
