@@ -49,7 +49,19 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     private static final long serialVersionUID = -2643332934312107274L;
     @NotNull protected QName typeName;
+    protected ItemProcessing processing;
     protected boolean isAbstract = false;
+    protected String displayName;
+    protected Integer displayOrder;
+    protected String help;
+    protected String documentation;
+    protected boolean deprecated = false;
+    protected String deprecatedSince;
+    protected boolean removed = false;
+    protected String removedSince;
+    protected String plannedRemoval;
+    protected boolean experimental = false;
+    protected boolean elaborate = false;
     private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
@@ -59,6 +71,13 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
      * extension schema, resource schema or connector schema or something like that. I.e. it is not defined statically.
      */
     protected boolean isRuntimeSchema;
+
+    /**
+     * Set true for definitions that are more important than others and that should be emphasized
+     * during presentation. E.g. the emphasized definitions will always be displayed in the user
+     * interfaces (even if they are empty), they will always be included in the dumps, etc.
+     */
+    protected boolean emphasized = false;
 
     DefinitionImpl(@NotNull QName typeName) {
         this.typeName = typeName;
@@ -78,17 +97,18 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public boolean isIgnored() {
-        return getProcessing() == ItemProcessing.IGNORE;
+        return processing == ItemProcessing.IGNORE;
     }
 
     @Override
     public ItemProcessing getProcessing() {
-        return getAnnotation(PrismConstants.A_PROCESSING);
+        return processing;
     }
 
     @Override
     public void setProcessing(ItemProcessing processing) {
         checkMutable();
+        this.processing = processing;
         setAnnotation(PrismConstants.A_PROCESSING, processing);
     }
 
@@ -104,134 +124,145 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public boolean isDeprecated() {
-        return getAnnotation(PrismConstants.A_DEPRECATED, false);
+        return deprecated;
     }
 
     @Override
     public void setDeprecated(boolean deprecated) {
         checkMutable();
+        this.deprecated = deprecated;
         setAnnotation(PrismConstants.A_DEPRECATED, deprecated);
     }
 
     @Override
     public String getDeprecatedSince() {
-        return getAnnotation(PrismConstants.A_DEPRECATED_SINCE);
+        return deprecatedSince;
     }
 
     public void setDeprecatedSince(String deprecatedSince) {
         checkMutable();
+        this.deprecatedSince = deprecatedSince;
         setAnnotation(PrismConstants.A_DEPRECATED_SINCE, deprecatedSince);
     }
 
     @Override
     public boolean isRemoved() {
-        return getAnnotation(PrismConstants.A_REMOVED, false);
+        return removed;
     }
 
     public void setRemoved(boolean removed) {
         checkMutable();
+        this.removed = removed;
         setAnnotation(PrismConstants.A_REMOVED, removed);
     }
 
     @Override
     public String getRemovedSince() {
-        return getAnnotation(PrismConstants.A_REMOVED_SINCE);
+        return removedSince;
     }
 
     public void setRemovedSince(String removedSince) {
         checkMutable();
+        this.removedSince = removedSince;
         setAnnotation(PrismConstants.A_REMOVED_SINCE, removedSince);
     }
 
     @Override
     public boolean isExperimental() {
-        return getAnnotation(PrismConstants.A_EXPERIMENTAL, false);
+        return experimental;
     }
 
     @Override
     public void setExperimental(boolean experimental) {
         checkMutable();
+        this.experimental = experimental;
         setAnnotation(PrismConstants.A_EXPERIMENTAL, experimental);
     }
 
     @Override
     public String getPlannedRemoval() {
-        return getAnnotation(PrismConstants.A_PLANNED_REMOVAL);
+        return plannedRemoval;
     }
 
     public void setPlannedRemoval(String plannedRemoval) {
         checkMutable();
+        this.plannedRemoval = plannedRemoval;
         setAnnotation(PrismConstants.A_PLANNED_REMOVAL, plannedRemoval);
     }
 
     @Override
     public boolean isElaborate() {
-        return getAnnotation(PrismConstants.A_ELABORATE, false);
+        return elaborate;
     }
 
     public void setElaborate(boolean elaborate) {
         checkMutable();
+        this.elaborate = elaborate;
         setAnnotation(PrismConstants.A_ELABORATE, elaborate);
     }
 
     @Override
     public boolean isEmphasized() {
-        return getAnnotation(PrismConstants.A_DISPLAY, null) == Display.EMPHASIZED;
+        return emphasized;
     }
 
     @Override
     public void setEmphasized(boolean emphasized) {
         checkMutable();
+        this.emphasized = emphasized;
         setAnnotation(PrismConstants.A_DISPLAY, emphasized ? Display.EMPHASIZED : null);
     }
 
     @Override
     public String getDisplayName() {
-        return getAnnotation(PrismConstants.A_DISPLAY_NAME);
+        return displayName;
     }
 
     @Override
     public void setDisplayName(String displayName) {
         checkMutable();
+        this.displayName = displayName;
         setAnnotation(PrismConstants.A_DISPLAY_NAME, displayName);
     }
 
     @Override
     public Integer getDisplayOrder() {
-        return getAnnotation(PrismConstants.A_DISPLAY_ORDER);
+        return displayOrder;
     }
 
     @Override
     public void setDisplayOrder(Integer displayOrder) {
         checkMutable();
+        this.displayOrder = displayOrder;
         setAnnotation(PrismConstants.A_DISPLAY_ORDER, displayOrder);
     }
 
     @Override
     public String getHelp() {
-        return getAnnotation(PrismConstants.A_HELP);
+        return help;
     }
 
     @Override
     public void setHelp(String help) {
         checkMutable();
+        this.help = help;
         setAnnotation(PrismConstants.A_HELP, help);
     }
 
     @Override
     public String getDocumentation() {
-        return getAnnotation(DOMUtil.XSD_DOCUMENTATION_ELEMENT);
+        return documentation;
     }
 
     @Override
     public void setDocumentation(String documentation) {
         checkMutable();
+        this.documentation = documentation;
         setAnnotation(DOMUtil.XSD_DOCUMENTATION_ELEMENT, documentation);
     }
 
     @Override
     public String getDocumentationPreview() {
-        String documentation = getDocumentation();
         if (documentation == null || documentation.isEmpty()) {
             return documentation;
         }
@@ -332,9 +363,19 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public abstract void revive(PrismContext prismContext);
 
     protected void copyDefinitionDataFrom(Definition source) {
+        this.processing = source.getProcessing();
         this.typeName = source.getTypeName();
+        this.displayName = source.getDisplayName();
+        this.displayOrder = source.getDisplayOrder();
+        this.help = source.getHelp();
+        this.documentation = source.getDocumentation();
         this.isAbstract = source.isAbstract();
+        this.deprecated = source.isDeprecated();
         this.isRuntimeSchema = source.isRuntimeSchema();
+        this.emphasized = source.isEmphasized();
+        this.experimental = source.isExperimental();
+        this.elaborate = source.isElaborate();
+        this.removed = source.isRemoved();
         Map<QName, Object> annotations = source.getAnnotations();
         if (annotations != null) {
             if (this.annotations == null) {
@@ -353,7 +394,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        ItemProcessing processing = getProcessing();
         result = prime * result + ((processing == null) ? 0 : processing.hashCode());
         result = prime * result + ((typeName == null) ? 0 : typeName.hashCode());
         return result;
@@ -366,7 +406,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         if (obj == null)  return false;
         if (getClass() != obj.getClass()) return false;
         DefinitionImpl other = (DefinitionImpl) obj;
-        if (getProcessing() != other.getProcessing()) return false;
+        if (processing != other.processing) return false;
         if (typeName == null) {
             if (other.typeName != null) return false;
         } else if (!typeName.equals(other.typeName)) {

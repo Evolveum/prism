@@ -41,6 +41,7 @@ import java.util.Optional;
 public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismReference> implements MutablePrismReferenceDefinition {
 
     private static final long serialVersionUID = 2427488779612517600L;
+    private QName targetTypeName;
     private QName compositeObjectElementName;
     private boolean isComposite = false;
 
@@ -68,12 +69,13 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
      */
     @Override
     public QName getTargetTypeName() {
-        return getAnnotation(PrismConstants.A_OBJECT_REFERENCE_TARGET_TYPE);
+        return targetTypeName;
     }
 
     @Override
     public void setTargetTypeName(QName targetTypeName) {
         checkMutable();
+        this.targetTypeName = targetTypeName;
         setAnnotation(PrismConstants.A_OBJECT_REFERENCE_TARGET_TYPE, targetTypeName);
     }
 
@@ -185,6 +187,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
 
     protected void copyDefinitionDataFrom(PrismReferenceDefinition source) {
         super.copyDefinitionDataFrom(source);
+        targetTypeName = source.getTargetTypeName();
         compositeObjectElementName = source.getCompositeObjectElementName();
         isComposite = source.isComposite();
     }
