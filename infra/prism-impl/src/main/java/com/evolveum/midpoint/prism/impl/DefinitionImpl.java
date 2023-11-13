@@ -51,6 +51,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull protected QName typeName;
     protected ItemProcessing processing;
     protected boolean isAbstract = false;
+    protected DisplayHint display;
     protected String displayName;
     protected Integer displayOrder;
     protected String help;
@@ -202,6 +203,18 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
+    public DisplayHint getDisplay() {
+        return display;
+    }
+
+    @Override
+    public void setDisplay(DisplayHint display) {
+        checkMutable();
+        this.display = display;
+        setAnnotation(PrismConstants.A_DISPLAY, display);
+    }
+
+    @Override
     public boolean isEmphasized() {
         return emphasized;
     }
@@ -210,7 +223,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setEmphasized(boolean emphasized) {
         checkMutable();
         this.emphasized = emphasized;
-        setAnnotation(PrismConstants.A_DISPLAY, emphasized ? Display.EMPHASIZED : null);
+        setAnnotation(PrismConstants.A_DISPLAY, emphasized ? DisplayHint.EMPHASIZED : null);
     }
 
     @Override

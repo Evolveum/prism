@@ -28,6 +28,8 @@ public interface MutableDefinition extends Definition {
 
     void setEmphasized(boolean emphasized);
 
+    void setDisplay(DisplayHint display);
+
     void setDisplayName(String displayName);
 
     void setDisplayOrder(Integer displayOrder);

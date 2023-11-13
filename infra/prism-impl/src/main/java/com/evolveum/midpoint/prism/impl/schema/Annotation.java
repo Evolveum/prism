@@ -11,7 +11,7 @@ import static com.evolveum.midpoint.prism.PrismConstants.*;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.Display;
+import com.evolveum.midpoint.prism.DisplayHint;
 
 import com.sun.xml.xsom.XSAnnotation;
 import org.jetbrains.annotations.NotNull;
@@ -49,11 +49,11 @@ public enum Annotation {
     @Deprecated
     EMPHASIZED(A_EMPHASIZED, Boolean.class, true),
 
-    DISPLAY(A_DISPLAY, Display.class, null, new AnnotationProcessor() {
+    DISPLAY(A_DISPLAY, DisplayHint.class, null, new AnnotationProcessor() {
 
         @Override
         protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
-            return Display.findByValue(element.getTextContent());
+            return DisplayHint.findByValue(element.getTextContent());
         }
     }),
 

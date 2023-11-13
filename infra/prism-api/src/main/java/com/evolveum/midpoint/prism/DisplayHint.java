@@ -14,7 +14,7 @@ import java.util.Arrays;
  *
  * "display" annotation enumeration also replaces emphasized=true.
  */
-public enum Display {
+public enum DisplayHint {
 
     /**
      * Item shouldn't be visible.
@@ -43,11 +43,11 @@ public enum Display {
 
     final String value;
 
-    Display(final String value) {
+    DisplayHint(final String value) {
         this.value = value;
     }
 
-    public static Display findByValue(String value) {
+    public static DisplayHint findByValue(String value) {
         if (value == null) {
             return null;
         }

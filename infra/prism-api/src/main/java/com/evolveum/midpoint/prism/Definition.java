@@ -133,6 +133,8 @@ public interface Definition
      */
     boolean isEmphasized();
 
+    DisplayHint getDisplay();
+
     /**
      * Returns display name.
      *

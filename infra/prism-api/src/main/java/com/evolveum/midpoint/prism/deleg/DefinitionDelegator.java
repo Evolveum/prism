@@ -13,14 +13,10 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
+
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.Definition;
-import com.evolveum.midpoint.prism.ItemProcessing;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.SchemaMigration;
-import com.evolveum.midpoint.prism.SmartVisitation;
-import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 import org.jetbrains.annotations.Nullable;
@@ -123,6 +119,10 @@ public interface DefinitionDelegator extends Definition {
         return delegate().getDeprecatedSince();
     }
 
+    @Override
+    default DisplayHint getDisplay() {
+        return delegate().getDisplay();
+    }
     @Override
     default boolean isEmphasized() {
         return delegate().isEmphasized();
