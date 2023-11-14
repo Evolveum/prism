@@ -265,8 +265,14 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         parse(element, ((PrismContextImpl) prismContext).getEntityResolver(), this, isRuntime, shortDescription, false, prismContext);
     }
 
-    private static PrismSchema parse(Element element, EntityResolver resolver, PrismSchemaImpl schema, boolean isRuntime,
-            String shortDescription, boolean allowDelayedItemDefinitions, PrismContext prismContext) throws SchemaException {
+    private static PrismSchema parse(
+            Element element,
+            EntityResolver resolver,
+            PrismSchemaImpl schema,
+            boolean isRuntime,
+            String shortDescription,
+            boolean allowDelayedItemDefinitions,
+            PrismContext prismContext) throws SchemaException {
         if (element == null) {
             throw new IllegalArgumentException("Schema element must not be null in " + shortDescription);
         }
