@@ -904,8 +904,8 @@ class DomToSchemaPostProcessor {
 
         markRuntime(pcd);
 
-        var keysElem =  SchemaProcessorUtil.getAnnotationQNames(elementDecl.getAnnotation(), A_ALWAYS_USE_FOR_EQUALS);
-        pcd.setAlwaysUseForEquals(keysElem);
+        Annotation.processAnnotation(pcd, annotation, Annotation.ALWAYS_USE_FOR_EQUALS);
+
         parseItemDefinitionAnnotations(pcd, annotation);
         parseItemDefinitionAnnotations(pcd, elementDecl.getAnnotation());
         if (elementParticle != null) {

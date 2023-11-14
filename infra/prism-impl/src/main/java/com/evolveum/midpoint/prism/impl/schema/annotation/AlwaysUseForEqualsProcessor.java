@@ -7,19 +7,19 @@
 
 package com.evolveum.midpoint.prism.impl.schema.annotation;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.xml.namespace.QName;
-
-import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Element;
-
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.MutableItemDefinition;
 import com.evolveum.midpoint.prism.MutablePrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Element;
+
+import javax.xml.namespace.QName;
+import java.util.List;
 
 public class AlwaysUseForEqualsProcessor extends AnnotationProcessor<MutableItemDefinition<?>, QName> {
 
@@ -41,8 +41,19 @@ public class AlwaysUseForEqualsProcessor extends AnnotationProcessor<MutableItem
         }
 
         if (definition instanceof MutablePrismContainerDefinition<?> pcd) {
-            List<QName> qnames = elements.stream().map(DOMUtil::getQNameValue).collect(Collectors.toList());
+            List<QName> qnames = elements.stream()
+                    .map(DOMUtil::getQNameValue)
+                    .filter(qname -> qname != null)
+                    .toList();
+
             pcd.setAlwaysUseForEquals(qnames);
+
+            for (QName qname : qnames) {
+                ItemDefinition<?> id = pcd.findItemDefinition(ItemPath.create(qname));
+                if (id instanceof MutableItemDefinition<?> mid) {
+                    mid.setAlwaysUseForEquals(true);
+                }
+            }
 
             pcd.setAnnotation(PrismConstants.A_ALWAYS_USE_FOR_EQUALS, qnames);
         }
