@@ -8,16 +8,12 @@
 package com.evolveum.midpoint.prism.impl;
 
 import java.util.*;
-
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
-
-import com.evolveum.midpoint.util.DOMUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -43,7 +39,6 @@ import com.evolveum.midpoint.util.PrettyPrinter;
  * appropriate definitions easily.
  *
  * @author Radovan Semancik
- *
  */
 public abstract class DefinitionImpl extends AbstractFreezable implements MutableDefinition {
 
@@ -214,7 +209,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setEmphasized(boolean emphasized) {
         checkMutable();
         this.emphasized = emphasized;
-        setAnnotation(PrismConstants.A_DISPLAY, emphasized ? DisplayHint.EMPHASIZED : null);
     }
 
     @Override
@@ -268,10 +262,10 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         }
         String plainDoc = MiscUtil.stripHtmlMarkup(documentation);
         int i = plainDoc.indexOf('.');
-        if (i<0) {
+        if (i < 0) {
             return plainDoc;
         }
-        return plainDoc.substring(0,i+1);
+        return plainDoc.substring(0, i + 1);
     }
 
     @Override
@@ -402,13 +396,13 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @SuppressWarnings({ "ConstantConditions", "RedundantIfStatement" })
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)  return true;
-        if (obj == null)  return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {return true;}
+        if (obj == null) {return false;}
+        if (getClass() != obj.getClass()) {return false;}
         DefinitionImpl other = (DefinitionImpl) obj;
-        if (processing != other.processing) return false;
+        if (processing != other.processing) {return false;}
         if (typeName == null) {
-            if (other.typeName != null) return false;
+            if (other.typeName != null) {return false;}
         } else if (!typeName.equals(other.typeName)) {
             return false;
         }
@@ -417,7 +411,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public String toString() {
-        return getDebugDumpClassName() + getMutabilityFlag() + " ("+PrettyPrinter.prettyPrint(getTypeName())+")";
+        return getDebugDumpClassName() + getMutabilityFlag() + " (" + PrettyPrinter.prettyPrint(getTypeName()) + ")";
     }
 
     @Override

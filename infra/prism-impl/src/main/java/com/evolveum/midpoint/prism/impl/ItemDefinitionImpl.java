@@ -473,7 +473,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     @Override
     public void setSearchable(boolean searchable) {
         isSearchable = searchable;
-        setAnnotation(PrismConstants.A_SEARCHABLE, searchable);
     }
 
     @Override
