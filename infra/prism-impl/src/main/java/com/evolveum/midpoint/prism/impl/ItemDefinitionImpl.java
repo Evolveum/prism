@@ -51,6 +51,8 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     private int minOccurs = 1;
     private int maxOccurs = 1;
     private boolean operational = false;
+
+    private boolean alwaysUseForEquals;
     private boolean dynamic;
     private boolean canAdd = true;
     private boolean canRead = true;
@@ -149,6 +151,17 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     public void setOperational(boolean operational) {
         checkMutable();
         this.operational = operational;
+    }
+
+    @Override
+    public boolean isAlwaysUseForEquals() {
+        return alwaysUseForEquals;
+    }
+
+    @Override
+    public void setAlwaysUseForEquals(boolean alwaysUseForEquals) {
+        checkMutable();
+        this.alwaysUseForEquals = alwaysUseForEquals;
     }
 
     @Override

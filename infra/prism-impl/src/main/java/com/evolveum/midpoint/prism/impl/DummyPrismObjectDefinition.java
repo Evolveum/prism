@@ -28,6 +28,11 @@ import java.util.Map;
 public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objectable> {
 
     @Override
+    public boolean isAlwaysUseForEquals() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public DisplayHint getDisplay() {
         throw new UnsupportedOperationException();
     }

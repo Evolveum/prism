@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.annotation.DiagramElementFormType;
 import com.evolveum.midpoint.prism.annotation.DiagramElementInclusionType;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.schema.annotation.Annotation;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.MutablePrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;

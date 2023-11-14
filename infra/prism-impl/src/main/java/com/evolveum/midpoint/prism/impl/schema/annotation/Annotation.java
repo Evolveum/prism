@@ -5,10 +5,11 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-package com.evolveum.midpoint.prism.impl.schema;
+package com.evolveum.midpoint.prism.impl.schema.annotation;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 
+import java.util.List;
 import javax.xml.namespace.QName;
 
 import com.sun.xml.xsom.XSAnnotation;
@@ -20,6 +21,7 @@ import com.evolveum.midpoint.prism.DisplayHint;
 import com.evolveum.midpoint.prism.MutableDefinition;
 import com.evolveum.midpoint.prism.MutableItemDefinition;
 import com.evolveum.midpoint.prism.MutablePrismReferenceDefinition;
+import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -27,6 +29,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * Prism annotations enumeration that used for processing when definitions are being parsed.
  */
 public enum Annotation {
+
+    ALWAYS_USE_FOR_EQUALS(new AlwaysUseForEqualsProcessor()),
 
     DEPRECATED(new AnnotationProcessor<>(
             A_DEPRECATED, Boolean.class, MutableDefinition::setDeprecated, true)),
@@ -118,11 +122,11 @@ public enum Annotation {
             return;
         }
 
-        Element element = SchemaProcessorUtil.getAnnotationElement(xsAnnotation, annotation.processor.name);
-        if (element == null) {
+        List<Element> elements = SchemaProcessorUtil.getAnnotationElements(xsAnnotation, annotation.processor.name);
+        if (elements == null || elements.isEmpty()) {
             return;
         }
 
-        annotation.processor.process(definition, element);
+        annotation.processor.process(definition, elements);
     }
 }

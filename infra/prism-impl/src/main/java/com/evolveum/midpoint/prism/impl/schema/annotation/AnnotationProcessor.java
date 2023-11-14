@@ -5,23 +5,25 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-package com.evolveum.midpoint.prism.impl.schema;
+package com.evolveum.midpoint.prism.impl.schema.annotation;
 
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
-import com.evolveum.midpoint.util.exception.SchemaException;
+import java.util.List;
+import java.util.function.BiConsumer;
+import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import javax.xml.namespace.QName;
-import java.util.function.BiConsumer;
+import com.evolveum.midpoint.prism.MutableDefinition;
+import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
- * Helper base class to process annotations in different ways.
+ * Annotation processor base class.
  *
- * Non-null value is stored in annotation map via {@link MutableDefinition#setAnnotation(QName, Object)}.
+ * Non-null value is stored in definition via setter if provided and in annotation map via {@link MutableDefinition#setAnnotation(QName, Object)}.
+ * This implementation doesn't take multi-value annotations into account, only first one is processed.
  */
 public class AnnotationProcessor<D extends MutableDefinition, T> {
 
@@ -60,8 +62,12 @@ public class AnnotationProcessor<D extends MutableDefinition, T> {
         return XmlTypeConverter.toJavaValue(element, type);
     }
 
-    public void process(@NotNull D definition, @NotNull Element element) throws SchemaException {
-        T value = convert(element);
+    public void process(@NotNull D definition, @NotNull List<Element> elements) throws SchemaException {
+        if (elements.isEmpty()) {
+            return;
+        }
+
+        T value = convert(elements.get(0));
         if (value == null) {
             return;
         }

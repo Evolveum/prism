@@ -31,6 +31,8 @@ public interface MutableItemDefinition<I extends Item> extends ItemDefinition<I>
 
     void setOperational(boolean operational);
 
+    void setAlwaysUseForEquals(boolean alwaysUseForEquals);
+
     void setDynamic(boolean value);
 
     // use with care

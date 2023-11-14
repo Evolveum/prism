@@ -5,7 +5,7 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-package com.evolveum.midpoint.prism.impl.schema;
+package com.evolveum.midpoint.prism.impl.schema.annotation;
 
 import com.evolveum.midpoint.prism.MutableDefinition;
 

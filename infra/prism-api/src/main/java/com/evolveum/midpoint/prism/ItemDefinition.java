@@ -72,6 +72,8 @@ public interface ItemDefinition<I extends Item>
      */
     boolean isOperational();
 
+    boolean isAlwaysUseForEquals();
+
     /**
      * If true, this item is not stored in XML representation in repo.
      *

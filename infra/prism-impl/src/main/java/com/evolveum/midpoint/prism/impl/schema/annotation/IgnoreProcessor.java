@@ -5,17 +5,19 @@
  * and European Union Public License. See LICENSE file for details.
  */
 
-package com.evolveum.midpoint.prism.impl.schema;
+package com.evolveum.midpoint.prism.impl.schema.annotation;
 
-import static com.evolveum.midpoint.prism.PrismConstants.A_IGNORE;
+import com.evolveum.midpoint.prism.ItemProcessing;
+import com.evolveum.midpoint.prism.MutableDefinition;
+import com.evolveum.midpoint.prism.PrismConstants;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.ItemProcessing;
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
+import java.util.List;
+
+import static com.evolveum.midpoint.prism.PrismConstants.A_IGNORE;
 
 /**
  * Processes {@link PrismConstants#A_IGNORE} annotation.
@@ -39,8 +41,12 @@ public class IgnoreProcessor extends AnnotationProcessor<MutableDefinition, Item
     }
 
     @Override
-    public void process(@NotNull MutableDefinition definition, @NotNull Element element) {
-        ItemProcessing value = convert(element);
+    public void process(@NotNull MutableDefinition definition, @NotNull List<Element> elements) {
+        if (elements.isEmpty()) {
+            return;
+        }
+
+        ItemProcessing value = convert(elements.get(0));
         if (value == null) {
             return;
         }
