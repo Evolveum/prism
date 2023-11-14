@@ -11,15 +11,15 @@ import static com.evolveum.midpoint.prism.PrismConstants.*;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.DisplayHint;
-
 import com.sun.xml.xsom.XSAnnotation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.ItemProcessing;
+import com.evolveum.midpoint.prism.DisplayHint;
 import com.evolveum.midpoint.prism.MutableDefinition;
+import com.evolveum.midpoint.prism.MutableItemDefinition;
+import com.evolveum.midpoint.prism.MutablePrismReferenceDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -28,87 +28,83 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  */
 public enum Annotation {
 
-    DEPRECATED(A_DEPRECATED, Boolean.class, true),
+    DEPRECATED(new AnnotationProcessor<>(
+            A_DEPRECATED, Boolean.class, MutableDefinition::setDeprecated, true)),
 
-    DEPRECATED_SINCE(A_DEPRECATED_SINCE, String.class),
+    DEPRECATED_SINCE(new AnnotationProcessor<MutableItemDefinition, String>(
+            A_DEPRECATED_SINCE, String.class, MutableItemDefinition.class, MutableItemDefinition::setDeprecatedSince, null)),
 
-    DISPLAY_NAME(A_DISPLAY_NAME, String.class),
+    DISPLAY_NAME(new AnnotationProcessor<>(
+            A_DISPLAY_NAME, String.class, MutableDefinition::setDisplayName)),
 
-    DISPLAY_ORDER(A_DISPLAY_ORDER, Integer.class),
+    DISPLAY_ORDER(new AnnotationProcessor<>(
+            A_DISPLAY_ORDER, Integer.class, MutableDefinition::setDisplayOrder)),
 
-    DOCUMENTATION(DOMUtil.XSD_DOCUMENTATION_ELEMENT, String.class, null, new AnnotationProcessor() {
+    DOCUMENTATION(new AnnotationProcessor<>(
+            DOMUtil.XSD_DOCUMENTATION_ELEMENT, String.class, MutableDefinition::setDocumentation) {
 
         @Override
-        protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
+        protected @Nullable String convert(@NotNull Element element) {
             return DOMUtil.serializeElementContent(element);
         }
     }),
 
-    ELABORATE(A_ELABORATE, Boolean.class, true),
+    ELABORATE(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
+            A_ELABORATE, Boolean.class, MutableItemDefinition::setElaborate, true)),
 
     @Deprecated
-    EMPHASIZED(A_EMPHASIZED, Boolean.class, true),
+    EMPHASIZED(new AnnotationProcessor<>(
+            A_EMPHASIZED, Boolean.class, MutableDefinition::setEmphasized, true)),
 
-    DISPLAY(A_DISPLAY, DisplayHint.class, null, new AnnotationProcessor() {
+    DISPLAY(new AnnotationProcessor<>(
+            A_DISPLAY, DisplayHint.class, MutableDefinition::setDisplay) {
 
         @Override
-        protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
+        protected @Nullable DisplayHint convert(@NotNull Element element) {
             return DisplayHint.findByValue(element.getTextContent());
         }
     }),
 
-    EXPERIMENTAL(A_EXPERIMENTAL, Boolean.class, true),
+    EXPERIMENTAL(new AnnotationProcessor<>(
+            A_EXPERIMENTAL, Boolean.class, MutableDefinition::setExperimental, true)),
 
-    HELP(A_HELP, String.class),
+    HELP(new AnnotationProcessor<>(
+            A_HELP, String.class, MutableDefinition::setHelp)),
 
-    HETEROGENEOUS_LIST_ITEM(A_HETEROGENEOUS_LIST_ITEM, Boolean.class, true),
+    HETEROGENEOUS_LIST_ITEM(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
+            A_HETEROGENEOUS_LIST_ITEM, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setHeterogeneousListItem, true)),
 
-    IGNORE(A_IGNORE, ItemProcessing.class, null, new IgnoreProcessor()),
+    IGNORE(new IgnoreProcessor()),
 
-    OBJECT_REFERENCE_TARGET_TYPE(A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, null, new AnnotationProcessor() {
+    OBJECT_REFERENCE_TARGET_TYPE(new AnnotationProcessor<>(
+            A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, MutablePrismReferenceDefinition.class, MutablePrismReferenceDefinition::setTargetTypeName, null) {
 
-        protected @Nullable Object convert(@NotNull Annotation annotation, @NotNull Element element) {
+        protected @Nullable QName convert(@NotNull Element element) {
             return DOMUtil.getQNameValue(element);
         }
     }),
 
-    OPERATIONAL(A_OPERATIONAL, Boolean.class, true),
+    OPERATIONAL(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
+            A_OPERATIONAL, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setOperational, true)),
 
-    PLANNED_REMOVAL(A_PLANNED_REMOVAL, String.class),
+    PLANNED_REMOVAL(new AnnotationProcessor<MutableItemDefinition<?>, String>(
+            A_PLANNED_REMOVAL, String.class, MutableItemDefinition.class, MutableItemDefinition::setPlannedRemoval, null)),
 
-    PROCESSING(A_PROCESSING, ItemProcessing.class, null, new ItemProcessingProcessor()),
+    PROCESSING(new ItemProcessingProcessor()),
 
-    REMOVED(A_REMOVED, Boolean.class, true),
+    REMOVED(new AnnotationProcessor<>(
+            A_REMOVED, Boolean.class, MutableDefinition::setRemoved, true)),
 
-    REMOVED_SINCE(A_REMOVED_SINCE, String.class),
+    REMOVED_SINCE(new AnnotationProcessor<>(
+            A_REMOVED_SINCE, String.class, MutableDefinition::setRemovedSince)),
 
-    SEARCHABLE(A_SEARCHABLE, Boolean.class, true);
-
-    // todo schema migration
-    // todo diagrams?
-    // todo others?
-
-    final QName name;
-
-    final Class<?> type;
-
-    final Object defaultValue;
+    SEARCHABLE(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
+            A_SEARCHABLE, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setSearchable, true));
 
     final AnnotationProcessor processor;
 
-    Annotation(QName name, Class<?> type) {
-        this(name, type, null);
-    }
-
-    Annotation(QName name, Class<?> type, Object defaultValue) {
-        this(name, type, defaultValue, null);
-    }
-
-    Annotation(QName name, Class<?> type, Object defaultValue, AnnotationProcessor processor) {
-        this.name = name;
-        this.type = type;
-        this.defaultValue = defaultValue;
-        this.processor = processor != null ? processor : new AnnotationProcessor();
+    Annotation(AnnotationProcessor processor) {
+        this.processor = processor;
     }
 
     public static void processAnnotations(MutableDefinition itemDef, XSAnnotation annotation) throws SchemaException {
@@ -117,12 +113,16 @@ public enum Annotation {
         }
     }
 
-    public static void processAnnotation(MutableDefinition definition, XSAnnotation annotation, Annotation toProcess) throws SchemaException {
-        Element element = SchemaProcessorUtil.getAnnotationElement(annotation, toProcess.name);
+    public static void processAnnotation(MutableDefinition definition, XSAnnotation xsAnnotation, Annotation annotation) throws SchemaException {
+        if (!annotation.processor.definitionType.isAssignableFrom(definition.getClass())) {
+            return;
+        }
+
+        Element element = SchemaProcessorUtil.getAnnotationElement(xsAnnotation, annotation.processor.name);
         if (element == null) {
             return;
         }
 
-        toProcess.processor.process(toProcess, definition, element);
+        annotation.processor.process(definition, element);
     }
 }

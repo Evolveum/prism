@@ -7,23 +7,26 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
+import com.evolveum.midpoint.prism.MutableDefinition;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
+import javax.xml.namespace.QName;
+import java.util.function.BiConsumer;
+
 /**
  * Helper class to process annotations containing enum values.
  */
-public class EnumAnnotationProcessor<T extends Enum<?>> extends AnnotationProcessor {
+public class EnumAnnotationProcessor<D extends MutableDefinition, T extends Enum<?>> extends AnnotationProcessor<D, T> {
 
-    private final Class<T> type;
-
-    public EnumAnnotationProcessor(Class<T> type) {
-        this.type = type;
+    public EnumAnnotationProcessor(QName name, Class<T> type, Class definitionType, BiConsumer<D, T> setValue) {
+        super(name, type, definitionType, setValue, null);
     }
 
     @Override
-    public @Nullable T convert(@NotNull Annotation annotation, @NotNull Element element) {
+    public @Nullable T convert(@NotNull Element element) {
         String value = element.getTextContent();
         if (value == null) {
             return null;

@@ -149,7 +149,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     public void setOperational(boolean operational) {
         checkMutable();
         this.operational = operational;
-        setAnnotation(PrismConstants.A_OPERATIONAL, operational);
     }
 
     @Override

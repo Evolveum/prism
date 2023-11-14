@@ -110,7 +110,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setProcessing(ItemProcessing processing) {
         checkMutable();
         this.processing = processing;
-        setAnnotation(PrismConstants.A_PROCESSING, processing);
     }
 
     @Override
@@ -132,7 +131,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDeprecated(boolean deprecated) {
         checkMutable();
         this.deprecated = deprecated;
-        setAnnotation(PrismConstants.A_DEPRECATED, deprecated);
     }
 
     @Override
@@ -143,7 +141,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDeprecatedSince(String deprecatedSince) {
         checkMutable();
         this.deprecatedSince = deprecatedSince;
-        setAnnotation(PrismConstants.A_DEPRECATED_SINCE, deprecatedSince);
     }
 
     @Override
@@ -154,7 +151,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setRemoved(boolean removed) {
         checkMutable();
         this.removed = removed;
-        setAnnotation(PrismConstants.A_REMOVED, removed);
     }
 
     @Override
@@ -165,7 +161,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setRemovedSince(String removedSince) {
         checkMutable();
         this.removedSince = removedSince;
-        setAnnotation(PrismConstants.A_REMOVED_SINCE, removedSince);
     }
 
     @Override
@@ -177,7 +172,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setExperimental(boolean experimental) {
         checkMutable();
         this.experimental = experimental;
-        setAnnotation(PrismConstants.A_EXPERIMENTAL, experimental);
     }
 
     @Override
@@ -188,7 +182,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setPlannedRemoval(String plannedRemoval) {
         checkMutable();
         this.plannedRemoval = plannedRemoval;
-        setAnnotation(PrismConstants.A_PLANNED_REMOVAL, plannedRemoval);
     }
 
     @Override
@@ -199,7 +192,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setElaborate(boolean elaborate) {
         checkMutable();
         this.elaborate = elaborate;
-        setAnnotation(PrismConstants.A_ELABORATE, elaborate);
     }
 
     @Override
@@ -211,7 +203,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDisplay(DisplayHint display) {
         checkMutable();
         this.display = display;
-        setAnnotation(PrismConstants.A_DISPLAY, display);
     }
 
     @Override
@@ -235,7 +226,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDisplayName(String displayName) {
         checkMutable();
         this.displayName = displayName;
-        setAnnotation(PrismConstants.A_DISPLAY_NAME, displayName);
     }
 
     @Override
@@ -247,7 +237,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDisplayOrder(Integer displayOrder) {
         checkMutable();
         this.displayOrder = displayOrder;
-        setAnnotation(PrismConstants.A_DISPLAY_ORDER, displayOrder);
     }
 
     @Override
@@ -259,7 +248,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setHelp(String help) {
         checkMutable();
         this.help = help;
-        setAnnotation(PrismConstants.A_HELP, help);
     }
 
     @Override
@@ -271,7 +259,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setDocumentation(String documentation) {
         checkMutable();
         this.documentation = documentation;
-        setAnnotation(DOMUtil.XSD_DOCUMENTATION_ELEMENT, documentation);
     }
 
     @Override

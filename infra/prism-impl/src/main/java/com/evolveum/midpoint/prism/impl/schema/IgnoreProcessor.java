@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
+import static com.evolveum.midpoint.prism.PrismConstants.A_IGNORE;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -20,10 +22,14 @@ import com.evolveum.midpoint.prism.PrismConstants;
  * This one is special, it's not stored directly as {@link PrismConstants#A_IGNORE} but transformed
  * to {@link PrismConstants#A_PROCESSING} equal to {@link ItemProcessing#IGNORE}.
  */
-public class IgnoreProcessor extends AnnotationProcessor {
+public class IgnoreProcessor extends AnnotationProcessor<MutableDefinition, ItemProcessing> {
+
+    public IgnoreProcessor() {
+        super(A_IGNORE, ItemProcessing.class, MutableDefinition::setProcessing);
+    }
 
     @Override
-    public @Nullable ItemProcessing convert(@NotNull Annotation annotation, @NotNull Element element) {
+    public @Nullable ItemProcessing convert(@NotNull Element element) {
         String value = element.getTextContent();
         if (value == null || value.isEmpty()) {
             return ItemProcessing.IGNORE;
@@ -33,10 +39,13 @@ public class IgnoreProcessor extends AnnotationProcessor {
     }
 
     @Override
-    public void process(@NotNull Annotation annotation, @NotNull MutableDefinition definition, @NotNull Element element) {
-        ItemProcessing value = convert(annotation, element);
-        if (value != null) {
-            definition.setAnnotation(PrismConstants.A_PROCESSING, value);
+    public void process(@NotNull MutableDefinition definition, @NotNull Element element) {
+        ItemProcessing value = convert(element);
+        if (value == null) {
+            return;
         }
+
+        setValue.accept(definition, value);
+        definition.setAnnotation(PrismConstants.A_PROCESSING, value);
     }
 }

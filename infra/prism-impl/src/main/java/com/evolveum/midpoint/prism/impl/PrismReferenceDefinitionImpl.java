@@ -76,7 +76,6 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     public void setTargetTypeName(QName targetTypeName) {
         checkMutable();
         this.targetTypeName = targetTypeName;
-        setAnnotation(PrismConstants.A_OBJECT_REFERENCE_TARGET_TYPE, targetTypeName);
     }
 
     @Override
