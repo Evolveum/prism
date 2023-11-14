@@ -1252,6 +1252,35 @@ public class MiscUtil {
         }
     }
 
+    /**
+     * Fixed version of {@link #asListTreatingNull(Object[])} that returns "extends T" list, and filters out all non-null values.
+     */
+    @Experimental
+    @SafeVarargs
+    public static <T> @NotNull List<? extends T> asListExceptForNull(T... values) {
+        if (values.length == 0) {
+            return List.of(); // please use this method directly
+        } else if (values.length == 1) {
+            // shortcut for better efficiency
+            return values[0] != null ? List.of(values[0]) : List.of();
+        } else {
+            return Arrays.stream(values)
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+    }
+
+    @Deprecated // please use List.of directly
+    public static <T> List<? extends T> asListExceptForNull() {
+        return List.of();
+    }
+
+    /** Separate method for efficiency */
+    @Experimental
+    public static <T> @NotNull List<? extends T> asListExceptForNull(T value) {
+        return value != null ? List.of(value) : List.of();
+    }
+
     public static BigDecimal or0(BigDecimal value) {
         return Objects.requireNonNullElse(value, BigDecimal.ZERO);
     }
