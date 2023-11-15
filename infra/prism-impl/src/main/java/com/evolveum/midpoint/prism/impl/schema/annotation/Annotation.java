@@ -67,6 +67,16 @@ public enum Annotation {
         protected @Nullable DisplayHint convert(@NotNull Element element) {
             return DisplayHint.findByValue(element.getTextContent());
         }
+
+        @Override
+        public void process(@NotNull MutableDefinition definition, @NotNull List<Element> elements) throws SchemaException {
+            super.process(definition, elements);
+
+            // backward compatibility with emphasized annotation
+            if (definition.getDisplay() == DisplayHint.EMPHASIZED) {
+                definition.setEmphasized(true);
+            }
+        }
     }),
 
     EXPERIMENTAL(new AnnotationProcessor<>(
