@@ -10,8 +10,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * Created by Dominik.
  */
 public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Object> {
-    private ParseTree lastNode;
-    private String lastType = null;
+    private ParseTree lastNode = null;
+    private ParseTree lastType = null;
 
     @Override
     public Object visitTerminal(TerminalNode node) {
@@ -30,8 +30,8 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     @Override
     public Object visitItemFilter(ItemFilterContext ctx) {
         for (int i = ctx.getChildCount() - 1; i >= 0; i--) {
-            if (ctx.getChild(i).getText().equals(FilterNames.TYPE.getLocalPart())) lastType = ctx.getChild(i + 2).getText();
-            if (ctx.getChild(i).getText().equals(FilterNames.META_TYPE)) lastType = ctx.getChild(i + 4).getText();
+            if (ctx.getChild(i).getText().equals(FilterNames.TYPE.getLocalPart())) lastType = ctx.getChild(i + 2);
+            if (ctx.getChild(i).getText().equals(FilterNames.META_TYPE)) lastType = ctx.getChild(i + 4);
         }
 
         return super.visitItemFilter(ctx);
@@ -41,7 +41,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         return lastNode;
     }
 
-    public String getLastType() {
+    public ParseTree getLastType() {
         return lastType;
     }
 }

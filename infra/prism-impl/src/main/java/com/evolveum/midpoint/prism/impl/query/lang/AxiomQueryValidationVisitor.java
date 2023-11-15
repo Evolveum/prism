@@ -1,15 +1,19 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.jetbrains.annotations.Nullable;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +29,8 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
     private Class<?> type;
 
     private ItemDefinition<?> itemDefinition;
+
+    private final SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
 
     public AxiomQueryValidationVisitor(PrismContext prismContext, Class userType) {
         this.context = prismContext;
@@ -66,19 +72,21 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
     }
 
     private Class<?> checkType(String type) {
-//        if (Class.forName(type)) {
+//        if (schemaRegistry.findTypeDefinitionByType(new QName(type)) == null) {
 //            errorList.add(new AxiomQueryError(null,
 //                    null,
 //                    0, 0,
 //                    "Does not existing type " + type,
 //                    null)
 //            );
+//        } else {
+//            this.type = schemaRegistry.findTypeDefinitionByType(new QName(type));
 //        }
         return null;
     }
 
     private ItemDefinition<?> checkItemPath(@Nullable Class<?> type, String path) {
-        ItemDefinition<?> itemDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(this.userType);
+        ItemDefinition<?> itemDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass(this.userType);
         ItemPath itemPath = ItemPathHolder.parseFromString(path);
 
         if (itemDefinition.findItemDefinition(itemPath, ItemDefinition.class) == null) {

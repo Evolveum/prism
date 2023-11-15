@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.prism.impl.query.lang;
+package com.evolveum.axiom.lang.antlr;
 
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -14,7 +14,7 @@ public class AxiomQueryError {
     private final String message;
     private final RecognitionException e;
 
-    AxiomQueryError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
+    public AxiomQueryError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
     {
         this.recognizer = recognizer;
         this.offendingSymbol = offendingSymbol;

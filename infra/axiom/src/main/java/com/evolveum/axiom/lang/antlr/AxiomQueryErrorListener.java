@@ -1,15 +1,21 @@
 package com.evolveum.axiom.lang.antlr;
 
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeVisitor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Dominik.
  */
 public class AxiomQueryErrorListener extends BaseErrorListener {
-    public static AxiomQueryErrorListener INSTANCE = new AxiomQueryErrorListener();
+
+    public List<AxiomQueryError> errorList = new ArrayList<>();
+
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
             int line, int charPositionInLine,
@@ -21,6 +27,6 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
         }
 
-        System.err.println(sourceName + "line " + ": " + charPositionInLine + " - " + msg);
+        errorList.add(new AxiomQueryError(recognizer, offendingSymbol, line, charPositionInLine, msg, e));
     }
 }

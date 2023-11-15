@@ -5,6 +5,7 @@ import ch.qos.logback.core.pattern.parser.SimpleKeywordNode;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
+import com.evolveum.midpoint.prism.impl.PrismObjectDefinitionImpl;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class FilterNamesProvider {
 
         if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext) {
 
-            if (itemDefinition instanceof PrismPropertyDefinition) {
+            if (itemDefinition instanceof PrismPropertyDefinition || itemDefinition instanceof PrismObjectDefinitionImpl) {
                 suggestions.add(EQUAL.getLocalPart());
                 suggestions.add(LESS.getLocalPart());
                 suggestions.add(GREATER.getLocalPart());
