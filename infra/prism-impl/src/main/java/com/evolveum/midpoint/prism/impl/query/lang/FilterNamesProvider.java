@@ -1,12 +1,11 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
-import ch.qos.logback.core.pattern.parser.SimpleKeywordNode;
-
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.PrismObjectDefinitionImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
@@ -18,7 +17,7 @@ import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
 public class FilterNamesProvider {
     public static List<String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, Object ruleContext) {
 
-        List<String> suggestions = new java.util.ArrayList<>();
+        List<String> suggestions = new ArrayList<>();
 
         if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext) {
 
@@ -72,7 +71,7 @@ public class FilterNamesProvider {
 
         }
 
-        if (ruleContext instanceof SimpleKeywordNode) {
+        if (ruleContext instanceof SubfilterOrValueContext) {
             suggestions.add(AND.getLocalPart());
             suggestions.add(OR.getLocalPart());
         }

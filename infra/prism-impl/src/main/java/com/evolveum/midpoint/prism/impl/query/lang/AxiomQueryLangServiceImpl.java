@@ -64,10 +64,6 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
                 for (ItemDefinition<?> itemDefinition: prismObjectDefinition.getDefinitions()) {
                     suggestions.add(itemDefinition.getItemName().getLocalPart());
                 }
-            } else if(ruleNode.getChild(i) instanceof AxiomQueryParser.SelfPathContext) {
-                if (ruleNode.getChild(i).getText().equals(".")) {
-
-                }
             } else if(ruleNode.getChild(i) instanceof AxiomQueryParser.FilterNameContext ruleContext) {
                 suggestions = FilterNamesProvider.findFilterNamesByItemDefinition(prismObjectDefinition, ruleContext);
             } else if(ruleNode.getChild(i) instanceof AxiomQueryParser.FilterNameAliasContext ruleContext) {
