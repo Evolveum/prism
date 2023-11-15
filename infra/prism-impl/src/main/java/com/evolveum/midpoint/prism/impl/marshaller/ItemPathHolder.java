@@ -40,7 +40,7 @@ public final class ItemPathHolder {
 
     //region Parsing
 
-    static UniformItemPath parseFromString(String path) {
+    public static UniformItemPath parseFromString(String path) {
         return new ItemPathHolder(path).toItemPath();
     }
 
