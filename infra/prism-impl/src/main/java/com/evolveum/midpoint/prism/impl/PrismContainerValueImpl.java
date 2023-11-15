@@ -1190,7 +1190,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     if (subItemDef == null) {
                         return false;
                     }
-                    if (!subItemDef.isOperational()) {
+                    if (!subItemDef.isOperational() || subItemDef.isAlwaysUseForEquals()) {
                         return false;
                     }
                 }
