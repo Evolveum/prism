@@ -6,14 +6,12 @@
  */
 package com.evolveum.midpoint.prism.impl.match;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.regex.Pattern;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.Matchable;
+import org.jetbrains.annotations.NotNull;
+
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.impl.polystring.DefaultNormalizer;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 
 /**
@@ -36,42 +34,8 @@ public class DefaultMatchingRule<T> implements MatchingRule<T> {
     }
 
     @Override
-    public boolean match(T a, T b) {
-        if (a == null && b == null) {
-            return true;
-        }
-        if (a == null || b == null) {
-            return false;
-        }
-        if (a instanceof Matchable && b instanceof Matchable) {
-            return ((Matchable)a).match((Matchable)b);
-        }
-        if (a instanceof byte[] && b instanceof byte[]) {
-            return Arrays.equals((byte[]) a, (byte[]) b);
-        }
-        // Just use plain java equals() method
-        return a.equals(b);
-    }
-
-    @Override
-    public T normalize(T original) {
-        return original;
-    }
-
-    @Override
-    public boolean matchRegex(T a, String regex) {
-        String valueToMatch;
-        if (a instanceof Matchable){
-            return ((Matchable<?>) a).matches(regex);
-        } else if (a instanceof String){
-            valueToMatch = (String) a;
-        } else if (a instanceof Integer){
-            valueToMatch = Integer.toString((Integer) a);
-        } else {
-            valueToMatch = String.valueOf(a);
-        }
-
-        return Pattern.matches(regex, valueToMatch);
+    public @NotNull DefaultNormalizer getNormalizer() {
+        return DefaultNormalizer.instance();
     }
 
     @Override

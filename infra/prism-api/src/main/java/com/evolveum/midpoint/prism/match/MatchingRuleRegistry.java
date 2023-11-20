@@ -9,14 +9,17 @@ package com.evolveum.midpoint.prism.match;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 
-/**
- *
- */
+/** Registry for matching rules. */
 public interface MatchingRuleRegistry {
-    // if typeQName is null, we skip the rule-type correspondence test
-    @NotNull
-    <T> MatchingRule<T> getMatchingRule(QName ruleName, QName typeQName) throws SchemaException;
+
+    /**
+     * Returns the matching rule by its name; checking its applicability to given data type (if type name is provided).
+     *
+     * The `null` rule name means "default rule". The `null` type name means "no type checking".
+     */
+    <T> @NotNull MatchingRule<T> getMatchingRule(@Nullable QName ruleName, @Nullable QName typeQName) throws SchemaException;
 }

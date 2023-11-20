@@ -8,6 +8,8 @@ package com.evolveum.midpoint.prism.impl.polystring;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.xml.namespace.QName;
 import java.util.regex.Pattern;
 
@@ -15,7 +17,9 @@ import java.util.regex.Pattern;
  * @author semancik
  *
  */
-public class AlphanumericPolyStringNormalizer extends AbstractPolyStringNormalizer {
+public class AlphanumericPolyStringNormalizer extends AbstractConfigurablePolyStringNormalizer {
+
+    private static final AlphanumericPolyStringNormalizer INSTANCE = new AlphanumericPolyStringNormalizer();
 
     private static final String MALFORMED_REGEX = "[^\\w\\s\\d]";
     private static final Pattern MALFORMED_PATTERN = Pattern.compile(MALFORMED_REGEX);
@@ -27,7 +31,11 @@ public class AlphanumericPolyStringNormalizer extends AbstractPolyStringNormaliz
     }
 
     @Override
-    public QName getName() {
+    public @NotNull QName getName() {
         return PrismConstants.ALPHANUMERIC_POLY_STRING_NORMALIZER;
+    }
+
+    public static @NotNull AlphanumericPolyStringNormalizer instance() {
+        return INSTANCE;
     }
 }

@@ -125,7 +125,7 @@ public final class PrismContextImpl implements PrismContext {
     private QName defaultReferenceTypeName;
     private PrismQueryExpressionFactory queryExpressionFactory;
 
-    private Multimap<QName, ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupHelpers = ArrayListMultimap.create();
+    private final Multimap<QName, ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupHelpers = ArrayListMultimap.create();
 
     static {
         PrismPrettyPrinter.initialize();
@@ -168,10 +168,6 @@ public final class PrismContextImpl implements PrismContext {
         return new PrismContextImpl(schemaRegistry);
     }
 
-    public static PrismContextImpl createEmptyContext(@NotNull SchemaRegistryImpl schemaRegistry) {
-        return new PrismContextImpl(schemaRegistry);
-    }
-
     @Override
     public void initialize() throws SchemaException, SAXException, IOException {
         schemaRegistry.initialize();
@@ -202,19 +198,19 @@ public final class PrismContextImpl implements PrismContext {
                 Constructor<?> constructor = normalizerClass.getConstructor();
                 normalizer = (PolyStringNormalizer) constructor.newInstance();
             } catch (ClassNotFoundException e) {
-                throw new ClassNotFoundException("Cannot find class " + fullClassName + ": "
-                        + e.getMessage(), e);
+                throw new ClassNotFoundException(
+                        "Cannot find class " + fullClassName + ": " + e.getMessage(), e);
             } catch (NoSuchMethodException e) {
-                throw new ClassNotFoundException("Cannot find default constructor in "
-                        + fullClassName + ": " + e.getMessage(), e);
+                throw new ClassNotFoundException(
+                        "Cannot find default constructor in " + fullClassName + ": " + e.getMessage(), e);
             } catch (InvocationTargetException e) {
-                throw new ClassNotFoundException("Cannot create instance of "
-                        + fullClassName + ": " + e.getMessage(), e);
+                throw new ClassNotFoundException(
+                        "Cannot create instance of " + fullClassName + ": " + e.getMessage(), e);
             }
         }
 
-        if (normalizer instanceof ConfigurableNormalizer) {
-            ((ConfigurableNormalizer) normalizer).configure(configuration);
+        if (normalizer instanceof ConfigurableNormalizer configurableNormalizer) {
+            configurableNormalizer.configure(configuration);
         }
         return normalizer;
     }

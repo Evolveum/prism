@@ -193,10 +193,11 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     @Override
     public void applyDefinition(ItemDefinition definition) throws SchemaException {
-        PrismPropertyDefinition propertyDefinition = (PrismPropertyDefinition) definition;
+        PrismPropertyDefinition<?> propertyDefinition = (PrismPropertyDefinition<?>) definition;
         if (propertyDefinition != null && !propertyDefinition.isAnyType()) {
             if (rawElement != null) {
-                T maybeValue = (T) parseRawElementToNewRealValue(this, propertyDefinition);
+                //noinspection unchecked
+                T maybeValue = parseRawElementToNewRealValue(this, (PrismPropertyDefinition<T>) propertyDefinition);
                 if (maybeValue != null) {
                     setValue(maybeValue);
                 } else {
@@ -207,7 +208,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 rawElement = null;
             }
             if (value != null && propertyDefinition.getTypeClass() != null) {
-                var type = definition.getTypeClass();
+                var type = propertyDefinition.getTypeClass();
                 if (PolyStringType.class.equals(type)) {
                     type = PolyString.class;
                 }
@@ -216,11 +217,15 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 }
                 if (!type.isInstance(value)) {
                     // Here if the schema is runtime and type is string, type was lost somewhere along the way.
-                    if (XmlTypeConverter.canConvert(type) && propertyDefinition.isRuntimeSchema() && value instanceof String) {
-                        value = (T) XmlTypeConverter.toJavaValue((String) value, type);
-
+                    if (XmlTypeConverter.canConvert(type)
+                            && propertyDefinition.isRuntimeSchema()
+                            && value instanceof String stringValue) {
+                        //noinspection unchecked
+                        value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
                     } else {
-                        throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                        throw new SchemaException(
+                                "Incorrect value type. Expected %s for property '%s', current is: %s".formatted(
+                                        definition.getTypeName(), definition.getItemName(), type));
                     }
                 }
             }

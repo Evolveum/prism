@@ -692,9 +692,8 @@ public class MiscUtil {
     }
     // similar to the above ... todo deduplicate
 
-    @NotNull
-    public static <T, E extends Throwable> T extractSingletonRequired(Collection<T> collection,
-            Supplier<E> multiExceptionSupplier, Supplier<E> noneExceptionSupplier) throws E {
+    public static <T, E extends Throwable> @NotNull T extractSingletonRequired(
+            Collection<T> collection, Supplier<E> multiExceptionSupplier, Supplier<E> noneExceptionSupplier) throws E {
         T singleton = extractSingleton(collection, multiExceptionSupplier);
         if (singleton != null) {
             return singleton;
@@ -1178,6 +1177,12 @@ public class MiscUtil {
 
     public static Integer toInteger(Long value) {
         return value != null ? value.intValue() : null;
+    }
+
+    /** Resolves primitive type like `int` to wrapper, like `Integer`. */
+    public static Class<?> resolvePrimitiveIfNecessary(Class<?> aClass) {
+        return aClass != null ?
+                ClassUtils.resolvePrimitiveIfNecessary(aClass) : null;
     }
 
     @FunctionalInterface

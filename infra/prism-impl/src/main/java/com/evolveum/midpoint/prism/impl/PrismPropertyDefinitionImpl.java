@@ -17,9 +17,13 @@ import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
+import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryImpl;
+import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.DisplayableValue;
+
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -128,6 +132,12 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     @Override
     public QName getMatchingRuleQName() {
         return matchingRuleQName;
+    }
+
+    @Override
+    public @NotNull MatchingRule<T> getMatchingRule() throws SchemaException {
+        return MatchingRuleRegistryImpl.instance()
+                .getMatchingRule(getMatchingRuleQName(), getTypeName()); // FIXME beware of String vs PolyString!
     }
 
     @Override

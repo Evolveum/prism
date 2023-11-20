@@ -7,15 +7,20 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.delta.PropertyDelta;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.DisplayableValue;
+import java.util.Collection;
+import javax.xml.namespace.QName;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.namespace.QName;
-import java.util.Collection;
+import com.evolveum.midpoint.prism.delta.PropertyDelta;
+import com.evolveum.midpoint.prism.match.MatchingRule;
+import com.evolveum.midpoint.prism.normalization.Normalizer;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.DisplayableValue;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * Definition of a prism property.
@@ -58,9 +63,27 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
      * how to compare, normalize and/or order the values. E.g. there are matching
      * rules for case insensitive string comparison, for LDAP DNs, etc.
      *
+     * TODO describe the semantics where special normalizations are to be used
+     *  Use with care until this description is complete.
+     *
      * @return matching rule name
      */
     QName getMatchingRuleQName();
+
+    /** Returns the resolved {@link MatchingRule} for this property. */
+    @NotNull MatchingRule<T> getMatchingRule() throws SchemaException;
+
+    /**
+     * Returns the normalizer that is to be applied when the normalized form of this property is to be computed.
+     * For {@link PolyString} typed properties, it is a String normalizer. For other (`T`-typed) properties,
+     * it is a normalizer for `T` values.
+     *
+     * Currently, this is derived from the declared name of the matching rule. Later, we may create a separate property for this,
+     * most probably replacing the matching rule name.
+     */
+    default Normalizer<?> getNormalizer() throws SchemaException {
+        return getMatchingRule().getNormalizer();
+    }
 
     @Override
     @NotNull

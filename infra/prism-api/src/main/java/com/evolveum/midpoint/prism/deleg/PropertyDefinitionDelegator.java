@@ -10,6 +10,9 @@ package com.evolveum.midpoint.prism.deleg;
 import java.util.Collection;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.match.MatchingRule;
+import com.evolveum.midpoint.util.exception.SchemaException;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismProperty;
@@ -49,6 +52,11 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     @Override
     default QName getMatchingRuleQName() {
         return delegate().getMatchingRuleQName();
+    }
+
+    @Override
+    default @NotNull MatchingRule<T> getMatchingRule() throws SchemaException {
+        return delegate().getMatchingRule();
     }
 
     @Override

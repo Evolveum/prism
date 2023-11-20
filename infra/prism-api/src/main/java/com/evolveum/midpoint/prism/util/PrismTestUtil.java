@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.xml.sax.SAXException;
 
@@ -89,9 +90,11 @@ public class PrismTestUtil {
         return newPrismContext;
     }
 
-    public static PrismContext getPrismContext() {
+    public static @NotNull PrismContext getPrismContext() {
         if (prismContext == null) {
-            throw new IllegalStateException("Prism context is not set in PrismTestUtil. Maybe a missing call to resetPrismContext(..) in test initialization?");
+            throw new IllegalStateException(
+                    "Prism context is not set in PrismTestUtil. Maybe a missing call "
+                            + "to resetPrismContext(..) in test initialization?");
         }
         return prismContext;
     }

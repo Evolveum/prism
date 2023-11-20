@@ -18,15 +18,16 @@ import java.util.Map;
 
 /**
  * @author semancik
- *
  */
 public class MatchingRuleRegistryImpl implements MatchingRuleRegistry {
 
-    @NotNull private final MatchingRule<?> defaultMatchingRule;
+    private static MatchingRuleRegistry instance;
+
+    @NotNull private final MatchingRule<?> defaultMatchingRule = new DefaultMatchingRule<>();
     @NotNull private final Map<QName, MatchingRule<?>> matchingRules = new HashMap<>();
 
     MatchingRuleRegistryImpl() {
-        this.defaultMatchingRule = new DefaultMatchingRule<>();
+        instance = this;
     }
 
     // if typeQName is null, we skip the rule-type correspondence test
@@ -68,5 +69,9 @@ public class MatchingRuleRegistryImpl implements MatchingRuleRegistry {
 
     void registerMatchingRule(MatchingRule<?> rule) {
         matchingRules.put(rule.getName(), rule);
+    }
+
+    public static MatchingRuleRegistry instance() {
+        return instance;
     }
 }

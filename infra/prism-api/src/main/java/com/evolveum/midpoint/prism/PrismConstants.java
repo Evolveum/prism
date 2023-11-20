@@ -13,6 +13,9 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author semancik
  */
@@ -52,15 +55,19 @@ public class PrismConstants {
     public static final QName EXCHANGE_EMAIL_ADDRESSES_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "exchangeEmailAddresses");
     public static final QName DISTINGUISHED_NAME_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "distinguishedName");
 
-    public static final String PREFIX_NS_MATCHING = "mr";
-
     public static final String NS_POLY_STRING_NORMALIZER = NS_PREFIX + "poly-string-normalizer-3";
 
+    public static final QName DEFAULT_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "default");
     public static final QName ALPHANUMERIC_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "alphanumeric");
     public static final QName ASCII7_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "ascii7");
     public static final QName PASSTHROUGH_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "passthrough");
+    public static final QName LOWERCASE_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "lowercase");
 
-    public static final String PREFIX_NS_POLY_STRING_NORMALIZER = "psn";
+    // TODO move (some of these) outside prism?
+    public static final QName DISTINGUISHED_NAME_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "distinguishedName");
+    public static final QName UUID_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "uuid");
+    public static final QName EXCHANGE_EMAIL_ADDRESS_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "exchangeEmailAddress");
+    public static final QName XML_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "xml");
 
     public static final String NS_PREFIX_CRYPTO = NS_PREFIX + "crypto/";
     public static final String NS_PREFIX_CRYPTO_ALGORITHM = NS_PREFIX_CRYPTO + "algorithm/";

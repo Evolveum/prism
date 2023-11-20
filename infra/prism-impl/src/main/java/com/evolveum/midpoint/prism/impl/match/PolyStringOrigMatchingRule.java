@@ -7,18 +7,20 @@
 package com.evolveum.midpoint.prism.impl.match;
 
 import java.util.regex.Pattern;
-
 import javax.xml.namespace.QName;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.impl.polystring.DefaultNormalizer;
 import com.evolveum.midpoint.prism.match.MatchingRule;
+import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 /**
  * @author semancik
- *
  */
 public class PolyStringOrigMatchingRule implements MatchingRule<PolyString> {
 
@@ -49,12 +51,16 @@ public class PolyStringOrigMatchingRule implements MatchingRule<PolyString> {
     }
 
     @Override
-    public boolean matchRegex(PolyString a, String regex) {
-        if (a == null){
-            return false;
-        }
+    public @NotNull Normalizer<?> getNormalizer() {
+        // Matching by `orig` means we do not want any normalization.
+        return DefaultNormalizer.instance();
+    }
 
-        return Pattern.matches(regex, a.getOrig());
+    @Override
+    public boolean matchRegex(PolyString a, String regex) {
+        return a != null
+                && a.getOrig() != null
+                && Pattern.matches(regex, a.getOrig());
     }
 
     @Override
