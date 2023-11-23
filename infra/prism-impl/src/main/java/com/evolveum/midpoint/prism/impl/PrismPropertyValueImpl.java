@@ -192,7 +192,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition) throws SchemaException {
+    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
+        // "force" is currently ignored (this is as it was before)
         PrismPropertyDefinition<?> propertyDefinition = (PrismPropertyDefinition<?>) definition;
         if (propertyDefinition != null && !propertyDefinition.isAnyType()) {
             if (rawElement != null) {
@@ -224,17 +225,12 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                         value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
                     } else {
                         throw new SchemaException(
-                                "Incorrect value type. Expected %s for property '%s', current is: %s".formatted(
-                                        definition.getTypeName(), definition.getItemName(), type));
+                                "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(
+                                        definition.getTypeName(), type, definition.getItemName(), value.getClass()));
                     }
                 }
             }
         }
-    }
-
-    @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
-        applyDefinition(definition);
     }
 
     @Override

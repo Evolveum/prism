@@ -155,18 +155,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition) throws SchemaException {
-        checkMutable();        // TODO reconsider
-        applyDefinition(definition, true);
-    }
-
-    @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
-        checkMutable();        // TODO reconsider
-        // Do nothing by default
-    }
-
-    @Override
     public void revive(PrismContext prismContext) {
         if (isMutable()) {
             recompute(getPrismContext());

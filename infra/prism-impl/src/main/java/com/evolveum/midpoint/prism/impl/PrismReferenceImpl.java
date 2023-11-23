@@ -211,13 +211,6 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     }
 
     @Override
-    protected void checkDefinition(PrismReferenceDefinition def) {
-        if (def == null) {
-            throw new IllegalArgumentException("Cannot apply null definition to reference "+this);
-        }
-    }
-
-    @Override
     public PrismReferenceImpl clone() {
         return cloneComplex(CloneStrategy.LITERAL);
     }

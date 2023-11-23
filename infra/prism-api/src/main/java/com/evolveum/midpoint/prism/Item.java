@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.MiscUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -103,11 +104,8 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * Sets applicable item definition.
      *
      * @param definition the definition to set
-     *
-     * TODO consider removing this method
      */
-    @VisibleForTesting
-    void setDefinition(@Nullable D definition);
+    void setDefinition(@NotNull D definition);
 
     /**
      * Returns a display name for the item.
@@ -280,7 +278,11 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
 
     /**
      * Returns (potentially empty) collection of "real values".
-     * @see Item#getRealValue().
+     *
+     * The list itself is detached, freely modifiable.
+     * (Note that the values can still embed a parent, e.g., for containers and references.)
+     *
+     * @see Item#getRealValue()
      */
     @NotNull
     Collection<?> getRealValues();
@@ -597,9 +599,21 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
         }
     }
 
-    void applyDefinition(D definition) throws SchemaException;
+    default void applyDefinition(@NotNull D definition) throws SchemaException {
+        applyDefinition(definition, true);
+    }
 
-    void applyDefinition(D definition, boolean force) throws SchemaException;
+    default void applyDefinitionIfMissing(@NotNull D definition) throws SchemaException {
+        applyDefinition(definition, false);
+    }
+
+    /**
+     * Applies the definition to this item (and all its values, down to the lowest level).
+     *
+     * It may even convert the values, e.g. from their raw (unparsed) form to the parsed one,
+     * or - for resource attributes - between {@link String} and {@link PolyString} values (due to the normalization).
+     */
+    void applyDefinition(@NotNull D definition, boolean force) throws SchemaException;
 
     default Item<?,?> copy() {
         return clone();

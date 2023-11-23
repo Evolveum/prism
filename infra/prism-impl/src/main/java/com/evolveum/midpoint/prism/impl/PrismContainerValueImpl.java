@@ -363,7 +363,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             if (definition instanceof RemovedItemDefinition) {
                 throw new SchemaException("No definition for item " + itemName + " in " + getParent());
             }
-            item.applyDefinition(definition, false);
+            if (definition != null) {
+                item.applyDefinitionIfMissing(definition);
+            }
         }
         simpleAdd(item);
     }
@@ -1205,7 +1207,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
+    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
         checkMutable();
         if (!(definition instanceof PrismContainerDefinition)) {
             throw new IllegalArgumentException("Cannot apply " + definition + " to container " + this);
@@ -1249,7 +1251,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         // We change items during this operation, so we need to create a copy of them.
         ArrayList<Item<?, ?>> existingItems = new ArrayList<>(items.values());
 
-        for (Item item : existingItems) {
+        for (Item<?, ?> item : existingItems) {
             if (item.getDefinition() == null || force) {
                 ItemDefinition<?> itemDefinition = determineItemDefinition(item.getElementName(), complexTypeDefinition);
                 if (itemDefinition == null && item.getDefinition() != null && item.getDefinition().isDynamic()) {
@@ -1262,11 +1264,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 } else if (itemDefinition instanceof RemovedItemDefinition) {
                     // See MID-7939, this seems logical step - if definition was removed (e.g. for
                     // security reasons), let's remove the item too, so it's not available at all.
-                    //noinspection unchecked
                     remove(item);
-                } else {
-                    //noinspection unchecked
-                    item.applyDefinition(itemDefinition, force);
+                } else if (itemDefinition != null) {
+                    //noinspection unchecked,rawtypes
+                    ((Item) item).applyDefinition(itemDefinition, force);
                 }
             } else {
                 // Item has a definition already, no need to apply it

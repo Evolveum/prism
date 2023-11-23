@@ -25,7 +25,8 @@ import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
-public interface ContainerDefinitionDelegator<C extends Containerable> extends ItemDefinitionDelegator<PrismContainer<C>>, PrismContainerDefinition<C> {
+public interface ContainerDefinitionDelegator<C extends Containerable>
+        extends ItemDefinitionDelegator<PrismContainer<C>>, PrismContainerDefinition<C> {
 
     @Override
     PrismContainerDefinition<C> delegate();
@@ -86,7 +87,7 @@ public interface ContainerDefinitionDelegator<C extends Containerable> extends I
     }
 
     @Override
-    default <C extends Containerable> PrismContainerDefinition<C> findContainerDefinition(@NotNull ItemPath path) {
+    default <C2 extends Containerable> PrismContainerDefinition<C2> findContainerDefinition(@NotNull ItemPath path) {
         return delegate().findContainerDefinition(path);
     }
 

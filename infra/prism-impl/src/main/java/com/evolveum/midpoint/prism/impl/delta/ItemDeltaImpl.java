@@ -1483,7 +1483,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             if (isEmpty()) {
                 return null;
             }
-            itemNew = definition.instantiate(getElementName());
+            //noinspection unchecked
+            itemNew = (Item<V, D>) definition.instantiate(getElementName());
         } else {
             itemNew = itemOld.clone();
         }
@@ -1871,7 +1872,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    public void applyDefinition(D itemDefinition, boolean force) throws SchemaException {
+    public void applyDefinition(@NotNull D itemDefinition, boolean force) throws SchemaException {
         if (this.definition != null && !force) {
             return;
         }
@@ -1881,7 +1882,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         applyDefinitionSet(valuesToDelete, itemDefinition, force);
     }
 
-    private void applyDefinitionSet(Collection<V> set, ItemDefinition itemDefinition, boolean force) throws SchemaException {
+    private void applyDefinitionSet(Collection<V> set, ItemDefinition<?> itemDefinition, boolean force) throws SchemaException {
         if (set == null) {
             return;
         }

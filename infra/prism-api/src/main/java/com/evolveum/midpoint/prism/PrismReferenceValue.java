@@ -136,9 +136,6 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
 
     <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path);
 
-    @Override
-    void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException;
-
     void applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException;
 
     /**

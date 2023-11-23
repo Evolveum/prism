@@ -39,7 +39,6 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
      * The list is unmodifiable.
      */
     @Override
-    @SuppressWarnings("unchecked") // temporary workaround
     @NotNull
     List<? extends ItemDefinition<?>> getDefinitions();
 

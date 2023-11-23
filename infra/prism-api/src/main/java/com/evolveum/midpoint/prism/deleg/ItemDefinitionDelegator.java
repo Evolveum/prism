@@ -23,7 +23,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public interface ItemDefinitionDelegator<I extends Item<?,?>> extends DefinitionDelegator, ItemDefinition<I> {
+public interface ItemDefinitionDelegator<I extends Item<?,?>>
+        extends DefinitionDelegator, ItemDefinition<I> {
 
     @Override
     ItemDefinition<I> delegate();

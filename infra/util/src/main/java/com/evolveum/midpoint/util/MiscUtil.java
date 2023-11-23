@@ -642,6 +642,11 @@ public class MiscUtil {
         }
     }
 
+    /** As {@link Objects#requireNonNullElseGet(Object, Supplier)} but does not require the supplier to provide non-null value. */
+    public static <T> T orElseGet(T value, Supplier<T> supplier) {
+        return value != null ? value : supplier.get();
+    }
+
     @SafeVarargs
     public static <T> T getFirstNonNull(T... values) {
         for (T value : values) {

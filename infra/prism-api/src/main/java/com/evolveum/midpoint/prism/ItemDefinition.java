@@ -23,7 +23,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  *
  * @see TypeDefinition
  */
-public interface ItemDefinition<I extends Item>
+public interface ItemDefinition<I extends Item<?, ?>>
         extends Definition, PrismItemAccessDefinition {
 
     /**
@@ -194,7 +194,6 @@ public interface ItemDefinition<I extends Item>
 
     /**
      * Returns true if item definition is searchable.
-     * @return
      */
     @Experimental
     default boolean isSearchable() {

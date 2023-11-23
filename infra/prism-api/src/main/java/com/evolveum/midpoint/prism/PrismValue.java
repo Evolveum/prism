@@ -110,9 +110,11 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
      */
     void clearParent();
 
-    void applyDefinition(ItemDefinition definition) throws SchemaException;
+    default void applyDefinition(@NotNull ItemDefinition definition) throws SchemaException {
+        applyDefinition(definition, true);
+    }
 
-    void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException;
+    void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException;
 
     /**
      * Recompute the value or otherwise "initialize" it before adding it to a prism tree.

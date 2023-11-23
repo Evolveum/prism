@@ -969,14 +969,17 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
-    public void applyDefinition(PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException {
+    public void applyDefinition(@NotNull PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException {
         if (objectToAdd != null) {
             objectToAdd.applyDefinition(objectDefinition, force);
         }
-        for (ItemDelta modification : modifications) {
+        for (ItemDelta<?, ?> modification : modifications) {
             ItemPath path = modification.getPath();
-            ItemDefinition itemDefinition = objectDefinition.findItemDefinition(path);
-            modification.applyDefinition(itemDefinition, force);
+            ItemDefinition<?> itemDefinition = objectDefinition.findItemDefinition(path);
+            if (itemDefinition != null) {
+                //noinspection unchecked,rawtypes
+                ((ItemDelta) modification).applyDefinition(itemDefinition, force);
+            }
         }
     }
 

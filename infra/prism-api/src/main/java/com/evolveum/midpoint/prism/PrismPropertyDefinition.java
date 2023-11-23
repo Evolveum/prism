@@ -71,7 +71,7 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
     QName getMatchingRuleQName();
 
     /** Returns the resolved {@link MatchingRule} for this property. */
-    @NotNull MatchingRule<T> getMatchingRule() throws SchemaException;
+    @NotNull MatchingRule<T> getMatchingRule();
 
     /**
      * Returns the normalizer that is to be applied when the normalized form of this property is to be computed.

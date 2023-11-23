@@ -397,7 +397,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @NotNull
     @Override
-    public ComplexTypeDefinition deepClone(DeepCloneOperation operation) {
+    public ComplexTypeDefinition deepClone(@NotNull DeepCloneOperation operation) {
         return operation.execute(this,
                 this::clone,
                 clone -> {

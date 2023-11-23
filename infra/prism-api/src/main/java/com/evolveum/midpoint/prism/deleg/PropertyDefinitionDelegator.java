@@ -55,7 +55,7 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     }
 
     @Override
-    default @NotNull MatchingRule<T> getMatchingRule() throws SchemaException {
+    default @NotNull MatchingRule<T> getMatchingRule() {
         return delegate().getMatchingRule();
     }
 

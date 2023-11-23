@@ -91,19 +91,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     /**
-     * Sets applicable property definition.
-     *
-     * TODO remove (method in Item is sufficient)
-     *
-     * @param definition the definition to set
-     */
-    @Override
-    public void setDefinition(PrismPropertyDefinition<T> definition) {
-        checkMutable();
-        this.definition = definition;
-    }
-
-    /**
      * Type override, also for compatibility.
      */
     @Override
@@ -111,9 +98,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return (List) getValues();
     }
 
-    @NotNull
     @Override
-    public Collection<T> getRealValues() {
+    public @NotNull Collection<T> getRealValues() {
         Collection<T> realValues = new ArrayList<>(getValues().size());
         for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add(pValue.getValue());
@@ -379,13 +365,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     @Override
     public PropertyDelta<T> diff(PrismProperty<T> other, ParameterizedEquivalenceStrategy strategy) {
         return (PropertyDelta<T>) super.diff(other, strategy);
-    }
-
-    @Override
-    protected void checkDefinition(PrismPropertyDefinition<T> def) {
-        if (def == null) {
-            throw new IllegalArgumentException("Null definition cannot be applied to property " + this);
-        }
     }
 
     @Override

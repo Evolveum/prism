@@ -12,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public interface ObjectDefinitionDelegator<O extends Objectable> extends ContainerDefinitionDelegator<O>, PrismObjectDefinition<O> {
+public interface ObjectDefinitionDelegator<O extends Objectable>
+        extends ContainerDefinitionDelegator<O>, PrismObjectDefinition<O> {
 
     @Override
     PrismObjectDefinition<O> delegate();

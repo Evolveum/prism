@@ -283,7 +283,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
-    public Class getTypeClass() {
+    public Class<?> getTypeClass() {
         // This would be perhaps more appropriate on PrismPropertyDefinition, not here
         return XsdTypeMapper.toJavaTypeIfKnown(getTypeName());
     }

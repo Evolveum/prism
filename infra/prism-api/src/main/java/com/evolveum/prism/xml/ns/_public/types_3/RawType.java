@@ -220,7 +220,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         Validate.notNull(itemDefinition);
         Validate.notNull(itemName);
         @SuppressWarnings("unchecked")
-        Item<IV, ID> item = itemDefinition.instantiate();
+        Item<IV, ID> item = (Item<IV, ID>) itemDefinition.instantiate();
         IV newValue = getParsedValue(itemDefinition, itemName);
         if (newValue != null) {
             // TODO: Is clone necessary?

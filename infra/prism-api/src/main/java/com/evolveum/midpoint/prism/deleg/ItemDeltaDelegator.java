@@ -530,7 +530,7 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    default void applyDefinition(D itemDefinition, boolean force) throws SchemaException {
+    default void applyDefinition(@NotNull D itemDefinition, boolean force) throws SchemaException {
         delegate().applyDefinition(itemDefinition, force);
     }
 

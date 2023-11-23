@@ -13,7 +13,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.google.common.base.Strings;
@@ -139,9 +138,9 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
      * @param definition the definition to set
      */
     @Override
-    public void setDefinition(D definition) {
+    public void setDefinition(@NotNull D definition) {
         checkMutable();
-        checkDefinition(definition);
+        checkDefinitionBeforeApplication(definition);
         this.definition = definition;
     }
 
@@ -685,17 +684,14 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void applyDefinition(D definition) throws SchemaException {
-        applyDefinition(definition, true);
+    public void applyDefinition(@NotNull D definition, boolean force) throws SchemaException {
+        checkMutable(); // TODO consider if there is real change
+        checkDefinitionBeforeApplication(definition);
+        this.definition = definition;
+        applyDefinitionToValues(definition, force);
     }
 
-    @Override
-    public void applyDefinition(D definition, boolean force) throws SchemaException {
-        checkMutable();                    // TODO consider if there is real change
-        if (definition != null) {
-            checkDefinition(definition);
-        }
-        this.definition = definition;
+    protected void applyDefinitionToValues(@NotNull D definition, boolean force) throws SchemaException {
         for (PrismValue pval : getValues()) {
             pval.applyDefinition(definition, force);
         }
@@ -716,8 +712,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     protected void copyValues(CloneStrategy strategy, ItemImpl clone) {
         clone.elementName = this.elementName;
         clone.definition = this.definition;
-        // Do not clone parent so the cloned item can be safely placed to
-        // another item
+        // Do not clone parent so the cloned item can be safely placed to another item
         clone.parent = null;
         clone.userData = MiscUtil.cloneMap(this.userData);
         clone.incomplete = this.incomplete;
@@ -762,7 +757,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         }
 
         if (definition != null) {
-            checkDefinition(definition);
+            checkDefinitionBeforeApplication(definition);
         } else if (requireDefinitions && !isRaw()) {
             throw new IllegalStateException("No definition in item " + this + " (" + path + " in " + rootItem + ")");
         }
@@ -784,7 +779,12 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         }
     }
 
-    protected abstract void checkDefinition(D def);
+    /**
+     * This is a separate method, as it is used both for {@link #applyDefinition(ItemDefinition, boolean)}
+     * and {@link #setDefinition(ItemDefinition)} methods.
+     */
+    protected void checkDefinitionBeforeApplication(@NotNull D def) {
+    }
 
     @Override
     public void assertDefinitions() throws SchemaException {

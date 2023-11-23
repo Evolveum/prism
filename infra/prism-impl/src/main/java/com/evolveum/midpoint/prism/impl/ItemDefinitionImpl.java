@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
@@ -45,7 +46,7 @@ import com.evolveum.midpoint.util.QNameUtil;
 public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         extends DefinitionImpl
         implements MutableItemDefinition<I>, ItemDefinitionTestAccess {
-    private static final long serialVersionUID = -2643332934312107274L;
+    @Serial private static final long serialVersionUID = -2643332934312107274L;
 
     @NotNull protected ItemName itemName;
     private int minOccurs = 1;

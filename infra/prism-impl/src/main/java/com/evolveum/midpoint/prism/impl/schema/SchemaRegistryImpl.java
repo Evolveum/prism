@@ -820,14 +820,18 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public <C extends Containerable> void applyDefinition(PrismContainer<C> container, Class<C> compileTimeClass, boolean force) throws SchemaException {
         //noinspection unchecked
         PrismContainerDefinition<C> definition = determineDefinitionFromClass(compileTimeClass);
-        container.applyDefinition(definition, force);
+        if (definition != null) {
+            container.applyDefinition(definition, force);
+        }
     }
 
     @Override
     public <O extends Objectable> void applyDefinition(ObjectDelta<O> objectDelta, Class<O> compileTimeClass, boolean force) throws SchemaException {
         //noinspection unchecked
         PrismObjectDefinition<O> objectDefinition = determineDefinitionFromClass(compileTimeClass);
-        objectDelta.applyDefinition(objectDefinition, force);
+        if (objectDefinition != null) {
+            objectDelta.applyDefinition(objectDefinition, force);
+        }
     }
 
     @Override

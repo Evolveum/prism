@@ -54,6 +54,11 @@ public class SchemaException extends CommonException {
         this.propertyName = propertyName;
     }
 
+    @Experimental // is this a good idea?
+    public static SchemaException of(String messageTemplate, Object... arguments) {
+        return new SchemaException(messageTemplate.formatted(arguments));
+    }
+
     @Override
     public String getErrorTypeMessage() {
         return "Schema problem";

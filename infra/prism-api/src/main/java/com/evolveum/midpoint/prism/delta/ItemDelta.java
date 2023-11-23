@@ -352,7 +352,7 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void revive(PrismContext prismContext) throws SchemaException;
 
-    void applyDefinition(D itemDefinition, boolean force) throws SchemaException;
+    void applyDefinition(@NotNull D itemDefinition, boolean force) throws SchemaException;
 
     /**
      * Deltas are equivalent if they have the same result when

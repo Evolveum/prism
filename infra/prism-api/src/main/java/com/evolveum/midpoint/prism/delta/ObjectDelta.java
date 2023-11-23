@@ -291,7 +291,7 @@ public interface ObjectDelta<O extends Objectable>
 
     void revive(PrismContext prismContext) throws SchemaException;
 
-    void applyDefinition(PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException;
+    void applyDefinition(@NotNull PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException;
 
     boolean equivalent(ObjectDelta other);
 

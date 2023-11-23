@@ -15,7 +15,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  *  EXPERIMENTAL
  */
 @Experimental
-public interface MutableItemDefinition<I extends Item> extends ItemDefinition<I>, MutableDefinition {
+public interface MutableItemDefinition<I extends Item<?, ?>> extends ItemDefinition<I>, MutableDefinition {
 
     void setMinOccurs(int value);
 

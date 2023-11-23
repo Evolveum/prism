@@ -94,9 +94,6 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     PrismContainer<?> createExtension() throws SchemaException;
 
     @Override
-    void applyDefinition(PrismContainerDefinition<O> definition) throws SchemaException;
-
-    @Override
     <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>>
     void removeItem(ItemPath path, Class<I> itemType);
 

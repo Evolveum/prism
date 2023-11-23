@@ -8,6 +8,8 @@
 package com.evolveum.midpoint.prism.match;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.exception.SystemException;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,4 +24,16 @@ public interface MatchingRuleRegistry {
      * The `null` rule name means "default rule". The `null` type name means "no type checking".
      */
     <T> @NotNull MatchingRule<T> getMatchingRule(@Nullable QName ruleName, @Nullable QName typeQName) throws SchemaException;
+
+    /**
+     * A variant of {@link #getMatchingRule(QName, QName)} that ignores the type checking and expects that the validity
+     * of `ruleName` was already established.
+     */
+    default <T> @NotNull MatchingRule<T> getMatchingRuleSafe(@Nullable QName ruleName) {
+        try {
+            return getMatchingRule(ruleName, null);
+        } catch (SchemaException e) {
+            throw SystemException.unexpected(e, "when getting matching rule " + ruleName);
+        }
+    }
 }

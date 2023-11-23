@@ -57,8 +57,9 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Radovan Semancik
  */
-public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProperty<T>> implements PrismPropertyDefinition<T>,
-        MutablePrismPropertyDefinition<T> {
+public class PrismPropertyDefinitionImpl<T>
+        extends ItemDefinitionImpl<PrismProperty<T>>
+        implements PrismPropertyDefinition<T>, MutablePrismPropertyDefinition<T> {
 
     // TODO some documentation
     private static final long serialVersionUID = 7259761997904371009L;
@@ -135,9 +136,10 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     }
 
     @Override
-    public @NotNull MatchingRule<T> getMatchingRule() throws SchemaException {
+    public @NotNull MatchingRule<T> getMatchingRule() {
+        // Not checking type because of String/PolyString issue (may or may not be relevant here)
         return MatchingRuleRegistryImpl.instance()
-                .getMatchingRule(getMatchingRuleQName(), getTypeName()); // FIXME beware of String vs PolyString!
+                .getMatchingRuleSafe(getMatchingRuleQName());
     }
 
     @Override
@@ -252,5 +254,11 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     @Override
     public Optional<ComplexTypeDefinition> structuredType() {
         return structuredType.get();
+    }
+
+    @Override
+    public Class<T> getTypeClass() {
+        //noinspection unchecked
+        return (Class<T>) super.getTypeClass();
     }
 }

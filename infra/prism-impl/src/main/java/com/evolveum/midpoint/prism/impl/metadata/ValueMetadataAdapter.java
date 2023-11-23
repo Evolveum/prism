@@ -196,14 +196,8 @@ public class ValueMetadataAdapter implements ValueMetadata {
 
     @Override
     public void setDefinition(
-            PrismContainerDefinition<Containerable> definition) {
+            @NotNull PrismContainerDefinition<Containerable> definition) {
         delegate.setDefinition(definition);
-    }
-
-    @Override
-    public void applyDefinition(
-            PrismContainerDefinition<Containerable> definition) throws SchemaException {
-        delegate.applyDefinition(definition);
     }
 
     @Override
@@ -678,7 +672,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
 
     @Override
     public void applyDefinition(
-            PrismContainerDefinition<Containerable> definition, boolean force) throws SchemaException {
+            @NotNull PrismContainerDefinition<Containerable> definition, boolean force) throws SchemaException {
         delegate.applyDefinition(definition, force);
     }
 
