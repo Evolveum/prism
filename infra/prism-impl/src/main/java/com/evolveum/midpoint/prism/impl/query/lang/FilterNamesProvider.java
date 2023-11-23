@@ -1,9 +1,8 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismPropertyDefinition;
-import com.evolveum.midpoint.prism.PrismReferenceDefinition;
-import com.evolveum.midpoint.prism.impl.PrismObjectDefinitionImpl;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.util.DOMUtil;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,13 +14,13 @@ import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
  * Created by Dominik.
  */
 public class FilterNamesProvider {
-    public static List<String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, Object ruleContext) {
+    public static List<String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, ParserRuleContext ruleContext) {
 
         List<String> suggestions = new ArrayList<>();
 
         if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext) {
-
-            if (itemDefinition instanceof PrismPropertyDefinition || itemDefinition instanceof PrismObjectDefinitionImpl) {
+            // || itemDefinition instanceof PrismObjectDefinition<?>
+            if (itemDefinition instanceof PrismPropertyDefinition) {
                 suggestions.add(EQUAL.getLocalPart());
                 suggestions.add(LESS.getLocalPart());
                 suggestions.add(GREATER.getLocalPart());
@@ -35,45 +34,39 @@ public class FilterNamesProvider {
                 suggestions.add(NAME_TO_ALIAS.get(GREATER_OR_EQUAL));
                 suggestions.add(NAME_TO_ALIAS.get(NOT_EQUAL));
 
-                if (itemDefinition.getTypeName().getLocalPart().equals("xsd:string") || itemDefinition.getTypeName().getLocalPart().equals("types3:PolyString")) {
+                suggestions.add(EXISTS.getLocalPart());
+                suggestions.add(LEVENSHTEIN.getLocalPart());
+                suggestions.add(SIMILARITY.getLocalPart());
+                suggestions.add(IN_OID.getLocalPart());
+                suggestions.add(OWNED_BY_OID.getLocalPart());
+                suggestions.add(IN_ORG.getLocalPart());
+                suggestions.add(IS_ROOT.getLocalPart());
+                suggestions.add(OWNED_BY.getLocalPart());
+                suggestions.add(ANY_IN.getLocalPart());
+                suggestions.add(TYPE.getLocalPart());
+
+                if (itemDefinition.getTypeName().equals(DOMUtil.XSD_STRING) || itemDefinition.getTypeName().equals(PrismConstants.POLYSTRING_TYPE_QNAME)) {
                     suggestions.add(STARTS_WITH.getLocalPart());
-                    suggestions.add(CONTAINS.getLocalPart());
                     suggestions.add(ENDS_WITH.getLocalPart());
+                    suggestions.add(CONTAINS.getLocalPart());
+                    suggestions.add(FULL_TEXT.getLocalPart());
                 }
 
-                if (itemDefinition.getTypeName().getLocalPart().equals("string") || itemDefinition.getTypeName().getLocalPart().equals("PolyString")) {
-                    suggestions.add(STARTS_WITH.getLocalPart());
-                    suggestions.add(CONTAINS.getLocalPart());
-                    suggestions.add(ENDS_WITH.getLocalPart());
-                }
-
-                if (itemDefinition.getTypeName().getLocalPart().equals("PolyStringType")) {
+                // TODO AssignmentType
+                if (itemDefinition.getTypeName().equals(PrismConstants.POLYSTRING_TYPE_QNAME)) {
                     suggestions.add(MATCHES.getLocalPart());
                 }
             } else if (itemDefinition instanceof PrismReferenceDefinition) {
                 suggestions.add(REFERENCED_BY.getLocalPart());
+            } else if (itemDefinition instanceof PrismContainerDefinition<?>) {
                 suggestions.add(MATCHES.getLocalPart());
             }
-
-//            suggestions.add(EXISTS.getLocalPart());
-//            suggestions.add(FULL_TEXT.getLocalPart());
-//            suggestions.add(IN_OID.getLocalPart());
-//            suggestions.add(OWNED_BY_OID.getLocalPart());
-//            suggestions.add(IN_ORG.getLocalPart());
-//            suggestions.add(IS_ROOT.getLocalPart());
-//            suggestions.add(OWNED_BY.getLocalPart());
-//            suggestions.add(ANY_IN.getLocalPart());
-//            suggestions.add(LEVENSHTEIN.getLocalPart());
-//            suggestions.add(SIMILARITY.getLocalPart());
-
-//            suggestions.add(NOT.getLocalPart());
-//            suggestions.add(TYPE.getLocalPart());
-
         }
 
         if (ruleContext instanceof SubfilterOrValueContext) {
             suggestions.add(AND.getLocalPart());
             suggestions.add(OR.getLocalPart());
+            suggestions.add(NOT.getLocalPart());
         }
 
         if (ruleContext instanceof ItemPathComponentContext) {

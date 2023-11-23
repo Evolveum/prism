@@ -27,6 +27,6 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
             sourceName = String.format("%s:%d:%d: ", sourceName, line, charPositionInLine);
         }
 
-        errorList.add(new AxiomQueryError(recognizer, offendingSymbol, line, charPositionInLine, msg, e));
+        errorList.add(new AxiomQueryError(recognizer, offendingSymbol, line, charPositionInLine, 0, msg, e));
     }
 }
