@@ -363,6 +363,14 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="optionalCleanup" type="xsd:boolean">
+        <xsd:annotation>
+            <xsd:documentation>
+                Marks item that could be ignored by SCM tools (e.g. Git), or removed before commit.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="composite" type="xsd:boolean">
         <xsd:annotation>
             <xsd:documentation>

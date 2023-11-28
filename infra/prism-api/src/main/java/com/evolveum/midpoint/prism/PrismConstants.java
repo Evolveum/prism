@@ -112,6 +112,7 @@ public class PrismConstants {
     public static final QName A_SCHEMA_MIGRATION_VERSION = new QName(NS_ANNOTATION, "version");
     public static final QName A_SCHEMA_MIGRATION_OPERATION = new QName(NS_ANNOTATION, "operation");
     public static final QName A_SCHEMA_MIGRATION_REPLACEMENT = new QName(NS_ANNOTATION, "replacement");
+    public static final QName A_OPTIONAL_CLEANUP = new QName(NS_ANNOTATION, "optionalCleanup");
     public static final QName A_DEFAULT_PREFIX = new QName(NS_ANNOTATION, "defaultPrefix");
     public static final QName A_DIAGRAM = new QName(NS_ANNOTATION, "diagram");
     public static final QName A_DIAGRAM_NAME = new QName(NS_ANNOTATION, "name");

@@ -101,6 +101,9 @@ public enum Annotation {
     OPERATIONAL(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
             A_OPERATIONAL, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setOperational, true)),
 
+    OPTIONAL_CLEANUP(new AnnotationProcessor<>(
+            A_OPTIONAL_CLEANUP, Boolean.class, MutableDefinition::setOptionalCleanup, true)),
+
     PLANNED_REMOVAL(new AnnotationProcessor<MutableItemDefinition<?>, String>(
             A_PLANNED_REMOVAL, String.class, MutableItemDefinition.class, MutableItemDefinition::setPlannedRemoval, null)),
 
@@ -133,7 +136,7 @@ public enum Annotation {
         }
 
         List<Element> elements = SchemaProcessorUtil.getAnnotationElements(xsAnnotation, annotation.processor.name);
-        if (elements == null || elements.isEmpty()) {
+        if (elements.isEmpty()) {
             return;
         }
 

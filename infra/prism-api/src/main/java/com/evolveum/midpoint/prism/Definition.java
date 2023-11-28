@@ -103,6 +103,8 @@ public interface Definition
 
     String getRemovedSince();
 
+    boolean isOptionalCleanup();
+
     /**
      * Experimental functionality is not stable and it may be changed in any
      * future release without any warning. Use at your own risk.

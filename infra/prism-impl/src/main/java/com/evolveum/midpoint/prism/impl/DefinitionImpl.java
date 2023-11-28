@@ -55,6 +55,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     protected String deprecatedSince;
     protected boolean removed = false;
     protected String removedSince;
+    private boolean optionalCleanup;
     protected String plannedRemoval;
     protected boolean experimental = false;
     protected boolean elaborate = false;
@@ -146,6 +147,17 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setRemoved(boolean removed) {
         checkMutable();
         this.removed = removed;
+    }
+
+    @Override
+    public boolean isOptionalCleanup() {
+        return optionalCleanup;
+    }
+
+    @Override
+    public void setOptionalCleanup(boolean optionalCleanup) {
+        checkMutable();
+        this.optionalCleanup = optionalCleanup;
     }
 
     @Override

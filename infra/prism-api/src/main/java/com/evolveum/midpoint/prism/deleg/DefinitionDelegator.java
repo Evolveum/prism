@@ -100,6 +100,11 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
+    default boolean isOptionalCleanup() {
+        return delegate().isOptionalCleanup();
+    }
+
+    @Override
     default boolean isExperimental() {
         return delegate().isExperimental();
     }
