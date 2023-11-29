@@ -1,5 +1,6 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -16,7 +17,10 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     @Override
     public Object visitTerminal(TerminalNode node) {
         // set lastNode if visiting a terminal node
-        lastNode = node;
+        if (node.getSymbol().getType() != AxiomQueryParser.EOF) {
+            lastNode = node;
+        }
+
         return null;
     }
 

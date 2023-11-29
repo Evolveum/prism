@@ -10,16 +10,19 @@ public class AxiomQueryError {
     private final Recognizer<?, ?> recognizer;
     private final Object offendingSymbol;
     private final int line;
-    private final int charPositionInLine;
+    private final int charPositionInLineStart;
+    private final int charPositionInLineStop;
+
     private final String message;
     private final RecognitionException e;
 
-    public AxiomQueryError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
+    public AxiomQueryError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLineStart, int charPositionInLineStop, String msg, RecognitionException e)
     {
         this.recognizer = recognizer;
         this.offendingSymbol = offendingSymbol;
         this.line = line;
-        this.charPositionInLine = charPositionInLine;
+        this.charPositionInLineStart = charPositionInLineStart;
+        this.charPositionInLineStop = charPositionInLineStop;
         this.message = msg;
         this.e = e;
     }
@@ -38,10 +41,14 @@ public class AxiomQueryError {
     {
         return line;
     }
-
-    public int getCharPositionInLine()
+    public int getCharPositionInLineStart()
     {
-        return charPositionInLine;
+        return charPositionInLineStart;
+    }
+
+    public int getCharPositionInLineStop()
+    {
+        return charPositionInLineStop;
     }
 
     public String getMessage()
@@ -52,5 +59,36 @@ public class AxiomQueryError {
     public RecognitionException getException()
     {
         return e;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof AxiomQueryError)) {
+            return false;
+        }
+
+        AxiomQueryError axiomQueryError = (AxiomQueryError) obj;
+
+        if (axiomQueryError.recognizer == recognizer &&
+                axiomQueryError.offendingSymbol == offendingSymbol &&
+                axiomQueryError.line == line &&
+                axiomQueryError.charPositionInLineStart == charPositionInLineStart &&
+                axiomQueryError.charPositionInLineStop == charPositionInLineStop &&
+                axiomQueryError.message.equals(message) &&
+                axiomQueryError.e == e
+        ) {
+            return true;
+        }
+
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

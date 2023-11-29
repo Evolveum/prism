@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 import com.evolveum.midpoint.prism.*;
@@ -9,8 +8,7 @@ import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.RuleNode;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
@@ -21,42 +19,32 @@ import java.util.List;
  * Created by Dominik.
  */
 public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Object> {
-    private PrismContext context;
+    private final SchemaRegistry schemaRegistry;
     public final List<AxiomQueryError> errorList = new ArrayList<>();
-
-    private Class userType;
-
-    private Class<?> type;
-
+    private TypeDefinition typeDefinition;
     private ItemDefinition<?> itemDefinition;
 
-    private final SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
-
-    public AxiomQueryValidationVisitor(PrismContext prismContext, Class userType) {
-        this.context = prismContext;
-        this.userType = userType;
+    public AxiomQueryValidationVisitor(PrismContext prismContext) {
+        schemaRegistry = prismContext.getSchemaRegistry();
     }
 
+    // TODO referenceBy  &  match
     @Override
     public Object visitItemFilter(ItemFilterContext ctx) {
         if (ctx.path() != null) {
-            if (ctx.filterName() != null) {
-                // checking . type ObjectType
+            if (ctx.path().getText().equals(".")){
                 if (ctx.filterName().getText().equals(FilterNames.TYPE.getLocalPart())) {
-                    if (ctx.subfilterOrValue() != null) {
-                        this.type = checkType(ctx.subfilterOrValue().getText());
-                    }
+                    // checking . type ObjectType
+                    this.typeDefinition = checkType(ctx.subfilterOrValue());
                 }
-            }
-
-            if (ctx.path().getText().equals(FilterNames.META_TYPE)) {
+            } else if (ctx.path().getText().equals(FilterNames.META_TYPE) || ctx.path().getText().equals(PrismQueryLanguageParserImpl.REF_TYPE)) {
                 // checking path context META @type
-                this.type = checkType(ctx.subfilterOrValue().getText());
-            } else if (ctx.path().getText().equals(FilterNames.META_PATH)) {
-                // checking path context META @path
-                this.itemDefinition = checkItemPath(this.type, ctx.subfilterOrValue().getText());
-            } else if (!ctx.path().getText().equals(".")) {
-                this.itemDefinition = checkItemPath(this.type, ctx.path().getText());
+                this.typeDefinition = checkType(ctx.subfilterOrValue());
+            } else if (ctx.path().getText().equals(FilterNames.META_PATH) || ctx.path().getText().equals(FilterNames.META_RELATION)) {
+                // checking path context META @path & @relation
+                this.itemDefinition = checkItemPath(this.typeDefinition, ctx.subfilterOrValue());
+            } else {
+                this.itemDefinition = checkItemPath(this.typeDefinition, ctx.path());
             }
         }
 
@@ -65,81 +53,81 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
         }
 
         if (ctx.filterNameAlias() != null) {
-            checkFilterName(this.itemDefinition, ctx.filterNameAlias());
+            if (!ctx.path().getText().equals(FilterNames.META_PATH) || ctx.path().getText().equals(FilterNames.META_RELATION)) {
+                checkFilterName(this.itemDefinition, ctx.filterNameAlias());
+            }
+        }
+
+        if (ctx.subfilterOrValue() != null) {
+            if (ctx.subfilterOrValue().singleValue() != null) {
+                //  TODO value checking can be
+            }
         }
 
         return super.visitItemFilter(ctx);
     }
 
-    private Class<?> checkType(String type) {
-//        if (schemaRegistry.findTypeDefinitionByType(new QName(type)) == null) {
-//            errorList.add(new AxiomQueryError(null,
-//                    null,
-//                    0, 0,
-//                    "Does not existing type " + type,
-//                    null)
-//            );
-//        } else {
-//            this.type = schemaRegistry.findTypeDefinitionByType(new QName(type));
-//        }
-        return null;
-    }
+    private TypeDefinition checkType(ParserRuleContext ctx) {
+        TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName(ctx.getText()));
 
-    private ItemDefinition<?> checkItemPath(@Nullable Class<?> type, String path) {
-        ItemDefinition<?> itemDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass(this.userType);
-        ItemPath itemPath = ItemPathHolder.parseFromString(path);
-
-        if (itemDefinition.findItemDefinition(itemPath, ItemDefinition.class) == null) {
+        if (typeDefinition == null) {
             errorList.add(new AxiomQueryError(null,
                     null,
-                    0, 0,
-                    "Path " + path + " is not present in type " + this.userType.getSimpleName(),
+                    ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                    "Does not exist type " + ctx.getText(),
                     null)
             );
         }
 
-        return itemDefinition.findItemDefinition(itemPath, ItemDefinition.class);
+        return typeDefinition;
     }
 
-    private void checkFilterName(ItemDefinition<?> itemDefinition, Object ctx) {
+    private ItemDefinition<?> checkItemPath(@Nullable TypeDefinition type, ParserRuleContext ctx) {
+        if (type != null) {
+            ItemDefinition<?> itemDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) type.getCompileTimeClass());
+            ItemPath itemPath = null;
+            int itemPathCount = ctx.getChildCount();
+
+            for (int i = 0; i < itemPathCount; i = i + 2) {
+                itemPath = ItemPathHolder.parseFromString(ctx.getChild(i).getText());
+
+                if (itemDefinition.findItemDefinition(itemPath, ItemDefinition.class) == null) {
+                    errorList.add(new AxiomQueryError(null,
+                            null,
+                            ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                            "Path " + itemPath + " is not present in type " + itemDefinition.getTypeName().getLocalPart(),
+                            null)
+                    );
+                } else {
+                    if (i != (itemPathCount - 1)) {
+                        itemDefinition = itemDefinition.findItemDefinition(itemPath, ItemDefinition.class);
+                    } else {
+                        return itemDefinition.findItemDefinition(itemPath, ItemDefinition.class);
+                    }
+                }
+            }
+        } else {
+            errorList.add(new AxiomQueryError(null,
+                    null,
+                    ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                    "Missing type definition",
+                    null)
+            );
+        }
+
+        return null;
+    }
+
+    private void checkFilterName(ItemDefinition<?> itemDefinition, ParserRuleContext ctx) {
         if (itemDefinition != null) {
-            if (ctx instanceof FilterNameContext filterNameContext) {
-                if (!FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, filterNameContext).contains(filterNameContext.getText())) {
-                    errorList.add(new AxiomQueryError(null,
-                            null,
-                            0, 0,
-                            "Filter name " + filterNameContext.getText() + " is not supported for path " + itemDefinition.getItemName(),
-                            null)
-                    );
-                }
-            }
-
-            if (ctx instanceof FilterNameAliasContext filterNameAliasContext) {
-                if (!FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, filterNameAliasContext).contains(filterNameAliasContext.getText())) {
-                    errorList.add(new AxiomQueryError(null,
-                            null,
-                            0, 0,
-                            "Filter name alias " + filterNameAliasContext.getText() + " is not supported for path " + itemDefinition.getItemName(),
-                            null)
-                    );
-                }
+            if (!FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, ctx).contains(ctx.getText())) {
+                errorList.add(new AxiomQueryError(null,
+                        null,
+                        ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                        "Filter " + ctx.getText() + " is not supported for path " + itemDefinition.getItemName(),
+                        null)
+                );
             }
         }
-    }
-
-    private ParseTree getLastNode(RuleNode currentPosition) {
-        while (currentPosition.getRuleContext().getRuleIndex() != AxiomQueryParser.RULE_itemFilter) {
-            currentPosition = (RuleNode) currentPosition.getParent();
-            return currentPosition.getChild(currentPosition.getChildCount() - 1);
-        }
-        return null;
-    }
-
-    private ParseTree getFirstNode(RuleNode currentPosition) {
-        while (currentPosition.getRuleContext().getRuleIndex() != AxiomQueryParser.RULE_itemFilter) {
-            currentPosition = (RuleNode) currentPosition.getParent();
-            return currentPosition.getChild(0);
-        }
-        return null;
     }
 }

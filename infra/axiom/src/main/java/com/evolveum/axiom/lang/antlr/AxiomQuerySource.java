@@ -26,6 +26,7 @@ public class AxiomQuerySource {
         AxiomQueryErrorListener axiomQueryErrorListener = new AxiomQueryErrorListener();
         // DO NOT log to STDIN
         lexer.removeErrorListeners();
+        lexer.addErrorListener(axiomQueryErrorListener);
         parser.removeErrorListeners();
         parser.addErrorListener(axiomQueryErrorListener);
 
