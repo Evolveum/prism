@@ -32,13 +32,14 @@ public class DistinguishedNameNormalizer extends BaseStringNormalizer {
         if (orig.isBlank()) {
             return "";
         }
-        LdapName dn;
+        LdapName normalizedDn;
         try {
-            dn = new LdapName(orig);
+            LdapName dn = new LdapName(orig);
+            normalizedDn = new LdapName(dn.getRdns());
         } catch (InvalidNameException e) {
             throw new SchemaException("String '" + orig + "' is not a DN: " + e.getMessage(), e);
         }
-        return dn.toString().toLowerCase();
+        return normalizedDn.toString().toLowerCase();
     }
 
     @Override
