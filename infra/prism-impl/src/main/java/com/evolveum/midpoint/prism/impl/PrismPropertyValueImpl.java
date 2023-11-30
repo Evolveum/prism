@@ -218,7 +218,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                         value = (T) XmlTypeConverter.toJavaValue((String) value, type);
 
                     } else {
-                        throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                        throw new SchemaException("Incorrect value type" + type.getName() + ". Expected " + definition.getTypeName() + " for property " + definition.getItemName());
                     }
                 }
             }
