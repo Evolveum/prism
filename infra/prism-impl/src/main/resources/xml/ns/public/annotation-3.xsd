@@ -357,8 +357,6 @@
 
                 The example of operation properties are modification timestamps, create timestamps,
                 user that made the last change, etc.
-
-                Items marked with `operational` = true also get `display` = hidden by default.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
