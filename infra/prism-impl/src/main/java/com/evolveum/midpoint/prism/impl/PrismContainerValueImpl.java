@@ -1116,8 +1116,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 if (itemDef == null && other.getDefinition() != null) {
                     itemDef = other.getDefinition().findLocalItemDefinition(thisItem.getElementName());
                 }
-                if (isOperationalOnly(thisItem, itemDef)
-                        && (otherItem == null || isOperationalOnly(otherItem, itemDef))) {
+                if (shouldSkipForDiff(thisItem, itemDef)
+                        && (otherItem == null || shouldSkipForDiff(otherItem, itemDef))) {
                     continue;
                 }
             }
@@ -1139,7 +1139,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 if (itemDef == null && thisValue.getDefinition() != null) {
                     itemDef = thisValue.getDefinition().findLocalItemDefinition(otherItem.getElementName());
                 }
-                if (isOperationalOnly(otherItem, itemDef)) {
+                if (shouldSkipForDiff(otherItem, itemDef)) {
                     continue;
                 }
             }
@@ -1162,7 +1162,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return false;
     }
 
-    private boolean isOperationalOnly(Item item, ItemDefinition itemDef) {
+    /**
+     * Returns true if the item is not operational or is not marked as alwaysUseForEquals.
+     * It also checks sub-items.
+     */
+    private boolean shouldSkipForDiff(Item item, ItemDefinition itemDef) {
         // If the item is explicitly mentioned in schema to be used for equals
         // we do not consider it operational for diff purposes.
         if (getDefinition() != null && getDefinition().isAlwaysUseForEquals(item.getElementName())) {

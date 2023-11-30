@@ -72,6 +72,13 @@ public interface ItemDefinition<I extends Item>
      */
     boolean isOperational();
 
+    /**
+     * Item which should always be used for equals even if it is operational and strategy does not
+     * consider operational items.
+     *
+     * EXPERIMENTAL
+     */
+    @Experimental
     boolean isAlwaysUseForEquals();
 
     /**

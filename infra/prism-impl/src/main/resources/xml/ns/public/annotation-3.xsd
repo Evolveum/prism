@@ -163,7 +163,7 @@
         </xsd:annotation>
     </xsd:element>
 
-    <xsd:element name="display" type="tns:DisplayHintType">
+    <xsd:element name="displayHint" type="tns:DisplayHintType">
         <xsd:annotation>
             <xsd:documentation>
                 Enumeration annotation that specifies how the item should be displayed.

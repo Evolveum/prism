@@ -60,8 +60,8 @@ public enum Annotation {
     EMPHASIZED(new AnnotationProcessor<>(
             A_EMPHASIZED, Boolean.class, MutableDefinition::setEmphasized, true)),
 
-    DISPLAY(new AnnotationProcessor<>(
-            A_DISPLAY, DisplayHint.class, MutableDefinition::setDisplay) {
+    DISPLAY_HINT(new AnnotationProcessor<>(
+            A_DISPLAY_HINT, DisplayHint.class, MutableDefinition::setDisplayHint) {
 
         @Override
         protected @Nullable DisplayHint convert(@NotNull Element element) {
@@ -73,7 +73,7 @@ public enum Annotation {
             super.process(definition, elements);
 
             // backward compatibility with emphasized annotation
-            if (definition.getDisplay() == DisplayHint.EMPHASIZED) {
+            if (definition.getDisplayHint() == DisplayHint.EMPHASIZED) {
                 definition.setEmphasized(true);
             }
         }

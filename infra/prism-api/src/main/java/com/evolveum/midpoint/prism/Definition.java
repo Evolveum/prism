@@ -103,6 +103,9 @@ public interface Definition
 
     String getRemovedSince();
 
+    /**
+     * Marks item that could be ignored by SCM tools (e.g. Git), or removed before commit.
+     */
     boolean isOptionalCleanup();
 
     /**
@@ -135,7 +138,12 @@ public interface Definition
      */
     boolean isEmphasized();
 
-    DisplayHint getDisplay();
+    /**
+     * Enumeration annotation that specifies how/whether the item should be displayed.
+     *
+     * It is also a replacement for the old "emphasized" annotation.
+     */
+    DisplayHint getDisplayHint();
 
     /**
      * Returns display name.

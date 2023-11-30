@@ -125,8 +125,8 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
-    default DisplayHint getDisplay() {
-        return delegate().getDisplay();
+    default DisplayHint getDisplayHint() {
+        return delegate().getDisplayHint();
     }
     @Override
     default boolean isEmphasized() {

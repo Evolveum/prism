@@ -38,7 +38,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public DisplayHint getDisplay() {
+    public DisplayHint getDisplayHint() {
         throw new UnsupportedOperationException();
     }
 

@@ -46,7 +46,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull protected QName typeName;
     protected ItemProcessing processing;
     protected boolean isAbstract = false;
-    protected DisplayHint display;
+    protected DisplayHint displayHint;
     protected String displayName;
     protected Integer displayOrder;
     protected String help;
@@ -202,14 +202,14 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
-    public DisplayHint getDisplay() {
-        return display;
+    public DisplayHint getDisplayHint() {
+        return displayHint;
     }
 
     @Override
-    public void setDisplay(DisplayHint display) {
+    public void setDisplayHint(DisplayHint displayHint) {
         checkMutable();
-        this.display = display;
+        this.displayHint = displayHint;
     }
 
     @Override

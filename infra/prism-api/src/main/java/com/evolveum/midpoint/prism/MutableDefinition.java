@@ -30,7 +30,7 @@ public interface MutableDefinition extends Definition {
 
     void setEmphasized(boolean emphasized);
 
-    void setDisplay(DisplayHint display);
+    void setDisplayHint(DisplayHint display);
 
     void setDisplayName(String displayName);
 
