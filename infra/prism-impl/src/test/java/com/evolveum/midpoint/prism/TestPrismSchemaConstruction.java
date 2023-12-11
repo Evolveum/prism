@@ -48,7 +48,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
     }
 
     @Test

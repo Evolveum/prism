@@ -40,7 +40,7 @@ public class ObjectDeltaUtil {
 
     public static <O extends Objectable> void applyTo(
             PrismObject<O> targetObject, Collection<? extends ItemDelta<?,?>> modifications) throws SchemaException {
-        for (ItemDelta itemDelta : modifications) {
+        for (ItemDelta<?, ?> itemDelta : modifications) {
             itemDelta.applyTo(targetObject);
         }
     }

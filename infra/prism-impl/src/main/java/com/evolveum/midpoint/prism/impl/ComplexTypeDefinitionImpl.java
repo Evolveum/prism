@@ -9,10 +9,13 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.*;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -637,5 +640,10 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public void setStrictAnyMarker(boolean marker) {
         strictAnyMarker = marker;
+    }
+
+    @Override
+    public Class<?> getTypeClass() {
+        return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());
     }
 }

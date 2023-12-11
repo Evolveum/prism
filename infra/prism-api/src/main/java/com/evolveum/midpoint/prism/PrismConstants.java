@@ -13,9 +13,6 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
  * @author semancik
  */
@@ -57,7 +54,9 @@ public class PrismConstants {
 
     public static final String NS_POLY_STRING_NORMALIZER = NS_PREFIX + "poly-string-normalizer-3";
 
-    public static final QName DEFAULT_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "default");
+    public static final QName NO_OP_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "noOp");
+    public static final QName POLY_STRING_NORM_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "polyStringNorm");
+    public static final QName POLY_STRING_ORIG_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "polyStringOrig");
     public static final QName ALPHANUMERIC_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "alphanumeric");
     public static final QName ASCII7_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "ascii7");
     public static final QName PASSTHROUGH_POLY_STRING_NORMALIZER = new QName(NS_POLY_STRING_NORMALIZER, "passthrough");

@@ -8,7 +8,6 @@
 package com.evolveum.midpoint.prism.impl.polystring;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 
@@ -22,17 +21,17 @@ import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 /** The default ("no-op") normalizer that preserves the original value unchanged. */
-public class DefaultNormalizer implements Normalizer<Object> {
+public class NoOpNormalizer<T> implements Normalizer<T> {
 
-    private static final DefaultNormalizer INSTANCE = new DefaultNormalizer();
+    private static final NoOpNormalizer<?> INSTANCE = new NoOpNormalizer<>();
 
     @Override
-    public Object normalize(Object orig) throws SchemaException {
+    public T normalize(T orig) throws SchemaException {
         return orig;
     }
 
     @Override
-    public boolean match(@Nullable Object a, @Nullable Object b) throws SchemaException {
+    public boolean match(@Nullable T a, @Nullable T b) throws SchemaException {
         if (a == null && b == null) {
             return true;
         }
@@ -51,7 +50,7 @@ public class DefaultNormalizer implements Normalizer<Object> {
     }
 
     @Override
-    public boolean matchRegex(Object a, String regex) {
+    public boolean matchRegex(T a, String regex) {
         if (a instanceof Matchable<?> matchable) {
             return matchable.matches(regex);
         } else {
@@ -61,7 +60,7 @@ public class DefaultNormalizer implements Normalizer<Object> {
 
     @Override
     public @NotNull QName getName() {
-        return PrismConstants.DEFAULT_NORMALIZER;
+        return PrismConstants.NO_OP_NORMALIZER;
     }
 
     @Override
@@ -69,8 +68,9 @@ public class DefaultNormalizer implements Normalizer<Object> {
         return true;
     }
 
-    public static @NotNull DefaultNormalizer instance() {
-        return INSTANCE;
+    public static <T> @NotNull NoOpNormalizer<T> instance() {
+        //noinspection unchecked
+        return (NoOpNormalizer<T>) INSTANCE;
     }
 
     @Override

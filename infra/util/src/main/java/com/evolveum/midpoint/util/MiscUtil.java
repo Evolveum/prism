@@ -437,6 +437,14 @@ public class MiscUtil {
         return StringUtils.abbreviate(getValueWithClass(o), Math.max(maxLength, 4));
     }
 
+    /**
+     * Correctly quotes a string for use in diagnostic messages.
+     * TODO maybe we should somehow merge this with {@link #getDiagInfo(Object)} method
+     */
+    public static @NotNull String q(@Nullable Object value) {
+        return value != null ? "'" + value + "'" : "null";
+    }
+
     public static String getClass(Object object) {
         return object != null ? object.getClass().getName() : "null";
     }

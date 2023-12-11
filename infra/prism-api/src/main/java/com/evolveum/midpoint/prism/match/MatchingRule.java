@@ -38,16 +38,14 @@ public interface MatchingRule<T> {
      * Matches two objects.
      */
     default boolean match(T a, T b) throws SchemaException {
-        //noinspection unchecked
-        return ((Normalizer<T>) getNormalizer()).match(a, b);
+        return getNormalizer().match(a, b);
     }
 
     /**
      * Matches value against given regex.
      */
     default boolean matchRegex(T a, String regex) throws SchemaException {
-        //noinspection unchecked
-        return ((Normalizer<T>) getNormalizer()).matchRegex(a, regex);
+        return getNormalizer().matchRegex(a, regex);
     }
 
     /**
@@ -65,12 +63,11 @@ public interface MatchingRule<T> {
      *  this question will need to be resolved.)
      */
     default T normalize(T original) throws SchemaException {
-        //noinspection unchecked
-        return ((Normalizer<T>) getNormalizer()).normalize(original);
+        return getNormalizer().normalize(original);
     }
 
     /**
      * Returns the normalizer corresponding to this rule.
      */
-    @NotNull Normalizer<?> getNormalizer();
+    @NotNull Normalizer<T> getNormalizer();
 }

@@ -144,7 +144,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public boolean canBeDefinitionOf(PrismValue pvalue) {
+    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         throw new UnsupportedOperationException();
     }
 

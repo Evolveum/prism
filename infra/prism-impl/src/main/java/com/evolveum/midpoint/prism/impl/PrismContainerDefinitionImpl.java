@@ -472,10 +472,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     @Override
-    public boolean canBeDefinitionOf(PrismValue pvalue) {
-        if (pvalue == null) {
-            return false;
-        }
+    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         if (!(pvalue instanceof PrismContainerValue<?>)) {
             return false;
         }

@@ -45,7 +45,7 @@ public abstract class AbstractPrismTest extends AbstractUnitTest {
 
     @BeforeSuite
     public void initPrismContext() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
     }
 

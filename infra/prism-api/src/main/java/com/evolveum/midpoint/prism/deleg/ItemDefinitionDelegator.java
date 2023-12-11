@@ -155,7 +155,7 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
     }
 
     @Override
-    default boolean canBeDefinitionOf(PrismValue pvalue) {
+    default boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         return delegate().canBeDefinitionOf(pvalue);
     }
 

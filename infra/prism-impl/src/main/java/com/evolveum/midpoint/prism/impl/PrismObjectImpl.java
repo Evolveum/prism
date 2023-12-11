@@ -28,7 +28,6 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -252,8 +251,8 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    protected void checkDefinitionBeforeApplication(@NotNull PrismContainerDefinition<O> def) {
-        super.checkDefinitionBeforeApplication(def);
+    protected void checkDefinition(@NotNull PrismContainerDefinition<O> def) {
+        super.checkDefinition(def);
         MiscUtil.argCheck(
                 def instanceof PrismObjectDefinition,
                 "Cannot apply %s to object, it is not an object definition", def);

@@ -922,7 +922,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     return;
                 } else {
                     if (itemType.isAssignableFrom(item.getClass())) {
-                        itemsIterator.remove();
+                        itemsIterator.remove(); // TODO we should also unset the respective parent
                         removeFromUnqualifiedIfNeeded(itemName);
                     } else {
                         throw new IllegalArgumentException("Attempt to remove item " + subName + " from " + this +
@@ -1362,17 +1362,18 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             throw new IllegalStateException("Definition-less container value " + this + " (" + myPath + " in " + rootItem + ")");
         }
         for (Item<?, ?> item : items.values()) {
-            if (scope.isThorough()) {
-                if (item == null) {
-                    throw new IllegalStateException("Null item in container value " + this + " (" + myPath + " in " + rootItem + ")");
-                }
-                if (item.getParent() == null) {
-                    throw new IllegalStateException("No parent for item " + item + " in container value " + this + " (" + myPath + " in " + rootItem + ")");
-                }
-                if (item.getParent() != this) {
-                    throw new IllegalStateException("Wrong parent for item " + item + " in container value " + this + " (" + myPath + " in " + rootItem + "), " +
-                            "bad parent: " + item.getParent());
-                }
+            if (item == null) {
+                throw new IllegalStateException(
+                        "Null item in container value %s (%s in %s)".formatted(this, myPath, rootItem));
+            }
+            if (item.getParent() == null) {
+                throw new IllegalStateException(
+                        "No parent for item %s in container value %s (%s in %s)".formatted(item, this, myPath, rootItem));
+            }
+            if (item.getParent() != this) {
+                throw new IllegalStateException(
+                        "Wrong parent for item %s in container value %s (%s in %s), bad parent: %s".formatted(
+                                item, this, myPath, rootItem, item.getParent()));
             }
             item.checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
         }
@@ -1943,7 +1944,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
 
         @Override
-        public boolean canBeDefinitionOf(PrismValue value) {
+        public boolean canBeDefinitionOf(@NotNull PrismValue value) {
             throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
         }
 
@@ -1969,6 +1970,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
         @Override
         public @NotNull ItemDefinition<I> clone() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public Class<?> getTypeClass() {
             throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
         }
     }

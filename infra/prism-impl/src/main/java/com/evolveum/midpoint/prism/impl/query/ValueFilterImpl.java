@@ -192,6 +192,16 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     }
 
     @Override
+    public void setValues(@NotNull Collection<V> values) {
+        checkMutable();
+        this.values = new ArrayList<>();
+        for (V value : values) {
+            value.setParent(this);
+            this.values.add(value);
+        }
+    }
+
+    @Override
     @Nullable
     public ExpressionWrapper getExpression() {
         return expression;

@@ -26,14 +26,14 @@ public interface MatchingRuleRegistry {
     <T> @NotNull MatchingRule<T> getMatchingRule(@Nullable QName ruleName, @Nullable QName typeQName) throws SchemaException;
 
     /**
-     * A variant of {@link #getMatchingRule(QName, QName)} that ignores the type checking and expects that the validity
-     * of `ruleName` was already established.
+     * A variant of {@link #getMatchingRule(QName, QName)} that expects that the validity
+     * of `ruleName`/`typeName` pair was already established.
      */
-    default <T> @NotNull MatchingRule<T> getMatchingRuleSafe(@Nullable QName ruleName) {
+    default <T> @NotNull MatchingRule<T> getMatchingRuleSafe(@Nullable QName ruleName, @Nullable QName typeName) {
         try {
-            return getMatchingRule(ruleName, null);
+            return getMatchingRule(ruleName, typeName);
         } catch (SchemaException e) {
-            throw SystemException.unexpected(e, "when getting matching rule " + ruleName);
+            throw SystemException.unexpected(e, "when getting matching rule " + ruleName + " for " + typeName);
         }
     }
 }

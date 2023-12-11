@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.normalization.Normalizer;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -72,8 +74,10 @@ public interface PrismContext extends ProtectorCreator {
     /**
      * Returns the default PolyString normalizer.
      */
-    @NotNull
-    PolyStringNormalizer getDefaultPolyStringNormalizer();
+    @NotNull PolyStringNormalizer getDefaultPolyStringNormalizer();
+
+    /** TODO */
+    <T> @NotNull Normalizer<T> getNoOpNormalizer();
 
     /**
      * Returns the default protector.

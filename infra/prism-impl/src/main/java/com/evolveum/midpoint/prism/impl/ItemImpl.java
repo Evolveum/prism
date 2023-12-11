@@ -140,7 +140,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public void setDefinition(@NotNull D definition) {
         checkMutable();
-        checkDefinitionBeforeApplication(definition);
+        checkDefinition(definition);
         this.definition = definition;
     }
 
@@ -686,7 +686,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public void applyDefinition(@NotNull D definition, boolean force) throws SchemaException {
         checkMutable(); // TODO consider if there is real change
-        checkDefinitionBeforeApplication(definition);
+        checkDefinition(definition);
         this.definition = definition;
         applyDefinitionToValues(definition, force);
     }
@@ -753,37 +753,46 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     public void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope) {
         ItemPath path = getPath();
         if (elementName == null) {
-            throw new IllegalStateException("Item " + this + " has no name (" + path + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "Item %s has no name (%s in %s)".formatted(this, path, rootItem));
         }
 
         if (definition != null) {
-            checkDefinitionBeforeApplication(definition);
+            checkDefinition(definition);
         } else if (requireDefinitions && !isRaw()) {
-            throw new IllegalStateException("No definition in item " + this + " (" + path + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "No definition in item %s (%s in %s)".formatted(this, path, rootItem));
         }
         for (V val : values) {
             if (prohibitRaw && val.isRaw()) {
-                throw new IllegalStateException("Raw value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Raw value %s in item %s (%s in %s)".formatted(val, this, path, rootItem));
             }
             if (val == null) {
-                throw new IllegalStateException("Null value in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Null value in item %s (%s in %s)".formatted(this, path, rootItem));
             }
             if (val.getParent() == null) {
-                throw new IllegalStateException("Null parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Null parent for value %s in item %s (%s in %s)".formatted(val, this, path, rootItem));
             }
             if (val.getParent() != this) {
-                throw new IllegalStateException("Wrong parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + "), " +
-                        "bad parent: " + val.getParent());
+                throw new IllegalStateException(
+                        "Wrong parent for value %s in item %s (%s in %s), bad parent: %s".formatted(
+                                val, this, path, rootItem, val.getParent()));
             }
             val.checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
         }
     }
 
     /**
-     * This is a separate method, as it is used both for {@link #applyDefinition(ItemDefinition, boolean)}
-     * and {@link #setDefinition(ItemDefinition)} methods.
+     * This is a separate method, as it is used at various places, e.g.
+     *
+     * - in {@link #applyDefinition(ItemDefinition, boolean)}
+     * - in {@link #setDefinition(ItemDefinition)}
+     * - when checking the consistence
      */
-    protected void checkDefinitionBeforeApplication(@NotNull D def) {
+    protected void checkDefinition(@NotNull D def) {
     }
 
     @Override

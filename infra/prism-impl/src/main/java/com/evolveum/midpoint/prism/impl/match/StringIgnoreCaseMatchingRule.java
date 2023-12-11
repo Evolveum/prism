@@ -34,7 +34,7 @@ public class StringIgnoreCaseMatchingRule implements MatchingRule<String> {
     }
 
     @Override
-    public @NotNull Normalizer<?> getNormalizer() {
+    public @NotNull Normalizer<String> getNormalizer() {
         return LowercaseStringNormalizer.instance();
     }
 

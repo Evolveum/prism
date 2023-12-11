@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.polystring.NoOpNormalizer;
+
+import com.evolveum.midpoint.prism.normalization.Normalizer;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
@@ -292,6 +296,12 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
+    public <T> @NotNull Normalizer<T> getNoOpNormalizer() {
+        //noinspection unchecked
+        return (Normalizer<T>) NoOpNormalizer.instance();
+    }
+
+    @Override
     public Protector getDefaultProtector() {
         return defaultProtector;
     }
@@ -466,8 +476,8 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
-    public <C extends Containerable, O extends Objectable> void adopt(PrismContainerValue<C> prismContainerValue, Class<O> type,
-            ItemPath path) throws SchemaException {
+    public <C extends Containerable, O extends Objectable> void adopt(
+            PrismContainerValue<C> prismContainerValue, Class<O> type, ItemPath path) throws SchemaException {
         prismContainerValue.revive(this);
         getSchemaRegistry().applyDefinition(prismContainerValue, type, path, false);
     }

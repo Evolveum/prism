@@ -38,40 +38,30 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 public class PrismUtil {
 
     public static <T> void recomputeRealValue(T realValue, PrismContext prismContext) {
+        recomputeRealValue(realValue);
+    }
+
+    public static <T> void recomputeRealValue(T realValue) {
         if (realValue == null) {
             return;
         }
         // TODO: switch to Recomputable interface instead of PolyString
-        if (realValue instanceof PolyString && prismContext != null) {
-            PolyString polyStringVal = (PolyString) realValue;
-            // Always recompute. Recompute is cheap operation and this avoids a lot of bugs
-            polyStringVal.recompute(prismContext.getDefaultPolyStringNormalizer());
+        if (realValue instanceof PolyString polyStringVal && polyStringVal.getNorm() == null) {
+            // Compute only if norm is missing. Otherwise, this could destroy items with non-standard normalizations
+            // (like resource attributes)
+            polyStringVal.recompute(
+                    PrismContext.get().getDefaultPolyStringNormalizer());
         }
     }
 
-    public static <T> void recomputePrismPropertyValue(PrismPropertyValue<T> pValue, PrismContext prismContext) {
-        if (pValue == null) {
-            return;
+    public static <T> void recomputePrismPropertyValue(PrismPropertyValue<T> pValue) {
+        if (pValue != null) {
+            recomputeRealValue(pValue.getValue());
         }
-        recomputeRealValue(pValue.getValue(), prismContext);
     }
 
     public static boolean isEmpty(PolyStringType value) {
         return value == null || StringUtils.isEmpty(value.getOrig()) && StringUtils.isEmpty(value.getNorm());
-    }
-
-    public static <T, X> PrismPropertyValue<X> convertPropertyValue(
-            PrismPropertyValue<T> srcVal,
-            PrismPropertyDefinition<T> srcDef,
-            PrismPropertyDefinition<X> targetDef) {
-        if (targetDef.getTypeName().equals(srcDef.getTypeName())) {
-            //noinspection unchecked
-            return (PrismPropertyValue<X>) srcVal;
-        } else {
-            Class<X> expectedJavaType = XsdTypeMapper.toJavaType(targetDef.getTypeName());
-            X convertedRealValue = JavaTypeConverter.convert(expectedJavaType, srcVal.getValue());
-            return PrismContext.get().itemFactory().createPropertyValue(convertedRealValue);
-        }
     }
 
     public static <T, X> PrismProperty<X> convertProperty(PrismProperty<T> srcProp, PrismPropertyDefinition<X> targetDef)

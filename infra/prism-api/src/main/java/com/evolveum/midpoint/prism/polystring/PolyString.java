@@ -9,8 +9,14 @@ package com.evolveum.midpoint.prism.polystring;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.normalization.Normalizer;
+import com.evolveum.midpoint.util.*;
+
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,13 +24,14 @@ import org.apache.commons.lang3.StringUtils;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.DebugDumpable;
-import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.QNameUtil;
-import com.evolveum.midpoint.util.ShortDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringTranslationType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
+import org.jetbrains.annotations.NotNull;
+
+import static com.evolveum.midpoint.util.MiscUtil.getDiagInfo;
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 /**
  * Polymorphic string. String that may have more than one representation at
@@ -345,7 +352,8 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
 
     @Override
     public void shortDump(StringBuilder sb) {
-        if (MapUtils.isNotEmpty(getLang()) || getTranslation() != null && StringUtils.isNotEmpty(getTranslation().getKey())) {
+        if (MapUtils.isNotEmpty(getLang())
+                || getTranslation() != null && StringUtils.isNotEmpty(getTranslation().getKey())) {
             sb.append("orig=").append(orig);
         } else {
             sb.append(orig);
@@ -357,6 +365,33 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
             sb.append("; lang:");
             getLang().keySet().forEach(langKey ->
                     sb.append(" ").append(langKey).append("=").append(getLang().get(langKey)).append(","));
+        }
+        String defaultNorm = PrismContext.get().getDefaultPolyStringNormalizer().normalize(orig);
+        if (Objects.equals(norm, defaultNorm)) {
+            sb.append(" (default norm)");
+        } else {
+            sb.append(" (");
+            if (norm == null) {
+                sb.append("no norm");
+            } else {
+                sb.append("norm: ").append(norm);
+            }
+            sb.append(")");
+        }
+    }
+
+    /** TODO reconsider this method; it is quite a hack. */
+    public static String getOrig(Object o) {
+        if (o == null) {
+            return null;
+        } else if (o instanceof PolyString polyString) {
+            return polyString.getOrig();
+        } else if (o instanceof PolyStringType polyStringType) {
+            return polyStringType.getOrig();
+        } else if (o instanceof String string) {
+            return string;
+        } else {
+            throw new IllegalArgumentException("Cannot get orig from " + getDiagInfo(o));
         }
     }
 
@@ -414,12 +449,7 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
 
     @Override
     public void checkConsistence() {
-        if (orig == null) {
-            throw new IllegalStateException("Null orig");
-        }
-        if (norm == null) {
-            throw new IllegalStateException("Null norm");
-        }
+        stateCheck(!isNull(), "Null polystring");
     }
 
     public static PolyString toPolyString(PolyStringType value) {
@@ -444,6 +474,14 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         return new PolyString(
                 orig,
                 norm,
+                translation != null ? translation.clone() : null,
+                lang != null ? new HashMap<>(lang) : null);
+    }
+
+    public PolyString copyApplyingNormalization(@NotNull Normalizer<String> normalizer) throws SchemaException {
+        return new PolyString(
+                orig,
+                normalizer.normalize(orig),
                 translation != null ? translation.clone() : null,
                 lang != null ? new HashMap<>(lang) : null);
     }

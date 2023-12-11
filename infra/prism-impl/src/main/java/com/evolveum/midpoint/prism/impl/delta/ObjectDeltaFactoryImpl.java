@@ -18,6 +18,8 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.*;
+
 /**
  *
  */
@@ -30,12 +32,11 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
     }
 
     @SafeVarargs
-    public static <O extends Objectable, X> PropertyDelta<X> fillInModificationReplaceProperty(ObjectDelta<O> objectDelta,
-            ItemPath propertyPath, X... propertyValues) {
+    public static <O extends Objectable, X> PropertyDelta<X> fillInModificationReplaceProperty(
+            ObjectDelta<O> objectDelta, ItemPath propertyPath, X... propertyValues) {
         PropertyDelta<X> propertyDelta = objectDelta.createPropertyModification(propertyPath);
         if (propertyValues != null) {
-            Collection<PrismPropertyValue<X>> valuesToReplace = PrismValueCollectionsUtil
-                    .toPrismPropertyValues(objectDelta.getPrismContext(), propertyValues);
+            Collection<PrismPropertyValue<X>> valuesToReplace = toPrismPropertyValues(propertyValues);
             propertyDelta.setValuesToReplace(valuesToReplace);
             objectDelta.addModification(propertyDelta);
         }
@@ -44,36 +45,26 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
     }
 
     @SafeVarargs
-    static <O extends Objectable, X> void fillInModificationAddProperty(ObjectDelta<O> objectDelta,
-            ItemPath propertyPath, X... propertyValues) {
+    static <O extends Objectable, X> void fillInModificationAddProperty(
+            ObjectDelta<O> objectDelta, ItemPath propertyPath, X... propertyValues) {
         PropertyDelta<X> propertyDelta = objectDelta.createPropertyModification(propertyPath);
-        if (propertyValues != null) {
-            Collection<PrismPropertyValue<X>> valuesToAdd = PrismValueCollectionsUtil
-                    .toPrismPropertyValues(objectDelta.getPrismContext(), propertyValues);
-            propertyDelta.addValuesToAdd(valuesToAdd);
-            objectDelta.addModification(propertyDelta);
-        }
+        propertyDelta.addRealValuesToAdd(propertyValues);
+        objectDelta.addModification(propertyDelta);
     }
 
     @SafeVarargs
-    public static <O extends Objectable, X> void fillInModificationDeleteProperty(ObjectDelta<O> objectDelta,
-            ItemPath propertyPath, X... propertyValues) {
+    public static <O extends Objectable, X> void fillInModificationDeleteProperty(
+            ObjectDelta<O> objectDelta, ItemPath propertyPath, X... propertyValues) {
         PropertyDelta<X> propertyDelta = objectDelta.createPropertyModification(propertyPath);
-        if (propertyValues != null) {
-            Collection<PrismPropertyValue<X>> valuesToDelete = PrismValueCollectionsUtil
-                    .toPrismPropertyValues(objectDelta.getPrismContext(), propertyValues);
-            propertyDelta.addValuesToDelete(valuesToDelete);
-            objectDelta.addModification(propertyDelta);
-        }
+        propertyDelta.addRealValuesToDelete(propertyValues);
+        objectDelta.addModification(propertyDelta);
     }
 
-    public static <O extends Objectable> void fillInModificationReplaceReference(ObjectDelta<O> objectDelta,
-            ItemPath refPath, PrismReferenceValue... refValues) {
+    public static <O extends Objectable> void fillInModificationReplaceReference(
+            ObjectDelta<O> objectDelta, ItemPath refPath, PrismReferenceValue... refValues) {
         ReferenceDelta refDelta = objectDelta.createReferenceModification(refPath);
-        if (refValues != null) {
-            refDelta.setValuesToReplace(refValues);
-            objectDelta.addModification(refDelta);
-        }
+        refDelta.setValuesToReplace(refValues);
+        objectDelta.addModification(refDelta);
     }
 
     public static <O extends Objectable> void fillInModificationAddReference(ObjectDelta<O> objectDelta,
@@ -161,8 +152,8 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
             ItemPath propertyPath, C... containerValues) throws SchemaException {
         if (containerValues != null) {
             ContainerDelta<C> containerDelta = objectDelta.createContainerModification(propertyPath);
-            Collection<PrismContainerValue<C>> valuesToReplace = PrismValueCollectionsUtil
-                    .toPrismContainerValues(objectDelta.getObjectTypeClass(), propertyPath, objectDelta.getPrismContext(), containerValues);
+            Collection<PrismContainerValue<C>> valuesToReplace = toPrismContainerValues(
+                    objectDelta.getObjectTypeClass(), propertyPath, objectDelta.getPrismContext(), containerValues);
             containerDelta.setValuesToReplace(valuesToReplace);
             objectDelta.addModification(containerDelta);
         }
@@ -179,8 +170,8 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <O extends Objectable, X> ObjectDelta<O> createModificationReplaceProperty(Class<O> type, String oid,
-            ItemPath propertyPath, X... propertyValues) {
+    public <O extends Objectable, X> ObjectDelta<O> createModificationReplaceProperty(
+            Class<O> type, String oid, ItemPath propertyPath, X... propertyValues) {
         ObjectDelta<O> objectDelta = create(type, ChangeType.MODIFY);
         objectDelta.setOid(oid);
         fillInModificationReplaceProperty(objectDelta, propertyPath, propertyValues);
@@ -188,8 +179,8 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
     }
 
     @Override
-    public <O extends Objectable> ObjectDelta<O> createEmptyDelta(Class<O> type, String oid,
-            ChangeType changeType) {
+    public <O extends Objectable> ObjectDelta<O> createEmptyDelta(
+            Class<O> type, String oid, ChangeType changeType) {
         ObjectDelta<O> objectDelta = create(type, changeType);
         objectDelta.setOid(oid);
         return objectDelta;

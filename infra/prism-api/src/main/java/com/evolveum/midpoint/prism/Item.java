@@ -231,6 +231,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     /**
      * Returns the value, if there is only one. Throws exception if there are more values.
      * If there is no value, this method either:
+     *
      * - returns null (for properties)
      * - throws an exception (for items that can hold multiple values)
      * - creates an empty value (for containers and references).

@@ -15,7 +15,7 @@ public class NormalizerRegistryFactory {
 
     public static NormalizerRegistry createRegistry() {
         NormalizerRegistryImpl registry = new NormalizerRegistryImpl();
-        registry.registerNormalizer(DefaultNormalizer.instance());
+        registry.registerNormalizer(NoOpNormalizer.instance());
         registry.registerNormalizer(LowercaseStringNormalizer.instance());
         registry.registerNormalizer(AlphanumericPolyStringNormalizer.instance());
         registry.registerNormalizer(Ascii7PolyStringNormalizer.instance());

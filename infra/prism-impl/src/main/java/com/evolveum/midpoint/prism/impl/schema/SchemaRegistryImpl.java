@@ -1096,7 +1096,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     @Override
-    public ItemDefinition locateItemDefinition(@NotNull QName itemName,
+    public ItemDefinition locateItemDefinition(
+            @NotNull QName itemName,
+            @Nullable QName explicitTypeName,
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionProvider) {
         if (complexTypeDefinition != null) {
@@ -1108,7 +1110,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         // not sure about this: shouldn't extension schemas have xsdAnyMarker set?
         if (complexTypeDefinition == null || complexTypeDefinition.isXsdAnyMarker() || complexTypeDefinition.getExtensionForType() != null) {
             ItemDefinition def = resolveGlobalItemDefinition(itemName, complexTypeDefinition);
-            if (def != null) {
+            if (def != null
+                    && (explicitTypeName == null || explicitTypeName.equals(def.getTypeName()))) {
+                // The definition must not contradict the declared type, like icfs:name (=string) in the case of
+                // normalization-aware repository shadows.
                 return def;
             }
         }

@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.prism.xml.ns._public.types_3.RawType;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.delta.ItemDelta;
@@ -176,8 +178,10 @@ public interface ItemDefinition<I extends Item<?, ?>>
 
     /**
      * TODO document
+     *
+     * The prism value must not be of {@link RawType}.
      */
-    boolean canBeDefinitionOf(PrismValue pvalue);
+    boolean canBeDefinitionOf(@NotNull PrismValue pvalue);
 
     @Override
     MutableItemDefinition<I> toMutable();

@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.MutableDefinition;
 import com.evolveum.midpoint.prism.MutableTypeDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.SimpleTypeDefinition;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
@@ -51,6 +52,11 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
     @Override
     public DerivationMethod getDerivationMethod() {
         return derivationMethod;
+    }
+
+    @Override
+    public Class<?> getTypeClass() {
+        return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());
     }
 
     @NotNull

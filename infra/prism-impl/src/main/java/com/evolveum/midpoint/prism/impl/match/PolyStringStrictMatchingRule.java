@@ -12,7 +12,7 @@ import javax.xml.namespace.QName;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.impl.polystring.DefaultNormalizer;
+import com.evolveum.midpoint.prism.impl.polystring.NoOpNormalizer;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -47,14 +47,9 @@ public class PolyStringStrictMatchingRule implements MatchingRule<PolyString> {
     }
 
     @Override
-    public PolyString normalize(PolyString original) {
-        return original;
-    }
-
-    @Override
-    public @NotNull Normalizer<?> getNormalizer() {
+    public @NotNull Normalizer<PolyString> getNormalizer() {
         // Strict matching means we do not want any normalization.
-        return DefaultNormalizer.instance();
+        return NoOpNormalizer.instance();
     }
 
     @Override

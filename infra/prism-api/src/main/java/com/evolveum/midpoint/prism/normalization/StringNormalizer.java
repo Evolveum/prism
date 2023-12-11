@@ -7,6 +7,12 @@
 
 package com.evolveum.midpoint.prism.normalization;
 
+import com.evolveum.midpoint.prism.polystring.PolyString;
+
+import com.evolveum.midpoint.util.exception.SchemaException;
+
+import org.jetbrains.annotations.Contract;
+
 /**
  * A {@link Normalizer} that operates on {@link String} instances.
  *
@@ -14,4 +20,9 @@ package com.evolveum.midpoint.prism.normalization;
  * (Maybe a temporary workaround. We will see.)
  */
 public interface StringNormalizer extends Normalizer<String> {
+
+    /** Creates a {@link PolyString} from given "orig" {@link java.lang.String}. */
+    @Contract("null -> null; !null -> !null")
+    PolyString poly(String orig) throws SchemaException;
+
 }

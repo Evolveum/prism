@@ -852,9 +852,13 @@ public class PrismUnmarshaller {
         return SearchFilterType.createFromParsedXNode(xnode, pc, prismContext);
     }
 
-    private ItemDefinition<?> locateItemDefinition(@NotNull QName itemName, @Nullable ComplexTypeDefinition complexTypeDefinition,
+    private ItemDefinition<?> locateItemDefinition(
+            @NotNull QName itemName,
+            @Nullable ComplexTypeDefinition complexTypeDefinition,
             XNode xnode) {
-        return schemaRegistry.locateItemDefinition(itemName, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
+        QName explicitItemType = xnode != null && xnode.isExplicitTypeDeclaration() ? xnode.getTypeQName() : null;
+        return schemaRegistry.locateItemDefinition(
+                itemName, explicitItemType, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
     }
 
     private ItemDefinition<?> createDynamicItemDefinition(QName itemName, XNode node) {

@@ -550,8 +550,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                     + " already has values to add (" + valuesToAdd + "), attempt to set value to replace (" + newValues + ")");
         }
         if (valuesToDelete != null) {
-            throw new IllegalStateException("Delta " + this
-                    + " already has values to delete, attempt to set value to replace");
+            throw new IllegalStateException("Delta " + this + " already has values to delete, attempt to set value to replace");
         }
         if (valuesToReplace == null) {
             valuesToReplace = newValueCollection();
@@ -1347,10 +1346,14 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
      */
     @Override
     public void applyToMatchingPath(@NotNull Item item) throws SchemaException {
-        applyDefinitionAndCheckCompatibility(item);
         if (valuesToReplace != null) {
+            item.clear();
+            // In some cases, the "replace" delta can change the item type and definition. That's why we clear the item first
+            // (to avoid type errors when the definition is applied to existing values).
+            applyDefinitionAndCheckCompatibility(item);
             applyValuesToReplace(item);
         } else {
+            applyDefinitionAndCheckCompatibility(item);
             applyValuesToDelete(item);
             applyValuesToAdd(item);
         }

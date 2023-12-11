@@ -21,6 +21,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -86,6 +87,9 @@ public class XsdTypeMapper {
 
         addMapping(PolyString.class, PrismConstants.POLYSTRING_TYPE_QNAME, true);
         addMapping(RawType.class,  DOMUtil.XSD_STRING, false);
+
+        // TODO reconsider this ... needed for resource attributes
+        addMapping(ProtectedStringType.class, ProtectedStringType.COMPLEX_TYPE, true);
 
         addXsdToJavaMapping(DOMUtil.XSD_ANYURI, String.class);
     }

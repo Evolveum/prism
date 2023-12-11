@@ -30,7 +30,7 @@ public class TestPerformance extends AbstractPrismTest {
 
     @BeforeSuite
     public void initPrismContext() {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
     }
 
     /**

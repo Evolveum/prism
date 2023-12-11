@@ -20,9 +20,9 @@ import javax.xml.namespace.QName;
 /** The registry of normalizers. Currently pretty much unused, as these are accessed by {@link MatchingRule}s. */
 public interface NormalizerRegistry {
 
-    @Nullable Normalizer<?> getNormalizer(@NotNull QName name);
+    <T> @Nullable Normalizer<T> getNormalizer(@NotNull QName name);
 
-    default @NotNull Normalizer<?> getNormalizerRequired(@NotNull QName name) {
+    default <T> @NotNull Normalizer<T> getNormalizerRequired(@NotNull QName name) {
         return MiscUtil.argNonNull(
                 getNormalizer(name),
                 "Unknown normalizer: %s", name);

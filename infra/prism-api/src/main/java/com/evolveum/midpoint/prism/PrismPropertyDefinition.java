@@ -20,7 +20,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DisplayableValue;
-import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * Definition of a prism property.
@@ -75,14 +74,25 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
 
     /**
      * Returns the normalizer that is to be applied when the normalized form of this property is to be computed.
-     * For {@link PolyString} typed properties, it is a String normalizer. For other (`T`-typed) properties,
-     * it is a normalizer for `T` values.
-     *
-     * Currently, this is derived from the declared name of the matching rule. Later, we may create a separate property for this,
-     * most probably replacing the matching rule name.
+     * For polystring-typed properties (that are assumed to be already normalized) it returns "no-op" normalizer.
      */
-    default Normalizer<?> getNormalizer() throws SchemaException {
+    default @NotNull Normalizer<T> getNormalizer() {
         return getMatchingRule().getNormalizer();
+    }
+
+    /** Returns the normalizer that is to be applied for {@link PolyString} properties. Throws an exception if not applicable. */
+    default @NotNull Normalizer<String> getStringNormalizerForPolyStringProperty() {
+        if (PolyString.class.equals(getTypeClass())) {
+            // This is the default for PolyString properties
+            return PrismContext.get().getDefaultPolyStringNormalizer();
+        } else {
+            throw new UnsupportedOperationException("Cannot get string normalizer for non-PolyString property " + this);
+        }
+    }
+
+    /** TODO */
+    default boolean isCustomPolyString() {
+        return false;
     }
 
     @Override

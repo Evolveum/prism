@@ -11,10 +11,13 @@ import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.getRealValue
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.util.MiscUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -107,6 +110,17 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         return getRealValuesOfCollectionPreservingNull(getValuesToReplace());
     }
 
+    /** Values that are added or potentially added by this delta. */
+    default @NotNull Collection<V> getNewValues() {
+        var valuesToReplace = getValuesToReplace();
+        //noinspection ReplaceNullCheck
+        if (valuesToReplace != null) {
+            return valuesToReplace; // This is a REPLACE delta
+        } else {
+            return MiscUtil.emptyIfNull(getValuesToAdd()); // This is an ADD/DELETE delta
+        }
+    }
+
     void clearValuesToReplace();
 
     void addValuesToAdd(Collection<V> newValues);
@@ -147,6 +161,7 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void setValuesToReplace(Collection<V> newValues);
 
+    @SuppressWarnings("unchecked")
     void setValuesToReplace(V... newValues);
 
     /**

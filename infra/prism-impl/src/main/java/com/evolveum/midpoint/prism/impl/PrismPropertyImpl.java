@@ -430,7 +430,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         sb.append(DebugUtil.formatElementName(getElementName())).append(": ");
 
         boolean isMultivalue = true;
-        PrismPropertyDefinition def = getDefinition();
+        PrismPropertyDefinition<T> def = getDefinition();
         if (def != null) {
             isMultivalue = def.isMultiValue();
         }

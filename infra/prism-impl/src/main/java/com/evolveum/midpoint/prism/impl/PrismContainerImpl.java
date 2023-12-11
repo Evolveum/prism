@@ -378,7 +378,7 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     public void setDefinition(@NotNull PrismContainerDefinition<C> definition) {
         checkMutable();
-        checkDefinitionBeforeApplication(definition);
+        checkDefinition(definition);
         for (PrismContainerValue<C> value : getValues()) {
             // TODO reconsider this - sometimes we want to change CTDs, sometimes not
             boolean safeToOverwrite =
