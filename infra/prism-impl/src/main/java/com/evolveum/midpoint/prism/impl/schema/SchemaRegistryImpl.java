@@ -1789,4 +1789,30 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         staticPrefixes.addPrefix(prefix, ns);
         getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
     }
+
+    public List<String> getObjectTypeListByClassType(@NotNull Class<?> typeClass) {
+        List<String> objectTypes = new ArrayList<>();
+
+        var typeDefinition = findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class);
+        System.out.println(typeClass + " TESTING... " + typeDefinition.getStaticSubTypes());
+
+//        for (SchemaDescription schemaDescription : this.getSchemaDescriptions()) {
+//            if (schemaDescription.getSchema().getNamespace().equals(defaultNamespace)) {
+//
+//                PrismSchemaImpl schema = (PrismSchemaImpl) schemaDescription.getSchema();
+//
+//                if (typeClass.getSuperclass() == schemaDescription.getSchema().findObjectDefinitionByType(new QName(PrismConstants.T_OBJECT_TYPE.getLocalPart())).getCompileTimeClass()) {
+//                    typeClass = schemaDescription.getSchema().findObjectDefinitionByType(new QName(PrismConstants.T_OBJECT_TYPE.getLocalPart())).getCompileTimeClass();
+//                }
+//
+//                for (ComplexTypeDefinition definition : schemaDescription.getSchema().getComplexTypeDefinitions()) {
+//                    if(definition.getCompileTimeClass() != null && typeClass == definition.getCompileTimeClass().getSuperclass()) {
+//                        objectTypes.add(definition.getTypeName().getLocalPart());
+//                    }
+//                }
+//            }
+//        }
+
+        return objectTypes;
+    }
 }

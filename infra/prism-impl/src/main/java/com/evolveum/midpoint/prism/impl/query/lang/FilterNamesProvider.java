@@ -18,8 +18,7 @@ public class FilterNamesProvider {
 
         List<String> suggestions = new ArrayList<>();
 
-        if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext) {
-            // || itemDefinition instanceof PrismObjectDefinition<?>
+        if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext || ruleContext instanceof FilterContext) {
             if (itemDefinition instanceof PrismPropertyDefinition) {
                 suggestions.add(EQUAL.getLocalPart());
                 suggestions.add(LESS.getLocalPart());
@@ -52,13 +51,14 @@ public class FilterNamesProvider {
                     suggestions.add(FULL_TEXT.getLocalPart());
                 }
 
-                // TODO AssignmentType
                 if (itemDefinition.getTypeName().equals(PrismConstants.POLYSTRING_TYPE_QNAME)) {
                     suggestions.add(MATCHES.getLocalPart());
                 }
-            } else if (itemDefinition instanceof PrismReferenceDefinition) {
+            }
+            if (itemDefinition instanceof PrismReferenceDefinition) {
                 suggestions.add(REFERENCED_BY.getLocalPart());
-            } else if (itemDefinition instanceof PrismContainerDefinition<?>) {
+            }
+            if (itemDefinition instanceof PrismContainerDefinition<?>) {
                 suggestions.add(MATCHES.getLocalPart());
             }
         }

@@ -67,11 +67,9 @@ public class AxiomQueryError {
             return true;
         }
 
-        if (!(obj instanceof AxiomQueryError)) {
+        if (!(obj instanceof AxiomQueryError axiomQueryError)) {
             return false;
         }
-
-        AxiomQueryError axiomQueryError = (AxiomQueryError) obj;
 
         if (axiomQueryError.recognizer == recognizer &&
                 axiomQueryError.offendingSymbol == offendingSymbol &&
