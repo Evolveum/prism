@@ -1792,10 +1792,13 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     public List<String> getObjectTypeListByClassType(@NotNull Class<?> typeClass) {
         List<String> objectTypes = new ArrayList<>();
+        TypeDefinition typeDefinition = findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class);
 
-        for (TypeDefinition typeDefinition : findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class).getStaticSubTypes()) {
-            objectTypes.add(typeDefinition.getDisplayName());
-            getObjectTypeListByClassType(typeDefinition.getClass());
+        if (typeDefinition != null ) return null;
+
+        for (TypeDefinition td : typeDefinition.getStaticSubTypes()) {
+            objectTypes.add(td.getDisplayName());
+            getObjectTypeListByClassType(td.getClass());
         }
 
         return objectTypes;
