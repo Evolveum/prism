@@ -1790,17 +1790,26 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
     }
 
-    public List<String> getObjectTypeListByClassType(@NotNull Class<?> typeClass) {
-        List<String> objectTypes = new ArrayList<>();
-        TypeDefinition typeDefinition = findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class);
+    public List<TypeDefinition> getAllObjectTypeByClassType(@NotNull List<Class<?>> typeClasses) {
+        List<TypeDefinition> subTypes = new ArrayList<>();
+        List<Class<?>> subTypeClasses = new ArrayList<>();
 
-        if (typeDefinition == null ) return null;
+        for (Class<?> typeClass : typeClasses) {
+            TypeDefinition typeDefinition = findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class);
 
-        for (TypeDefinition td : typeDefinition.getStaticSubTypes()) {
-            objectTypes.add(td.getDisplayName());
-            getObjectTypeListByClassType(td.getClass());
+            if (typeDefinition != null ) {
+                subTypes.addAll(typeDefinition.getStaticSubTypes().stream().toList());
+                subTypeClasses.addAll(typeDefinition.getStaticSubTypes().stream()
+                        .map(TypeDefinition::getCompileTimeClass)
+                        .toList());
+            }
         }
 
-        return objectTypes;
+        if (!subTypeClasses.isEmpty()) {
+            subTypes.addAll(getAllObjectTypeByClassType(subTypeClasses));
+        }
+
+        return subTypes;
     }
 }
+

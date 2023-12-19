@@ -77,13 +77,13 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
                     null)
             );
         } else {
-            if (this.typeDefinition == null) {
-                this.typeDefinition = typeDefinition;
-            }
 
-            List<String> objectTypes = schemaRegistry.getObjectTypeListByClassType(this.typeDefinition.getCompileTimeClass());
+            if (this.typeDefinition == null) this.typeDefinition = typeDefinition;
+            List<Class<?>> classType = new ArrayList<>();
+            classType.add(this.typeDefinition.getCompileTimeClass());
+            List<TypeDefinition> objectTypes = schemaRegistry.getAllObjectTypeByClassType(classType);
 
-            if (!objectTypes.contains(this.typeDefinition.getCompileTimeClass().getSimpleName()) && !objectTypes.contains(typeDefinition.getCompileTimeClass().getSimpleName())) {
+            if (!objectTypes.contains(this.typeDefinition) && !objectTypes.contains(typeDefinition)) {
                 errorList.add(new AxiomQueryError(null,
                         null,
                         ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
