@@ -8,7 +8,12 @@
 package com.evolveum.midpoint.prism;
 
 import java.util.Collection;
+import java.util.List;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -114,6 +119,22 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
     @Override
     Class<T> getTypeClass();
 
+    /**
+     * This is the original implementation. Moving to more comprehensive one (as part of MID-2119 implementation) broke some
+     * things especially in the prism query language parser, so we temporarily provide the legacy (partial) implementation here.
+     *
+     * The difference is that the partial implementation covers only basic types.
+     * The comprehensive one covers also complex types via {@link SchemaRegistry#determineJavaClassForType(QName)}.
+     */
+    default Class<T> getTypeClassLegacy() {
+        return XsdTypeMapper.toJavaTypeIfKnown(getTypeName());
+    }
+
     @Override
     MutablePrismPropertyDefinition<T> toMutable();
+
+    /** TEMPORARY! Used only for normalization-aware resource attribute storage. FIXME as part of MID-2119. */
+    default @NotNull List<T> adoptRealValues(@NotNull Collection<?> realValues) throws SchemaException {
+        throw new UnsupportedOperationException();
+    }
 }

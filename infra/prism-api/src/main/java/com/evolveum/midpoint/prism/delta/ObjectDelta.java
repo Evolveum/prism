@@ -244,19 +244,26 @@ public interface ObjectDelta<O extends Objectable>
     @SuppressWarnings("unchecked")
     <X> PropertyDelta<X> addModificationReplaceProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <X> void addModificationAddProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <X> void addModificationDeleteProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationAddContainer(ItemPath propertyPath, C... containerables) throws SchemaException;
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationAddContainer(ItemPath propertyPath, PrismContainerValue<C>... containerValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationDeleteContainer(ItemPath propertyPath, C... containerables) throws SchemaException;
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationDeleteContainer(ItemPath propertyPath,
             PrismContainerValue<C>... containerValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationReplaceContainer(ItemPath propertyPath,
             PrismContainerValue<C>... containerValues);
 

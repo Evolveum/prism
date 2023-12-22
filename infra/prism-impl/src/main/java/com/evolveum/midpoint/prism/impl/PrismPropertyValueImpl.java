@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -22,7 +23,6 @@ import com.google.common.primitives.Primitives;
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -217,16 +217,15 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 if (type.isPrimitive()) {
                     type = Primitives.wrap(type);
                 }
-                // TEMPORARY HACKS
-                if (PolyString.class.equals(type) && value instanceof String string) {
-                    var normalizer = propertyDefinition.getStringNormalizerForPolyStringProperty();
+                // TEMPORARY HACKS FIXME as part of MID-2119
+                if (PolyString.class.equals(type) && value instanceof String) {
                     //noinspection unchecked
-                    value = (T) new PolyString(string, normalizer.normalize(string));
+                    value = (T) propertyDefinition.adoptRealValues(List.of(value)).get(0);
                 } else if (String.class.equals(type) && value instanceof PolyString polyString) {
                     //noinspection unchecked
                     value = (T) polyString.getOrig();
                 } else if (PolyString.class.equals(type) && value instanceof Map<?, ?> map) {
-                    // HACK because of polystring attributes and new repo
+                    // HACK because of polystring attributes and new repo; FIXME as part of MID-2119
                     //noinspection unchecked
                     value = (T) new PolyString((String) map.get("o"), (String) map.get("n"));
                 } else if (!type.isInstance(value)) {

@@ -28,12 +28,12 @@ public class PrettyPrinter {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private static final Collection<String> defaultNamespacePrefixes = new HashSet<>();
+    private static final Collection<String> DEFAULT_NAMESPACE_PREFIXES = new HashSet<>();
 
     private static final List<Class<?>> PRETTY_PRINTERS = new CopyOnWriteArrayList<>();
 
     public static void addDefaultNamespacePrefix(String prefix) {
-        defaultNamespacePrefixes.add(prefix);
+        DEFAULT_NAMESPACE_PREFIXES.add(prefix);
     }
 
     // Left for random short-term usage in tests, I guess?
@@ -123,7 +123,7 @@ public class PrettyPrinter {
     }
 
     private static String reduceNamespaceUri(String namespaceURI) {
-        for (String defaultNamespacePrefix : defaultNamespacePrefixes) {
+        for (String defaultNamespacePrefix : DEFAULT_NAMESPACE_PREFIXES) {
             if (namespaceURI.startsWith(defaultNamespacePrefix)) {
                 return "{..." + namespaceURI.substring(defaultNamespacePrefix.length()) + "}";
             }

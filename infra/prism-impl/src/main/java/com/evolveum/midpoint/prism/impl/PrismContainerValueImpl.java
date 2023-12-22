@@ -1457,10 +1457,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             //noinspection unchecked
             clonedItemDef = (ID) oldItemDef.deepClone(operation);
         }
-        // propagate to items in values
-        //noinspection unchecked
-        ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(operation, clonedItemDef);
-        item.setDefinition(clonedItemDef); // sets CTD in values only if null!
+        if (clonedItemDef != null) {
+            // propagate to items in values
+            //noinspection unchecked
+            ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(operation, clonedItemDef);
+            item.setDefinition(clonedItemDef); // sets CTD in values only if null!
+        }
     }
 
     @Override
