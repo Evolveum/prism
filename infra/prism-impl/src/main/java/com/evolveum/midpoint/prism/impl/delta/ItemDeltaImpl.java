@@ -1350,10 +1350,10 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             item.clear();
             // In some cases, the "replace" delta can change the item type and definition. That's why we clear the item first
             // (to avoid type errors when the definition is applied to existing values).
-            applyDefinitionAndCheckCompatibility(item);
+            applyDefinitionAndCheckCompatibility(item, true);
             applyValuesToReplace(item);
         } else {
-            applyDefinitionAndCheckCompatibility(item);
+            applyDefinitionAndCheckCompatibility(item, false);
             applyValuesToDelete(item);
             applyValuesToAdd(item);
         }
@@ -1362,13 +1362,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         cleanupAllTheWayUp(item);
     }
 
-    private void applyDefinitionAndCheckCompatibility(Item item) throws SchemaException {
-        if (item.getDefinition() == null && getDefinition() != null) {
+    private void applyDefinitionAndCheckCompatibility(Item item, boolean alwaysApply) throws SchemaException {
+        if ((alwaysApply || item.getDefinition() == null) && getDefinition() != null) {
             //noinspection unchecked
             item.applyDefinition(getDefinition());
         }
         if (!getItemClass().isAssignableFrom(item.getClass())) {
-            throw new SchemaException("Cannot apply delta " + this + " to " + item + " because the deltas is applicable only to " + getItemClass().getSimpleName());
+            throw new SchemaException(
+                    "Cannot apply delta %s to %s because the deltas is applicable only to %s".formatted(
+                            this, item, getItemClass().getSimpleName()));
         }
     }
 
