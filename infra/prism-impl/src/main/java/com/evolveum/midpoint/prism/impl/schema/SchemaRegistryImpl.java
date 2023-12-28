@@ -1102,19 +1102,20 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionProvider) {
         if (complexTypeDefinition != null) {
-            ItemDefinition def = complexTypeDefinition.findLocalItemDefinition(itemName);
+            ItemDefinition<?> def = complexTypeDefinition.findLocalItemDefinition(itemName);
             if (def != null) {
                 return def;
             }
         }
         // not sure about this: shouldn't extension schemas have xsdAnyMarker set?
         if (complexTypeDefinition == null || complexTypeDefinition.isXsdAnyMarker() || complexTypeDefinition.getExtensionForType() != null) {
-            ItemDefinition def = resolveGlobalItemDefinition(itemName, complexTypeDefinition);
-            if (def != null
-                    && (explicitTypeName == null || explicitTypeName.equals(def.getTypeName()))) {
+            ItemDefinition<?> def = resolveGlobalItemDefinition(itemName, complexTypeDefinition);
+            if (def != null) {
                 // The definition must not contradict the declared type, like icfs:name (=string) in the case of
                 // normalization-aware repository shadows.
-                return def;
+                if (explicitTypeName == null || isAssignableFrom(def.getTypeName(), explicitTypeName)) {
+                    return def;
+                }
             }
         }
         if (dynamicDefinitionProvider != null) {
