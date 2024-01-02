@@ -72,9 +72,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             // value for @type || . type
             if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_TYPE) || ctx.getText().equals(FilterNames.TYPE.getLocalPart())) {
                 TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName(lastType.getText()));
-                List<Class<?>> classType = new ArrayList<>();
-                classType.add(typeDefinition.getCompileTimeClass());
-                suggestions = schemaRegistry.getAllObjectTypeByClassType(classType).stream().map(item -> item.getTypeName().getLocalPart()).toList();
+                suggestions = schemaRegistry.getAllSubTypesByTypeDefinition(List.of(typeDefinition)).stream().map(item -> item.getTypeName().getLocalPart()).toList();
             }
             // value for @path
             if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_PATH)) {

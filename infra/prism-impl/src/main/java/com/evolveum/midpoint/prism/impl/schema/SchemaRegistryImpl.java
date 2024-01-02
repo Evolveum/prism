@@ -1790,26 +1790,49 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
     }
 
-    public List<TypeDefinition> getAllObjectTypeByClassType(@NotNull List<Class<?>> typeClasses) {
+    public List<TypeDefinition> getAllSubTypesByTypeDefinition(List<TypeDefinition> typeDefinitions) {
+        TypeDefinition typeDefinition;
+        List<TypeDefinition> subTypesAll = new ArrayList<>();
         List<TypeDefinition> subTypes = new ArrayList<>();
-        List<Class<?>> subTypeClasses = new ArrayList<>();
 
-        for (Class<?> typeClass : typeClasses) {
-            TypeDefinition typeDefinition = findTypeDefinitionByCompileTimeClass(typeClass, TypeDefinition.class);
+        // find subtypes for ObjectType
+        List<TypeDefinition> objectSubTypes = new ArrayList<>();
+        PrismObjectDefinition<?> objectTypeDefinition = findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+        objectSubTypes.addAll(findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
+        subTypes.addAll(objectSubTypes);
 
-            if (typeDefinition != null ) {
-                subTypes.addAll(typeDefinition.getStaticSubTypes().stream().toList());
-                subTypeClasses.addAll(typeDefinition.getStaticSubTypes().stream()
-                        .map(TypeDefinition::getCompileTimeClass)
-                        .toList());
+        while (!objectSubTypes.isEmpty()) {
+            objectSubTypes.clear();
+
+            for (TypeDefinition td : subTypes) {
+                objectSubTypes.addAll(td.getStaticSubTypes().stream().toList());
+            }
+
+            subTypesAll.addAll(subTypes);
+            subTypes.clear();
+            subTypes.addAll(objectSubTypes);
+        }
+
+        objectSubTypes.addAll(subTypesAll);
+        subTypesAll.clear();
+        subTypes.clear();
+
+        // find subtypes for other type
+        for (TypeDefinition td : typeDefinitions) {
+            if (objectSubTypes.contains(td)) {
+                subTypesAll.addAll(objectSubTypes);
+            } else {
+                typeDefinition = findTypeDefinitionByCompileTimeClass(td.getCompileTimeClass(), TypeDefinition.class);
+                subTypesAll.addAll(typeDefinition.getStaticSubTypes());
+                subTypes.addAll(typeDefinition.getStaticSubTypes());
             }
         }
 
-        if (!subTypeClasses.isEmpty()) {
-            subTypes.addAll(getAllObjectTypeByClassType(subTypeClasses));
+        if (!subTypes.isEmpty()) {
+            subTypesAll.addAll(getAllSubTypesByTypeDefinition(subTypes));
         }
 
-        return subTypes;
+        return subTypesAll;
     }
 }
 

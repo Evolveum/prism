@@ -260,7 +260,7 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     ItemDefinition<?> createAdHocDefinition(QName elementName, QName typeName, int minOccurs, int maxOccurs);
 
-    List<TypeDefinition> getAllObjectTypeByClassType(@NotNull List<Class<?>> typeClasses);
+    List<TypeDefinition> getAllSubTypesByTypeDefinition(List<TypeDefinition> typeClasses);
 
     interface InvalidationListener {
         void invalidate();
