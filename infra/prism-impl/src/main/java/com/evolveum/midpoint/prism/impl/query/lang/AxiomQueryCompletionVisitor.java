@@ -19,8 +19,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,24 +58,27 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         return super.visitItemComponent(ctx);
     }
 
-    public List<String> generateSuggestion() {
-        List<String> suggestions = new ArrayList<>();
-        ParseTree lastNode = getLastNode();
+    public Map<String, String> generateSuggestion() {
+        // structure of suggestion: filterName -> alias
+        Map<String, String> suggestions = new HashMap<>();
+        final ParseTree lastNode = getLastNode();
 
         // generate suggestion
         if (lastNode instanceof AxiomQueryParser.ItemPathComponentContext ctx) {
             suggestions = getFilters(lastNode.getText());
-            suggestions.add(FilterNames.NOT.getLocalPart());
+            suggestions.put(FilterNames.NOT.getLocalPart(), null);
         } else if (lastNode instanceof AxiomQueryParser.FilterNameContext ctx) {
             // TODO maybe to add suggestion for value
             // value for @type || . type
             if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_TYPE) || ctx.getText().equals(FilterNames.TYPE.getLocalPart())) {
-                TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName(lastType.getText()));
-                suggestions = schemaRegistry.getAllSubTypesByTypeDefinition(List.of(typeDefinition)).stream().map(item -> item.getTypeName().getLocalPart()).toList();
+                TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(defineObjectType());
+                suggestions = schemaRegistry.getAllSubTypesByTypeDefinition(List.of(typeDefinition)).stream()
+                        .collect(Collectors.toMap(item -> item.getTypeName().getLocalPart(), item -> item.getTypeName().getLocalPart(), (existing, replacement) -> existing))
+                        .values().stream().collect(Collectors.toMap(filterName -> filterName, alias -> alias));
             }
             // value for @path
             if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_PATH)) {
-                suggestions = getAllPath();
+                suggestions = getAllPath().stream().collect(Collectors.toMap(x -> x, x -> x));
             }
             // value for @relation
             if (ctx.getText().equals(FilterNames.META_RELATION)) {
@@ -84,18 +86,18 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             }
 
             if (ctx.getText().equals(FilterNames.MATCHES.getLocalPart()) || ctx.getText().equals(FilterNames.REFERENCED_BY.getLocalPart())) {
-                suggestions.add("(");
+                suggestions.put("(", null);
             }
         } else if (lastNode instanceof AxiomQueryParser.GenFilterContext || lastNode instanceof AxiomQueryParser.DescendantPathContext) {
             suggestions = getFilters(lastNode.getText());
-            suggestions.add(FilterNames.NOT.getLocalPart());
+            suggestions.put(FilterNames.NOT.getLocalPart(), null);
         } else if (lastNode instanceof AxiomQueryParser.SubfilterOrValueContext ctx) {
-            suggestions.add(FilterNames.AND.getLocalPart());
-            suggestions.add(FilterNames.OR.getLocalPart());
+            suggestions.put(FilterNames.AND.getLocalPart(), null);
+            suggestions.put(FilterNames.OR.getLocalPart(), null);
         } else if (lastNode instanceof TerminalNode ctx) {
             if (ctx.getSymbol().getType() == AxiomQueryParser.SEP || ctx.getSymbol().getType() == AxiomQueryParser.AND_KEYWORD || ctx.getSymbol().getType() == AxiomQueryParser.OR_KEYWORD) {
-                suggestions = getAllPath();
-                suggestions.add(".");
+                suggestions = getAllPath().stream().collect(Collectors.toMap(x -> x, x -> x));
+                suggestions.put(".", null);
             }
         } else if (lastNode instanceof ErrorNode ctx) {
             // TODO solve Error token
@@ -153,16 +155,25 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     }
 
     private List<String> getAllPath() {
-        TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName(lastType.getText()));
+        TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(defineObjectType());
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         return objectDefinition.getItemNames().stream().map(QName::getLocalPart).collect(Collectors.toList());
     }
 
-    private List<String> getFilters(@NotNull String stringItemPath) {
+    private Map<String, String> getFilters(@NotNull String stringItemPath) {
         ItemPath itemPath = ItemPathHolder.parseFromString(stringItemPath);
-        TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName(lastType.getText()));
+        TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(defineObjectType());
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         ItemDefinition<?> itemDefinition = objectDefinition.findItemDefinition(itemPath, ItemDefinition.class);
         return FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, new FilterContext());
+    }
+
+    // remove after implementing schemaContext annotation
+    private QName defineObjectType() {
+        if (lastType == null) {
+            return new QName("UserType");
+        } else {
+            return new QName(lastType.getText());
+        }
     }
 }

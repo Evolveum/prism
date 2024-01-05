@@ -4,8 +4,8 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.DOMUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
 import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
@@ -14,65 +14,59 @@ import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
  * Created by Dominik.
  */
 public class FilterNamesProvider {
-    public static List<String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, ParserRuleContext ruleContext) {
+    public static Map<String, String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, ParserRuleContext ruleContext) {
 
-        List<String> suggestions = new ArrayList<>();
+        Map<String, String> suggestions = new HashMap<>();
 
         if (ruleContext instanceof FilterNameContext || ruleContext instanceof  FilterNameAliasContext || ruleContext instanceof FilterContext) {
             if (itemDefinition instanceof PrismPropertyDefinition) {
-                suggestions.add(EQUAL.getLocalPart());
-                suggestions.add(LESS.getLocalPart());
-                suggestions.add(GREATER.getLocalPart());
-                suggestions.add(LESS_OR_EQUAL.getLocalPart());
-                suggestions.add(GREATER_OR_EQUAL.getLocalPart());
-                suggestions.add(NOT_EQUAL.getLocalPart());
-                suggestions.add(NAME_TO_ALIAS.get(EQUAL));
-                suggestions.add(NAME_TO_ALIAS.get(LESS));
-                suggestions.add(NAME_TO_ALIAS.get(GREATER));
-                suggestions.add(NAME_TO_ALIAS.get(LESS_OR_EQUAL));
-                suggestions.add(NAME_TO_ALIAS.get(GREATER_OR_EQUAL));
-                suggestions.add(NAME_TO_ALIAS.get(NOT_EQUAL));
+                suggestions.put(EQUAL.getLocalPart(), NAME_TO_ALIAS.get(EQUAL));
+                suggestions.put(LESS.getLocalPart(), NAME_TO_ALIAS.get(LESS));
+                suggestions.put(GREATER.getLocalPart(), NAME_TO_ALIAS.get(GREATER));
+                suggestions.put(LESS_OR_EQUAL.getLocalPart(), NAME_TO_ALIAS.get(LESS_OR_EQUAL));
+                suggestions.put(GREATER_OR_EQUAL.getLocalPart(), NAME_TO_ALIAS.get(GREATER_OR_EQUAL));
+                suggestions.put(NOT_EQUAL.getLocalPart(), NAME_TO_ALIAS.get(NOT_EQUAL));
 
-                suggestions.add(EXISTS.getLocalPart());
-                suggestions.add(LEVENSHTEIN.getLocalPart());
-                suggestions.add(SIMILARITY.getLocalPart());
-                suggestions.add(IN_OID.getLocalPart());
-                suggestions.add(OWNED_BY_OID.getLocalPart());
-                suggestions.add(IN_ORG.getLocalPart());
-                suggestions.add(IS_ROOT.getLocalPart());
-                suggestions.add(OWNED_BY.getLocalPart());
-                suggestions.add(ANY_IN.getLocalPart());
-                suggestions.add(TYPE.getLocalPart());
+                suggestions.put(EXISTS.getLocalPart(), NAME_TO_ALIAS.get(EXISTS));
+                suggestions.put(LEVENSHTEIN.getLocalPart(), NAME_TO_ALIAS.get(LEVENSHTEIN));
+                suggestions.put(SIMILARITY.getLocalPart(), NAME_TO_ALIAS.get(SIMILARITY));
+                suggestions.put(IN_OID.getLocalPart(), NAME_TO_ALIAS.get(IN_OID));
+                suggestions.put(OWNED_BY_OID.getLocalPart(), NAME_TO_ALIAS.get(OWNED_BY_OID));
+                suggestions.put(IN_ORG.getLocalPart(), NAME_TO_ALIAS.get(IN_ORG));
+                suggestions.put(IS_ROOT.getLocalPart(), NAME_TO_ALIAS.get(IS_ROOT));
+                suggestions.put(OWNED_BY.getLocalPart(), NAME_TO_ALIAS.get(OWNED_BY));
+                suggestions.put(ANY_IN.getLocalPart(), NAME_TO_ALIAS.get(ANY_IN));
+                suggestions.put(TYPE.getLocalPart(), NAME_TO_ALIAS.get(TYPE));
 
                 if (itemDefinition.getTypeName().equals(DOMUtil.XSD_STRING) || itemDefinition.getTypeName().equals(PrismConstants.POLYSTRING_TYPE_QNAME)) {
-                    suggestions.add(STARTS_WITH.getLocalPart());
-                    suggestions.add(ENDS_WITH.getLocalPart());
-                    suggestions.add(CONTAINS.getLocalPart());
-                    suggestions.add(FULL_TEXT.getLocalPart());
+                    suggestions.put(STARTS_WITH.getLocalPart(), NAME_TO_ALIAS.get(STARTS_WITH));
+                    suggestions.put(ENDS_WITH.getLocalPart(), NAME_TO_ALIAS.get(ENDS_WITH));
+                    suggestions.put(CONTAINS.getLocalPart(), NAME_TO_ALIAS.get(CONTAINS));
+                    suggestions.put(FULL_TEXT.getLocalPart(), NAME_TO_ALIAS.get(FULL_TEXT));
                 }
 
                 if (itemDefinition.getTypeName().equals(PrismConstants.POLYSTRING_TYPE_QNAME)) {
-                    suggestions.add(MATCHES.getLocalPart());
+                    suggestions.put(MATCHES.getLocalPart(), NAME_TO_ALIAS.get(MATCHES));
                 }
             }
             if (itemDefinition instanceof PrismReferenceDefinition) {
-                suggestions.add(REFERENCED_BY.getLocalPart());
+                suggestions.put(REFERENCED_BY.getLocalPart(), NAME_TO_ALIAS.get(REFERENCED_BY));
             }
             if (itemDefinition instanceof PrismContainerDefinition<?>) {
-                suggestions.add(MATCHES.getLocalPart());
+                suggestions.put(MATCHES.getLocalPart(), NAME_TO_ALIAS.get(MATCHES));
             }
         }
 
         if (ruleContext instanceof SubfilterOrValueContext) {
-            suggestions.add(AND.getLocalPart());
-            suggestions.add(OR.getLocalPart());
-            suggestions.add(NOT.getLocalPart());
+            suggestions.put(AND.getLocalPart(), NAME_TO_ALIAS.get(AND));
+            suggestions.put(OR.getLocalPart(), NAME_TO_ALIAS.get(OR));
+            suggestions.put(NOT.getLocalPart(), NAME_TO_ALIAS.get(NOT));
         }
 
         if (ruleContext instanceof ItemPathComponentContext) {
-            suggestions.add(META_TYPE);
-            suggestions.add(META_PATH);
-            suggestions.add(META_RELATION);
+            suggestions.put(META_TYPE, null);
+            suggestions.put(META_PATH, null);
+            suggestions.put(META_RELATION, null);
         }
 
         return suggestions;

@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Dominik.
@@ -25,7 +26,7 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
         return axiomQueryValidationVisitor.errorList;
     }
 
-    public List<String> queryCompletion(String query) {
+    public Map<String, String> queryCompletion(String query) {
         AxiomQuerySource axiomQuerySource = AxiomQuerySource.from(query);
         AxiomQueryCompletionVisitor axiomQueryCompletionVisitor = new AxiomQueryCompletionVisitor(this.prismContext);
         axiomQueryCompletionVisitor.visit(axiomQuerySource.root());
