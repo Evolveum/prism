@@ -163,6 +163,64 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="displayHint" type="tns:DisplayHintType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Enumeration annotation that specifies how the item should be displayed.
+
+                It is a replacement for the old "emphasized" annotation.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:simpleType name="DisplayHintType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Display hints for an item.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <jaxb:typesafeEnumClass/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="hidden">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="HIDDEN"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="regular">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="REGULAR"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="emphasized">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="EMPHASIZED"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="collapsed">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="COLLAPSED"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <xsd:enumeration value="expanded">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <jaxb:typesafeEnumMember name="EXPANDED"/>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:enumeration>
+        </xsd:restriction>
+    </xsd:simpleType>
+
     <xsd:element name="index" type="tns:IndexType">
         <xsd:annotation>
             <xsd:documentation>
@@ -303,6 +361,14 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="optionalCleanup" type="xsd:boolean">
+        <xsd:annotation>
+            <xsd:documentation>
+                Marks item that could be ignored by SCM tools (e.g. Git), or removed before commit.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="composite" type="xsd:boolean">
         <xsd:annotation>
             <xsd:documentation>
@@ -374,6 +440,8 @@
                  Set true for definitions that are more important than others and that should be emphasized
                  during presentation. E.g. the emphasized definitions will always be displayed in the user
                  interfaces (even if they are empty), they will always be included in the dumps, etc.
+
+                 REMOVED: Use display=emphasized instead.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

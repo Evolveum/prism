@@ -8,21 +8,12 @@
 package com.evolveum.midpoint.prism.impl;
 
 import java.util.*;
-
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.Definition;
-import com.evolveum.midpoint.prism.ItemProcessing;
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.SchemaMigration;
-import com.evolveum.midpoint.prism.SmartVisitation;
-import com.evolveum.midpoint.prism.Visitor;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -48,7 +39,6 @@ import com.evolveum.midpoint.util.PrettyPrinter;
  * appropriate definitions easily.
  *
  * @author Radovan Semancik
- *
  */
 public abstract class DefinitionImpl extends AbstractFreezable implements MutableDefinition {
 
@@ -56,6 +46,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull protected QName typeName;
     protected ItemProcessing processing;
     protected boolean isAbstract = false;
+    protected DisplayHint displayHint;
     protected String displayName;
     protected Integer displayOrder;
     protected String help;
@@ -64,6 +55,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     protected String deprecatedSince;
     protected boolean removed = false;
     protected String removedSince;
+    private boolean optionalCleanup;
     protected String plannedRemoval;
     protected boolean experimental = false;
     protected boolean elaborate = false;
@@ -158,6 +150,17 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
+    public boolean isOptionalCleanup() {
+        return optionalCleanup;
+    }
+
+    @Override
+    public void setOptionalCleanup(boolean optionalCleanup) {
+        checkMutable();
+        this.optionalCleanup = optionalCleanup;
+    }
+
+    @Override
     public String getRemovedSince() {
         return removedSince;
     }
@@ -196,6 +199,17 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setElaborate(boolean elaborate) {
         checkMutable();
         this.elaborate = elaborate;
+    }
+
+    @Override
+    public DisplayHint getDisplayHint() {
+        return displayHint;
+    }
+
+    @Override
+    public void setDisplayHint(DisplayHint displayHint) {
+        checkMutable();
+        this.displayHint = displayHint;
     }
 
     @Override
@@ -260,10 +274,10 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         }
         String plainDoc = MiscUtil.stripHtmlMarkup(documentation);
         int i = plainDoc.indexOf('.');
-        if (i<0) {
+        if (i < 0) {
             return plainDoc;
         }
-        return plainDoc.substring(0,i+1);
+        return plainDoc.substring(0, i + 1);
     }
 
     @Override
@@ -282,14 +296,19 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return PrismContext.get();
     }
 
+    public <A> A getAnnotation(QName qname, A defaultValue) {
+        A rv = getAnnotation(qname);
+        return rv != null ? rv : defaultValue;
+    }
+
     @Override
     public <A> A getAnnotation(QName qname) {
         if (annotations == null) {
             return null;
-        } else {
-            //noinspection unchecked
-            return (A) annotations.get(qname);
         }
+
+        //noinspection unchecked
+        return (A) annotations.get(qname);
     }
 
     @Override
@@ -359,6 +378,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         this.removed = source.isRemoved();
         Map<QName, Object> annotations = source.getAnnotations();
         if (annotations != null) {
+            if (this.annotations == null) {
+                this.annotations = new HashMap<>();
+            }
             this.annotations.putAll(annotations);
         }
         List<SchemaMigration> migrations = source.getSchemaMigrations();
@@ -380,13 +402,13 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @SuppressWarnings({ "ConstantConditions", "RedundantIfStatement" })
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)  return true;
-        if (obj == null)  return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj) {return true;}
+        if (obj == null) {return false;}
+        if (getClass() != obj.getClass()) {return false;}
         DefinitionImpl other = (DefinitionImpl) obj;
-        if (processing != other.processing) return false;
+        if (processing != other.processing) {return false;}
         if (typeName == null) {
-            if (other.typeName != null) return false;
+            if (other.typeName != null) {return false;}
         } else if (!typeName.equals(other.typeName)) {
             return false;
         }
@@ -395,7 +417,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public String toString() {
-        return getDebugDumpClassName() + getMutabilityFlag() + " ("+PrettyPrinter.prettyPrint(getTypeName())+")";
+        return getDebugDumpClassName() + getMutabilityFlag() + " (" + PrettyPrinter.prettyPrint(getTypeName()) + ")";
     }
 
     @Override

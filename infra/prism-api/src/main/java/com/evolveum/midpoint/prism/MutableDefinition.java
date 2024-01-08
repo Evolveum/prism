@@ -24,9 +24,13 @@ public interface MutableDefinition extends Definition {
 
     void setRemovedSince(String removedSince);
 
+    void setOptionalCleanup(boolean optionalCleanup);
+
     void setExperimental(boolean experimental);
 
     void setEmphasized(boolean emphasized);
+
+    void setDisplayHint(DisplayHint display);
 
     void setDisplayName(String displayName);
 

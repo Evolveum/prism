@@ -75,6 +75,15 @@ public interface ItemDefinition<I extends Item<?, ?>>
     boolean isOperational();
 
     /**
+     * Item which should always be used for equals even if it is operational and strategy does not
+     * consider operational items.
+     *
+     * EXPERIMENTAL
+     */
+    @Experimental
+    boolean isAlwaysUseForEquals();
+
+    /**
      * If true, this item is not stored in XML representation in repo.
      *
      * TODO better name

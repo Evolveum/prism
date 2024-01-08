@@ -110,6 +110,7 @@ public class PrismConstants {
     public static final QName A_LABEL = new QName(NS_ANNOTATION, "label");
     public static final QName A_MATCHING_RULE = new QName(NS_ANNOTATION, "matchingRule");
     public static final QName A_EMPHASIZED = new QName(NS_ANNOTATION, "emphasized");
+    public static final QName A_DISPLAY_HINT = new QName(NS_ANNOTATION, "displayHint");
     public static final QName A_VALUE_ENUMERATION_REF = new QName(NS_ANNOTATION, "valueEnumerationRef");
     public static final QName A_HETEROGENEOUS_LIST_ITEM = new QName(NS_ANNOTATION, "heterogeneousListItem");
     public static final QName A_SCHEMA_MIGRATION = new QName(NS_ANNOTATION, "schemaMigration");
@@ -117,6 +118,7 @@ public class PrismConstants {
     public static final QName A_SCHEMA_MIGRATION_VERSION = new QName(NS_ANNOTATION, "version");
     public static final QName A_SCHEMA_MIGRATION_OPERATION = new QName(NS_ANNOTATION, "operation");
     public static final QName A_SCHEMA_MIGRATION_REPLACEMENT = new QName(NS_ANNOTATION, "replacement");
+    public static final QName A_OPTIONAL_CLEANUP = new QName(NS_ANNOTATION, "optionalCleanup");
     public static final QName A_DEFAULT_PREFIX = new QName(NS_ANNOTATION, "defaultPrefix");
     public static final QName A_DIAGRAM = new QName(NS_ANNOTATION, "diagram");
     public static final QName A_DIAGRAM_NAME = new QName(NS_ANNOTATION, "name");

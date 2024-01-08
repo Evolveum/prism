@@ -27,6 +27,21 @@ import java.util.Map;
 @Experimental
 public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objectable> {
 
+    @Override
+    public boolean isOptionalCleanup() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isAlwaysUseForEquals() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public DisplayHint getDisplayHint() {
+        throw new UnsupportedOperationException();
+    }
+
     @NotNull
     @Override
     public ItemName getItemName() {

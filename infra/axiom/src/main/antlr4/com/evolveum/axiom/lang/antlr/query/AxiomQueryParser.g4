@@ -3,7 +3,7 @@ parser grammar AxiomQueryParser;
 
 options { tokenVocab=AxiomQueryLexer; }
 
-root: SEP* filter SEP* | EOF; // Needed for trailing spaces if multiline
+root: SEP* filter SEP* EOF | EOF; // Needed for trailing spaces if multiline
 
 stringLiteral : STRING_SINGLEQUOTE #singleQuoteString
     | STRING_DOUBLEQUOTE #doubleQuoteString
@@ -76,8 +76,8 @@ negation: NOT_KEYWORD;
 
 
 
-filter: left=filter (SEP+ AND_KEYWORD SEP+ right=filter) #andFilter
-           | left=filter (SEP+ OR_KEYWORD SEP+ right=filter) #orFilter
+filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter
+           | left=filter SEP+ OR_KEYWORD SEP+ right=filter #orFilter
            | negation SEP+ subfilterSpec #notFilter
            | itemFilter #genFilter
            | subfilterSpec #subFilter;

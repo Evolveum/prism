@@ -7,10 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import java.util.Optional;
-
-import javax.xml.namespace.QName;
-
 import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
@@ -22,6 +18,9 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
 
 import org.jetbrains.annotations.NotNull;
+
+import javax.xml.namespace.QName;
+import java.util.Optional;
 
 /**
  * Object Reference Schema Definition.
@@ -38,7 +37,6 @@ import org.jetbrains.annotations.NotNull;
  * {@link Definition} for more details.
  *
  * @author Radovan Semancik
- *
  */
 public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismReference> implements MutablePrismReferenceDefinition {
 
@@ -56,7 +54,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     public PrismReferenceDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
         super(elementName, typeName, definedInType);
         structuredType = Lazy.from(() ->
-            Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
+                Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
@@ -158,7 +156,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
             if (!(parent instanceof PrismReference)) {
                 return false;
             }
-            return canBeDefinitionOf((PrismReference)parent);
+            return canBeDefinitionOf((PrismReference) parent);
         } else {
             return true;
         }
@@ -191,7 +189,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     /**
-     * Return a human readable name of this class suitable for logs.
+     * Return a human-readable name of this class suitable for logs.
      */
     @Override
     public String getDebugDumpClassName() {

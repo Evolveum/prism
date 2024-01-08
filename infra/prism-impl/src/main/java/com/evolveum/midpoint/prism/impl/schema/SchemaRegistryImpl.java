@@ -1799,4 +1799,50 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         staticPrefixes.addPrefix(prefix, ns);
         getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
     }
+
+    public List<TypeDefinition> getAllSubTypesByTypeDefinition(List<TypeDefinition> typeDefinitions) {
+        TypeDefinition typeDefinition;
+        List<TypeDefinition> subTypesAll = new ArrayList<>();
+        List<TypeDefinition> subTypes = new ArrayList<>();
+
+        // find subtypes for ObjectType
+        List<TypeDefinition> objectSubTypes = new ArrayList<>();
+        PrismObjectDefinition<?> objectTypeDefinition = findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+        objectSubTypes.addAll(findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
+        subTypes.addAll(objectSubTypes);
+
+        while (!objectSubTypes.isEmpty()) {
+            objectSubTypes.clear();
+
+            for (TypeDefinition td : subTypes) {
+                objectSubTypes.addAll(td.getStaticSubTypes().stream().toList());
+            }
+
+            subTypesAll.addAll(subTypes);
+            subTypes.clear();
+            subTypes.addAll(objectSubTypes);
+        }
+
+        objectSubTypes.addAll(subTypesAll);
+        subTypesAll.clear();
+        subTypes.clear();
+
+        // find subtypes for other type
+        for (TypeDefinition td : typeDefinitions) {
+            if (objectSubTypes.contains(td)) {
+                subTypesAll.addAll(objectSubTypes);
+            } else {
+                typeDefinition = findTypeDefinitionByCompileTimeClass(td.getCompileTimeClass(), TypeDefinition.class);
+                subTypesAll.addAll(typeDefinition.getStaticSubTypes());
+                subTypes.addAll(typeDefinition.getStaticSubTypes());
+            }
+        }
+
+        if (!subTypes.isEmpty()) {
+            subTypesAll.addAll(getAllSubTypesByTypeDefinition(subTypes));
+        }
+
+        return subTypesAll;
+    }
 }
+

@@ -47,11 +47,11 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final String POLYSTRING_ORIG = "orig";
     private static final String POLYSTRING_NORM = "norm";
 
-    private static final String REF_OID = "oid";
-    private static final String REF_TYPE = "targetType";
-    private static final String REF_REL = "relation";
-    private static final String REF_TARGET_ALIAS = "@";
-    private static final String REF_TARGET = "target";
+    protected static final String REF_OID = "oid";
+    protected static final String REF_TYPE = "targetType";
+    protected static final String REF_REL = "relation";
+    protected static final String REF_TARGET_ALIAS = "@";
+    protected static final String REF_TARGET = "target";
     private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
@@ -792,7 +792,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
 
     private PreparedPrismQuery parse(QueryParsingContext context) throws SchemaException {
-        ObjectFilter maybeFilter = parseFilter(context.root(), context.source().root());
+        ObjectFilter maybeFilter = parseFilter(context.root(), context.source().root().filter());
         if (!context.hasPlaceholders()) {
             return context.completed(maybeFilter);
         }
@@ -800,7 +800,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     protected ObjectFilter parseBound(QueryParsingContext context) throws SchemaException {
-        return parseFilter(context.root(), context.source().root());
+        return parseFilter(context.root(), context.source().root().filter());
     }
 
 

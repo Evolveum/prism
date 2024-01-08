@@ -104,6 +104,11 @@ public interface Definition
     String getRemovedSince();
 
     /**
+     * Marks item that could be ignored by SCM tools (e.g. Git), or removed before commit.
+     */
+    boolean isOptionalCleanup();
+
+    /**
      * Experimental functionality is not stable and it may be changed in any
      * future release without any warning. Use at your own risk.
      */
@@ -132,6 +137,13 @@ public interface Definition
      * interfaces (even if they are empty), they will always be included in the dumps, etc.
      */
     boolean isEmphasized();
+
+    /**
+     * Enumeration annotation that specifies how/whether the item should be displayed.
+     *
+     * It is also a replacement for the old "emphasized" annotation.
+     */
+    DisplayHint getDisplayHint();
 
     /**
      * Returns display name.
