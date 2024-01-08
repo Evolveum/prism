@@ -162,7 +162,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 new AxiomQueryError(null,
                         null,
                         1, 21, 30,
-                        "Missing type definition",
+                        "Missing object definition",
                         null)
         );
 

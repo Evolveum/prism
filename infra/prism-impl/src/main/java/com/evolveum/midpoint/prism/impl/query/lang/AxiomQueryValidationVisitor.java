@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Dominik.
@@ -34,7 +35,6 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
                 if (ctx.filterName().getText().equals(FilterNames.TYPE.getLocalPart())) {
                     // checking . type ObjectType
                    typeDefinition = checkType(ctx.subfilterOrValue());
-
                 }
             } else if (ctx.path().getText().equals(FilterNames.META_TYPE) || ctx.path().getText().equals(PrismQueryLanguageParserImpl.REF_TYPE)) {
                 // checking path context META @type
@@ -125,7 +125,7 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
                     if (i != (itemPathCount - 1)) {
                         itemDefinition = objectDefinition.findItemDefinition(itemPath);
                     } else {
-                        return itemDefinition.findItemDefinition(itemPath, ItemDefinition.class);
+                        return objectDefinition.findItemDefinition(itemPath);
                     }
                 }
             }
@@ -133,7 +133,7 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
             errorList.add(new AxiomQueryError(null,
                 null,
                 ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
-                "Missing item definition",
+                "Missing object definition",
                 null)
             );
         }
@@ -143,7 +143,10 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
 
     private void checkFilterName(ItemDefinition<?> itemDefinition, ParserRuleContext ctx) {
         if (itemDefinition != null) {
-            if (!FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, ctx).contains(ctx.getText())) {
+
+            Map<String, String> filters = FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, ctx);
+
+            if (!filters.containsKey(ctx.getText()) && !filters.containsValue(ctx.getText())) {
                 errorList.add(new AxiomQueryError(null,
                         null,
                         ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
