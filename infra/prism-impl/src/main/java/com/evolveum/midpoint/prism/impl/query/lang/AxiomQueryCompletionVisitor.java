@@ -92,7 +92,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             suggestions = getFilters(lastNode.getText());
             suggestions.put(FilterNames.NOT.getLocalPart(), null);
         } else if (lastNode instanceof AxiomQueryParser.DescendantPathContext ctx) {
-
+            // TODO solve DescendantPathContext
         } else if (lastNode instanceof AxiomQueryParser.SubfilterOrValueContext ctx) {
             suggestions.put(FilterNames.AND.getLocalPart(), null);
             suggestions.put(FilterNames.OR.getLocalPart(), null);
