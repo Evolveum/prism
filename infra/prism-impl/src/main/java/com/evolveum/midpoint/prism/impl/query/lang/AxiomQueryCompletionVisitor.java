@@ -78,7 +78,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             }
             // value for @path
             if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_PATH)) {
-                suggestions = getAllPath().stream().collect(Collectors.toMap(x -> x, x -> x));
+                suggestions = getAllPath().stream().collect(Collectors.toMap(filterName -> filterName, alias -> alias));
             }
             // value for @relation
             if (ctx.getText().equals(FilterNames.META_RELATION)) {
@@ -88,15 +88,17 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             if (ctx.getText().equals(FilterNames.MATCHES.getLocalPart()) || ctx.getText().equals(FilterNames.REFERENCED_BY.getLocalPart())) {
                 suggestions.put("(", null);
             }
-        } else if (lastNode instanceof AxiomQueryParser.GenFilterContext || lastNode instanceof AxiomQueryParser.DescendantPathContext) {
+        } else if (lastNode instanceof AxiomQueryParser.GenFilterContext) {
             suggestions = getFilters(lastNode.getText());
             suggestions.put(FilterNames.NOT.getLocalPart(), null);
+        } else if (lastNode instanceof AxiomQueryParser.DescendantPathContext ctx) {
+
         } else if (lastNode instanceof AxiomQueryParser.SubfilterOrValueContext ctx) {
             suggestions.put(FilterNames.AND.getLocalPart(), null);
             suggestions.put(FilterNames.OR.getLocalPart(), null);
         } else if (lastNode instanceof TerminalNode ctx) {
             if (ctx.getSymbol().getType() == AxiomQueryParser.SEP || ctx.getSymbol().getType() == AxiomQueryParser.AND_KEYWORD || ctx.getSymbol().getType() == AxiomQueryParser.OR_KEYWORD) {
-                suggestions = getAllPath().stream().collect(Collectors.toMap(x -> x, x -> x));
+                suggestions = getAllPath().stream().collect(Collectors.toMap(filterName -> filterName, alias -> alias));
                 suggestions.put(".", null);
             }
         } else if (lastNode instanceof ErrorNode ctx) {
