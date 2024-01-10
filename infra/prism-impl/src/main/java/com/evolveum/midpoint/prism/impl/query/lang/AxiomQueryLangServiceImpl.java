@@ -27,6 +27,9 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
     }
 
     public Map<String, String> queryCompletion(String query) {
+
+        if (query.isEmpty()) query = " ";
+
         AxiomQuerySource axiomQuerySource = AxiomQuerySource.from(query);
         AxiomQueryCompletionVisitor axiomQueryCompletionVisitor = new AxiomQueryCompletionVisitor(this.prismContext);
         axiomQueryCompletionVisitor.visit(axiomQuerySource.root());

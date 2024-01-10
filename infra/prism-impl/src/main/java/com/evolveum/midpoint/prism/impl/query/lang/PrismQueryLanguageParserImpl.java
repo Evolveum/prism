@@ -52,6 +52,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     protected static final String REF_REL = "relation";
     protected static final String REF_TARGET_ALIAS = "@";
     protected static final String REF_TARGET = "target";
+    protected static final String DOT = ".";
+    protected static final String LPAR = "(";
+
     private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
