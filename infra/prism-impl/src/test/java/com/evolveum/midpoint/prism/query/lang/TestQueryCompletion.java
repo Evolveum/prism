@@ -40,6 +40,16 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testQueryCompletionDot() {
         String query = ". ";
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> expected = new HashMap<>();
+        expected.put("isRoot", null);
+        expected.put("inOrg", null);
+        expected.put("referencedBy", null);
+        expected.put("matches", null);
+        expected.put("ownedBy", null);
+        expected.put("inOid", null);
+
+        Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), expected.keySet().stream().sorted().toList());
     }
 
     @Test

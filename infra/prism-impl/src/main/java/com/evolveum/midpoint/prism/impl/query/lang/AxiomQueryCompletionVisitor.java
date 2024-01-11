@@ -93,6 +93,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             if (ctx.getText().equals(DOT)) {
                 suggestions = getFilters(lastNode.getText());
             } else {
+                suggestions = getFilters(lastNode.getText());
                 suggestions.put(FilterNames.NOT.getLocalPart(), null);
             }
         } else if (lastNode instanceof AxiomQueryParser.DescendantPathContext ctx) {
