@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2010-2024 Evolveum and contributors
+ *
+ * This work is dual-licensed under the Apache License 2.0
+ * and European Union Public License. See LICENSE file for details.
+ */
+
+package com.evolveum.midpoint.prism;
+
+import java.io.Serializable;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.util.annotation.Experimental;
+
+/**
+ * Resolution of a path in a prism container definition, as far as possible.
+ * See {@link #resolvedPath}, {@link #remainderPath} and {@link #lastDefinition} for details.
+ */
+@Experimental
+public class ResolvedItemPath<ID extends ItemDefinition<?>> implements Serializable {
+
+    /** The path as in the definitions, i.e. usually with qualified names. */
+    @NotNull private final ItemPath resolvedPath;
+
+    /** Path that cannot be resolved. Hopefully empty. */
+    @NotNull private final ItemPath remainderPath;
+
+    /** Definition of the last item in {@link #resolvedPath}. */
+    @NotNull private final ID lastDefinition;
+
+    private ResolvedItemPath(@NotNull ItemPath resolvedPath, @NotNull ItemPath remainderPath, @NotNull ID lastDefinition) {
+        this.lastDefinition = lastDefinition;
+        this.resolvedPath = resolvedPath;
+        this.remainderPath = remainderPath;
+    }
+
+    /** Resolves the path against a container definition. The path should be "names-only". */
+    public static <ID extends ItemDefinition<?>> ResolvedItemPath<ID> create(
+            @NotNull PrismContainerDefinition<?> rootDefinition, @NotNull ItemPath rawItemPath) {
+        ItemPath resolvedPath = ItemPath.EMPTY_PATH;
+        ItemPath remainderPath = rawItemPath.namedSegmentsOnly();
+        PrismContainerDefinition<?> currentDefinition = rootDefinition;
+        for (;;) {
+            if (remainderPath.isEmpty()) {
+                //noinspection unchecked
+                return new ResolvedItemPath<>(resolvedPath, remainderPath, (ID) currentDefinition);
+            }
+            ItemDefinition<?> childDefinition = currentDefinition.findItemDefinition(remainderPath.firstToName());
+            if (childDefinition == null) {
+                //noinspection unchecked
+                return new ResolvedItemPath<>(resolvedPath, remainderPath, (ID) currentDefinition);
+            }
+            resolvedPath = resolvedPath.append(childDefinition.getItemName());
+            remainderPath = remainderPath.rest();
+            if (!(childDefinition instanceof PrismContainerDefinition<?> childPcd)) {
+                //noinspection unchecked
+                return new ResolvedItemPath<>(resolvedPath, remainderPath, (ID) childDefinition);
+            }
+            currentDefinition = childPcd;
+        }
+    }
+
+    public @NotNull ItemPath getResolvedPath() {
+        return resolvedPath;
+    }
+
+    public @NotNull ID getLastDefinition() {
+        return lastDefinition;
+    }
+
+    public boolean isComplete() {
+        return remainderPath.isEmpty();
+    }
+}
