@@ -119,6 +119,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      */
     private final Map<QName, ComplexTypeDefinition> extensionSchemas = new HashMap<>();
 
+    private final Map<QName, ComplexTypeDefinition> dbExtensionSchemas = new HashMap<>();
+
     /**
      * Was the schema registry initialized?
      */
@@ -471,6 +473,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         registerSchemaDescription(desc);
     }
 
+    public void reload() throws SchemaException {
+        applySchemaExtensions(dbExtensionSchemas);
+    }
+
     /**
      * This can be used to read additional schemas even after the registry was initialized.
      */
@@ -721,10 +727,11 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     private void applyAugmentations() throws SchemaException {
         //applySubstitutions();
-        applySchemaExtensions();
+        applySchemaExtensions(extensionSchemas);
+        applySchemaExtensions(dbExtensionSchemas);
     }
 
-    private void applySchemaExtensions() throws SchemaException {
+    private void applySchemaExtensions(Map<QName, ComplexTypeDefinition> extensionSchemas) throws SchemaException {
         for (Entry<QName, ComplexTypeDefinition> entry : extensionSchemas.entrySet()) {
             QName typeQName = entry.getKey();
             ComplexTypeDefinition extensionCtd = entry.getValue();
@@ -1783,6 +1790,11 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             return staticPrefixes.build();
         }
         return ret;
+    }
+
+    public void registerDbSchemaExtensions(Map<QName, ComplexTypeDefinition> dbExtensionSchemas) {
+        this.dbExtensionSchemas.clear();
+        this.dbExtensionSchemas.putAll(dbExtensionSchemas);
     }
 
     public void registerStaticNamespace(String ns, String prefix, boolean declaredByDefault) {

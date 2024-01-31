@@ -46,6 +46,7 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     String getDefaultNamespace();
 
+    void reload() throws SchemaException;
     void initialize() throws SAXException, IOException, SchemaException;
 
     javax.xml.validation.Schema getJavaxSchema();

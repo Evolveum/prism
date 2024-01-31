@@ -56,6 +56,7 @@ public interface PrismContext extends ProtectorCreator {
      * Initializes the prism context, e.g. loads and parses all the schemas.
      */
     void initialize() throws SchemaException, SAXException, IOException;
+    void reload() throws SchemaException;
 
     void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
 

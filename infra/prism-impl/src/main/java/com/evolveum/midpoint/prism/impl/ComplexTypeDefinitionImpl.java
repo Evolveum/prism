@@ -641,7 +641,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @Override
     protected boolean skipFreeze() {
-        return extensionForType != null;
+        return extensionForType != null || typeName.getLocalPart().equals("ExtensionType");
 
     }
 }

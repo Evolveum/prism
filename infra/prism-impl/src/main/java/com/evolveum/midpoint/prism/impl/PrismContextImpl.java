@@ -178,6 +178,11 @@ public final class PrismContextImpl implements PrismContext {
     }
 
     @Override
+    public void reload() throws SchemaException {
+        schemaRegistry.reload();
+    }
+
+    @Override
     public void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         this.defaultPolyStringNormalizer = createConfiguredPolyStringNormalizer(configuration);

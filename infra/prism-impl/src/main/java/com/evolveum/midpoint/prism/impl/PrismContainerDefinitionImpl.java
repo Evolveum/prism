@@ -578,4 +578,10 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
         // We do not "own" complex type definition so we do not freeze it here
         super.performFreeze();
     }
+
+    @Override
+    protected boolean skipFreeze() {
+        return itemName.getLocalPart().equals(PrismConstants.EXTENSION_LOCAL_NAME);
+
+    }
 }
