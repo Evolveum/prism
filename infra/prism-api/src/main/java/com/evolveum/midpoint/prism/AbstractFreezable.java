@@ -10,6 +10,9 @@ public abstract class AbstractFreezable implements Freezable {
 
     @Override
     public final void freeze() {
+        if (skipFreeze()) {
+            return;
+        }
         if (!frozen) {
             performFreeze();
             this.frozen = true;
@@ -24,6 +27,10 @@ public abstract class AbstractFreezable implements Freezable {
         for (Freezable freezable : children) {
             freeze(freezable);
         }
+    }
+
+    protected boolean skipFreeze() {
+        return false;
     }
 
     protected void performFreeze() {

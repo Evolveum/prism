@@ -638,4 +638,10 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     public void setStrictAnyMarker(boolean marker) {
         strictAnyMarker = marker;
     }
+
+    @Override
+    protected boolean skipFreeze() {
+        return extensionForType != null;
+
+    }
 }
