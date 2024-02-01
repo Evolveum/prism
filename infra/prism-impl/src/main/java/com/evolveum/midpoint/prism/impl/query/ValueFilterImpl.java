@@ -123,11 +123,9 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
 
     @NotNull
     MatchingRule<Object> getMatchingRuleFromRegistry(MatchingRuleRegistry matchingRuleRegistry) {
-        if (definition == null) {
-            throw new IllegalArgumentException("No definition in item " + fullPath);
-        }
         try {
-            return matchingRuleRegistry.getMatchingRule(matchingRule, definition.getTypeName());
+            QName typeName = definition != null ? definition.getTypeName() : null;
+            return matchingRuleRegistry.getMatchingRule(matchingRule, typeName);
         } catch (SchemaException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }

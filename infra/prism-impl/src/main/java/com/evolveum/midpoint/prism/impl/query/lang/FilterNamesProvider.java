@@ -30,11 +30,7 @@ public class FilterNamesProvider {
                 suggestions.put(EXISTS.getLocalPart(), NAME_TO_ALIAS.get(EXISTS));
                 suggestions.put(LEVENSHTEIN.getLocalPart(), NAME_TO_ALIAS.get(LEVENSHTEIN));
                 suggestions.put(SIMILARITY.getLocalPart(), NAME_TO_ALIAS.get(SIMILARITY));
-                suggestions.put(IN_OID.getLocalPart(), NAME_TO_ALIAS.get(IN_OID));
                 suggestions.put(OWNED_BY_OID.getLocalPart(), NAME_TO_ALIAS.get(OWNED_BY_OID));
-                suggestions.put(IN_ORG.getLocalPart(), NAME_TO_ALIAS.get(IN_ORG));
-                suggestions.put(IS_ROOT.getLocalPart(), NAME_TO_ALIAS.get(IS_ROOT));
-                suggestions.put(OWNED_BY.getLocalPart(), NAME_TO_ALIAS.get(OWNED_BY));
                 suggestions.put(ANY_IN.getLocalPart(), NAME_TO_ALIAS.get(ANY_IN));
                 suggestions.put(TYPE.getLocalPart(), NAME_TO_ALIAS.get(TYPE));
 
@@ -49,11 +45,14 @@ public class FilterNamesProvider {
                     suggestions.put(MATCHES.getLocalPart(), NAME_TO_ALIAS.get(MATCHES));
                 }
             }
-            if (itemDefinition instanceof PrismReferenceDefinition) {
-                suggestions.put(REFERENCED_BY.getLocalPart(), NAME_TO_ALIAS.get(REFERENCED_BY));
-            }
-            if (itemDefinition instanceof PrismContainerDefinition<?>) {
+
+            if (itemDefinition instanceof PrismContainerDefinition || itemDefinition instanceof PrismReferenceDefinition) {
                 suggestions.put(MATCHES.getLocalPart(), NAME_TO_ALIAS.get(MATCHES));
+                suggestions.put(REFERENCED_BY.getLocalPart(), NAME_TO_ALIAS.get(REFERENCED_BY));
+                suggestions.put(OWNED_BY.getLocalPart(), NAME_TO_ALIAS.get(OWNED_BY));
+                suggestions.put(IN_ORG.getLocalPart(), NAME_TO_ALIAS.get(IN_ORG));
+                suggestions.put(IN_OID.getLocalPart(), NAME_TO_ALIAS.get(IN_OID));
+                suggestions.put(IS_ROOT.getLocalPart(), NAME_TO_ALIAS.get(IS_ROOT));
             }
         }
 
