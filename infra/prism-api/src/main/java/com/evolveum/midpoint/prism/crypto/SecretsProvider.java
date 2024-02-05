@@ -13,6 +13,12 @@ import org.jetbrains.annotations.NotNull;
 
 public interface SecretsProvider {
 
+    default void init() {
+    }
+
+    default void destroy() {
+    }
+
     @NotNull String getIdentifier();
 
     String getSecretString(@NotNull String key) throws EncryptionException;

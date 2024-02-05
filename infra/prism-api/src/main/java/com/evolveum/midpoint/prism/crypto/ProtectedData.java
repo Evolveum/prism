@@ -39,4 +39,12 @@ public interface ProtectedData<T> {
     boolean isHashed();
 
     boolean canSupportType(Class<?> type);
+
+    String getProvider();
+
+    void setProvider(String provider);
+
+    String getKey();
+
+    void setKey(String key);
 }

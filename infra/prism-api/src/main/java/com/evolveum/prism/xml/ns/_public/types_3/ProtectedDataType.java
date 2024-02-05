@@ -7,10 +7,8 @@
 package com.evolveum.prism.xml.ns._public.types_3;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
+
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
@@ -42,10 +40,14 @@ import com.evolveum.midpoint.util.QNameUtil;
 public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStructured.WithoutStrategy, JaxbVisitable {
     private static final long serialVersionUID = 1L;
 
+    public static final String NS_TYPES = "http://prism.evolveum.com/xml/ns/public/types-3";
+
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ProtectedDataType");
     public static final QName F_ENCRYPTED_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "encryptedData");
     public static final QName F_HASHED_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "hashedData");
     public static final QName F_CLEAR_VALUE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "clearValue");
+    public static final QName F_PROVIDER = new QName(NS_TYPES, "provider");
+    public static final QName F_KEY = new QName(NS_TYPES, "key");
 
     public static final String NS_XML_ENC = "http://www.w3.org/2001/04/xmlenc#";
     public static final String NS_XML_DSIG = "http://www.w3.org/2000/09/xmldsig#";
@@ -71,6 +73,10 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     @XmlMixed
     @XmlAnyElement(lax = true)
     protected List<Object> content;
+
+    private String provider;
+
+    private String key;
 
     /**
      * TODO
@@ -150,6 +156,36 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
     public ProtectedDataType<T> clearValue(T clearValue) {
         setClearValue(clearValue);
+        return this;
+    }
+
+    @Override
+    public String getProvider() {
+        return provider;
+    }
+
+    @Override
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public ProtectedDataType<T> provider(String provider) {
+        setProvider(provider);
+        return this;
+    }
+
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+    @Override
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public ProtectedDataType<T> key(String key) {
+        setKey(key);
         return this;
     }
 
@@ -246,17 +282,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     }
 
     public boolean isEmpty() {
-        return encryptedDataType == null && hashedDataType == null && clearValue == null;
+        return encryptedDataType == null && hashedDataType == null && clearValue == null && provider == null && key == null;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((clearValue == null) ? 0 : clearValue.hashCode());
-        result = prime * result + ((encryptedDataType == null) ? 0 : encryptedDataType.hashCode());
-        result = prime * result + ((hashedDataType == null) ? 0 : hashedDataType.hashCode());
-        return result;
+        return Objects.hash(encryptedDataType, hashedDataType, clearValue, provider, key);
     }
 
     /**
@@ -277,39 +308,17 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
      * @see Protector#areEquivalent(ProtectedStringType, ProtectedStringType)
      */
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ProtectedDataType other = (ProtectedDataType) obj;
-        if (clearValue == null) {
-            if (other.clearValue != null) {
-                return false;
-            }
-        } else if (!clearValue.equals(other.clearValue)) {
-            return false;
-        }
-        if (encryptedDataType == null) {
-            if (other.encryptedDataType != null) {
-                return false;
-            }
-        } else if (!encryptedDataType.equals(other.encryptedDataType)) {
-            return false;
-        }
-        if (hashedDataType == null) {
-            if (other.hashedDataType != null) {
-                return false;
-            }
-        } else if (!hashedDataType.equals(other.hashedDataType)) {
-            return false;
-        }
-        return true;
+        ProtectedDataType<?> that = (ProtectedDataType<?>) o;
+        return Objects.equals(encryptedDataType, that.encryptedDataType)
+                && Objects.equals(hashedDataType, that.hashedDataType)
+                && Objects.equals(clearValue, that.clearValue)
+                && Objects.equals(provider, that.provider)
+                && Objects.equals(key, that.key);
     }
 
     @Override
