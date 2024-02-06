@@ -246,7 +246,7 @@
         <xsd:annotation>
             <xsd:documentation>
                 TODO
-                May be either encrypted or hashed or provided in the clear (e.g. for debugging).
+                May be either encrypted, hashed, external or provided in the clear (e.g. for debugging).
 
                 This type is marked as "mixed" because it may have alternative representation where
                 just the plaintext value is presented as the only value.
@@ -257,28 +257,7 @@
         <xsd:sequence>
             <xsd:element name="encryptedData" type="tns:EncryptedDataType" minOccurs="0"/>
             <xsd:element name="hashedData" type="tns:HashedDataType" minOccurs="0"/>
-
-            <xsd:element name="provider" type="xsd:string" minOccurs="0">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Identifier of secret provider implementation that should be used to obtain secret defined by key.
-                    </xsd:documentation>
-                    <xsd:appinfo>
-                        <a:since>4.9</a:since>
-                    </xsd:appinfo>
-                </xsd:annotation>
-            </xsd:element>
-
-            <xsd:element name="key" type="xsd:string" minOccurs="0">
-                <xsd:annotation>
-                    <xsd:documentation>
-                        Identifier of secret that provider will use to obtain secret value.
-                    </xsd:documentation>
-                    <xsd:appinfo>
-                        <a:since>4.9</a:since>
-                    </xsd:appinfo>
-                </xsd:annotation>
-            </xsd:element>
+            <xsd:element name="externalData" type="tns:ExternalDataType" minOccurs="0"/>
 
             <xsd:any namespace="##other" minOccurs="0">
                 <xsd:annotation>
@@ -289,6 +268,39 @@
                 </xsd:annotation>
             </xsd:any>
 
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ExternalDataType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Contains data that is not encrypted or hashed. It is stored in external system.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <a:since>4.9</a:since>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="provider" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Identifier of secret provider implementation that should be used to obtain secret defined by key.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>4.9</a:since>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="key" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Identifier of secret that provider will use to obtain secret value.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>4.9</a:since>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
         </xsd:sequence>
     </xsd:complexType>
 

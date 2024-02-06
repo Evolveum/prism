@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.prism.crypto;
 
 import com.evolveum.prism.xml.ns._public.types_3.EncryptedDataType;
+import com.evolveum.prism.xml.ns._public.types_3.ExternalDataType;
 import com.evolveum.prism.xml.ns._public.types_3.HashedDataType;
 
 /**
@@ -30,6 +31,10 @@ public interface ProtectedData<T> {
 
     void setEncryptedData(EncryptedDataType encryptedDataType);
 
+    ExternalDataType getExternalData();
+
+    void setExternalData(ExternalDataType externalDataType);
+
     boolean isEncrypted();
 
     HashedDataType getHashedDataType();
@@ -39,12 +44,4 @@ public interface ProtectedData<T> {
     boolean isHashed();
 
     boolean canSupportType(Class<?> type);
-
-    String getProvider();
-
-    void setProvider(String provider);
-
-    String getKey();
-
-    void setKey(String key);
 }
