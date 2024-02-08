@@ -19,15 +19,15 @@ public interface SecretsResolver {
     /**
      * @param provider Initialized provider to be added to the list of usable providers.
      */
-    void addSecretsProvider(@NotNull SecretsProvider provider);
+    void addSecretsProvider(@NotNull SecretsProvider<?> provider);
 
     /**
      * @param provider Initialized provider to be removed from the list of usable providers.
      */
-    void removeSecretsProvider(@NotNull SecretsProvider provider);
+    void removeSecretsProvider(@NotNull SecretsProvider<?> provider);
 
     /**
      * @return List of usable secret providers.
      */
-    @NotNull List<SecretsProvider> getSecretsProviders();
+    @NotNull List<SecretsProvider<?>> getSecretsProviders();
 }
