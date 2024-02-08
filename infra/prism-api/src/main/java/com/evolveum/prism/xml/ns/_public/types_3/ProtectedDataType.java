@@ -329,7 +329,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
         cloned.clearValue = CloneUtil.clone(clearValue);
         cloned.encryptedDataType = CloneUtil.clone(encryptedDataType);
         cloned.hashedDataType = CloneUtil.clone(hashedDataType);
-        cloned.externalDataType = externalDataType;
+        cloned.externalDataType = CloneUtil.clone(externalDataType);
 
         // content is virtual, there is no point in copying it
     }
