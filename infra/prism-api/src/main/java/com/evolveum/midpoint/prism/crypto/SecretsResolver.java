@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Interface for component that can use initialized secret providers to resolve secrets (e.g. instead of decrypting them).
  */
-public interface SecretsProviderConsumer {
+public interface SecretsResolver {
 
     /**
      * @param provider Initialized provider to be added to the list of usable providers.

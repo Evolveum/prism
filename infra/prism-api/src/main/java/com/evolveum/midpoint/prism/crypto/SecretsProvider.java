@@ -14,13 +14,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Interface for component that can resolve secrets from external secrets managers (e.g. instead of decrypting them).
  */
-public interface SecretsProvider {
+public interface SecretsProvider<C> {
 
     /**
      * Post-construction initialization.
      * Called before the provider is added to the list of usable providers.
      */
-    default void init() {
+    default void initialize() {
     }
 
     /**
@@ -34,6 +34,17 @@ public interface SecretsProvider {
      * Returns unique identifier of the provider.
      */
     @NotNull String getIdentifier();
+
+    /**
+     * Returns list of providers that this provider depends on.
+     * The provider will be initialized after all dependencies are available and initialized.
+     */
+    @NotNull String[] getDependencies();
+
+    /**
+     * Returns configuration of the provider.
+     */
+    C getConfiguration();
 
     /**
      * Returns secret {@link String} for given key.
