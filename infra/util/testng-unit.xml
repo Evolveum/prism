@@ -27,6 +27,7 @@
             <class name="com.evolveum.midpoint.util.TestMiscUtil" />
             <class name="com.evolveum.midpoint.util.TestStringSubstitutorUtil" />
             <class name="com.evolveum.midpoint.util.TestReflectionUtil" />
+            <class name="com.evolveum.midpoint.util.DependencyGraphTest" />
         </classes>
     </test>
     <test name="Profiling">
