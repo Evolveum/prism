@@ -22,20 +22,20 @@ import java.util.*;
 public class DependencyGraph<X> {
 
     /** Client-supplied data. Should not be touched. */
-    @NotNull private final Map<X, Collection<? extends X>> dependencyMap;
+    @NotNull private final Map<X, Collection<X>> dependencyMap;
 
-    private DependencyGraph(@NotNull Map<X, Collection<? extends X>> dependencyMap) {
+    private DependencyGraph(@NotNull Map<X, Collection<X>> dependencyMap) {
         this.dependencyMap = dependencyMap;
     }
 
     /** Creates the dependency graph from the given dependency map. */
-    public static <X> DependencyGraph<X> ofMap(Map<X, Collection<? extends X>> dependencyMap) {
+    public static <X> DependencyGraph<X> ofMap(Map<X, Collection<X>> dependencyMap) {
         return new DependencyGraph<>(dependencyMap);
     }
 
     /** Creates the dependency graph from items that can tell us about their dependencies. */
     public static <I extends Item<I>> DependencyGraph<I> ofItems(@NotNull Collection<I> items) {
-        Map<I, Collection<? extends I>> dependencyMap = new HashMap<>();
+        Map<I, Collection<I>> dependencyMap = new HashMap<>();
         for (I item : items) {
             dependencyMap.put(item, item.getDependencies());
         }
@@ -66,7 +66,7 @@ public class DependencyGraph<X> {
         @NotNull private final Map<X, Set<X>> remainingDependencies;
         @NotNull private final List<X> sortedItems;
 
-        private TopologicalSort(Map<X, Collection<? extends X>> dependencyMap) {
+        private TopologicalSort(Map<X, Collection<X>> dependencyMap) {
             remainingDependencies = copyAndCheckMap(dependencyMap);
             sortedItems = new ArrayList<>(remainingDependencies.size());
             for (;;) {
@@ -79,11 +79,11 @@ public class DependencyGraph<X> {
             }
         }
 
-        private Map<X, Set<X>> copyAndCheckMap(Map<X, Collection<? extends X>> origMap) {
+        private Map<X, Set<X>> copyAndCheckMap(Map<X, Collection<X>> origMap) {
             Map<X, Set<X>> targetMap = new HashMap<>();
-            for (Map.Entry<X, Collection<? extends X>> origEntry : origMap.entrySet()) {
+            for (Map.Entry<X, Collection<X>> origEntry : origMap.entrySet()) {
                 X origItem = origEntry.getKey();
-                Collection<? extends X> origItemDependencies = origEntry.getValue();
+                Collection<X> origItemDependencies = origEntry.getValue();
                 Set<X> targetDependencySet = new HashSet<>();
                 for (X dependency : origItemDependencies) {
                     if (!origMap.containsKey(dependency)) {
