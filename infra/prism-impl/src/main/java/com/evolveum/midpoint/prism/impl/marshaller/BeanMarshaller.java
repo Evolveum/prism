@@ -659,6 +659,10 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             QName type = XsdTypeMapper.toXsdType(protectedType.getClearValue().getClass());
             PrimitiveXNodeImpl<?> xClearValue = createPrimitiveXNode(protectedType.getClearValue(), type, false, sc);
             xmap.put(ProtectedDataType.F_CLEAR_VALUE, xClearValue);
+        } else if (protectedType.getExternalData() != null) {
+            ExternalDataType externalDataType = protectedType.getExternalData();
+            MapXNodeImpl xExternalDataType = (MapXNodeImpl) marshall(externalDataType);
+            xmap.put(ProtectedDataType.F_EXTERNAL_DATA, xExternalDataType);
         }
         // TODO: clearValue
         return xmap;

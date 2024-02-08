@@ -10,6 +10,8 @@ import static org.testng.AssertJUnit.assertEquals;
 
 import static com.evolveum.midpoint.prism.util.PrismTestUtil.createDefaultParsingContext;
 
+import com.evolveum.prism.xml.ns._public.types_3.ExternalDataType;
+
 import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.AbstractPrismTest;
@@ -63,5 +65,28 @@ public class TestProtectedString extends AbstractPrismTest {
         prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, prismContext, createDefaultParsingContext());
         System.out.println("Unmarshalled value: " + unmarshalled);
         assertEquals("Unmarshalled value differs from the original", protectedStringType, unmarshalled);
+    }
+
+    @Test
+    public void testParseProtectedStringWithProvider() throws Exception {
+        // GIVEN
+        ProtectedStringType string = new ProtectedStringType();
+        ExternalDataType external = new ExternalDataType();
+        external.setProvider("some-provider");
+        external.setKey("some-key");
+        string.setExternalData(external);
+
+        PrismContext prismContext = PrismTestUtil.getPrismContext();
+
+        // WHEN
+        MapXNodeImpl protectedStringTypeXNode = ((PrismContextImpl) prismContext).getBeanMarshaller().marshalProtectedDataType(string, null);
+        System.out.println("Protected string type XNode: " + protectedStringTypeXNode.debugDump());
+
+        // THEN
+        ProtectedStringType unmarshalled = new ProtectedStringType();
+        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, prismContext, createDefaultParsingContext());
+        System.out.println("Unmarshalled value: " + unmarshalled);
+        assertEquals("Unmarshalled value differs from the original", string, unmarshalled);
+
     }
 }
