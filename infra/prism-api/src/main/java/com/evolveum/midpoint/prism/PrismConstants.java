@@ -146,6 +146,21 @@ public class PrismConstants {
     public static final String T_PARENT_LOCAL_PART = "parent";
     public static final ItemName T_PARENT = new ItemName(NS_TYPES, T_PARENT_LOCAL_PART);
     public static final ItemName T_OBJECT_REFERENCE = new ItemName(NS_TYPES, "objectReference");
+
+    public static final ItemName T_OBJECT_REFERENCE_OID = new ItemName(NS_TYPES, "oid");
+
+    public static final ItemName T_OBJECT_REFERENCE_TYPE = new ItemName(NS_TYPES, "type");
+
+    public static final ItemName T_OBJECT_REFERENCE_RELATION = new ItemName(NS_TYPES, "relation");
+
+    public static final QName T_OBJECT_REFERENCE_DESCRIPTION = new ItemName(NS_TYPES,  "description");
+    public static final QName T_OBJECT_REFERENCE_FILTER = new ItemName(NS_TYPES,  "filter");
+    public static final QName T_OBJECT_REFERENCE_RESOLUTION_TIME = new ItemName(NS_TYPES,  "resolutionTime");
+    public static final QName T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY = new ItemName(NS_TYPES,  "referentialIntegrity");
+    public static final QName T_OBJECT_REFERENCE_TARGET_NAME = new ItemName(NS_TYPES,  "targetName");
+    public static final QName T_OBJECT_REFERENCE_OBJECT = new ItemName(NS_TYPES,  "object");
+
+
     public static final String T_ID_LOCAL_PART = "id";
     public static final ItemName T_ID = new ItemName(NS_TYPES, T_ID_LOCAL_PART);
 

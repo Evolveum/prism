@@ -550,13 +550,13 @@ public abstract class XNodeDefinition {
             // TODO: Since CTD now contains attributes section this could be reworked
             // into ComplexTypeAware as search in attributes section
             if (PrismConstants.ATTRIBUTE_OID_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_STRING, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_OID, DOMUtil.XSD_STRING, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_REF_TYPE_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_TYPE, DOMUtil.XSD_QNAME, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_RELATION_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_RELATION, DOMUtil.XSD_QNAME, true, root, true);
             }
             return super.resolveLocally(name);
         }
