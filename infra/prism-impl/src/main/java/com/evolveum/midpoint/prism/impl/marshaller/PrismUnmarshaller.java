@@ -203,18 +203,23 @@ public class PrismUnmarshaller {
             @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc) throws SchemaException {
 
         PrismContainer<C> container = containerDef.instantiate(itemName);
-        if (node instanceof ListXNodeImpl) {
-            ListXNodeImpl list = (ListXNodeImpl) node;
-            if (containerDef instanceof PrismObject && list.size() > 1) {
-                pc.warnOrThrow(LOGGER, "Multiple values for a PrismObject: " + node.debugDump());
-                parseContainerValueToContainer(container, list.get(0), pc);
-            } else {
-                for (XNodeImpl subNode : list) {
-                    parseContainerValueToContainer(container, subNode, pc);
+        ((PrismContainerImpl<C>) container).startStrictModifications();
+        try {
+            if (node instanceof ListXNodeImpl) {
+                ListXNodeImpl list = (ListXNodeImpl) node;
+                if (containerDef instanceof PrismObject && list.size() > 1) {
+                    pc.warnOrThrow(LOGGER, "Multiple values for a PrismObject: " + node.debugDump());
+                    parseContainerValueToContainer(container, list.get(0), pc);
+                } else {
+                    for (XNodeImpl subNode : list) {
+                        parseContainerValueToContainer(container, subNode, pc);
+                    }
                 }
+            } else {
+                parseContainerValueToContainer(container, node, pc);
             }
-        } else {
-            parseContainerValueToContainer(container, node, pc);
+        } finally {
+            ((PrismContainerImpl<C>) container).stopStrictModifications();
         }
         return container;
     }
