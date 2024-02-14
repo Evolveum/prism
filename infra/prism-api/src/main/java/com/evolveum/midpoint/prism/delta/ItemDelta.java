@@ -110,6 +110,14 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         return getRealValuesOfCollectionPreservingNull(getValuesToReplace());
     }
 
+    default Collection<V> getValues(@NotNull ModificationType currentSet) {
+        return switch (currentSet) {
+            case ADD -> getValuesToAdd();
+            case DELETE -> getValuesToDelete();
+            case REPLACE -> getValuesToReplace();
+        };
+    }
+
     /** Values that are added or potentially added by this delta. */
     default @NotNull Collection<V> getNewValues() {
         var valuesToReplace = getValuesToReplace();

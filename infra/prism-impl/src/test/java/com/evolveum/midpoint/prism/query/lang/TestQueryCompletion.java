@@ -29,7 +29,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
         axiomQueryLangServiceImpl = new AxiomQueryLangServiceImpl(PrismContext.get());
         schemaRegistry = PrismContext.get().getSchemaRegistry();

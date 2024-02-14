@@ -840,7 +840,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         //noinspection unchecked
         PrismObjectDefinition<O> objectDefinition = determineDefinitionFromClass(compileTimeClass);
         PrismContainerDefinition<C> containerDefinition = objectDefinition.findContainerDefinition(path);
-        prismContainerValue.applyDefinition(containerDefinition, force);
+        if (containerDefinition != null) {
+            prismContainerValue.applyDefinition(containerDefinition, force);
+        }
     }
 
     @Override

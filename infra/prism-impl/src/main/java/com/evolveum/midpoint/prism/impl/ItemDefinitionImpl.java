@@ -426,7 +426,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         StringBuilder sb = new StringBuilder();
         debugFlags(sb);
         // This starts with a colon, we do not want it here
-        if (sb.length() > 0) {
+        if (!sb.isEmpty()) {
             sb.deleteCharAt(0);
         }
         return sb.toString();

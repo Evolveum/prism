@@ -252,13 +252,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public List<PrismPropertyDefinition<?>> getPropertyDefinitions() {
-        List<PrismPropertyDefinition<?>> props = new ArrayList<>();
-        for (ItemDefinition<?> def : complexTypeDefinition.getDefinitions()) {
-            if (def instanceof PrismPropertyDefinition) {
-                props.add((PrismPropertyDefinition<?>) def);
-            }
-        }
-        return props;
+        return complexTypeDefinition != null ? complexTypeDefinition.getPropertyDefinitions() : List.of();
     }
 
     @NotNull

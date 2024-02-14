@@ -112,7 +112,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      */
 
     @Override
-    public <X> Collection<X> getRealValues(Class<X> type) {
+    public <X> @NotNull Collection<X> getRealValues(Class<X> type) {
         Collection<X> realValues = new ArrayList<>(getValues().size());
         for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add((X) pValue.getValue());

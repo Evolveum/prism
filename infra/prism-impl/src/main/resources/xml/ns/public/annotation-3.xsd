@@ -631,6 +631,15 @@
         </xsd:attribute>
     </xsd:complexType>
 
+    <xsd:element name="defaultItemTypeName" type="xsd:string">
+        <xsd:annotation>
+            <xsd:documentation>
+                Type name for items that are not explicitly defined in the complex type definition to which this annotation
+                applies. Currently, only statically typed container complex type definitions are supported here.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="defaultNamespace" type="xsd:string">
         <xsd:annotation>
             <xsd:documentation>

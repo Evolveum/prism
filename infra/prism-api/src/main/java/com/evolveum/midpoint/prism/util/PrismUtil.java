@@ -23,12 +23,13 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * TODO clean this up as it is part of prism-api!
@@ -64,19 +65,17 @@ public class PrismUtil {
         return value == null || StringUtils.isEmpty(value.getOrig()) && StringUtils.isEmpty(value.getNorm());
     }
 
-    public static <T, X> PrismProperty<X> convertProperty(PrismProperty<T> srcProp, PrismPropertyDefinition<X> targetDef)
-            throws SchemaException {
-        if (targetDef.getTypeName().equals(srcProp.getDefinition().getTypeName())) {
+    // TODO find the correct place for this method
+    public static <S, T> PrismPropertyValue<T> convertPropertyValue(
+            @NotNull PrismPropertyValue<S> srcValue, @NotNull PrismPropertyDefinition<T> targetDef) {
+        Class<T> targetClass = targetDef.getTypeClass();
+        S srcRealValue = srcValue.getRealValue();
+        if (targetClass.isInstance(srcRealValue)) {
             //noinspection unchecked
-            return (PrismProperty<X>) srcProp;
+            return (PrismPropertyValue<T>) srcValue;
         } else {
-            PrismProperty<X> targetProp = targetDef.instantiate();
-            Class<X> expectedJavaType = XsdTypeMapper.toJavaType(targetDef.getTypeName());
-            for (PrismPropertyValue<T> srcPVal : srcProp.getValues()) {
-                X convertedRealValue = JavaTypeConverter.convert(expectedJavaType, srcPVal.getValue());
-                targetProp.add(PrismContext.get().itemFactory().createPropertyValue(convertedRealValue));
-            }
-            return targetProp;
+            return PrismContext.get().itemFactory().createPropertyValue(
+                    JavaTypeConverter.convert(targetClass, srcRealValue));
         }
     }
 

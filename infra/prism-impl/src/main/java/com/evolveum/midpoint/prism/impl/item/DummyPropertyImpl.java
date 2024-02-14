@@ -52,7 +52,7 @@ public class DummyPropertyImpl<T> extends DummyItem<PrismPropertyValue<T>, Prism
         delegate().addIgnoringEquivalents(newValue);
     }
 
-    public <X> Collection<X> getRealValues(Class<X> type) {
+    public <X> @NotNull Collection<X> getRealValues(Class<X> type) {
         return delegate().getRealValues(type);
     }
 

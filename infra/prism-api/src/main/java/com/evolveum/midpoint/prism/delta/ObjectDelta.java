@@ -23,6 +23,8 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import static com.evolveum.midpoint.prism.PrismObject.asObjectable;
+
 /**
  * Relative difference (delta) of the object.
  * This class describes how the object changes. It can describe either object addition, modification of deletion.
@@ -75,6 +77,10 @@ public interface ObjectDelta<O extends Objectable>
     void setPrismContext(PrismContext prismContext);
 
     PrismObject<O> getObjectToAdd();
+
+    default O getObjectableToAdd() {
+        return asObjectable(getObjectToAdd());
+    }
 
     void setObjectToAdd(PrismObject<O> objectToAdd);
 

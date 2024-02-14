@@ -288,6 +288,18 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     @NotNull
     Collection<?> getRealValues();
 
+    /**
+     * Returns detached collection of real values, although the values are still _connected_ to the original item
+     * (in case of complex properties, references, and containers).
+     *
+     * BEWARE, it's not always possible to get the real values.
+     */
+    default <X> @NotNull Collection<X> getRealValues(Class<X> type) {
+        return getRealValues().stream() // TODO should we avoid using streams here?
+                .map(type::cast)
+                .collect(Collectors.toList());
+    }
+
     @Experimental // Do NOT use !!!!
     @NotNull
     default Collection<Object> getRealValuesOrRawTypes(PrismContext prismContext) {
@@ -616,7 +628,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      */
     void applyDefinition(@NotNull D definition, boolean force) throws SchemaException;
 
-    default Item<?,?> copy() {
+    default Item<V, D> copy() {
         return clone();
     }
 

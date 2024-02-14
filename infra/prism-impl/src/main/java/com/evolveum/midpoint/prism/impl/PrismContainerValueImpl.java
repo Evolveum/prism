@@ -289,7 +289,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 Class<?> parentClass = parent.getCompileTimeClass();
                 if (parentClass != null) {
                     if (requiredClass != null && !requiredClass.isAssignableFrom(parentClass)) {
-                        // mismatch; but this can occur (see ShadowAttributesType vs ShadowIdentifiersType in ShadowAssociationType)
+                        // mismatch; but this can occur (see ShadowAttributesType vs ShadowIdentifiersType in association value)
                         // but TODO maybe this is only a workaround and the problem is in the schema itself (?)
                         return requiredClass;
                     } else {
@@ -1362,7 +1362,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope) {
         ItemPath myPath = getPath();
-        if (getDefinition() == null) {
+        if (requireDefinitions && getDefinition() == null) {
             throw new IllegalStateException("Definition-less container value " + this + " (" + myPath + " in " + rootItem + ")");
         }
         for (Item<?, ?> item : items.values()) {

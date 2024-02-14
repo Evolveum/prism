@@ -1071,6 +1071,14 @@ public class MiscUtil {
         }
     }
 
+    public static <T> T requireNonNull(T value, String template, Object... arguments) throws SchemaException {
+        if (value != null) {
+            return value;
+        } else {
+            throw new SchemaException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
     // TODO better name?
     public static <T> T configNonNull(T value, Supplier<String> messageSupplier) throws ConfigurationException {
         if (value != null) {

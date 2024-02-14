@@ -17,6 +17,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -63,6 +64,9 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     /** @see ComplexTypeDefinition#getExtensionForType() */
     private QName extensionForType;
+
+    /** @see ComplexTypeDefinition#getDefaultItemTypeName() */
+    private QName defaultItemTypeName;
 
     /** @see ComplexTypeDefinition#getDefaultNamespace() */
     private String defaultNamespace;
@@ -183,6 +187,16 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     }
 
     @Override
+    public @Nullable QName getDefaultItemTypeName() {
+        return defaultItemTypeName;
+    }
+
+    public void setDefaultItemTypeName(QName defaultItemTypeName) {
+        checkMutable();
+        this.defaultItemTypeName = defaultItemTypeName;
+    }
+
+    @Override
     public String getDefaultNamespace() {
         return defaultNamespace;
     }
@@ -271,7 +285,11 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             Object first = path.first();
             if (ItemPath.isName(first)) {
                 QName firstName = ItemPath.toName(first);
-                return findNamedItemDefinition(firstName, path.rest(), clazz);
+                var defFound = findNamedItemDefinition(firstName, path.rest(), clazz);
+                if (defFound != null) {
+                    return defFound;
+                }
+                return tryDefaultItemDefinition(firstName);
             } else if (ItemPath.isId(first)) {
                 path = path.rest();
             } else if (ItemPath.isParent(first)) {
@@ -306,6 +324,36 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 throw new IllegalStateException("Unexpected path segment: " + first + " in " + path);
             }
         }
+    }
+
+    @Override
+    public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
+        var explicit = MutableComplexTypeDefinition.super.findLocalItemDefinition(name, clazz, caseInsensitive);
+        if (explicit != null) {
+            return explicit;
+        }
+        var defaultItemDef = tryDefaultItemDefinition(name);
+        //noinspection unchecked
+        return clazz.isInstance(defaultItemDef) ? (ID) defaultItemDef : null;
+    }
+
+    private <ID extends ItemDefinition<?>> ID tryDefaultItemDefinition(QName firstName) {
+        var defaultTypeName = getDefaultItemTypeName();
+        if (defaultTypeName == null) {
+            return null;
+        }
+        var typeDef =
+                MiscUtil.stateNonNull(
+                        getSchemaRegistry().findComplexTypeDefinitionByType(defaultTypeName),
+                        "No complex type definition for %s", defaultTypeName);
+        //noinspection unchecked
+        var pcd = new PrismContainerDefinitionImpl<>(
+                firstName, typeDef, (Class<? extends Containerable>) typeDef.getCompileTimeClass());
+        pcd.setMinOccurs(0);
+        pcd.setMaxOccurs(-1);
+        pcd.setDynamic(true); // TODO ok?
+        //noinspection unchecked
+        return (ID) pcd;
     }
 
     private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
@@ -419,6 +467,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         objectMarker = source.isObjectMarker();
         xsdAnyMarker = source.isXsdAnyMarker();
         extensionForType = source.getExtensionForType();
+        defaultItemTypeName = source.getDefaultItemTypeName();
         defaultNamespace = source.getDefaultNamespace();
         ignoredNamespaces = new ArrayList<>(source.getIgnoredNamespaces());
         itemDefinitions.addAll(source.getDefinitions());
