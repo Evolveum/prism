@@ -55,8 +55,8 @@
         <url>https://github.com/Evolveum/prism.git</url>
     </scm>
     <issueManagement>
-        <system>Atlassian JIRA</system>
-        <url>https://jira.evolveum.com/browse/MID</url>
+        <system>OpenProject</system>
+        <url>https://support.evolveum.com/</url>
     </issueManagement>
 
 
@@ -105,7 +105,7 @@
         <checkstyle.version>3.3.0</checkstyle.version>
         <classgraph.version>4.8.162</classgraph.version>
         <xerces.version>2.12.2</xerces.version>
-        
+
         <plexus.container.version>1.7.1</plexus.container.version>
         <plexus.classworlds.version>2.6.0</plexus.classworlds.version>
         <maven.api.version>3.8.5</maven.api.version>
@@ -514,7 +514,7 @@
                             <SCM-Revision>${git.describe}</SCM-Revision>
                             <Organization>Evolveum</Organization>
                             <Organization-URL>https://www.evolveum.com</Organization-URL>
-                            <Bugtracking-System>https://jira.evolveum.com</Bugtracking-System>
+                            <Bugtracking-System>https://support.evolveum.com</Bugtracking-System>
                             <License>dual-licensed under the Apache License 2.0 and European Union Public License</License>
                             <License-URL>https://www.apache.org/licenses/LICENSE-2.0.txt and https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</License-URL>
                         </manifestEntries>

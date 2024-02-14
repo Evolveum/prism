@@ -30,7 +30,7 @@ import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
  * Although this is usually used as singleton (static), it can also be instantiated to locally
  * override some namespace mappings. This is useful for prefixes like "tns" (schema) or "ri" (resource schema).
  *
- * @see <a href="https://jira.evolveum.com/browse/MID-349">MID-349</a>
+ * @see <a href="https://support.evolveum.com/wp/349">MID-349</a>
  *
  * @author Igor Farinic
  * @author Radovan Semancik

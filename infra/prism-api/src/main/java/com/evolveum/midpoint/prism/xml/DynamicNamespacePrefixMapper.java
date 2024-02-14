@@ -16,7 +16,7 @@ import java.util.Map;
  * Maps namespaces to preferred prefixes. Should be used through the code to
  * avoid generation of prefixes.
  *
- * @see <a href="https://jira.evolveum.com/browse/MID-349">MID-349</a>
+ * @see <a href="https://support.evolveum.com/wp/349">MID-349</a>
  *
  * TODO consider removal from the Prism API
  *
