@@ -210,11 +210,13 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
             } else if (QNameUtil.match(F_HASHED_DATA, jaxbElement.getName())) {
                 hashedDataType = (HashedDataType) jaxbElement.getValue();
                 return true;
+            } else if (QNameUtil.match(F_EXTERNAL_DATA, jaxbElement.getName())) {
+                externalDataType = (ExternalDataType) jaxbElement.getValue();
+                return true;
             } else {
                 throw new IllegalArgumentException("Attempt to add unknown JAXB element " + jaxbElement);
             }
-        } else if (newObject instanceof Element) {
-            Element element = (Element) newObject;
+        } else if (newObject instanceof Element element) {
             QName elementName = DOMUtil.getQName(element);
             if (QNameUtil.match(F_XML_ENC_ENCRYPTED_DATA, elementName)) {
                 encryptedDataType = convertXmlEncToEncryptedDate(element);
@@ -394,15 +396,17 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
         @Override
         public Object[] toArray() {
-            if (encryptedDataType == null && hashedDataType == null) {
+            if (encryptedDataType == null && hashedDataType == null && externalDataType == null) {
                 return new Object[0];
             } else {
                 Object[] a = new Object[1];
-                if (encryptedDataType == null) {
+                if (encryptedDataType != null) {
+                    a[0] = toJaxbElement(encryptedDataType);
+                } else if (hashedDataType != null) {
                     a[0] = toJaxbElement(hashedDataType);
                 } else {
-                    a[0] = toJaxbElement(encryptedDataType);
-            }
+                    a[0] = toJaxbElement(externalDataType);
+                }
                 return a;
             }
         }
@@ -468,10 +472,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
         public Object get(int index) {
             if (index == 0) {
                 // what if encryptedDataType is null and clearValue is set? [pm]
-                if (encryptedDataType == null) {
+                if (encryptedDataType != null) {
+                    return toJaxbElement(encryptedDataType);
+                } else if (hashedDataType != null) {
                     return toJaxbElement(hashedDataType);
                 } else {
-                    return toJaxbElement(encryptedDataType);
+                    return toJaxbElement(externalDataType);
                 }
             } else {
                 return null;
