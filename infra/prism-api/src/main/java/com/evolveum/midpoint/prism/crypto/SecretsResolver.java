@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.crypto;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -30,4 +31,8 @@ public interface SecretsResolver {
      * @return List of usable secret providers.
      */
     @NotNull List<SecretsProvider<?>> getSecretsProviders();
+
+    @NotNull String resolveSecretString(@NotNull String provider, @NotNull String key) throws EncryptionException;
+
+    @NotNull ByteBuffer resolveSecretBinary(@NotNull String provider, @NotNull String key) throws EncryptionException;
 }
