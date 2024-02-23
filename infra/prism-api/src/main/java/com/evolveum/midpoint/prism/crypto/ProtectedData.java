@@ -37,6 +37,8 @@ public interface ProtectedData<T> {
 
     boolean isEncrypted();
 
+    boolean isExternal();
+
     HashedDataType getHashedDataType();
 
     void setHashedData(HashedDataType hashedDataType);

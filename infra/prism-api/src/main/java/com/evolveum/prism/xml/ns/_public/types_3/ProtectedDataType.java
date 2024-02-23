@@ -136,6 +136,11 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     }
 
     @Override
+    public boolean isExternal() {
+        return externalDataType != null;
+    }
+
+    @Override
     public HashedDataType getHashedDataType() {
         return hashedDataType;
     }
