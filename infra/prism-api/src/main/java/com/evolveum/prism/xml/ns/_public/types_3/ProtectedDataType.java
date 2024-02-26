@@ -7,10 +7,8 @@
 package com.evolveum.prism.xml.ns._public.types_3;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
+
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
@@ -45,6 +43,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ProtectedDataType");
     public static final QName F_ENCRYPTED_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "encryptedData");
     public static final QName F_HASHED_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "hashedData");
+    public static final QName F_EXTERNAL_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "externalData");
     public static final QName F_CLEAR_VALUE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "clearValue");
 
     public static final String NS_XML_ENC = "http://www.w3.org/2001/04/xmlenc#";
@@ -63,6 +62,9 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
     @XmlTransient
     private HashedDataType hashedDataType;
+
+    @XmlTransient
+    private ExternalDataType externalDataType;
 
     @XmlTransient
     private T clearValue;
@@ -109,6 +111,16 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     }
 
     @Override
+    public ExternalDataType getExternalData() {
+        return externalDataType;
+    }
+
+    @Override
+    public void setExternalData(ExternalDataType externalDataType) {
+        this.externalDataType = externalDataType;
+    }
+
+    @Override
     public EncryptedDataType getEncryptedDataType() {
         return encryptedDataType;
     }
@@ -121,6 +133,11 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     @Override
     public boolean isEncrypted() {
         return encryptedDataType != null;
+    }
+
+    @Override
+    public boolean isExternal() {
+        return externalDataType != null;
     }
 
     @Override
@@ -172,10 +189,15 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
         return new JAXBElement<>(F_ENCRYPTED_DATA, HashedDataType.class, hashedDataType);
     }
 
+    private JAXBElement<ExternalDataType> toJaxbElement(ExternalDataType externalDataType) {
+        return new JAXBElement<>(F_EXTERNAL_DATA, ExternalDataType.class, externalDataType);
+    }
+
     public void clear() {
         clearValue = null;
         encryptedDataType = null;
         hashedDataType = null;
+        externalDataType = null;
     }
 
     private boolean addContent(Object newObject) {
@@ -193,11 +215,13 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
             } else if (QNameUtil.match(F_HASHED_DATA, jaxbElement.getName())) {
                 hashedDataType = (HashedDataType) jaxbElement.getValue();
                 return true;
+            } else if (QNameUtil.match(F_EXTERNAL_DATA, jaxbElement.getName())) {
+                externalDataType = (ExternalDataType) jaxbElement.getValue();
+                return true;
             } else {
                 throw new IllegalArgumentException("Attempt to add unknown JAXB element " + jaxbElement);
             }
-        } else if (newObject instanceof Element) {
-            Element element = (Element) newObject;
+        } else if (newObject instanceof Element element) {
             QName elementName = DOMUtil.getQName(element);
             if (QNameUtil.match(F_XML_ENC_ENCRYPTED_DATA, elementName)) {
                 encryptedDataType = convertXmlEncToEncryptedDate(element);
@@ -246,17 +270,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     }
 
     public boolean isEmpty() {
-        return encryptedDataType == null && hashedDataType == null && clearValue == null;
+        return encryptedDataType == null && hashedDataType == null && externalDataType == null && clearValue == null;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((clearValue == null) ? 0 : clearValue.hashCode());
-        result = prime * result + ((encryptedDataType == null) ? 0 : encryptedDataType.hashCode());
-        result = prime * result + ((hashedDataType == null) ? 0 : hashedDataType.hashCode());
-        return result;
+        return Objects.hash(encryptedDataType, hashedDataType, externalDataType, clearValue);
     }
 
     /**
@@ -277,39 +296,16 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
      * @see Protector#areEquivalent(ProtectedStringType, ProtectedStringType)
      */
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ProtectedDataType other = (ProtectedDataType) obj;
-        if (clearValue == null) {
-            if (other.clearValue != null) {
-                return false;
-            }
-        } else if (!clearValue.equals(other.clearValue)) {
-            return false;
-        }
-        if (encryptedDataType == null) {
-            if (other.encryptedDataType != null) {
-                return false;
-            }
-        } else if (!encryptedDataType.equals(other.encryptedDataType)) {
-            return false;
-        }
-        if (hashedDataType == null) {
-            if (other.hashedDataType != null) {
-                return false;
-            }
-        } else if (!hashedDataType.equals(other.hashedDataType)) {
-            return false;
-        }
-        return true;
+        ProtectedDataType<?> that = (ProtectedDataType<?>) o;
+        return Objects.equals(encryptedDataType, that.encryptedDataType)
+                && Objects.equals(hashedDataType, that.hashedDataType)
+                && Objects.equals(clearValue, that.clearValue)
+                && Objects.equals(externalDataType, that.externalDataType);
     }
 
     @Override
@@ -328,6 +324,10 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
             sb.append("clearValue=");
             sb.append(clearValue);
         }
+        if (externalDataType != null) {
+            sb.append("external=");
+            sb.append(externalDataType);
+        }
         sb.append(")");
         return sb.toString();
     }
@@ -336,6 +336,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
         cloned.clearValue = CloneUtil.clone(clearValue);
         cloned.encryptedDataType = CloneUtil.clone(encryptedDataType);
         cloned.hashedDataType = CloneUtil.clone(hashedDataType);
+        cloned.externalDataType = CloneUtil.clone(externalDataType);
 
         // content is virtual, there is no point in copying it
     }
@@ -347,7 +348,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
         @Override
         public int size() {
-            if (encryptedDataType != null || hashedDataType != null) {
+            if (encryptedDataType != null || hashedDataType != null || externalDataType != null) {
                 return 1;
             } else {
                 return 0;
@@ -356,7 +357,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
         @Override
         public boolean isEmpty() {
-            return encryptedDataType == null && hashedDataType == null;
+            return encryptedDataType == null && hashedDataType == null && externalDataType == null;
         }
 
         @Override
@@ -367,7 +368,7 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
         @Override
         public @NotNull Iterator<Object> iterator() {
-            return new Iterator<Object>() {
+            return new Iterator<>() {
                 private int index = 0;
 
                 @Override
@@ -379,10 +380,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
                 public Object next() {
                     if (index == 0) {
                         index++;
-                        if (encryptedDataType == null) {
+                        if (encryptedDataType != null) {
+                            return toJaxbElement(encryptedDataType);
+                        } else if (hashedDataType != null) {
                             return toJaxbElement(hashedDataType);
                         } else {
-                            return toJaxbElement(encryptedDataType);
+                            return toJaxbElement(externalDataType);
                         }
                     } else {
                         return null;
@@ -398,14 +401,16 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
 
         @Override
         public Object[] toArray() {
-            if (encryptedDataType == null && hashedDataType == null) {
+            if (encryptedDataType == null && hashedDataType == null && externalDataType == null) {
                 return new Object[0];
             } else {
                 Object[] a = new Object[1];
-                if (encryptedDataType == null) {
+                if (encryptedDataType != null) {
+                    a[0] = toJaxbElement(encryptedDataType);
+                } else if (hashedDataType != null) {
                     a[0] = toJaxbElement(hashedDataType);
                 } else {
-                    a[0] = toJaxbElement(encryptedDataType);
+                    a[0] = toJaxbElement(externalDataType);
                 }
                 return a;
             }
@@ -472,10 +477,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
         public Object get(int index) {
             if (index == 0) {
                 // what if encryptedDataType is null and clearValue is set? [pm]
-                if (encryptedDataType == null) {
+                if (encryptedDataType != null) {
+                    return toJaxbElement(encryptedDataType);
+                } else if (hashedDataType != null) {
                     return toJaxbElement(hashedDataType);
                 } else {
-                    return toJaxbElement(encryptedDataType);
+                    return toJaxbElement(externalDataType);
                 }
             } else {
                 return null;

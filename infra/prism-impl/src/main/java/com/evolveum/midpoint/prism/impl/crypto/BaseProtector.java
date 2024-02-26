@@ -20,14 +20,12 @@ public abstract class BaseProtector implements Protector {
 
     @Override
     public <T> void decrypt(ProtectedData<T> protectedData) throws EncryptionException, SchemaException {
-        if (!protectedData.isEncrypted()) {
-            return;
-            //TODO: is this exception really needed?? isn't it better just return the same protected data??
-//            throw new IllegalArgumentException("Attempt to decrypt protected data that are not encrypted");
-        } else {
+        if (protectedData.isEncrypted()) {
             byte[] decryptedData = decryptBytes(protectedData);
             protectedData.setClearBytes(decryptedData);
             protectedData.setEncryptedData(null);
+        } else if (protectedData.isExternal()) {
+            throw new EncryptionException("This protector implementation can't resolve external data");
         }
     }
 
@@ -36,13 +34,15 @@ public abstract class BaseProtector implements Protector {
     @Override
     public String decryptString(ProtectedData<String> protectedString) throws EncryptionException {
         try {
-            if (!protectedString.isEncrypted()) {
-                return protectedString.getClearValue();
-            } else {
+            if (protectedString.isEncrypted()) {
                 byte[] clearBytes = decryptBytes(protectedString);
                 return ProtectedStringType.bytesToString(clearBytes);
+            } else if (protectedString.isExternal()) {
+                throw new EncryptionException("This protector implementation can't resolve external data");
             }
-        } catch (SchemaException ex){
+
+            return protectedString.getClearValue();
+        } catch (SchemaException ex) {
             throw new EncryptionException(ex);
         }
     }

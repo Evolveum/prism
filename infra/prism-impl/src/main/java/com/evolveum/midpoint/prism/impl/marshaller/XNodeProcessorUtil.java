@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.impl.marshaller;
 
 import java.lang.reflect.Field;
 
+import com.evolveum.prism.xml.ns._public.types_3.*;
+
 import jakarta.xml.bind.annotation.XmlValue;
 import javax.xml.namespace.QName;
 
@@ -24,10 +26,6 @@ import com.evolveum.midpoint.prism.crypto.EncryptionException;
 import com.evolveum.midpoint.prism.crypto.Protector;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.prism.xml.ns._public.types_3.EncryptedDataType;
-import com.evolveum.prism.xml.ns._public.types_3.HashedDataType;
-import com.evolveum.prism.xml.ns._public.types_3.ProtectedDataType;
-import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 
 public class XNodeProcessorUtil {
 
@@ -70,6 +68,14 @@ public class XNodeProcessorUtil {
             }
             HashedDataType hashedDataType = prismContext.parserFor(xHashedData).context(pc).parseRealValue(HashedDataType.class);
             protectedType.setHashedData(hashedDataType);
+        }
+        RootXNodeImpl xExternalData = xmap.getEntryAsRoot(ProtectedDataType.F_EXTERNAL_DATA);
+        if (xExternalData != null) {
+            if (!(xExternalData.getSubnode() instanceof MapXNodeImpl)) {
+                throw new SchemaException("Cannot parse externalData from "+xExternalData);
+            }
+            ExternalDataType externalDataType = prismContext.parserFor(xExternalData).context(pc).parseRealValue(ExternalDataType.class);
+            protectedType.setExternalData(externalDataType);
         }
         // protected data empty..check for clear value
         if (protectedType.isEmpty()){

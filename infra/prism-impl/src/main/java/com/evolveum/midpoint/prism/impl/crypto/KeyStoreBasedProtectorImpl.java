@@ -306,6 +306,10 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
 
     @Override
     public <T> void encrypt(ProtectedData<T> protectedData) throws EncryptionException {
+        if (protectedData.isExternal()) {
+            protectedData.destroyCleartext();
+            return;
+        }
         if (protectedData.isEncrypted()) {
             throw new IllegalArgumentException(
                     "Attempt to encrypt protected data that are already encrypted");
@@ -582,6 +586,8 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
     private char[] getClearChars(ProtectedData<String> protectedData) throws EncryptionException {
         if (protectedData.isEncrypted()) {
             return decryptString(protectedData).toCharArray();
+        } else if (protectedData.isExternal()) {
+            throw new EncryptionException("This protector implementation can't resolve external data");
         } else {
             return protectedData.getClearValue().toCharArray();
         }
@@ -709,12 +715,26 @@ public class KeyStoreBasedProtectorImpl extends BaseProtector implements KeyStor
                 return false;
             }
         }
+        if (a.isExternal()) {
+            if (b.isExternal()) {
+                return areEquivalentExternal(a,b);
+            } else {
+                return false;
+            }
+        }
         return Objects.equals(a.getClearValue(), b.getClearValue());
     }
 
     private boolean areEquivalentHashed(ProtectedStringType a, ProtectedStringType b) {
         // We cannot compare two hashes in any other way.
         return Objects.equals(a.getHashedDataType(), b.getHashedDataType());
+    }
+
+    private boolean areEquivalentExternal(ProtectedStringType a, ProtectedStringType b) {
+        ExternalDataType ae = a.getExternalData();
+        ExternalDataType be = b.getExternalData();
+
+        return Objects.equals(ae, be);
     }
 
     private boolean areEquivalentEncrypted(ProtectedStringType a, ProtectedStringType b) {
