@@ -16,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface SecretsProvider<C> {
 
+    String[] EMPTY_DEPENDENCIES = new String[0];
+
     /**
      * Post-construction initialization.
      * Called before the provider is added to the list of usable providers.
@@ -38,8 +40,13 @@ public interface SecretsProvider<C> {
     /**
      * Returns list of providers that this provider depends on.
      * The provider will be initialized after all dependencies are available and initialized.
+     *
+     * Default implementation returns an empty array.
      */
-    @NotNull String[] getDependencies();
+    @NotNull
+    default String[] getDependencies() {
+        return EMPTY_DEPENDENCIES;
+    }
 
     /**
      * Returns configuration of the provider.
