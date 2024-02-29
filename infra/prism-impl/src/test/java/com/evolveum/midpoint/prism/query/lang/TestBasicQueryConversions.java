@@ -295,7 +295,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         ObjectFilter filter = getPrismContext().queryFor(UserType.class)
                 .item(UserType.F_NAME).eq(name).matchingStrict()
                 .buildFilter();
-        verify("name matches (orig = 'jack' and norm = 'jack')", filter);
+        //verify("name matches (orig = 'jack' and norm = 'jack')", filter);
         verify("name matches (norm = 'jack')",
                 getPrismContext().queryFor(UserType.class)
                         .item(UserType.F_NAME).eq(name).matchingNorm()

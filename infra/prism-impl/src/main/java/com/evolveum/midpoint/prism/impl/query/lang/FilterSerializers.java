@@ -61,6 +61,7 @@ public class FilterSerializers {
 
     private static final QName POLYSTRING_STRICT = PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME;
     private static final QName POLYSTRING_ORIG = PrismConstants.POLY_STRING_ORIG_MATCHING_RULE_NAME;
+    private static final QName POLYSTRING_NORM = PrismConstants.POLY_STRING_NORM_MATCHING_RULE_NAME;
 
     private static final Map<Class<? extends ObjectFilter>, FilterSerializer<?>> SERIALIZERS = ImmutableMap
             .<Class<? extends ObjectFilter>, FilterSerializer<?>>builder()
@@ -318,7 +319,7 @@ public class FilterSerializers {
         } else if (POLYSTRING_STRICT.equals(matchingRule)) {
             writeProperty(target, "orig", poly.getOrig(), false, false);
             writeProperty(target, "norm", poly.getNorm(), false, true);
-        } else { // also POLYSTRING_NORM
+        } else if (POLYSTRING_NORM.equals(matchingRule)) {
             writeProperty(target, "norm", poly.getNorm(), false, false);
         }
         target.endNestedFilter();
@@ -326,6 +327,10 @@ public class FilterSerializers {
 
     private static boolean isPolystringMatchesFilter(EqualFilterImpl<?> source) {
         if (source.getExpression() != null) {
+            return false;
+        }
+        var matchingRule = source.getDeclaredMatchingRule();
+        if (!POLYSTRING_ORIG.equals(matchingRule) && !POLYSTRING_NORM.equals(matchingRule)) {
             return false;
         }
         return source.getValues().size() == 1 && source.getValues().get(0).getRealValue() instanceof PolyString;
