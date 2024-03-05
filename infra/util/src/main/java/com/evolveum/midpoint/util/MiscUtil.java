@@ -1130,6 +1130,14 @@ public class MiscUtil {
         }
     }
 
+    public static <C extends Collection<?>> C stateNonEmpty(C collection, String template, Object... arguments) {
+        if (collection != null && !collection.isEmpty()) {
+            return collection;
+        } else {
+            throw new IllegalStateException(Strings.lenientFormat(template, arguments));
+        }
+    }
+
     public static boolean isSingleNull(Object[] values) {
         return values.length == 1 && values[0] == null;
     }
