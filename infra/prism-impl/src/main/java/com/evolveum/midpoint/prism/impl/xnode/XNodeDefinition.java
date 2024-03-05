@@ -240,6 +240,9 @@ public abstract class XNodeDefinition {
             }
 
             if(definition != null) {
+                if (definition.isDynamic()) {
+                    inherited = false;
+                }
                 return awareFrom(definition.getItemName(), definition.getTypeName(),definition.structuredType(), inherited);
             }
             return unawareFrom(name);
@@ -361,12 +364,25 @@ public abstract class XNodeDefinition {
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
             QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
-            ItemDefinition<?> def = findDefinition(proposed);
-            if(def == null) {
-                def = findDefinition(new QName(localName));
+            ItemDefinition<?> childDef = findDefinition(proposed);
+
+            // If child definition is dynamic and default namespace is specified and parent definition generates
+            // it with constant type - use default namespace (do not assume definition exists in parent).
+            // for example shadow/associations
+            if (childDef != null && childDef.isDynamic() && definition.getDefaultItemTypeName() != null && defaultNs != null) {
+                var maybeDef = findDefinition(new QName(defaultNs, localName));
+                if (maybeDef != null) {
+                    childDef = maybeDef;
+                }
             }
-            if(def != null) {
-                return awareFrom(proposed, def, true);
+            if (childDef == null) {
+                childDef = findDefinition(new QName(defaultNs,localName));
+            }
+            if (childDef == null) {
+                childDef = findDefinition(new QName(localName));
+            }
+            if (childDef != null) {
+                return awareFrom(proposed, childDef, true);
             }
             return null;
         }
@@ -385,7 +401,6 @@ public abstract class XNodeDefinition {
             }
             return this;
         }
-
     }
 
     private static class ComplexTypeWithSubstitutions extends ComplexTypeAware {

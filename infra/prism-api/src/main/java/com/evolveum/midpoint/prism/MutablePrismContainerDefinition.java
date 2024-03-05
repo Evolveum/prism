@@ -18,7 +18,8 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 /**
  *
  */
-public interface MutablePrismContainerDefinition<C extends Containerable> extends PrismContainerDefinition<C>, MutableItemDefinition<PrismContainer<C>> {
+public interface MutablePrismContainerDefinition<C extends Containerable>
+        extends PrismContainerDefinition<C>, MutableItemDefinition<PrismContainer<C>> {
 
     void setCompileTimeClass(Class<C> compileTimeClass);
 
@@ -35,13 +36,54 @@ public interface MutablePrismContainerDefinition<C extends Containerable> extend
     void setComplexTypeDefinition(ComplexTypeDefinition complexTypeDefinition);
 
     /**
-     *
-     * Experimental: USe only with care, this overrides behavior of listed operational=true items in equivalence strategies
+     * Experimental: Use only with care, this overrides behavior of listed operational=true items in equivalence strategies
      * for containers.
-     *
      */
     @Experimental
     default void setAlwaysUseForEquals(@NotNull Collection<QName> keysElem) {
         // NOOP
+    }
+
+    /**
+     * A variant of {@link MutablePrismContainerDefinition} that does not allow any modifications.
+     * Useful for implementations that want to allow only selected mutating operations.
+     */
+    interface Unsupported<C extends Containerable>
+            extends MutablePrismContainerDefinition<C>, MutableItemDefinition.Unsupported<PrismContainer<C>> {
+
+        @Override
+        default void setCompileTimeClass(Class<C> compileTimeClass) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default MutablePrismPropertyDefinition<?> createPropertyDefinition(QName name, QName propType, int minOccurs, int maxOccurs) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default MutablePrismPropertyDefinition<?> createPropertyDefinition(QName name, QName propType) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default MutablePrismPropertyDefinition<?> createPropertyDefinition(String localName, QName propType) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default MutablePrismContainerDefinition<?> createContainerDefinition(QName name, QName typeName, int minOccurs, int maxOccurs) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition ctd, int minOccurs, int maxOccurs) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setComplexTypeDefinition(ComplexTypeDefinition complexTypeDefinition) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

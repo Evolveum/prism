@@ -234,4 +234,10 @@ public interface Definition
     default String getMutabilityFlag() {
         return isImmutable() ? "" : "+";
     }
+
+    default void checkMutableOnExposing() {
+        if (isImmutable()) {
+            throw new IllegalStateException("Definition couldn't be exposed as mutable because it is immutable: " + this);
+        }
+    }
 }

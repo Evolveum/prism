@@ -47,4 +47,91 @@ public interface MutableDefinition extends Definition {
     void addSchemaMigration(SchemaMigration schemaMigration);
 
     void addDiagram(ItemDiagramSpecification diagram);
+
+    /**
+     * A variant of {@link MutableDefinition} that does not allow any modifications. Useful for implementations that want
+     * to allow only selected mutating operations.
+     */
+    interface Unsupported extends MutableDefinition {
+
+        @Override
+        default void setProcessing(ItemProcessing processing) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setDeprecated(boolean deprecated) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setRemoved(boolean removed) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setRemovedSince(String removedSince) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setOptionalCleanup(boolean optionalCleanup) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setExperimental(boolean experimental) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setEmphasized(boolean emphasized) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setDisplayHint(DisplayHint display) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setDisplayName(String displayName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setDisplayOrder(Integer displayOrder) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setHelp(String help) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setRuntimeSchema(boolean value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setTypeName(QName typeName) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setDocumentation(String value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void addSchemaMigration(SchemaMigration schemaMigration) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void addDiagram(ItemDiagramSpecification diagram) {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

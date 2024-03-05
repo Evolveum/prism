@@ -448,12 +448,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @Override
     public abstract Definition clone();
 
-    protected void checkMutableOnExposing() {
-        if (!isMutable()) {
-            throw new IllegalStateException("Definition couldn't be exposed as mutable because it is immutable: " + this);
-        }
-    }
-
     @Override
     public void accept(Visitor<Definition> visitor) {
         accept(visitor, new SmartVisitationImpl<>());
