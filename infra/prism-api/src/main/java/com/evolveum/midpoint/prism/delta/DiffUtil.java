@@ -25,26 +25,14 @@ public class DiffUtil {
             if (newObject == null) {
                 return null;
             }
-            PrismContext prismContext = getPrismContext(oldObject, newObject);
-            if (prismContext == null) {
-                throw new IllegalStateException("No prismContext in DiffUtil.diff!");
-            }
-            ObjectDelta<T> objectDelta = prismContext.deltaFactory().object().create(newObject.getCompileTimeClass(), ChangeType.ADD);
+            ObjectDelta<T> objectDelta =
+                    PrismContext.get().deltaFactory().object().create(newObject.getCompileTimeClass(), ChangeType.ADD);
             objectDelta.setOid(newObject.getOid());
             objectDelta.setObjectToAdd(newObject);
             return objectDelta;
         } else {
             return oldObject.diff(newObject);
         }
-    }
-
-    private static PrismContext getPrismContext(PrismObject<?>... objects) {
-        for (PrismObject<?> object: objects) {
-            if (object != null && object.getPrismContext() != null) {
-                return object.getPrismContext();
-            }
-        }
-        return null;
     }
 
     public static <T extends Objectable> ObjectDelta<T> diff(T oldObjectType, T newObjectType) throws SchemaException {
@@ -60,26 +48,26 @@ public class DiffUtil {
     }
 
 
-    public static <T extends Objectable> ObjectDelta<T> diff(String oldXml, String newXml, Class<T> type, PrismContext prismContext) throws SchemaException {
+    public static <T extends Objectable> ObjectDelta<T> diff(String oldXml, String newXml, Class<T> type) throws SchemaException {
         PrismObject<T> oldObject = null;
         if (oldXml != null) {
-            oldObject = prismContext.parseObject(oldXml);
+            oldObject = PrismContext.get().parseObject(oldXml);
         }
         PrismObject<T> newObject = null;
         if (newXml != null) {
-            newObject = prismContext.parseObject(newXml);
+            newObject = PrismContext.get().parseObject(newXml);
         }
         return diff(oldObject, newObject);
     }
 
-    public static <T extends Objectable> ObjectDelta<T> diff(File oldXmlFile, File newXmlFile, Class<T> type, PrismContext prismContext) throws SchemaException, IOException {
+    public static <T extends Objectable> ObjectDelta<T> diff(File oldXmlFile, File newXmlFile, Class<T> type) throws SchemaException, IOException {
         PrismObject<T> oldObject = null;
         if (oldXmlFile != null) {
-            oldObject = prismContext.parseObject(oldXmlFile);
+            oldObject = PrismContext.get().parseObject(oldXmlFile);
         }
         PrismObject<T> newObject = null;
         if (newXmlFile != null) {
-            newObject = prismContext.parseObject(newXmlFile);
+            newObject = PrismContext.get().parseObject(newXmlFile);
         }
         return diff(oldObject, newObject);
     }

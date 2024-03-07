@@ -11,7 +11,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Hacks;
 import com.evolveum.midpoint.prism.ParsingContext;
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.marshaller.XNodeProcessorUtil;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
@@ -30,8 +29,8 @@ public class HacksImpl implements Hacks, XNodeMutator {
     }
 
     @Override
-    public <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNode xmap, PrismContext prismContext, ParsingContext pc) throws SchemaException {
-        XNodeProcessorUtil.parseProtectedType(protectedType, (MapXNodeImpl) xmap, prismContext, pc);
+    public <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNode xmap, ParsingContext pc) throws SchemaException {
+        XNodeProcessorUtil.parseProtectedType(protectedType, (MapXNodeImpl) xmap, pc);
     }
 
     @Override

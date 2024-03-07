@@ -58,7 +58,7 @@ public class TestPrismObjectConstruction extends AbstractPrismTest {
         System.out.println("User:");
         System.out.println(user.debugDump());
         // Check if the values are correct, also checking definitions
-        assertUserDrake(user, true, ctx);
+        assertUserDrake(user, true);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class TestPrismObjectConstruction extends AbstractPrismTest {
         PrismObject<UserType> user = userDefinition.instantiate();
         fillInUserDrake(user, true);
         // precondition
-        assertUserDrake(user, true, ctx);
+        assertUserDrake(user, true);
 
         // WHEN
         PrismObject<UserType> clone = user.clone();
@@ -78,7 +78,7 @@ public class TestPrismObjectConstruction extends AbstractPrismTest {
         System.out.println("Cloned user:");
         System.out.println(clone.debugDump());
         // Check if the values are correct, also checking definitions
-        assertUserDrake(clone, true, ctx);
+        assertUserDrake(clone, true);
     }
 
     @Test
@@ -195,14 +195,14 @@ public class TestPrismObjectConstruction extends AbstractPrismTest {
 
     }
 
-    private void assertUserDrake(PrismObject<UserType> user, boolean assertDefinitions, PrismContext prismContext) throws SchemaException, SAXException, IOException {
+    private void assertUserDrake(PrismObject<UserType> user, boolean assertDefinitions) throws SchemaException, SAXException, IOException {
         assertEquals("Wrong OID", USER_OID, user.getOid());
         assertEquals("Wrong compileTimeClass", UserType.class, user.getCompileTimeClass());
 
         user.checkConsistence();
         assertUserDrakeContent(user, assertDefinitions);
         if (assertDefinitions) {
-            serializeAndValidate(user, prismContext);
+            serializeAndValidate(user);
         }
     }
 
@@ -251,12 +251,12 @@ public class TestPrismObjectConstruction extends AbstractPrismTest {
         PrismAsserts.assertParentConsistency(user);
     }
 
-    private void serializeAndValidate(PrismObject<UserType> user, PrismContext prismContext) throws SchemaException, SAXException, IOException {
-        String xmlString = prismContext.xmlSerializer().serialize(user);
+    private void serializeAndValidate(PrismObject<UserType> user) throws SchemaException, SAXException, IOException {
+        String xmlString = PrismContext.get().xmlSerializer().serialize(user);
         System.out.println("Serialized XML");
         System.out.println(xmlString);
         Document xmlDocument = DOMUtil.parseDocument(xmlString);
-        Validator validator = prismContext.getSchemaRegistry().getJavaxSchemaValidator();
+        Validator validator = PrismContext.get().getSchemaRegistry().getJavaxSchemaValidator();
         validator.validate(new DOMSource(xmlDocument));
     }
 }

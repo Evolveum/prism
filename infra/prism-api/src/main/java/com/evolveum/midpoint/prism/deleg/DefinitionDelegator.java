@@ -17,18 +17,11 @@ import com.evolveum.midpoint.prism.*;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-
 import org.jetbrains.annotations.Nullable;
 
 public interface DefinitionDelegator extends Definition {
 
     Definition delegate();
-
-    @Override
-    default PrismContext getPrismContext() {
-        return delegate().getPrismContext();
-    }
 
     @Override
     default void accept(Visitor<Definition> visitor) {
@@ -156,11 +149,6 @@ public interface DefinitionDelegator extends Definition {
     @Override
     default String getDocumentationPreview() {
         return delegate().getDocumentationPreview();
-    }
-
-    @Override
-    default SchemaRegistry getSchemaRegistry() {
-        return delegate().getSchemaRegistry();
     }
 
     @Override

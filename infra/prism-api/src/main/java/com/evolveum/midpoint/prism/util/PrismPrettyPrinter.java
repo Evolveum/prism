@@ -38,9 +38,9 @@ public class PrismPrettyPrinter {
         if (raw.getAlreadyParsedValue() != null) {
             return PrettyPrinter.prettyPrint(raw.getAlreadyParsedValue());
         }
-        if (raw.getXnode() != null && raw.getPrismContext() != null) {
+        if (raw.getXnode() != null) {
             try {
-                String jsonText = raw.getPrismContext().jsonSerializer().serialize(raw.getRootXNode(new QName("value")));
+                String jsonText = PrismContext.get().jsonSerializer().serialize(raw.getRootXNode(new QName("value")));
                 return CRLF_PATTERN.matcher(jsonText).replaceAll("");
             } catch (Throwable t) {
                 LoggingUtils.logException(LOGGER, "Couldn't serialize raw value for pretty printing, using 'toString' instead: {}", t, raw.getXnode());
@@ -188,17 +188,17 @@ public class PrismPrettyPrinter {
         // nothing to do here, we just make sure static initialization will take place
     }
 
-    public static String debugDumpValue(int indent, Object value, PrismContext prismContext, QName elementName, String defaultLanguage) {
+    public static String debugDumpValue(int indent, Object value, QName elementName, String defaultLanguage) {
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
-        debugDumpValue(sb, indent, value, prismContext, elementName, defaultLanguage);
+        debugDumpValue(sb, indent, value, elementName, defaultLanguage);
         return sb.toString();
     }
 
     // TODO a better place? cannot be in DebugUtil, because of the missing dependency on prismContext
     // Note that expectedIndent applies only to lines after the first one. The caller is responsible for preparing
     // indentation for the first line.
-    public static void debugDumpValue(StringBuilder sb, int expectedIndent, Object value, PrismContext prismContext, QName elementName, String defaultLanguage) {
+    public static void debugDumpValue(StringBuilder sb, int expectedIndent, Object value, QName elementName, String defaultLanguage) {
         if (value instanceof DebugDumpable) {
             sb.append(((DebugDumpable)value).debugDump(expectedIndent));
             return;
@@ -208,10 +208,10 @@ public class PrismPrettyPrinter {
         if (elementName == null) {
             elementName = new QName("value");
         }
-        if (language != null && value != null && !(value instanceof Enum) && prismContext != null
+        if (language != null && value != null && !(value instanceof Enum)
                 && value.getClass().getAnnotation(XmlType.class) != null) {
             try {
-                formatted = prismContext.serializerFor(language).serializeRealValue(value, elementName);
+                formatted = PrismContext.get().serializerFor(language).serializeRealValue(value, elementName);
             } catch (SchemaException e) {
                 formatted = PrettyPrinter.prettyPrint(value);
             }

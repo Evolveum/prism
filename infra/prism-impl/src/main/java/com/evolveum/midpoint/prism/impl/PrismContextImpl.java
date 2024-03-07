@@ -146,12 +146,12 @@ public final class PrismContextImpl implements PrismContext {
         this.beanUnmarshaller = new BeanUnmarshaller(this, inspector, beanMarshaller);
         this.prismUnmarshaller = new PrismUnmarshaller(this, beanUnmarshaller, schemaRegistry);
         this.prismMarshaller = new PrismMarshaller(beanMarshaller);
-        this.jaxbDomHack = new JaxbDomHackImpl(lexicalProcessorRegistry.domProcessor(), this);
+        this.jaxbDomHack = new JaxbDomHackImpl(lexicalProcessorRegistry.domProcessor());
         this.hacks = new HacksImpl();
         this.xnodeFactory = new XNodeFactoryImpl();
         this.deltaFactory = new DeltaFactoryImpl(this);
         this.queryFactory = new QueryFactoryImpl();
-        this.itemFactory = new ItemFactoryImpl(this);
+        this.itemFactory = new ItemFactoryImpl();
         this.definitionFactory = new DefinitionFactoryImpl(this);
         this.itemPathParser = new ItemPathParserImpl(this);
         this.itemPathSerializer = new ItemPathSerializerImpl();
@@ -297,8 +297,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public <T> @NotNull Normalizer<T> getNoOpNormalizer() {
-        //noinspection unchecked
-        return (Normalizer<T>) NoOpNormalizer.instance();
+        return NoOpNormalizer.instance();
     }
 
     @Override
@@ -661,7 +660,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public CanonicalItemPath createCanonicalItemPath(ItemPath itemPath, QName objectType) {
-        return CanonicalItemPathImpl.create(itemPath, objectType, this);
+        return CanonicalItemPathImpl.create(itemPath, objectType);
     }
 
     @Override
@@ -671,29 +670,29 @@ public final class PrismContextImpl implements PrismContext {
 
     @Override
     public <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass) throws SchemaException {
-        return new DeltaBuilder<>(objectClass, this, null);
+        return new DeltaBuilder<>(objectClass, null);
     }
 
     @Override
     public <C extends Containerable> S_ItemEntry deltaFor(Class<C> objectClass, ItemDefinitionResolver itemDefinitionResolver)
             throws SchemaException {
-        return new DeltaBuilder<>(objectClass, this, itemDefinitionResolver);
+        return new DeltaBuilder<>(objectClass, itemDefinitionResolver);
     }
 
     @Override
     public S_FilterEntryOrEmpty queryFor(Class<? extends Containerable> type) {
-        return QueryBuilder.queryFor(type, this);
+        return QueryBuilder.queryFor(type);
     }
 
     @Override
     public S_FilterEntryOrEmpty queryFor(
             Class<? extends Containerable> type, ItemDefinitionResolver itemDefinitionResolver) {
-        return QueryBuilder.queryFor(type, this, itemDefinitionResolver);
+        return QueryBuilder.queryFor(type, itemDefinitionResolver);
     }
 
     @Override
     public S_FilterEntryOrEmpty queryForReferenceOwnedBy(Class<? extends Containerable> ownerClass, ItemPath referencePath) {
-        return QueryBuilder.queryForReferenceOwnedBy(ownerClass, referencePath, this);
+        return QueryBuilder.queryForReferenceOwnedBy(ownerClass, referencePath);
     }
 
     @Override

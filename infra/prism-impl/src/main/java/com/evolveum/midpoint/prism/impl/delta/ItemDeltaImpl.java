@@ -73,7 +73,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     protected Collection<V> valuesToDelete = null;
     private Collection<V> estimatedOldValues = null;
 
-    ItemDeltaImpl(D itemDefinition, PrismContext prismContext) {
+    ItemDeltaImpl(D itemDefinition) {
         if (itemDefinition == null) {
             throw new IllegalArgumentException("Attempt to create item delta without a definition");
         }
@@ -82,21 +82,14 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         this.definition = itemDefinition;
     }
 
-//    protected ItemDeltaImpl(QName elementName, D itemDefinition, PrismContext prismContext) {
-//        this.prismContext = prismContext;
-//        this.elementName = ItemName.fromQName(elementName);
-//        this.parentPath = ItemPath.EMPTY_PATH;
-//        this.definition = itemDefinition;
-//    }
-
-    ItemDeltaImpl(ItemPath parentPath, QName itemName, D itemDefinition, PrismContext prismContext) {
+    ItemDeltaImpl(ItemPath parentPath, QName itemName, D itemDefinition) {
         checkNoSpecialSymbols(parentPath);
-        this.parentPath = prismContext.toUniformPath(parentPath);
+        this.parentPath = PrismContext.get().toUniformPath(parentPath);
         this.elementName = ItemName.fromQName(itemName);
         this.definition = itemDefinition;
     }
 
-    ItemDeltaImpl(ItemPath path, D itemDefinition, PrismContext prismContext) {
+    ItemDeltaImpl(ItemPath path, D itemDefinition) {
         checkNoSpecialSymbols(path);
 
         if (path == null) {
@@ -291,11 +284,6 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     @Override
     public boolean hasCompleteDefinition() {
         return getDefinition() != null;
-    }
-
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
     }
 
     @Override
@@ -1391,7 +1379,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     private EquivalenceStrategy getProvenanceEquivalenceStrategy() {
-        return Objects.requireNonNull(getPrismContext(), () -> "no prism context in " + this).getProvenanceEquivalenceStrategy();
+        return PrismContext.get().getProvenanceEquivalenceStrategy();
     }
 
     private void applyValuesToDelete(Item item) {
@@ -1466,7 +1454,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         Item<V, D> itemNew;
         // We cannot just instantiate or clone the item here. Path will not match. E.g. the deltas may work on subitems of this container.
         // We need to create a dummy item that has a proper path.
-        itemNew = getPrismContext().itemFactory().createDummyItem(itemOld, definition, fullPath);
+        itemNew = PrismContext.get().itemFactory().createDummyItem(itemOld, definition, fullPath);
         applyTo(itemNew);
         return itemNew;
     }
@@ -1862,17 +1850,17 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
     @Override
     public void revive(PrismContext prismContext) throws SchemaException {
-        reviveSet(valuesToAdd, prismContext);
-        reviveSet(valuesToDelete, prismContext);
-        reviveSet(valuesToReplace, prismContext);
+        reviveSet(valuesToAdd);
+        reviveSet(valuesToDelete);
+        reviveSet(valuesToReplace);
     }
 
-    private void reviveSet(Collection<V> set, PrismContext prismContext) throws SchemaException {
+    private void reviveSet(Collection<V> set) {
         if (set == null) {
             return;
         }
         for (V val : set) {
-            val.revive(prismContext);
+            val.revive(PrismContext.get());
         }
     }
 

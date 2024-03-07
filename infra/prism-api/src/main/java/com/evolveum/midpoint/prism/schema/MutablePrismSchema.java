@@ -22,7 +22,7 @@ public interface MutablePrismSchema extends PrismSchema {
     void add(@NotNull Definition def);
 
     // used for connector and resource schemas
-    void parseThis(Element element, boolean isRuntime, String shortDescription, PrismContext prismContext) throws SchemaException;
+    void parseThis(Element element, boolean isRuntime, String shortDescription) throws SchemaException;
 
     MutablePrismContainerDefinition<?> createContainerDefinition(String localTypeName);
 

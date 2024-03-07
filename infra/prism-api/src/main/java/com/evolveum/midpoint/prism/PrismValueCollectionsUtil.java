@@ -250,10 +250,10 @@ public class PrismValueCollectionsUtil {
 
     @SuppressWarnings("unchecked")
     public static <O extends Objectable, C extends Containerable> Collection<PrismContainerValue<C>> toPrismContainerValues(
-            Class<O> type, ItemPath path, PrismContext prismContext, C... containerValues) throws SchemaException {
+            Class<O> type, ItemPath path, C... containerValues) throws SchemaException {
         Collection<PrismContainerValue<C>> prismValues = new ArrayList<>(containerValues.length);
         for (C val : containerValues) {
-            prismContext.adopt(val, type, path);
+            PrismContext.get().adopt(val, type, path);
             //noinspection unchecked
             prismValues.add(
                     val.asPrismContainerValue());

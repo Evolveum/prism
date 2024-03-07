@@ -7,6 +7,7 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -67,9 +68,8 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
      */
     private State state;
 
-    public RawType(PrismContext prismContext) {
-        this(new Parsed<>(prismContext, prismContext.itemFactory().createValue(null), null));
-        Validate.notNull(prismContext, "prismContext is not set - perhaps a forgotten call to adopt() somewhere?");
+    public RawType() {
+        this(new Parsed<>(PrismContext.get().itemFactory().createValue(null), null));
     }
 
     private RawType(State state) {
@@ -77,16 +77,16 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         this.state = state;
     }
 
-    public RawType(XNode node, @NotNull PrismContext prismContext) {
-        this(new Raw(prismContext, node));
+    public RawType(XNode node) {
+        this(new Raw(node));
     }
 
-    public RawType(PrismValue parsed, QName explicitTypeName, @NotNull PrismContext prismContext) {
-        this(new Parsed<>(prismContext, parsed, explicitTypeName));
+    public RawType(PrismValue parsed, QName explicitTypeName) {
+        this(new Parsed<>(parsed, explicitTypeName));
     }
 
-    public static RawType fromPropertyRealValue(Object realValue, QName explicitTypeName, @NotNull PrismContext prismContext) {
-        return new RawType(prismContext.itemFactory().createPropertyValue(realValue), explicitTypeName, prismContext);
+    public static RawType fromPropertyRealValue(Object realValue, QName explicitTypeName) {
+        return new RawType(PrismContext.get().itemFactory().createPropertyValue(realValue), explicitTypeName);
     }
 
     /**
@@ -152,13 +152,8 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
     @NotNull
     public RootXNode getRootXNode(@NotNull QName itemName) {
-        return getPrismContext().xnodeFactory().root(itemName, getXnode());
+        return PrismContext.get().xnodeFactory().root(itemName, getXnode());
 
-    }
-
-    @Override
-    public PrismContext getPrismContext() {
-        return current().getPrismContext();
     }
 
     // experimental
@@ -188,7 +183,6 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         return state;
     }
 
-    @SuppressWarnings("unchecked")
     public <V> V getParsedRealValue(ItemDefinition<?> itemDefinition, ItemPath itemPath) throws SchemaException {
         var current = current();
         var parsed = current.asParsed();
@@ -198,7 +192,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         var raw = (Raw) current;
         if (itemDefinition == null) {
             // TODO what will be the result without definition?
-            return raw.checkPrismContext().parserFor(raw.xNodeNullable().toRootXNode()).parseRealValue();
+            return PrismContext.get().parserFor(raw.xNodeNullable().toRootXNode()).parseRealValue();
         }
         return parse(itemDefinition, itemPath.lastName()).realValue();
     }
@@ -224,6 +218,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         IV newValue = getParsedValue(itemDefinition, itemName);
         if (newValue != null) {
             // TODO: Is clone necessary?
+            //noinspection unchecked
             item.add((IV) newValue.clone());
         }
         return item;
@@ -283,13 +278,13 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         return equals(that);
     }
 
-    public static RawType create(String value, PrismContext prismContext) {
-        var xnode = prismContext.xnodeFactory().primitive(value).frozen();
-        return new RawType(xnode, prismContext);
+    public static RawType create(String value) {
+        var xnode = PrismContext.get().xnodeFactory().primitive(value).frozen();
+        return new RawType(xnode);
     }
 
-    public static RawType create(XNode node, PrismContext prismContext) {
-        return new RawType(node, prismContext);
+    public static RawType create(XNode node) {
+        return new RawType(node);
     }
 
     @Override
@@ -351,7 +346,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
      */
     @Experimental
     public void setRawValue(XNode replacement) {
-        this.state = new Raw(PrismContext.get(), replacement);
+        this.state = new Raw(replacement);
     }
     //endregion
 
@@ -359,22 +354,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         private static final long serialVersionUID = 1L;
 
-        public State(PrismContext prismContext) {
-
-        }
-
         protected abstract RawType performClone();
-
-        protected PrismContext checkPrismContext() {
-            if (getPrismContext() == null) {
-                throw new IllegalStateException("prismContext is not set - perhaps a forgotten call to adopt() somewhere?");
-            }
-            return getPrismContext();
-        }
-
-        protected PrismContext getPrismContext() {
-            return PrismContext.get();
-        }
 
         boolean isTransient() {
             return false;
@@ -445,8 +425,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         private final V value;
         private final QName explicitTypeName;
 
-        public Parsed(PrismContext context, V parsed, QName explicitTypeName) {
-            super(context);
+        public Parsed(V parsed, QName explicitTypeName) {
             this.value = parsed;
             if (explicitTypeName != null) {
                 this.explicitTypeName = explicitTypeName;
@@ -500,13 +479,12 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         @Override
         XNode toXNode(SerializationContext sc) throws SchemaException {
-            checkPrismContext();
-            PrismSerializer<RootXNode> serializer = getPrismContext().xnodeSerializer();
+            PrismSerializer<RootXNode> serializer = PrismContext.get().xnodeSerializer();
             if (sc != null) {
                 serializer = serializer.context(sc);
             }
             XNode rv = serializer.root(new QName("dummy")).serialize(value).getSubnode();
-            getPrismContext().xnodeMutator().setXNodeType(rv, explicitTypeName, explicitTypeDeclaration());
+            PrismContext.get().xnodeMutator().setXNodeType(rv, explicitTypeName, explicitTypeDeclaration());
             return rv;
         }
 
@@ -587,16 +565,16 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         @Override
         protected RawType performClone() {
             // FIXME: MID-6833 We clone value since Midpoint assumes clone to mutable contract
-            return new RawType(new Parsed<>(getPrismContext(), value.clone(), explicitTypeName));
+            return new RawType(new Parsed<>(value.clone(), explicitTypeName));
         }
     }
 
     private static class Transient<V extends PrismValue> extends Parsed<V> {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         public Transient(V parsed) {
-            super(null, parsed, null);
+            super(parsed, null);
         }
 
         @Override
@@ -611,8 +589,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         private final XNode node;
 
-        public Raw(PrismContext context, XNode node) {
-            super(context);
+        public Raw(XNode node) {
             Preconditions.checkArgument(node.isImmutable(), "Supplied XNode must be immutable");
             this.node = node;
         }
@@ -638,7 +615,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         @Override
         protected Parsed<PrismValue> parse() throws SchemaException {
             if (node.getTypeQName() != null) {
-                TypeDefinition typeDefinition = checkPrismContext().getSchemaRegistry().findTypeDefinitionByType(node.getTypeQName());
+                TypeDefinition typeDefinition = PrismContext.get().getSchemaRegistry().findTypeDefinitionByType(node.getTypeQName());
                 Class<?> javaClass = null;
                 if (typeDefinition != null && typeDefinition.getCompileTimeClass() != null) {
                     javaClass = typeDefinition.getCompileTimeClass();
@@ -647,10 +624,10 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                     javaClass = XsdTypeMapper.getXsdToJavaMapping(node.getTypeQName());
                 }
                 if (javaClass != null) {
-                    return new Parsed<>(getPrismContext(), valueFor(realValue(javaClass)), node.getTypeQName());
+                    return new Parsed<>(valueFor(realValue(javaClass)), node.getTypeQName());
                 }
-                PrismValue asValue = getPrismContext().parserFor(node.toRootXNode()).parseItemValue();
-                return new Parsed<>(getPrismContext(), asValue, node.getTypeQName());
+                PrismValue asValue = PrismContext.get().parserFor(node.toRootXNode()).parseItemValue();
+                return new Parsed<>(asValue, node.getTypeQName());
             }
 
             // unknown or null type -- try parsing as string
@@ -665,7 +642,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         @Override
         protected <T> T realValue(Class<T> javaClass) throws SchemaException {
-            return getPrismContext().parserFor(node.toRootXNode()).parseRealValue(javaClass);
+            return PrismContext.get().parserFor(node.toRootXNode()).parseRealValue(javaClass);
         }
 
         @Override
@@ -675,10 +652,9 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                 if (itemName == null) {
                     itemName = itemDefinition.getItemName();
                 }
-                checkPrismContext();
-                var rootNode = getPrismContext().xnodeFactory().root(itemName, node);
+                var rootNode = PrismContext.get().xnodeFactory().root(itemName, node);
                 Item<IV, ItemDefinition<?>> subItem =
-                        getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).parseItem();
+                        PrismContext.get().parserFor(rootNode).name(itemName).definition(itemDefinition).parseItem();
                 if (!subItem.isEmpty()) {
                     value = subItem.getAnyValue();
                 } else {
@@ -689,11 +665,11 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                             "Attempt to parse raw value into %s that does not match provided definition %s".formatted(
                                     value, itemDefinition));
                 }
-                return new Parsed<>(getPrismContext(), value, itemDefinition.getTypeName());
+                return new Parsed<>(value, itemDefinition.getTypeName());
             }
             // we don't really want to set 'parsed', as we didn't perform real parsing
             @SuppressWarnings("unchecked")
-            Parsed<IV> ret = (Parsed<IV>) new Transient<>(checkPrismContext().itemFactory().createPropertyValue(node));
+            Parsed<IV> ret = (Parsed<IV>) new Transient<>(PrismContext.get().itemFactory().createPropertyValue(node));
             return ret;
         }
 
@@ -768,9 +744,9 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                 return ((Referencable) parsedValue).asReferenceValue();
             }
             if (parsedValue instanceof PolyStringType) {
-                return getPrismContext().itemFactory().createPropertyValue(PolyString.toPolyString((PolyStringType) parsedValue));   // hack
+                return PrismContext.get().itemFactory().createPropertyValue(PolyString.toPolyString((PolyStringType) parsedValue));   // hack
             }
-            return getPrismContext().itemFactory().createPropertyValue(parsedValue);
+            return PrismContext.get().itemFactory().createPropertyValue(parsedValue);
         }
 
         @Override

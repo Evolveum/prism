@@ -29,13 +29,13 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class XNodeProcessorUtil {
 
-    public static <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNodeImpl xmap, PrismContext prismContext, ParsingContext pc) throws SchemaException {
+    public static <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNodeImpl xmap, ParsingContext pc) throws SchemaException {
         RootXNodeImpl xEncryptedData = xmap.getEntryAsRoot(ProtectedDataType.F_ENCRYPTED_DATA);
         if (xEncryptedData != null) {
             if (!(xEncryptedData.getSubnode() instanceof MapXNodeImpl)) {
                 throw new SchemaException("Cannot parse encryptedData from "+xEncryptedData);
             }
-            EncryptedDataType encryptedDataType = prismContext.parserFor(xEncryptedData).context(pc).parseRealValue(EncryptedDataType.class);
+            EncryptedDataType encryptedDataType = PrismContext.get().parserFor(xEncryptedData).context(pc).parseRealValue(EncryptedDataType.class);
             protectedType.setEncryptedData(encryptedDataType);
         } else {
             // Check for legacy EncryptedData
@@ -53,11 +53,11 @@ public class XNodeProcessorUtil {
                     return new QName(null, elementName);
                 });
 
-                EncryptedDataType encryptedDataType = prismContext.parserFor(xConvertedEncryptedData).context(pc).parseRealValue(EncryptedDataType.class);
+                EncryptedDataType encryptedDataType = PrismContext.get().parserFor(xConvertedEncryptedData).context(pc).parseRealValue(EncryptedDataType.class);
                 protectedType.setEncryptedData(encryptedDataType);
 
                 if (protectedType instanceof ProtectedStringType){
-                    transformEncryptedValue(protectedType, prismContext);
+                    transformEncryptedValue(protectedType);
                 }
             }
         }
@@ -66,7 +66,7 @@ public class XNodeProcessorUtil {
             if (!(xHashedData.getSubnode() instanceof MapXNodeImpl)) {
                 throw new SchemaException("Cannot parse hashedData from "+xHashedData);
             }
-            HashedDataType hashedDataType = prismContext.parserFor(xHashedData).context(pc).parseRealValue(HashedDataType.class);
+            HashedDataType hashedDataType = PrismContext.get().parserFor(xHashedData).context(pc).parseRealValue(HashedDataType.class);
             protectedType.setHashedData(hashedDataType);
         }
         RootXNodeImpl xExternalData = xmap.getEntryAsRoot(ProtectedDataType.F_EXTERNAL_DATA);
@@ -74,7 +74,7 @@ public class XNodeProcessorUtil {
             if (!(xExternalData.getSubnode() instanceof MapXNodeImpl)) {
                 throw new SchemaException("Cannot parse externalData from "+xExternalData);
             }
-            ExternalDataType externalDataType = prismContext.parserFor(xExternalData).context(pc).parseRealValue(ExternalDataType.class);
+            ExternalDataType externalDataType = PrismContext.get().parserFor(xExternalData).context(pc).parseRealValue(ExternalDataType.class);
             protectedType.setExternalData(externalDataType);
         }
         // protected data empty..check for clear value
@@ -99,8 +99,8 @@ public class XNodeProcessorUtil {
 
     }
 
-    private static void transformEncryptedValue(ProtectedDataType protectedType, PrismContext prismContext) throws SchemaException{
-        Protector protector = prismContext.getDefaultProtector();
+    private static void transformEncryptedValue(ProtectedDataType protectedType) throws SchemaException{
+        Protector protector = PrismContext.get().getDefaultProtector();
         if (protector == null) {
             return;
         }
@@ -116,9 +116,8 @@ public class XNodeProcessorUtil {
                 protectedType.setClearValue(clearValue);
                 protector.encrypt(protectedType);
             }
-        } catch (EncryptionException ex){
-            //System.out.println("failed to encrypt..");
-            throw new IllegalArgumentException("failed to encrypt. " + ex);
+        } catch (EncryptionException ex) {
+            throw new IllegalArgumentException("Failed to transform encrypted value: " + ex.getMessage(), ex);
         }
     }
 

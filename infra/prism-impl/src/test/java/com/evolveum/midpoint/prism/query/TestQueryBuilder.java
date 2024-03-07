@@ -699,7 +699,7 @@ public class TestQueryBuilder extends AbstractPrismTest {
             ItemPath propertyPath, Class<C> type, QName matchingRule, T realValue) {
         //noinspection unchecked
         PrismPropertyDefinition<T> propertyDefinition = (PrismPropertyDefinition<T>)
-                FilterImplUtil.findItemDefinition(propertyPath, type, getPrismContext());
+                FilterImplUtil.findItemDefinition(propertyPath, type);
         return EqualFilterImpl.createEqual(
                 propertyPath, propertyDefinition, matchingRule, realValue);
     }

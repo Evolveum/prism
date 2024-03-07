@@ -9,12 +9,10 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.*;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.*;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
-import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -294,11 +292,11 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 path = path.rest();
             } else if (ItemPath.isParent(first)) {
                 ItemPath rest = path.rest();
-                ComplexTypeDefinition parent = getSchemaRegistry().determineParentDefinition(this, rest);
+                ComplexTypeDefinition parent = PrismContext.get().getSchemaRegistry().determineParentDefinition(this, rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
                     //noinspection unchecked
-                    return (ID) getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
+                    return (ID) PrismContext.get().getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
                 } else {
                     return parent.findItemDefinition(rest, clazz);
                 }
@@ -344,7 +342,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         }
         var typeDef =
                 MiscUtil.stateNonNull(
-                        getSchemaRegistry().findComplexTypeDefinitionByType(defaultTypeName),
+                        PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(defaultTypeName),
                         "No complex type definition for %s", defaultTypeName);
         //noinspection unchecked
         var pcd = new PrismContainerDefinitionImpl<>(
@@ -381,12 +379,10 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             }
         }
         if (isXsdAnyMarker()) {
-            SchemaRegistry schemaRegistry = getSchemaRegistry();
-            if (schemaRegistry != null) {
-                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
-                if (def != null) {
-                    return def.findItemDefinition(rest, clazz);
-                }
+            SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
+            ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
+            if (def != null) {
+                return def.findItemDefinition(rest, clazz);
             }
         }
         return null;

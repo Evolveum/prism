@@ -18,7 +18,6 @@ import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -174,11 +173,6 @@ public interface Definition
      * Returns only a first sentence of documentation.
      */
     String getDocumentationPreview();
-
-    default SchemaRegistry getSchemaRegistry() {
-        PrismContext prismContext = getPrismContext();
-        return prismContext != null ? prismContext.getSchemaRegistry() : null;
-    }
 
     /**
      * Returns a compile-time class that is used to represent items.

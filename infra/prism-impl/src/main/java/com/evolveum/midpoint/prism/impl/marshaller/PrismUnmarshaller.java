@@ -67,7 +67,8 @@ public class PrismUnmarshaller {
     @NotNull private final BeanUnmarshaller beanUnmarshaller;
     @NotNull private final SchemaRegistryImpl schemaRegistry;
 
-    public PrismUnmarshaller(@NotNull PrismContext prismContext, @NotNull BeanUnmarshaller beanUnmarshaller,
+    public PrismUnmarshaller(
+            @NotNull PrismContext prismContext, @NotNull BeanUnmarshaller beanUnmarshaller,
             @NotNull SchemaRegistryImpl schemaRegistry) {
         this.prismContext = prismContext;
         this.beanUnmarshaller = beanUnmarshaller;
@@ -331,7 +332,7 @@ public class PrismUnmarshaller {
             // override container definition, if explicit type is specified
             containerTypeDef = refineContainerTypeDefinitionFromXsiType(containerTypeDef, xnode, pc);
             return new ValueWithDefinition<>(
-                    new PrismContainerValueImpl<>(null, null, null, id, containerTypeDef, prismContext),
+                    new PrismContainerValueImpl<>(null, null, null, id, containerTypeDef),
                     containerTypeDef);
         }
     }
@@ -464,7 +465,7 @@ public class PrismUnmarshaller {
 
         PrismProperty<T> property = itemDefinition != null ?
                 itemDefinition.instantiate() :
-                new PrismPropertyImpl<>(itemName, prismContext);
+                new PrismPropertyImpl<>(itemName);
 
         if (node instanceof ListXNodeImpl && !node.isHeterogeneousList()) {
             ListXNodeImpl listNode = (ListXNodeImpl) node;
@@ -544,9 +545,7 @@ public class PrismUnmarshaller {
             } else if (realValue == null) {
                 rv = deriveValueFromExpression(node);
             } else {
-                PrismPropertyValueImpl<T> ppv = new PrismPropertyValueImpl<>(realValue);
-                ppv.setPrismContext(prismContext);
-                rv = ppv;
+                rv = new PrismPropertyValueImpl<>(realValue);
             }
         } else if (pc.isConvertUnknownTypes()) {
             node = node.clone();
@@ -589,9 +588,9 @@ public class PrismUnmarshaller {
     private <T> PrismPropertyValue<T> deriveValueFromExpression(@NotNull XNodeImpl node) throws SchemaException {
         // Be careful here. Expression element can be legal sub-element of complex properties.
         // Therefore parse expression only if there is no legal value.
-        ExpressionWrapper expression = PrismUtilInternal.parseExpression(node, prismContext);
+        ExpressionWrapper expression = PrismUtilInternal.parseExpression(node);
         if (expression != null) {
-            return new PrismPropertyValueImpl<>(null, prismContext, null, null, expression);
+            return new PrismPropertyValueImpl<>(null, null, null, expression);
         } else {
             // There's no point in returning PPV(null) as it would soon fail on internal PP check.
             // We are probably recovering from an error in COMPAT mode here, so let's just skip this value.
@@ -607,7 +606,7 @@ public class PrismUnmarshaller {
         } else {
             rv = bean;
         }
-        PrismUtil.recomputeRealValue(rv, prismContext);
+        PrismUtil.recomputeRealValue(rv);
         //noinspection unchecked
         return (T) rv;
     }
@@ -850,7 +849,7 @@ public class PrismUnmarshaller {
         if (xnode.isEmpty()) {
             return null;
         }
-        return SearchFilterType.createFromParsedXNode(xnode, pc, prismContext);
+        return SearchFilterType.createFromParsedXNode(xnode, pc);
     }
 
     private ItemDefinition<?> locateItemDefinition(

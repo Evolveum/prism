@@ -47,26 +47,15 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     PrismValueImpl() {
     }
 
-    PrismValueImpl(PrismContext prismContext) {
-    }
-
     PrismValueImpl(OriginType type, Objectable source) {
-        this(null, type, source);
-    }
-
-    PrismValueImpl(PrismContext prismContext, OriginType type, Objectable source) {
         this.originType = type;
         this.originObject = source;
     }
 
-    PrismValueImpl(PrismContext prismContext, OriginType type, Objectable source, Itemable parent) {
+    PrismValueImpl(OriginType type, Objectable source, Itemable parent) {
         this.originType = type;
         this.originObject = source;
         this.parent = parent;
-    }
-
-    @Override
-    public void setPrismContext(PrismContext prismContext) {
     }
 
     @Override
@@ -141,11 +130,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         parent = null;
     }
 
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
-    }
-
     protected ItemDefinition getDefinition() {
         Itemable parent = getParent();
         if (parent == null) {
@@ -157,7 +141,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     @Override
     public void revive(PrismContext prismContext) {
         if (isMutable()) {
-            recompute(getPrismContext());
+            recompute(PrismContext.get());
         }
     }
 
@@ -167,7 +151,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
      */
     @Override
     public void recompute() {
-        recompute(getPrismContext());
+        recompute(PrismContext.get());
     }
 
     @Override

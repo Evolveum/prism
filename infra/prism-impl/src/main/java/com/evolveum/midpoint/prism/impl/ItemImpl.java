@@ -70,12 +70,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
      * Use the factory methods in the ResourceObjectDefintion instead.
      */
     ItemImpl(QName elementName) {
-        super();
-        this.elementName = ItemName.fromQName(elementName);
-    }
-
-    ItemImpl(QName elementName, PrismContext prismContext) {
-        super();
         this.elementName = ItemName.fromQName(elementName);
     }
 
@@ -83,21 +77,19 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
      * The constructors should be used only occasionally (if used at all).
      * Use the factory methods in the ResourceObjectDefinition instead.
      */
-    ItemImpl(QName elementName, D definition, PrismContext prismContext) {
+    ItemImpl(QName elementName, D definition) {
         super();
         this.elementName = ItemName.fromQName(elementName);
         this.definition = definition;
     }
 
-    static <T extends Item> T createNewDefinitionlessItem(QName name, Class<T> type, PrismContext prismContext) {
+    static <T extends Item> T createNewDefinitionlessItem(QName name, Class<T> type) {
         T item;
         try {
             //noinspection unchecked
             Constructor<T> constructor = toImplClass(type).getConstructor(QName.class);
             item = constructor.newInstance(name);
-            if (prismContext != null) {
-                item.revive(prismContext);
-            }
+            item.revive(PrismContext.get());
         } catch (Exception e) {
             throw new SystemException("Error creating new definitionless " + type.getSimpleName() + ": " + e.getClass().getName() + " " + e.getMessage(), e);
         }
@@ -152,22 +144,6 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public void setIncomplete(boolean incomplete) {
         this.incomplete = incomplete;
-    }
-
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
-    }
-
-    // Primarily for testing
-    @Override
-    public PrismContext getPrismContextLocal() {
-        return getPrismContext();
-    }
-
-    @Override
-    public void setPrismContext(PrismContext prismContext) {
-        // NOOp
     }
 
     @Override
@@ -678,7 +654,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     public void recomputeAllValues() {
         accept(visitable -> {
             if (visitable instanceof PrismPropertyValue<?>) {
-                ((PrismPropertyValue<?>) visitable).recompute(getPrismContext());
+                ((PrismPropertyValue<?>) visitable).recompute(PrismContext.get());
             }
         });
     }

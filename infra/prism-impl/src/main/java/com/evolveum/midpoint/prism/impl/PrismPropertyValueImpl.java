@@ -68,19 +68,15 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     @Nullable private ExpressionWrapper expression;
 
     public PrismPropertyValueImpl(T value) {
-        this(value, null, null, null, null);
-    }
-
-    public PrismPropertyValueImpl(T value, PrismContext prismContext) {
-        this(value, prismContext, null, null, null);
+        this(value, null, null, null);
     }
 
     public PrismPropertyValueImpl(T value, OriginType type, Objectable source) {
-        this(value, null, type, source, null);
+        this(value, type, source, null);
     }
 
-    public PrismPropertyValueImpl(T value, PrismContext prismContext, OriginType type, Objectable source, ExpressionWrapper expression) {
-        super(prismContext, type, source, null);
+    public PrismPropertyValueImpl(T value, OriginType type, Objectable source, @Nullable ExpressionWrapper expression) {
+        super(type, source, null);
         if (value instanceof PrismPropertyValue) {
             throw new IllegalArgumentException("Probably problem somewhere, encapsulating property " +
                     "value object to another property value.");
@@ -160,7 +156,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 }
             }
             if (rawElement != null) {
-                return (T) RawType.create(rawElement.frozen(), getPrismContext());
+                //noinspection unchecked
+                return (T) RawType.create(rawElement.frozen());
             }
         }
         return value;
@@ -205,7 +202,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 } else {
                     // Be careful here. Expression element can be legal sub-element of complex properties.
                     // Therefore parse expression only if there is no legal value.
-                    expression = PrismUtilInternal.parseExpression(rawElement, getPrismContext());
+                    expression = PrismUtilInternal.parseExpression(rawElement);
                 }
                 rawElement = null;
             }
@@ -270,7 +267,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             return;
         }
         checkMutable(); // TODO reconsider this
-        PrismUtil.recomputeRealValue(realValue, prismContext);
+        PrismUtil.recomputeRealValue(realValue);
     }
 
     @Override
@@ -522,7 +519,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             }
 
             if (thisRealValue instanceof ProtectedStringType && otherRealValue instanceof ProtectedStringType) {
-                PrismContext prismContext = getPrismContext();
+                PrismContext prismContext = PrismContext.get();
                 if (prismContext == null || prismContext.getDefaultProtector() == null) {
                     // Slightly dangerous, may get wrong results. See javadoc of ProtectedDataType.equals()
                     // But what else can we do?
@@ -606,7 +603,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 if (!wasIndent) {
                     DebugUtil.indentDebugDump(sb, indent);
                 }
-                PrismPrettyPrinter.debugDumpValue(sb, indent, value, getPrismContext(), null, null);
+                PrismPrettyPrinter.debugDumpValue(sb, indent, value, null, null);
             }
         } else if (expression != null) {
             if (!wasIndent) {
@@ -745,11 +742,11 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public @Nullable Object getRealValueOrRawType(PrismContext prismContext) {
+    public @Nullable Object getRealValueOrRawType() {
         if (value != null && !hasValueMetadata()) {
             return value;
         } else if (rawElement != null || hasValueMetadata()) {
-            return new RawType(this, getTypeName(), prismContext);
+            return new RawType(this, getTypeName());
         } else {
             return null;
         }

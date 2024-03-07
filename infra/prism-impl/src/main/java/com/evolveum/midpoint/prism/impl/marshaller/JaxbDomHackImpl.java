@@ -43,15 +43,10 @@ import com.evolveum.midpoint.util.logging.TraceManager;
  */
 public class JaxbDomHackImpl implements JaxbDomHack {
 
-    private static final Trace LOGGER = TraceManager.getTrace(JaxbDomHack.class);
+    private final DomLexicalProcessor domLexicalProcessor;
 
-    private PrismContext prismContext;
-    private DomLexicalProcessor domLexicalProcessor;
-
-    public JaxbDomHackImpl(DomLexicalProcessor domLexicalProcessor, PrismContext prismContext) {
-        super();
+    public JaxbDomHackImpl(DomLexicalProcessor domLexicalProcessor) {
         this.domLexicalProcessor = domLexicalProcessor;
-        this.prismContext = prismContext;
     }
 
     private <T extends Containerable> ItemDefinition locateItemDefinition(
@@ -64,8 +59,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
 
         if (valueElements instanceof Element) {
             // Try to locate xsi:type definition in the element
-            def = resolveDynamicItemDefinition(elementQName, (Element) valueElements,
-                    prismContext);
+            def = resolveDynamicItemDefinition(elementQName, (Element) valueElements);
         }
 
         if (valueElements instanceof List){
@@ -88,14 +82,13 @@ public class JaxbDomHackImpl implements JaxbDomHack {
             return def;
         } else if (containerDefinition.isRuntimeSchema()) {
             // Try to locate global definition in any of the schemas
-            return prismContext.getSchemaRegistry().resolveGlobalItemDefinition(elementQName, containerDefinition.getComplexTypeDefinition());
+            return PrismContext.get().getSchemaRegistry().resolveGlobalItemDefinition(elementQName, containerDefinition.getComplexTypeDefinition());
         } else {
             return null;
         }
     }
 
-    private ItemDefinition resolveDynamicItemDefinition(QName elementName,
-            Element element, PrismContext prismContext) throws SchemaException {
+    private ItemDefinition resolveDynamicItemDefinition(QName elementName, Element element) {
         QName typeName = null;
         // QName elementName = null;
         // Set it to multi-value to be on the safe side
@@ -151,7 +144,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
             }
         }
 
-        PrismContext prismContext = definition.getPrismContext();
+        PrismContext prismContext = PrismContext.get();
         Item<IV,ID> subItem;
         if (element instanceof Element) {
             // DOM Element
@@ -237,13 +230,13 @@ public class JaxbDomHackImpl implements JaxbDomHack {
                 }
             }
         } else if (value instanceof PrismReferenceValue) {
-            return prismContext.domSerializer().serialize(value, elementName);
+            return PrismContext.get().domSerializer().serialize(value, elementName);
         } else if (value instanceof PrismContainerValue<?>) {
             PrismContainerValue<?> pval = (PrismContainerValue<?>)value;
             if (pval.getParent().getCompileTimeClass() == null) {
                 // This has to be runtime schema without a compile-time representation.
                 // We need to convert it to DOM
-                return prismContext.domSerializer().serialize(pval, elementName);
+                return PrismContext.get().domSerializer().serialize(pval, elementName);
             } else {
                 return wrapIfNeeded(pval.asContainerable(), elementName);
             }

@@ -40,7 +40,7 @@ public class TestProtectedString extends AbstractPrismTest {
 
         // THEN
         ProtectedStringType unmarshalled = new ProtectedStringType();
-        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, prismContext, createDefaultParsingContext());
+        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, createDefaultParsingContext());
         System.out.println("Unmarshalled value: " + unmarshalled);
         assertEquals("Unmarshalled value differs from the original", protectedStringType, unmarshalled);
     }
@@ -62,7 +62,7 @@ public class TestProtectedString extends AbstractPrismTest {
 
         // THEN
         ProtectedStringType unmarshalled = new ProtectedStringType();
-        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, prismContext, createDefaultParsingContext());
+        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, createDefaultParsingContext());
         System.out.println("Unmarshalled value: " + unmarshalled);
         assertEquals("Unmarshalled value differs from the original", protectedStringType, unmarshalled);
     }
@@ -84,7 +84,7 @@ public class TestProtectedString extends AbstractPrismTest {
 
         // THEN
         ProtectedStringType unmarshalled = new ProtectedStringType();
-        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, prismContext, createDefaultParsingContext());
+        prismContext.hacks().parseProtectedType(unmarshalled, protectedStringTypeXNode, createDefaultParsingContext());
         System.out.println("Unmarshalled value: " + unmarshalled);
         assertEquals("Unmarshalled value differs from the original", string, unmarshalled);
 

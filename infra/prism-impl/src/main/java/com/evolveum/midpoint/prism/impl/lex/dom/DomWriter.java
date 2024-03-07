@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.PrismContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,7 +68,7 @@ class DomWriter {
     }
 
     Element writeRoots(@NotNull List<RootXNodeImpl> roots) throws SchemaException {
-        QName aggregateElementName = schemaRegistry.getPrismContext().getObjectsElementName();
+        QName aggregateElementName = PrismContext.get().getObjectsElementName();
         if (aggregateElementName == null) {
             throw new IllegalStateException("Couldn't serialize list of objects because the aggregated element name is not set");
         }

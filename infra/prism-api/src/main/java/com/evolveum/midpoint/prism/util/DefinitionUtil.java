@@ -61,24 +61,22 @@ public class DefinitionUtil {
     }
 
     public static @Nullable <ID extends ItemDefinition<?>> ID findItemDefinition(
-            @NotNull PrismContext prismContext,
             @NotNull Class<? extends Containerable> currentClass,
             @NotNull ItemPath itemPath,
             @NotNull Class<ID> type) {
         ComplexTypeDefinition ctd =
                 MiscUtil.argNonNull(
-                        prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(currentClass),
+                        PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(currentClass),
                         () -> "Definition for " + currentClass + " couldn't be found");
         return ctd.findItemDefinition(itemPath, type);
     }
 
     public static @NotNull <ID extends ItemDefinition<?>> ID findItemDefinitionMandatory(
-            @NotNull PrismContext prismContext,
             @NotNull Class<? extends Containerable> currentClass,
             @NotNull ItemPath itemPath,
             @NotNull Class<ID> type) {
         return MiscUtil.argNonNull(
-                findItemDefinition(prismContext, currentClass, itemPath, type),
+                findItemDefinition(currentClass, itemPath, type),
                 () -> String.format(
                         "Item path of '%s' in %s does not point to a valid %s",
                         itemPath, currentClass.getSimpleName(), type.getSimpleName()));

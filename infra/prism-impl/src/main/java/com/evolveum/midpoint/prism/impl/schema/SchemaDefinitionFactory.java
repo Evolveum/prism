@@ -37,15 +37,15 @@ public class SchemaDefinitionFactory {
 
     private static final String ENUMERATION_FACET = "enumeration";
 
-    public MutableComplexTypeDefinition createComplexTypeDefinition(XSComplexType complexType,
-            PrismContext prismContext, XSAnnotation annotation) throws SchemaException {
+    public MutableComplexTypeDefinition createComplexTypeDefinition(XSComplexType complexType, XSAnnotation annotation)
+            throws SchemaException {
 
         QName typeName = new QName(complexType.getTargetNamespace(),complexType.getName());
         return new ComplexTypeDefinitionImpl(typeName);
     }
 
-    public SimpleTypeDefinition createSimpleTypeDefinition(XSSimpleType simpleType,
-            PrismContext prismContext, XSAnnotation annotation) throws SchemaException {
+    public SimpleTypeDefinition createSimpleTypeDefinition(XSSimpleType simpleType, XSAnnotation annotation)
+            throws SchemaException {
 
         QName typeName = new QName(simpleType.getTargetNamespace(), simpleType.getName());
         XSType baseType = simpleType.getBaseType();
@@ -60,22 +60,26 @@ public class SchemaDefinitionFactory {
         return new SimpleTypeDefinitionImpl(typeName, baseTypeName, derivationMethod);
     }
 
-    public <T> PrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
-            PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
+    public <T> PrismPropertyDefinition<T> createPropertyDefinition(
+            QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
+            XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
         var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
         return new PrismPropertyDefinitionImpl<>(elementName, typeName, definedInType);
     }
 
-    public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
-            PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) throws SchemaException {
+    public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(
+            QName elementName, QName typeName, ComplexTypeDefinition complexTypeDefinition, XSAnnotation annotation,
+            XSParticle elementParticle, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue)
+            throws SchemaException {
         var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
-        PrismPropertyDefinitionImpl def = new PrismPropertyDefinitionImpl<>(elementName, typeName, defaultValue, definedInType);
+        PrismPropertyDefinitionImpl<T> def = new PrismPropertyDefinitionImpl<>(elementName, typeName, defaultValue, definedInType);
         def.setAllowedValues(allowedValues);
         return def;
     }
 
-    public PrismReferenceDefinition createReferenceDefinition(QName primaryElementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
-            PrismContext prismContext, XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
+    public PrismReferenceDefinition createReferenceDefinition(
+            QName primaryElementName, QName typeName, ComplexTypeDefinition complexTypeDefinition,
+            XSAnnotation annotation, XSParticle elementParticle) throws SchemaException {
         var definedInType = complexTypeDefinition != null ? complexTypeDefinition.getTypeName() : null;
         return new PrismReferenceDefinitionImpl(primaryElementName, typeName, definedInType);
     }
@@ -123,8 +127,7 @@ public class SchemaDefinitionFactory {
         // Nothing to do by default
     }
 
-    public SimpleTypeDefinitionImpl createEnumerationTypeDefinition(XSSimpleType simpleType, PrismContext prismContext,
-            XSAnnotation annotation) {
+    public SimpleTypeDefinitionImpl createEnumerationTypeDefinition(XSSimpleType simpleType, XSAnnotation annotation) {
         QName typeName = new QName(simpleType.getTargetNamespace(), simpleType.getName());
         XSType baseType = simpleType.getBaseType();
         QName baseTypeName = baseType != null ? new QName(baseType.getTargetNamespace(), baseType.getName()) : null;

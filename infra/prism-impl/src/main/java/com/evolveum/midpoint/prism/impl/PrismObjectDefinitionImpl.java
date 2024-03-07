@@ -15,6 +15,8 @@ import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
+
 /**
  * MidPoint Object Definition.
  *
@@ -33,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContainerDefinitionImpl<O> implements
         MutablePrismObjectDefinition<O> {
-    private static final long serialVersionUID = -8298581031956931008L;
+    @Serial private static final long serialVersionUID = -8298581031956931008L;
 
     public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<O> compileTimeClass) {
         // Object definition can only be top-level, hence SCHEMA ROOT parent
@@ -46,7 +48,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
         if (isAbstract()) {
             throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
-        return new PrismObjectImpl<>(getItemName(), this, getPrismContext());
+        return new PrismObjectImpl<>(getItemName(), this);
     }
 
     @NotNull
@@ -56,7 +58,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
             throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
-        return new PrismObjectImpl<>(name, this, getPrismContext());
+        return new PrismObjectImpl<>(name, this);
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
@@ -86,7 +88,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
 
     @Override
     public PrismObjectValue<O> createValue() {
-        return new PrismObjectValueImpl<>(getPrismContext());
+        return new PrismObjectValueImpl<>();
     }
 
 

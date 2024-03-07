@@ -104,8 +104,6 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     // The PRV (this object) should have a parent with a prism context
     Class<Objectable> getTargetTypeCompileTimeClass();
 
-    Class<Objectable> getTargetTypeCompileTimeClass(PrismContext prismContext);
-
     QName getRelation();
 
     void setRelation(QName relation);

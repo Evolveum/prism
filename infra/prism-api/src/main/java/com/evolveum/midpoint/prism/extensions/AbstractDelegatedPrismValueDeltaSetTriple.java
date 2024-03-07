@@ -32,13 +32,13 @@ public class AbstractDelegatedPrismValueDeltaSetTriple<V extends PrismValue> imp
         this.inner = inner;
     }
 
-    public AbstractDelegatedPrismValueDeltaSetTriple(PrismContext prismContext) {
-        inner = prismContext.deltaFactory().createPrismValueDeltaSetTriple();
+    public AbstractDelegatedPrismValueDeltaSetTriple() {
+        inner = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
     }
 
     public AbstractDelegatedPrismValueDeltaSetTriple(Collection<V> zeroSet, Collection<V> plusSet,
-            Collection<V> minusSet, PrismContext prismContext) {
-        inner = prismContext.deltaFactory().createPrismValueDeltaSetTriple(zeroSet, plusSet, minusSet);
+            Collection<V> minusSet) {
+        inner = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple(zeroSet, plusSet, minusSet);
     }
 
     @Override
@@ -102,9 +102,8 @@ public class AbstractDelegatedPrismValueDeltaSetTriple<V extends PrismValue> imp
         inner.checkNoParent();
     }
 
-    public static <T> DeltaSetTriple<T> diff(Collection<T> valuesOld,
-            Collection<T> valuesNew, PrismContext prismContext) {
-        return DeltaSetTriple.diff(valuesOld, valuesNew, prismContext);
+    public static <T> DeltaSetTriple<T> diff(Collection<T> valuesOld, Collection<T> valuesNew) {
+        return DeltaSetTriple.diff(valuesOld, valuesNew);
     }
 
     @Override

@@ -31,17 +31,17 @@ public class PropertyDeltaFactoryImpl implements DeltaFactory.Property {
 
     @Override
     public <T> PropertyDelta<T> create(PrismPropertyDefinition<T> propertyDefinition) {
-        return new PropertyDeltaImpl<>(propertyDefinition, prismContext);
+        return new PropertyDeltaImpl<>(propertyDefinition);
     }
 
     @Override
     public <T> PropertyDelta<T> create(ItemPath path, PrismPropertyDefinition<T> definition) {
-        return new PropertyDeltaImpl<>(path, definition, prismContext);
+        return new PropertyDeltaImpl<>(path, definition);
     }
 
     @Override
     public <T> PropertyDelta<T> create(ItemPath itemPath, QName name, PrismPropertyDefinition<T> propertyDefinition) {
-        return new PropertyDeltaImpl<>(itemPath, name, propertyDefinition, prismContext);
+        return new PropertyDeltaImpl<>(itemPath, name, propertyDefinition);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class PropertyDeltaFactoryImpl implements DeltaFactory.Property {
 
     @Override
     public <O extends Objectable,T> PropertyDelta<T> createDelta(ItemPath propertyPath, Class<O> compileTimeClass) {
-        return PropertyDeltaImpl.createDelta(propertyPath, compileTimeClass, prismContext);
+        return PropertyDeltaImpl.createDelta(propertyPath, compileTimeClass);
     }
 
     @SafeVarargs

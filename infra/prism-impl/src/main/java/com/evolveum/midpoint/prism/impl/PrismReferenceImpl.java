@@ -44,8 +44,8 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
         super(name);
     }
 
-    public PrismReferenceImpl(QName name, PrismReferenceDefinition definition, PrismContext prismContext) {
-        super(name, definition, prismContext);
+    public PrismReferenceImpl(QName name, PrismReferenceDefinition definition) {
+        super(name, definition);
     }
 
     @NotNull
@@ -202,12 +202,12 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
 
     @Override
     public ReferenceDelta createDelta() {
-        return new ReferenceDeltaImpl(getPath(), getDefinition(), getPrismContext());
+        return new ReferenceDeltaImpl(getPath(), getDefinition());
     }
 
     @Override
     public ReferenceDelta createDelta(ItemPath path) {
-        return new ReferenceDeltaImpl(path, getDefinition(), getPrismContext());
+        return new ReferenceDeltaImpl(path, getDefinition());
     }
 
     @Override
@@ -222,7 +222,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
 
     @Override
     public PrismReferenceImpl cloneComplex(CloneStrategy strategy) {
-        PrismReferenceImpl clone = new PrismReferenceImpl(getElementName(), getDefinition(), getPrismContext());
+        PrismReferenceImpl clone = new PrismReferenceImpl(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }

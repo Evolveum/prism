@@ -126,23 +126,22 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         return clause != null ? clause.getSingleSubEntryAsRoot("getFilterClauseAsRootXNode") : null;
     }
 
-    public static SearchFilterType createFromParsedXNode(XNode xnode, ParsingContext pc, PrismContext prismContext) throws SchemaException {
+    public static SearchFilterType createFromParsedXNode(XNode xnode, ParsingContext pc) throws SchemaException {
         SearchFilterType filter = new SearchFilterType();
-        filter.parseFromXNode(xnode, pc, prismContext);
+        filter.parseFromXNode(xnode, pc);
         return filter;
     }
 
-    public void parseFromXNode(XNode xnode, ParsingContext pc, PrismContext prismContext) throws SchemaException {
+    public void parseFromXNode(XNode xnode, ParsingContext pc) throws SchemaException {
         checkMutable();
         if (xnode == null || xnode.isEmpty()) {
             this.filterClauseXNode = null;
             this.description = null;
             this.text = null;
         } else {
-            if (!(xnode instanceof MapXNode)) {
+            if (!(xnode instanceof MapXNode xmap)) {
                 throw new SchemaException("Cannot parse filter from " + xnode);
             }
-            MapXNode xmap = (MapXNode) xnode;
 
             setDescription(parseString(xmap, F_DESCRIPTION, "Description"));
             setText(parseString(xmap, F_TEXT, "Text"));
@@ -158,8 +157,8 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
             if (filterMap.size() > 1) {
                 throw new SchemaException("Filter clause has more than one item: " + filterMap);
             }
-            this.filterClauseXNode = prismContext.xnodeFactory().map(xmap.namespaceContext(), filterMap);
-            prismContext.getQueryConverter().parseFilterPreliminarily(this.filterClauseXNode, pc);
+            this.filterClauseXNode = PrismContext.get().xnodeFactory().map(xmap.namespaceContext(), filterMap);
+            PrismContext.get().getQueryConverter().parseFilterPreliminarily(this.filterClauseXNode, pc);
         }
     }
 
@@ -220,13 +219,12 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
 
     @Override
     public boolean equals(Object object, StructuredEqualsStrategy strategy) {
-        if (!(object instanceof SearchFilterType)) {
+        if (!(object instanceof SearchFilterType that)) {
             return false;
         }
         if (this == object) {
             return true;
         }
-        final SearchFilterType that = ((SearchFilterType) object);
 
         if (filterClauseXNode == null) {
             if (that.filterClauseXNode != null) { return false; }

@@ -109,7 +109,6 @@ public class R_Filter implements S_FilterEntryOrEmpty {
                     ExistsFilterImpl.createExists(
                             existsRestriction,
                             parentFilter.getCurrentClass(),
-                            queryBuilder.getPrismContext(),
                             subfilter));
         } else {
             OrFilter newFilter = appendAtomicFilter(subfilter, isNegated, lastLogicalSymbol);

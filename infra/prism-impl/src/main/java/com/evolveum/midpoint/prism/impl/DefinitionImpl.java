@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -289,11 +288,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setRuntimeSchema(boolean isRuntimeSchema) {
         checkMutable();
         this.isRuntimeSchema = isRuntimeSchema;
-    }
-
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
     }
 
     public <A> A getAnnotation(QName qname, A defaultValue) {

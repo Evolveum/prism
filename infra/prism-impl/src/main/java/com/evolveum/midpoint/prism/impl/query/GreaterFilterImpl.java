@@ -40,14 +40,15 @@ public class GreaterFilterImpl<T> extends ComparativeFilterImpl<T> implements Gr
     // value
     @NotNull
     public static <T> GreaterFilter<T> createGreater(@NotNull ItemPath itemPath, PrismPropertyDefinition<T> definition,
-            QName matchingRule, Object anyValue, boolean equals, @NotNull PrismContext prismContext) {
+            QName matchingRule, Object anyValue, boolean equals) {
         PrismPropertyValue<T> propertyValue = anyValueToPropertyValue(anyValue);
         return new GreaterFilterImpl<>(itemPath, definition, matchingRule, propertyValue, null, null, null, equals);
     }
 
     // expression-related
     @NotNull
-    public static <T> GreaterFilter<T> createGreater(@NotNull ItemPath itemPath, PrismPropertyDefinition<T> definition, QName matchingRule,
+    public static <T> GreaterFilter<T> createGreater(
+            @NotNull ItemPath itemPath, PrismPropertyDefinition<T> definition, QName matchingRule,
             @NotNull ExpressionWrapper wrapper, boolean equals) {
         return new GreaterFilterImpl<>(itemPath, definition, matchingRule, null, wrapper, null, null, equals);
     }

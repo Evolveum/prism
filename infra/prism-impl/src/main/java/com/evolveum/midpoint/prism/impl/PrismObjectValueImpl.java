@@ -30,24 +30,16 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     protected String oid;
     protected String version;
 
-    public PrismObjectValueImpl() {
+    PrismObjectValueImpl() {
     }
 
-    public PrismObjectValueImpl(PrismContext prismContext) {
-        super(prismContext);
-    }
-
-    public PrismObjectValueImpl(O objectable) {
+    PrismObjectValueImpl(O objectable) {
         super(objectable);
     }
 
-    public PrismObjectValueImpl(O objectable, PrismContext prismContext) {
-        super(objectable, prismContext);
-    }
-
-    private PrismObjectValueImpl(OriginType type, Objectable source, PrismContainerable container, Long id,
-            ComplexTypeDefinition complexTypeDefinition, PrismContext prismContext, String oid, String version) {
-        super(type, source, container, id, complexTypeDefinition, prismContext);
+    private PrismObjectValueImpl(OriginType type, Objectable source, PrismContainerable<?> container, Long id,
+            ComplexTypeDefinition complexTypeDefinition, String oid, String version) {
+        super(type, source, container, id, complexTypeDefinition);
         this.oid = oid;
         this.version = version;
     }
@@ -81,6 +73,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
 
     @Override
     public PrismObject<O> asPrismObject() {
+        //noinspection unchecked
         return asObjectable().asPrismObject();
     }
 
@@ -94,6 +87,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
         return asPrismObject().getExtension();
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public PrismObjectValueImpl<O> clone() {
         return cloneComplex(CloneStrategy.LITERAL);
@@ -102,7 +96,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     @Override
     public PrismObjectValueImpl<O> cloneComplex(CloneStrategy strategy) {
         PrismObjectValueImpl<O> clone = new PrismObjectValueImpl<>(
-                getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, getPrismContext(), oid, version);
+                getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, oid, version);
         copyValues(strategy, clone);
         return clone;
     }
@@ -115,10 +109,9 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
 
     @Override
     public boolean equivalent(PrismContainerValue<?> other) {
-        if (!(other instanceof PrismObjectValueImpl)) {
+        if (!(other instanceof PrismObjectValueImpl<?> otherPov)) {
             return false;
         }
-        PrismObjectValueImpl otherPov = (PrismObjectValueImpl) other;
         return StringUtils.equals(oid, otherPov.oid) && super.equivalent(other);
     }
 
@@ -140,7 +133,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
             sb.append(getComplexTypeDefinition().getTypeName().getLocalPart()).append(":");
         }
         sb.append(oid).append("(");
-        PrismProperty nameProperty = findProperty(new ItemName(PrismConstants.NAME_LOCAL_NAME));
+        PrismProperty<?> nameProperty = findProperty(new ItemName(PrismConstants.NAME_LOCAL_NAME));
         sb.append(nameProperty != null ? nameProperty.getRealValue() : null);
         sb.append(")");
         return sb.toString();

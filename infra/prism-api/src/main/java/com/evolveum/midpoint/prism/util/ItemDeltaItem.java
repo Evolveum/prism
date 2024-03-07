@@ -266,7 +266,7 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
                 // We need to have itemNew with the correct path. Currently, the only way how to ensure this is to
                 // create a new one.
                 Item<V,D> dummyItemNew =
-                        definition.getPrismContext().itemFactory().createDummyItem(itemOld, definition, resolvePath);
+                        PrismContext.get().itemFactory().createDummyItem(itemOld, definition, resolvePath);
                 if (itemNew != null) {
                     dummyItemNew.addAll(
                             itemNew.getClonedValues());

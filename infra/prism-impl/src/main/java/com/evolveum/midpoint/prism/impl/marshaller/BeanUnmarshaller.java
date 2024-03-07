@@ -1016,7 +1016,7 @@ public class BeanUnmarshaller {
         } else if (storeAsRawType || paramType.equals(RawType.class)) {
             // We freeze XNode
             xsubnode.freeze();
-            RawType raw = new RawType(xsubnode, prismContext);
+            RawType raw = new RawType(xsubnode);
             // FIXME UGLY HACK: parse value if possible
             if (xsubnode.getTypeQName() != null) {
                 PrismValue value = prismContext
@@ -1024,14 +1024,14 @@ public class BeanUnmarshaller {
                         .context(pc)
                         .parseItemValue();// TODO what about objects? oid/version will be lost here
                 if (value != null && !value.isRaw()) {
-                    raw = new RawType(value, xsubnode.getTypeQName(), prismContext);
+                    raw = new RawType(value, xsubnode.getTypeQName());
                 } else if (pc.isConvertUnknownTypes() && value.isRaw() && value instanceof PrismPropertyValue<?>) {
                     // This is in case that value is raw & we support convert unknown types
                     // We can not use original rawType created, since it contains type name
                     // of type not supported, but we should use raw element, returned from parse
                     // which did migration
                     XNode rawElem = ((PrismPropertyValue<?>)value).getRawElement();
-                    raw = new RawType(rawElem.frozen(), getPrismContext());
+                    raw = new RawType(rawElem.frozen());
                 }
             }
             propValue = raw;
@@ -1122,7 +1122,7 @@ public class BeanUnmarshaller {
             return null;
         }
         T filterType = instantiate(beanClass);
-        filterType.parseFromXNode(xmap, pc, prismContext);
+        filterType.parseFromXNode(xmap, pc);
         return filterType;
     }
 
@@ -1251,7 +1251,7 @@ public class BeanUnmarshaller {
 
     private RawType unmarshalRawType(XNodeImpl node, Class<RawType> beanClass, ParsingContext parsingContext) {
         // TODO We could probably try to parse the raw node content using information from explicit node type.
-        return new RawType(node.frozen(), prismContext);
+        return new RawType(node.frozen());
     }
 
     private <T> T unmarshalEnumFromPrimitive(PrimitiveXNodeImpl<?> prim, Class<T> beanClass, ParsingContext pc)
@@ -1283,7 +1283,7 @@ public class BeanUnmarshaller {
 
     private ProtectedStringType unmarshalProtectedString(MapXNodeImpl map, Class beanClass, ParsingContext pc) throws SchemaException {
         ProtectedStringType protectedType = new ProtectedStringType();
-        XNodeProcessorUtil.parseProtectedType(protectedType, map, prismContext, pc);
+        XNodeProcessorUtil.parseProtectedType(protectedType, map, pc);
         if (protectedType.isEmpty()) {
             // E.g. in case when the xmap is empty or if there are is just an expression
             return null;
@@ -1299,7 +1299,7 @@ public class BeanUnmarshaller {
 
     private ProtectedByteArrayType unmarshalProtectedByteArray(MapXNodeImpl map, Class beanClass, ParsingContext pc) throws SchemaException {
         ProtectedByteArrayType protectedType = new ProtectedByteArrayType();
-        XNodeProcessorUtil.parseProtectedType(protectedType, map, prismContext, pc);
+        XNodeProcessorUtil.parseProtectedType(protectedType, map, pc);
         return protectedType;
     }
 

@@ -7,13 +7,8 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
 public class FilterImplUtil {
 
@@ -36,8 +31,8 @@ public class FilterImplUtil {
         return itemDef;
     }
 
-    public static ItemDefinition findItemDefinition(ItemPath parentPath, Class type, PrismContext prismContext) {
-        ComplexTypeDefinition complexTypeDefinition = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(type);
+    public static ItemDefinition findItemDefinition(ItemPath parentPath, Class type) {
+        ComplexTypeDefinition complexTypeDefinition = PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(type);
         if (complexTypeDefinition == null) {
             // TODO SchemaException instead?
             throw new IllegalStateException("Definition of complex type " + type + " couldn't be not found");

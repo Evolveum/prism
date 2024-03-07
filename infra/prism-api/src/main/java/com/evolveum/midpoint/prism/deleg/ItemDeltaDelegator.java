@@ -38,11 +38,6 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    default PrismContext getPrismContext() {
-        return delegate().getPrismContext();
-    }
-
-    @Override
     default ItemName getElementName() {
         return delegate().getElementName();
     }

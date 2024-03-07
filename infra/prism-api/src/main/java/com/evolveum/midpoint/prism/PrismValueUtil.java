@@ -61,29 +61,28 @@ public class PrismValueUtil {
             }
             Class<?> realClass = value.getRealClass();
             if (realClass != null && type.isAssignableFrom(realClass)) {
-                //noinspection unchecked
-                return (T) value.getRealValue();
+                return value.getRealValue();
             }
             value = value.getParentContainerValue();
         }
     }
 
-    public static <T> PrismProperty<T> createRaw(@NotNull XNode node, @NotNull QName itemName, PrismContext prismContext)
+    public static <T> PrismProperty<T> createRaw(@NotNull XNode node, @NotNull QName itemName)
             throws SchemaException {
         Validate.isTrue(!(node instanceof RootXNode));
-        PrismProperty<T> property = prismContext.itemFactory().createProperty(itemName);
+        PrismProperty<T> property = PrismContext.get().itemFactory().createProperty(itemName);
         if (node instanceof ListXNode) {
             for (XNode subnode : ((ListXNode) node).asList()) {
-                property.add(createRaw(subnode, prismContext));
+                property.add(createRaw(subnode));
             }
         } else {
-            property.add(createRaw(node, prismContext));
+            property.add(createRaw(node));
         }
         return property;
     }
 
-    private static <T> PrismPropertyValue<T> createRaw(XNode rawElement, PrismContext prismContext) {
-        return prismContext.itemFactory().createPropertyValue(rawElement);
+    private static <T> PrismPropertyValue<T> createRaw(XNode rawElement) {
+        return PrismContext.get().itemFactory().createPropertyValue(rawElement);
     }
 
     public static boolean differentIds(PrismValue v1, PrismValue v2) {

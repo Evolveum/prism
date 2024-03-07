@@ -235,11 +235,6 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     }
 
     @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
-    }
-
-    @Override
     public ItemPath getPath() {
         return getFullPath();
     }

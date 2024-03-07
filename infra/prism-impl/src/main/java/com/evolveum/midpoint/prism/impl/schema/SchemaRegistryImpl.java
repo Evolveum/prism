@@ -236,11 +236,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         invalidationListeners.add(listener);
     }
 
-    @Override
-    public PrismContext getPrismContext() {
-        return prismContext;
-    }
-
     public void setPrismContext(PrismContext prismContext) {
         this.prismContext = prismContext;
     }
@@ -633,7 +628,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         LOGGER.trace("Parsing schema {}, namespace: {}, isRuntime: {}",
                 schemaDescription.getSourceDescription(), namespace, isRuntime);
         PrismSchema schema = PrismSchemaImpl.parse(domElement, entityResolver, isRuntime,
-                schemaDescription.getSourceDescription(), allowDelayedItemDefinitions, getPrismContext());
+                schemaDescription.getSourceDescription(), allowDelayedItemDefinitions);
         if (StringUtils.isEmpty(namespace)) {
             namespace = schema.getNamespace();
         }
@@ -677,8 +672,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
         long started = System.currentTimeMillis();
         LOGGER.trace("Parsing {} schemas wrapped in single XSD", wrappedDescriptions.size());
-        PrismSchemaImpl.parseSchemas(schemaElement, entityResolver,
-                wrappedDescriptions, allowDelayedItemDefinitions, getPrismContext());
+        PrismSchemaImpl.parseSchemas(schemaElement, entityResolver, wrappedDescriptions, allowDelayedItemDefinitions);
         LOGGER.trace("Parsed {} schemas in {} ms",
                 wrappedDescriptions.size(), System.currentTimeMillis() - started);
 

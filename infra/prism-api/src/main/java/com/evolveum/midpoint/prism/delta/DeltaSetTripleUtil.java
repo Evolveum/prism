@@ -49,14 +49,14 @@ public class DeltaSetTripleUtil {
     /**
      * Compares two (unordered) collections and creates a triple describing the differences.
      */
-    public static <V extends PrismValue> PrismValueDeltaSetTriple<V> diffPrismValueDeltaSetTriple(Collection<V> valuesOld, Collection<V> valuesNew, PrismContext prismContext) {
-        PrismValueDeltaSetTriple<V> triple = prismContext.deltaFactory().createPrismValueDeltaSetTriple();
+    public static <V extends PrismValue> PrismValueDeltaSetTriple<V> diffPrismValueDeltaSetTriple(Collection<V> valuesOld, Collection<V> valuesNew) {
+        PrismValueDeltaSetTriple<V> triple = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
         diff(valuesOld, valuesNew, triple);
         return triple;
     }
 
-    public static <V extends PrismValue> PrismValueDeltaSetTriple<V> allToZeroSet(Collection<V> values, PrismContext prismContext) {
-        PrismValueDeltaSetTriple<V> triple = prismContext.deltaFactory().createPrismValueDeltaSetTriple();
+    public static <V extends PrismValue> PrismValueDeltaSetTriple<V> allToZeroSet(Collection<V> values) {
+        PrismValueDeltaSetTriple<V> triple = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
         triple.addAllToZeroSet(values);
         return triple;
     }

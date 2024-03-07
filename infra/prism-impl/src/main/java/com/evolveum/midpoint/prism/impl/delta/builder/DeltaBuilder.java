@@ -50,7 +50,7 @@ public class DeltaBuilder<C extends Containerable>
 
     private final Class<C> objectClass;
     private final ComplexTypeDefinition containerCTD;
-    private final PrismContext prismContext;
+    private final PrismContext prismContext = PrismContext.get();
 
     /** Should we skip idempotent item deltas? */
     @Experimental private final boolean optimizing;
@@ -64,10 +64,9 @@ public class DeltaBuilder<C extends Containerable>
     private final List<ItemDelta<?, ?>> deltas;
     private final ItemDelta currentDelta;
 
-    public DeltaBuilder(Class<C> objectClass, PrismContext prismContext, ItemDefinitionResolver itemDefinitionResolver)
+    public DeltaBuilder(Class<C> objectClass, ItemDefinitionResolver itemDefinitionResolver)
             throws SchemaException {
         this.objectClass = objectClass;
-        this.prismContext = prismContext;
         this.itemDefinitionResolver = itemDefinitionResolver;
         containerCTD = prismContext.getSchemaRegistry().findComplexTypeDefinitionByCompileTimeClass(this.objectClass);
         if (containerCTD == null) {
@@ -90,7 +89,6 @@ public class DeltaBuilder<C extends Containerable>
             ItemDelta currentDelta) {
         this.objectClass = objectClass;
         this.containerCTD = containerCTD;
-        this.prismContext = prismContext;
         this.optimizing = optimizing;
         this.oldObject = oldObject;
         this.itemDefinitionResolver = itemDefinitionResolver;
@@ -159,11 +157,11 @@ public class DeltaBuilder<C extends Containerable>
     public S_ValuesEntry item(ItemPath path, ItemDefinition definition) {
         ItemDelta newDelta;
         if (definition instanceof PrismPropertyDefinition) {
-            newDelta = new PropertyDeltaImpl<>(path, (PrismPropertyDefinition<?>) definition, prismContext);
+            newDelta = new PropertyDeltaImpl<>(path, (PrismPropertyDefinition<?>) definition);
         } else if (definition instanceof PrismContainerDefinition) {
-            newDelta = new ContainerDeltaImpl<>(path, (PrismContainerDefinition<?>) definition, prismContext);
+            newDelta = new ContainerDeltaImpl<>(path, (PrismContainerDefinition<?>) definition);
         } else if (definition instanceof PrismReferenceDefinition) {
-            newDelta = new ReferenceDeltaImpl(path, (PrismReferenceDefinition) definition, prismContext);
+            newDelta = new ReferenceDeltaImpl(path, (PrismReferenceDefinition) definition);
         } else {
             throw new IllegalStateException("Unsupported definition type: " + definition);
         }
@@ -226,7 +224,7 @@ public class DeltaBuilder<C extends Containerable>
 
     @Override
     public <T> S_ValuesEntry property(ItemPath path, PrismPropertyDefinition<T> definition) {
-        PropertyDelta<T> newDelta = new PropertyDeltaImpl<>(path, definition, prismContext);
+        PropertyDelta<T> newDelta = new PropertyDeltaImpl<>(path, definition);
         List<ItemDelta<?, ?>> newDeltas = deltas;
         if (currentDelta != null) {
             newDeltas.add(currentDelta);

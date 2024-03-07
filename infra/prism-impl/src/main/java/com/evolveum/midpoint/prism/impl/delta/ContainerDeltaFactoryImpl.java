@@ -32,17 +32,17 @@ public class ContainerDeltaFactoryImpl implements DeltaFactory.Container {
 
     @Override
     public <C extends Containerable> ContainerDelta<C> create(ItemPath path, PrismContainerDefinition<C> definition) {
-        return new ContainerDeltaImpl<>(path, definition, prismContext);
+        return new ContainerDeltaImpl<>(path, definition);
     }
 
     @Override
     public ContainerDelta create(PrismContainerDefinition itemDefinition) {
-        return new ContainerDeltaImpl<>(itemDefinition, prismContext);
+        return new ContainerDeltaImpl<>(itemDefinition);
     }
 
     @Override
     public ContainerDelta create(ItemPath parentPath, QName name, PrismContainerDefinition itemDefinition) {
-        return new ContainerDeltaImpl<>(parentPath, name, itemDefinition, prismContext);
+        return new ContainerDeltaImpl<>(parentPath, name, itemDefinition);
     }
 
     @Override
@@ -68,64 +68,63 @@ public class ContainerDeltaFactoryImpl implements DeltaFactory.Container {
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationAdd(
             ItemPath containerPath,
             Class<O> type, T containerable) throws SchemaException {
-        return ContainerDeltaImpl.createModificationAdd(containerPath, type, prismContext, containerable);
+        return ContainerDeltaImpl.createModificationAdd(containerPath, type, containerable);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationAdd(
             ItemPath containerPath,
             Class<O> type, PrismContainerValue<T> cValue) throws SchemaException {
-        return ContainerDeltaImpl.createModificationAdd(containerPath, type, prismContext, cValue);
+        return ContainerDeltaImpl.createModificationAdd(containerPath, type, cValue);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationDelete(
             ItemPath containerPath,
             Class<O> type, T containerable) throws SchemaException {
-        return ContainerDeltaImpl.createModificationDelete(containerPath, type, prismContext, containerable);
+        return ContainerDeltaImpl.createModificationDelete(containerPath, type, containerable);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationDelete(
             ItemPath containerPath,
             Class<O> type, PrismContainerValue<T> cValue) throws SchemaException {
-        return ContainerDeltaImpl.createModificationDelete(containerPath, type, prismContext, cValue);
+        return ContainerDeltaImpl.createModificationDelete(containerPath, type, cValue);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationReplace(
             ItemPath containerPath,
             Class<O> type, T containerable) throws SchemaException {
-        return ContainerDeltaImpl.createModificationReplace(containerPath, type, prismContext, containerable);
+        return ContainerDeltaImpl.createModificationReplace(containerPath, type, containerable);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationReplace(ItemPath containerPath,
             Class<O> type, Collection<T> containerables) throws SchemaException {
-        return ContainerDeltaImpl.createModificationReplace(containerPath, type, prismContext, containerables);
+        return ContainerDeltaImpl.createModificationReplace(containerPath, type, containerables);
     }
 
     @Override
     public <T extends Containerable,O extends Objectable> ContainerDeltaImpl<T> createModificationReplace(
             ItemPath containerPath,
             Class<O> type, PrismContainerValue<T> cValue) throws SchemaException {
-        return ContainerDeltaImpl.createModificationReplace(containerPath, type, prismContext, cValue);
+        return ContainerDeltaImpl.createModificationReplace(containerPath, type, cValue);
     }
 
     // cValues should be parent-less
     @Deprecated // Remove in 4.2
     @Override
-    public Collection<? extends ItemDelta<?, ?>> createModificationReplaceContainerCollection(ItemName containerName,
-            PrismObjectDefinition<?> objectDefinition, PrismContainerValue... cValues) {
+    public Collection<? extends ItemDelta<?, ?>> createModificationReplaceContainerCollection(
+            ItemName containerName, PrismObjectDefinition<?> objectDefinition, PrismContainerValue... cValues) {
         return ContainerDeltaImpl.createModificationReplaceContainerCollection(containerName, objectDefinition, cValues);
     }
 
     // cValues should be parent-less
     @Deprecated // Remove in 4.2
     @Override
-    public <T extends Containerable> ContainerDeltaImpl<T> createModificationReplace(ItemName containerName,
-            PrismObjectDefinition<?> objectDefinition, PrismContainerValue... cValues) {
+    public <T extends Containerable> ContainerDeltaImpl<T> createModificationReplace(
+            ItemName containerName, PrismObjectDefinition<?> objectDefinition, PrismContainerValue... cValues) {
         return ContainerDeltaImpl.createModificationReplace(containerName, objectDefinition, cValues);
     }
-
 }

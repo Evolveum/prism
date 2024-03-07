@@ -163,7 +163,7 @@ public abstract class AbstractPrismTest extends AbstractUnitTest {
             assignmentValue.setId(id);
         }
         if (description != null) {
-            assignmentValue.setPropertyRealValue(AssignmentType.F_DESCRIPTION, description, getPrismContext());
+            assignmentValue.setPropertyRealValue(AssignmentType.F_DESCRIPTION, description);
         }
     }
 

@@ -104,8 +104,7 @@ public class SchemaToDomProcessor {
      * @return XSD schema in DOM form
      * @throws SchemaException error parsing the midPoint schema or converting values
      */
-    @NotNull
-    Document parseSchema(PrismSchema schema) throws SchemaException {
+    @NotNull Document parseSchema(PrismSchema schema) throws SchemaException {
         if (schema == null) {
             throw new IllegalArgumentException("Schema can't be null.");
         }

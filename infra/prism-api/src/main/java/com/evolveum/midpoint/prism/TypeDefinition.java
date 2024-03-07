@@ -65,7 +65,7 @@ public interface TypeDefinition extends Definition {
             if (other.getSuperType() == null) {
                 return false;
             }
-            other = getPrismContext().getSchemaRegistry().findTypeDefinitionByType(other.getSuperType());
+            other = PrismContext.get().getSchemaRegistry().findTypeDefinitionByType(other.getSuperType());
         }
         return false;
     }

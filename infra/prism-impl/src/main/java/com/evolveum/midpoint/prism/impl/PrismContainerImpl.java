@@ -7,26 +7,27 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.function.Supplier;
+import javax.xml.namespace.QName;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
+
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
-import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
-import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
-import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
-import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
+import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
-import org.apache.commons.collections4.CollectionUtils;
-import org.jetbrains.annotations.NotNull;
-
-import javax.xml.namespace.QName;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -53,9 +54,7 @@ public class PrismContainerImpl<C extends Containerable>
         extends ItemImpl<PrismContainerValue<C>, PrismContainerDefinition<C>>
         implements PrismContainer<C> {
 
-    private static final long serialVersionUID = 5206821250098051028L;
-
-    private static final Trace LOGGER = TraceManager.getTrace(PrismContainerImpl.class);
+    @Serial private static final long serialVersionUID = 5206821250098051028L;
 
     protected Class<C> compileTimeClass;
 
@@ -63,32 +62,25 @@ public class PrismContainerImpl<C extends Containerable>
         super(name);
     }
 
-    public PrismContainerImpl(QName name, PrismContext prismContext) {
-        super(name, prismContext);
-    }
-
     public PrismContainerImpl(QName name, Class<C> compileTimeClass) {
         super(name);
         if (Modifier.isAbstract(compileTimeClass.getModifiers())) {
-            throw new IllegalArgumentException("Can't use class '" + compileTimeClass.getSimpleName() + "' as compile-time class for "+name+"; the class is abstract.");
+            throw new IllegalArgumentException(
+                    "Can't use class '%s' as compile-time class for %s; the class is abstract.".formatted(
+                            compileTimeClass.getSimpleName(), name));
         }
         this.compileTimeClass = compileTimeClass;
-    }
-
-    public PrismContainerImpl(QName name, Class<C> compileTimeClass, PrismContext prismContext) {
-        this(name, compileTimeClass);
-        if (prismContext != null) {
-            try {
-                prismContext.adopt(this);
-            } catch (SchemaException e) {
-                throw new SystemException("Schema exception when adopting freshly created PrismContainer: " + this);
-            }
+        try {
+            // Here the container gets a definition.
+            PrismContext.get().adopt(this);
+        } catch (SchemaException e) {
+            throw SystemException.unexpected(e, " while instantiating a PrismContainer with name %s and compile-time class %s"
+                    .formatted(name, compileTimeClass));
         }
     }
 
-
-    public PrismContainerImpl(QName name, PrismContainerDefinition<C> definition, PrismContext prismContext) {
-        super(name, definition, prismContext);
+    public PrismContainerImpl(QName name, PrismContainerDefinition<C> definition) {
+        super(name, definition);
     }
 
     @NotNull
@@ -165,7 +157,7 @@ public class PrismContainerImpl<C extends Containerable>
             if (getDefinition().isSingleValue()) {
                 // Insert first empty value. This simulates empty single-valued container. It the container exists
                 // it is clear that it has at least one value (and that value is empty).
-                PrismContainerValue<C> pValue = new PrismContainerValueImpl<>(null, null, this, null, null, getPrismContext());
+                PrismContainerValue<C> pValue = new PrismContainerValueImpl<>(null, null, this, null, null);
                 try {
                     add(pValue);
                 } catch (SchemaException e) {
@@ -179,7 +171,7 @@ public class PrismContainerImpl<C extends Containerable>
         } else {
             // Insert first empty value. This simulates empty single-valued container. It the container exists
             // it is clear that it has at least one value (and that value is empty).
-            PrismContainerValue<C> pValue = new PrismContainerValueImpl<>(null, null, this, null, null, getPrismContext());
+            PrismContainerValue<C> pValue = new PrismContainerValueImpl<>(null, null, this, null, null);
             try {
                 add(pValue);
             } catch (SchemaException e) {
@@ -209,17 +201,13 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     protected boolean addInternal(@NotNull PrismContainerValue newValue, boolean checkEquivalents, EquivalenceStrategy strategy) throws SchemaException {
         checkMutable();
-        // when a context-less item is added to a contextful container, it is automatically adopted
-        if (newValue.getPrismContext() == null && this.getPrismContext() != null) {
-            getPrismContext().adopt(newValue);
-        }
         return super.addInternal(newValue, checkEquivalents, strategy);
     }
 
     @Override
     protected boolean addInternalExecution(@NotNull PrismContainerValue<C> newValue) {
         if (newValue.getId() != null) {
-            for (PrismContainerValue existingValue : getValues()) {
+            for (PrismContainerValue<?> existingValue : getValues()) {
                 if (existingValue.getId() != null && existingValue.getId().equals(newValue.getId())) {
                     throw new IllegalStateException("Attempt to add a container value with an id that already exists: " + newValue.getId());
                 }
@@ -294,7 +282,7 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     public PrismContainerValue<C> createNewValue() {
         checkMutable();
-        PrismContainerValue<C> pValue = new PrismContainerValueImpl<>(getPrismContext());
+        PrismContainerValue<C> pValue = createNewValueInternal();
         try {
             // No need to check uniqueness, we know that this value is new and therefore
             // it will change anyway and therefore the check is pointless.
@@ -306,6 +294,11 @@ public class PrismContainerImpl<C extends Containerable>
             throw new SystemException("Internal Error: "+e.getMessage(),e);
         }
         return pValue;
+    }
+
+    /** Can be overridden in subclasses. */
+    protected @NotNull PrismContainerValueImpl<C> createNewValueInternal() {
+        return new PrismContainerValueImpl<>();
     }
 
     @Override
@@ -657,12 +650,12 @@ public class PrismContainerImpl<C extends Containerable>
 
     @Override
     public ContainerDelta<C> createDelta() {
-        return new ContainerDeltaImpl<>(getPath(), getDefinition(), getPrismContext());
+        return new ContainerDeltaImpl<>(getPath(), getDefinition());
     }
 
     @Override
     public ContainerDelta<C> createDelta(ItemPath path) {
-        return new ContainerDeltaImpl<>(path, getDefinition(), getPrismContext());
+        return new ContainerDeltaImpl<>(path, getDefinition());
     }
 
     @Override
@@ -742,7 +735,7 @@ public class PrismContainerImpl<C extends Containerable>
 
     @Override
     public PrismContainer<C> cloneComplex(CloneStrategy strategy) {
-        PrismContainerImpl<C> clone = new PrismContainerImpl<>(getElementName(), getDefinition(), getPrismContext());
+        PrismContainerImpl<C> clone = new PrismContainerImpl<>(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }

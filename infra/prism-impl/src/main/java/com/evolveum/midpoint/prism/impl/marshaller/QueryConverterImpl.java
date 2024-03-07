@@ -462,10 +462,10 @@ public class QueryConverterImpl implements QueryConverter {
                 if (isGt || isGtEq) {
                     //noinspection unchecked
                     return GreaterFilterImpl
-                            .createGreater(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, propertyValue, isGtEq, prismContext);
+                            .createGreater(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, propertyValue, isGtEq);
                 } else {
                     //noinspection unchecked
-                    return LessFilterImpl.createLess(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, propertyValue, isLtEq, prismContext);
+                    return LessFilterImpl.createLess(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, propertyValue, isLtEq);
                 }
             }
         } else if (rightSidePath != null) {
@@ -765,7 +765,7 @@ public class QueryConverterImpl implements QueryConverter {
     private ExpressionWrapper parseExpression(MapXNodeImpl xmap) throws SchemaException {
         Entry<QName, XNodeImpl> expressionEntry = xmap.getSingleEntryThatDoesNotMatch(
                 ELEMENT_VALUE, ELEMENT_MATCHING, ELEMENT_ANCHOR_START, ELEMENT_ANCHOR_END, ELEMENT_PATH, ELEMENT_CONSIDER_OWNER);
-        return PrismUtilInternal.parseExpression(expressionEntry, prismContext);
+        return PrismUtilInternal.parseExpression(expressionEntry);
     }
 
     private boolean getAnchorStart(MapXNodeImpl clauseXMap) throws SchemaException {
@@ -1279,7 +1279,7 @@ public class QueryConverterImpl implements QueryConverter {
             }
 
             if (pagingType != null) {
-                ObjectPaging paging = PagingConvertor.createObjectPaging(pagingType, prismContext);
+                ObjectPaging paging = PagingConvertor.createObjectPaging(pagingType);
                 query.setPaging(paging);
             }
             return query;

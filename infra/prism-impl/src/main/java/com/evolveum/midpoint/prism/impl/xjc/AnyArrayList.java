@@ -168,17 +168,9 @@ public class AnyArrayList<C extends Containerable> extends AbstractList<Object> 
         return containerValue.getContainer();
     }
 
-    private PrismContext getPrismContext() {
-        return getContainer().getPrismContext();
-    }
-
     private Object asElement(PrismValue itemValue) {
-        PrismContext prismContext = containerValue.getPrismContext();
-        if (prismContext == null) {
-            throw new IllegalStateException("prismContext is null in " + containerValue);
-        }
         try {
-            return ((PrismContextImpl) prismContext).getJaxbDomHack().toAny(itemValue);
+            return ((PrismContextImpl) PrismContext.get()).getJaxbDomHack().toAny(itemValue);
         } catch (SchemaException e) {
             throw new SystemException("Unexpected schema problem: "+e.getMessage(),e);
         }

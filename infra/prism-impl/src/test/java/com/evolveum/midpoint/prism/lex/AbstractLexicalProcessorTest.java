@@ -137,7 +137,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
 
         assertUserJackXNodeOrdering("serialized xnode", serializedXNode);
 
-        validateUserSchema(serializedString, prismContext);
+        validateUserSchema(serializedString);
 
         // WHEN (re-parse)
         RootXNodeImpl reparsedXnode = lexicalProcessor.read(new ParserStringSource(serializedString), createDefaultParsingContext());
@@ -221,7 +221,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         System.out.println("\nRe-serialized string:");
         System.out.println(serializedString);
 
-        validateResourceSchema(serializedString, prismContext);
+        validateResourceSchema(serializedString);
 
         // WHEN (re-parse)
         RootXNodeImpl reparsedXnode = lexicalProcessor.read(new ParserStringSource(serializedString), createDefaultParsingContext());
@@ -312,11 +312,11 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
 
     }
 
-    protected void validateUserSchema(String dataString, PrismContext prismContext) throws SAXException, IOException {
+    protected void validateUserSchema(String dataString) throws SAXException, IOException {
         // Nothing to do by default
     }
 
-    protected void validateResourceSchema(String dataString, PrismContext prismContext) throws SAXException, IOException {
+    protected void validateResourceSchema(String dataString) throws SAXException, IOException {
         // Nothing to do by default
     }
 
@@ -347,6 +347,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         System.out.println(marshalled.debugDump());
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_0_Empty() throws Exception {
         given();
@@ -374,6 +375,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         assertThat(reparsed).isEqualTo(nodes);
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_1_ListOfThree() throws Exception {
         List<RootXNodeImpl> nodes = executeReadObjectsTest(OBJECTS_1_LIST, 3);
@@ -416,6 +418,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         return nodes;
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_1_ListOfThree_ReadFirstTwo() throws Exception {
         // GIVEN
@@ -448,6 +451,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         return ((MapXNodeImpl) root.getSubnode()).entrySet().iterator().next().getKey().getNamespaceURI();
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_2_SingleNonList() throws Exception {
         // GIVEN
@@ -482,6 +486,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         testSerializeAndParseAgain(lexicalProcessor, nodes);
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_3_SingleList() throws Exception {
         // GIVEN
@@ -516,6 +521,7 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
         testSerializeAndParseAgain(lexicalProcessor, nodes);
     }
 
+    @SuppressWarnings("CheckStyle")
     @Test
     public void testParseObjects_4_ErrorInSecondObject() throws Exception {
         // GIVEN

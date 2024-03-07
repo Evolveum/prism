@@ -24,7 +24,6 @@ import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.lang.reflect.InvocationTargetException;
@@ -194,17 +193,11 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     // The PRV (this object) should have a parent with a prism context
     @Override
     public Class<Objectable> getTargetTypeCompileTimeClass() {
-        PrismContext prismContext = getPrismContext();
-        return prismContext != null ? getTargetTypeCompileTimeClass(prismContext) : null;
-    }
-
-    @Override
-    public Class<Objectable> getTargetTypeCompileTimeClass(PrismContext prismContext) {
         QName type = getTargetType();
         if (type == null) {
             return null;
         } else {
-            PrismObjectDefinition<Objectable> objDef = prismContext.getSchemaRegistry().findObjectDefinitionByType(type);
+            PrismObjectDefinition<Objectable> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(type);
             return objDef != null ? objDef.getCompileTimeClass() : null;
         }
     }
@@ -347,7 +340,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (object.getDefinition() != null && !force) {
             return;
         }
-        PrismContext prismContext = definition.getPrismContext();
+        PrismContext prismContext = PrismContext.get();
         //noinspection ConstantConditions
         PrismObjectDefinition<? extends Objectable> objectDefinition = prismContext.getSchemaRegistry()
                 .findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
@@ -512,8 +505,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (isLiteral) {
             return null;
         }
-        PrismContext prismContext = getPrismContext();
-        return prismContext != null ? prismContext.getDefaultRelation() : null;
+        return PrismContext.get().getDefaultRelation();
     }
 
     private boolean equalsTargetType(PrismReferenceValue other) {
@@ -592,7 +584,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         Itemable parent = getParent();
         if (parent != null && parent.getDefinition() != null) {
             QName xsdType = parent.getDefinition().getTypeName();
-            Class<?> clazz = getPrismContext() != null ? getPrismContext().getSchemaRegistry().getCompileTimeClass(xsdType) : null;
+            Class<?> clazz = PrismContext.get().getSchemaRegistry().getCompileTimeClass(xsdType);
             if (clazz != null) {
                 try {
                     referencable = (Referencable) clazz.getDeclaredConstructor().newInstance();

@@ -244,11 +244,11 @@ public class FuzzyStringMatchFilterImplTest extends AbstractPrismTest {
         PrismContainerValue<?> prismContainerValue = PrismContext.get().itemFactory().createContainerValue();
         prismContainerValue.setId(Long.valueOf(id));
 
-        prismContainerValue.setPropertyRealValue(QNAME_GIVEN_NAME, givenname, PrismContext.get());
-        prismContainerValue.setPropertyRealValue(QNAME_FAMILY_NAME, familyName, PrismContext.get());
-        prismContainerValue.setPropertyRealValue(QNAME_DATE_BIRTH, dateOfBirth, PrismContext.get());
-        prismContainerValue.setPropertyRealValue(QNAME_NATIONAL_ID, nationalId, PrismContext.get());
-        prismContainerValue.setPropertyRealValue(QNAME_FAMILY_NAME_3, subFamilyName, PrismContext.get());
+        prismContainerValue.setPropertyRealValue(QNAME_GIVEN_NAME, givenname);
+        prismContainerValue.setPropertyRealValue(QNAME_FAMILY_NAME, familyName);
+        prismContainerValue.setPropertyRealValue(QNAME_DATE_BIRTH, dateOfBirth);
+        prismContainerValue.setPropertyRealValue(QNAME_NATIONAL_ID, nationalId);
+        prismContainerValue.setPropertyRealValue(QNAME_FAMILY_NAME_3, subFamilyName);
 
         display("PrismContainerValue: \n  " + prismContainerValue.debugDump());
         return prismContainerValue;

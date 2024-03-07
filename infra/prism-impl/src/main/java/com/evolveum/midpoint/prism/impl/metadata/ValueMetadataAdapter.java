@@ -47,10 +47,6 @@ public class ValueMetadataAdapter implements ValueMetadata {
         return new ValueMetadataAdapter(value);
     }
 
-    public PrismContext getPrismContext() {
-        return delegate.getPrismContext();
-    }
-
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public ValueMetadata clone() {
@@ -480,8 +476,8 @@ public class ValueMetadataAdapter implements ValueMetadata {
     @Override
     @Experimental
     @NotNull
-    public Collection<Object> getRealValuesOrRawTypes(PrismContext prismContext) {
-        return delegate.getRealValuesOrRawTypes(prismContext);
+    public Collection<Object> getRealValuesOrRawTypes() {
+        return delegate.getRealValuesOrRawTypes();
     }
 
     @Override
@@ -791,17 +787,6 @@ public class ValueMetadataAdapter implements ValueMetadata {
     @Override
     public @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path) {
         return delegate.getAllItems(path);
-    }
-
-    @Override
-    @VisibleForTesting
-    public PrismContext getPrismContextLocal() {
-        return delegate.getPrismContextLocal();
-    }
-
-    @Override
-    public void setPrismContext(PrismContext prismContext) {
-        delegate.setPrismContext(prismContext);
     }
 
     @Override

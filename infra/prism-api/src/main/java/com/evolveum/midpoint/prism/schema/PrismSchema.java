@@ -78,8 +78,7 @@ public interface PrismSchema
         return getDefinitions(ComplexTypeDefinition.class);
     }
 
-    @NotNull
-    Document serializeToXsd() throws SchemaException;
+    @NotNull Document serializeToXsd() throws SchemaException;
 
     boolean isEmpty();
 

@@ -54,7 +54,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     public PrismReferenceDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
         super(elementName, typeName, definedInType);
         structuredType = Lazy.from(() ->
-                Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
+                Optional.ofNullable(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
@@ -120,10 +120,10 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
                 }
             }
             if (targetType == null) {
-                targetType = getPrismContext().getDefaultReferenceTargetType();
+                targetType = PrismContext.get().getDefaultReferenceTargetType();
             }
             PrismObjectDefinition<?> referencedObjectDefinition =
-                    getSchemaRegistry().determineReferencedObjectDefinition(targetType, rest);
+                    PrismContext.get().getSchemaRegistry().determineReferencedObjectDefinition(targetType, rest);
             return ((ItemDefinition<?>) referencedObjectDefinition).findItemDefinition(rest, clazz);
         }
     }
@@ -138,12 +138,12 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     @Override
     public PrismReference instantiate(QName name) {
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
-        return new PrismReferenceImpl(name, this, getPrismContext());
+        return new PrismReferenceImpl(name, this);
     }
 
     @Override
     public @NotNull ItemDelta createEmptyDelta(ItemPath path) {
-        return new ReferenceDeltaImpl(path, this, getPrismContext());
+        return new ReferenceDeltaImpl(path, this);
     }
 
     @Override

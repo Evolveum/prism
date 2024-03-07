@@ -92,11 +92,11 @@ public class ItemType implements Cloneable, Serializable, JaxbVisitable {
                 '}';
     }
 
-    public static ItemType fromItem(Item item, PrismContext prismContext) {
+    public static ItemType fromItem(Item item) {
         if (item != null) {
             ItemType rv = new ItemType();
             rv.setName(item.getElementName());
-            rv.value.addAll(item.getRealValuesOrRawTypes(prismContext));
+            rv.value.addAll(item.getRealValuesOrRawTypes());
             return rv;
         } else {
             return null;

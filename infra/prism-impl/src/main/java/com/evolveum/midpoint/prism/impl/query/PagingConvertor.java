@@ -15,15 +15,15 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 public class PagingConvertor {
 
-    public static ObjectPaging createObjectPaging(PagingType pagingType, PrismContext prismContext) {
+    public static ObjectPaging createObjectPaging(PagingType pagingType) {
         if (pagingType == null) {
             return null;
         }
         if (pagingType.getOrderBy() != null) {
-            return prismContext.queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize(),
+            return PrismContext.get().queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize(),
                     pagingType.getOrderBy().getItemPath(), toOrderDirection(pagingType.getOrderDirection()));
         } else {
-            return prismContext.queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize());
+            return PrismContext.get().queryFactory().createPaging(pagingType.getOffset(), pagingType.getMaxSize());
         }
     }
 

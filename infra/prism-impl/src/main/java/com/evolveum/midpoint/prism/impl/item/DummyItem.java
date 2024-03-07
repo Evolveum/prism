@@ -288,18 +288,6 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         return delegate().getAllItems(path);
     }
 
-    public final PrismContext getPrismContext() {
-        return delegate().getPrismContext();
-    }
-
-    public final PrismContext getPrismContextLocal() {
-        return delegate().getPrismContextLocal();
-    }
-
-    public final void setPrismContext(PrismContext prismContext) {
-        delegate().setPrismContext(prismContext);
-    }
-
     public final Long getHighestId() {
         return delegate().getHighestId();
     }

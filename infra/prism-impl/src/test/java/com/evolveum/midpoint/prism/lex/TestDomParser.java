@@ -150,7 +150,7 @@ public class TestDomParser extends AbstractLexicalProcessorTest {
     }
 
 
-    private void validateSchemaCompliance(String xmlString, PrismContext prismContext)  throws SAXException, IOException {
+    private void validateSchemaCompliance(String xmlString)  throws SAXException, IOException {
 //        Document xmlDocument = DOMUtil.parseDocument(xmlString);
 //        Schema javaxSchema = prismContext.getSchemaRegistry().getJavaxSchema();
 //        Validator validator = javaxSchema.newValidator();
@@ -159,13 +159,13 @@ public class TestDomParser extends AbstractLexicalProcessorTest {
     }
 
     @Override
-    protected void validateUserSchema(String xmlString, PrismContext prismContext) throws SAXException, IOException {
-        validateSchemaCompliance(xmlString, prismContext);
+    protected void validateUserSchema(String xmlString) throws SAXException, IOException {
+        validateSchemaCompliance(xmlString);
     }
 
     @Override
-    protected void validateResourceSchema(String xmlString, PrismContext prismContext) throws SAXException, IOException {
-        validateSchemaCompliance(xmlString, prismContext);
+    protected void validateResourceSchema(String xmlString) throws SAXException, IOException {
+        validateSchemaCompliance(xmlString);
     }
 
     @Override

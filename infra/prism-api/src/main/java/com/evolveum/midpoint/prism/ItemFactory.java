@@ -51,7 +51,7 @@ public interface ItemFactory {
 
     PrismReferenceValue createReferenceValue(String oid, QName targetType);
 
-    PrismContainer createContainer(QName name);
+    <C extends Containerable> PrismContainer<C> createContainer(QName name);
 
     <C extends Containerable> PrismContainer<C> createContainer(QName name, PrismContainerDefinition<C> definition);
 

@@ -227,7 +227,8 @@ public interface DeltaFactory {
         <O extends Objectable> ObjectDelta<O> create(Class<O> type, ChangeType changeType);
 
         static <O extends Objectable> ObjectDelta<O> createAddDelta(PrismObject<O> objectToAdd) {
-            ObjectDelta<O> objectDelta = objectToAdd.getPrismContext().deltaFactory().object().create(objectToAdd.getCompileTimeClass(), ChangeType.ADD);
+            ObjectDelta<O> objectDelta =
+                    PrismContext.get().deltaFactory().object().create(objectToAdd.getCompileTimeClass(), ChangeType.ADD);
             objectDelta.setOid(objectToAdd.getOid());
             objectDelta.setObjectToAdd(objectToAdd);
             return objectDelta;

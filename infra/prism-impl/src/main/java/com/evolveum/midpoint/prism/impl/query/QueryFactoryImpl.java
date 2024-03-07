@@ -50,7 +50,7 @@ public class QueryFactoryImpl implements QueryFactory {
     @NotNull
     @Override
     public <T> EqualFilter<T> createEqual(@NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition,
-            @Nullable QName matchingRule, @NotNull PrismContext prismContext, Object... values) {
+            @Nullable QName matchingRule, Object... values) {
         return EqualFilterImpl.createEqual(path, definition, matchingRule, values);
     }
 
@@ -93,9 +93,10 @@ public class QueryFactoryImpl implements QueryFactory {
     // value
     @NotNull
     @Override
-    public <T> GreaterFilter<T> createGreater(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, Object value, boolean equals, @NotNull PrismContext prismContext) {
-        return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, equals, prismContext);
+    public <T> GreaterFilter<T> createGreater(
+            @NotNull ItemPath path, PrismPropertyDefinition<T> definition,
+            QName matchingRule, Object value, boolean equals) {
+        return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, equals);
     }
 
     // expression-related
@@ -125,8 +126,8 @@ public class QueryFactoryImpl implements QueryFactory {
     @Override
     @NotNull
     public <T> LessFilter<T> createLess(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, Object value, boolean equals, @NotNull PrismContext prismContext) {
-        return LessFilterImpl.createLess(path, definition, matchingRule, value, equals, prismContext);
+            QName matchingRule, Object value, boolean equals) {
+        return LessFilterImpl.createLess(path, definition, matchingRule, value, equals);
     }
 
     // expression-related
@@ -178,8 +179,8 @@ public class QueryFactoryImpl implements QueryFactory {
     @NotNull
     @Override
     public <C extends Containerable> ExistsFilter createExists(
-            ItemPath path, Class<C> containerType, PrismContext prismContext, ObjectFilter inner) {
-        return ExistsFilterImpl.createExists(path, containerType, prismContext, inner);
+            ItemPath path, Class<C> containerType, ObjectFilter inner) {
+        return ExistsFilterImpl.createExists(path, containerType, inner);
     }
 
     @NotNull

@@ -67,9 +67,9 @@ public class CanonicalItemPathImpl implements CanonicalItemPath {
 
     private final List<Segment> segments = new ArrayList<>();
 
-    public static CanonicalItemPathImpl create(ItemPath itemPath, QName objectType, PrismContext prismContext) {
-        ItemDefinition<?> def = objectType != null && prismContext != null
-                ? prismContext.getSchemaRegistry().findContainerDefinitionByType(objectType)
+    public static CanonicalItemPathImpl create(ItemPath itemPath, QName objectType) {
+        ItemDefinition<?> def = objectType != null
+                ? PrismContext.get().getSchemaRegistry().findContainerDefinitionByType(objectType)
                 : null;
         return new CanonicalItemPathImpl(itemPath, def);
     }

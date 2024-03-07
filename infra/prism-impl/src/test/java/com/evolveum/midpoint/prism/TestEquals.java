@@ -95,15 +95,15 @@ public class TestEquals extends AbstractPrismTest {
         given("protected strings 1 and 3 have the same clear value, but 2 has different one");
         ProtectedStringType p1 = new ProtectedStringType();
         p1.setClearValue("a");
-        PrismPropertyValueImpl<?> pv1 = new PrismPropertyValueImpl<>(p1, prismContext);
+        PrismPropertyValueImpl<?> pv1 = new PrismPropertyValueImpl<>(p1);
 
         ProtectedStringType p2 = new ProtectedStringType();
         p2.setClearValue("b");
-        PrismPropertyValueImpl<?> pv2 = new PrismPropertyValueImpl<>(p2, prismContext);
+        PrismPropertyValueImpl<?> pv2 = new PrismPropertyValueImpl<>(p2);
 
         ProtectedStringType p3 = new ProtectedStringType();
         p3.setClearValue("a");
-        PrismPropertyValueImpl<?> pv3 = new PrismPropertyValueImpl<>(p3, prismContext);
+        PrismPropertyValueImpl<?> pv3 = new PrismPropertyValueImpl<>(p3);
 
         expect("protected string pv1 is considered equal to pv3, but not to pv2");
         assertThat(pv1).isEqualTo(pv3);

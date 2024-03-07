@@ -100,16 +100,16 @@ public class SchemaDocMojo extends AbstractMojo {
 
         VelocityEngine velocityEngine = createVelocityEngine();
 
-        SchemaRegistry schemaRegistry = prismContext.getSchemaRegistry();
+        SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
         try {
-            renderSchemaIndex(schemaRegistry, prismContext, velocityEngine, pathGenerator);
+            renderSchemaIndex(schemaRegistry, velocityEngine, pathGenerator);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(),e);
         }
         for (PrismSchema schema: schemaRegistry.getSchemas()) {
 
             try {
-                renderSchema(schema, prismContext, velocityEngine, pathGenerator);
+                renderSchema(schema, velocityEngine, pathGenerator);
             } catch (IOException e) {
                 throw new MojoExecutionException(e.getMessage(),e);
             }
@@ -143,10 +143,10 @@ public class SchemaDocMojo extends AbstractMojo {
         getLog().debug( "SchemaDoc plugin finished" );
     }
 
-    private void renderSchemaIndex(SchemaRegistry schemaRegistry, PrismContext prismContext, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
+    private void renderSchemaIndex(SchemaRegistry schemaRegistry, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
         getLog().debug("Rendering schema index");
         VelocityContext velocityContext = new VelocityContext();
-        populateVelocityContextBase(velocityContext, prismContext, pathGenerator, null, ".");
+        populateVelocityContextBase(velocityContext, pathGenerator, null, ".");
         velocityContext.put(VELOCITY_CONTEXT_VAR_SCHEMA_REGISTRY, schemaRegistry);
 
         Template template = velocityEngine.getTemplate(TEMPLATE_SCHEMA_INDEX_NAME);
@@ -156,10 +156,10 @@ public class SchemaDocMojo extends AbstractMojo {
         writer.close();
     }
 
-    private void renderSchema(PrismSchema schema, PrismContext prismContext, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
+    private void renderSchema(PrismSchema schema, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
         getLog().debug("Processing schema: "+schema);
         VelocityContext velocityContext = new VelocityContext();
-        populateVelocityContextBase(velocityContext, prismContext, pathGenerator, schema, "..");
+        populateVelocityContextBase(velocityContext, pathGenerator, schema, "..");
 
         Template template = velocityEngine.getTemplate(TEMPLATE_SCHEMA_NAME);
 
@@ -169,12 +169,12 @@ public class SchemaDocMojo extends AbstractMojo {
 
         // Object Definitions
         for (PrismObjectDefinition<?> objectDefinition: schema.getObjectDefinitions()) {
-            renderObjectDefinition(objectDefinition, schema, prismContext, velocityEngine, pathGenerator);
+            renderObjectDefinition(objectDefinition, schema, velocityEngine, pathGenerator);
         }
 
         // Types
         for (ComplexTypeDefinition typeDefinition : schema.getComplexTypeDefinitions()) {
-            renderComplexTypeDefinition(typeDefinition, schema, prismContext, velocityEngine, pathGenerator);
+            renderComplexTypeDefinition(typeDefinition, schema, velocityEngine, pathGenerator);
         }
 
     }
@@ -209,11 +209,11 @@ public class SchemaDocMojo extends AbstractMojo {
         */
     }
 
-    private void renderObjectDefinition(PrismObjectDefinition objectDefinition, PrismSchema schema, PrismContext prismContext, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
+    private void renderObjectDefinition(PrismObjectDefinition objectDefinition, PrismSchema schema, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
         getLog().debug("  Processing object definition: "+objectDefinition);
 
         VelocityContext velocityContext = new VelocityContext();
-        populateVelocityContextBase(velocityContext, prismContext, pathGenerator, schema, "../..");
+        populateVelocityContextBase(velocityContext, pathGenerator, schema, "../..");
         velocityContext.put(VELOCITY_CONTEXT_VAR_DEFINITION, objectDefinition);
 
         Template template = velocityEngine.getTemplate(TEMPLATE_OBJECT_DEFINITION_NAME);
@@ -223,11 +223,11 @@ public class SchemaDocMojo extends AbstractMojo {
         writer.close();
     }
 
-    private void renderComplexTypeDefinition(ComplexTypeDefinition typeDefinition, PrismSchema schema, PrismContext prismContext, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
+    private void renderComplexTypeDefinition(ComplexTypeDefinition typeDefinition, PrismSchema schema, VelocityEngine velocityEngine, PathGenerator pathGenerator) throws IOException {
         getLog().debug("  Processing complex type definition: "+typeDefinition);
 
         VelocityContext velocityContext = new VelocityContext();
-        populateVelocityContextBase(velocityContext, prismContext, pathGenerator, schema, "../..");
+        populateVelocityContextBase(velocityContext, pathGenerator, schema, "../..");
         velocityContext.put(VELOCITY_CONTEXT_VAR_DEFINITION, typeDefinition);
 
         Template template = velocityEngine.getTemplate(TEMPLATE_COMPLEX_TYPE_DEFINITION_NAME);
@@ -237,12 +237,13 @@ public class SchemaDocMojo extends AbstractMojo {
         writer.close();
     }
 
-    private void populateVelocityContextBase(VelocityContext velocityContext, PrismContext prismContext, PathGenerator pathGenerator,
-                                             PrismSchema schema, String prefixToBase) {
+    private void populateVelocityContextBase(
+            VelocityContext velocityContext, PathGenerator pathGenerator,
+            PrismSchema schema, String prefixToBase) {
         if (schema != null) {
             velocityContext.put(VELOCITY_CONTEXT_VAR_SCHEMA, schema);
         }
-        velocityContext.put(VELOCITY_CONTEXT_VAR_PRISM_CONTEXT, prismContext);
+        velocityContext.put(VELOCITY_CONTEXT_VAR_PRISM_CONTEXT, PrismContext.get());
         velocityContext.put(VELOCITY_CONTEXT_VAR_PATH, pathGenerator);
         velocityContext.put(VELOCITY_CONTEXT_VAR_PREFIX_TO_BASE, prefixToBase);
     }

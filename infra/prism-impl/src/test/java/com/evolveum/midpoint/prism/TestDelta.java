@@ -64,7 +64,7 @@ public class TestDelta extends AbstractPrismTest {
 
         PrismContainerValue<AssignmentType> assignmentValue1 = prismContext.itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
         //noinspection unchecked
         ObjectDelta<UserType> assObjDelta1 = prismContext.deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID, UserType.F_ASSIGNMENT, assignmentValue1);
@@ -73,7 +73,7 @@ public class TestDelta extends AbstractPrismTest {
 
         PrismContainerValue<AssignmentType> assignmentValue2 = prismContext.itemFactory().createContainerValue();
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "jamalalicha patlama paprtala", PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "jamalalicha patlama paprtala");
         //noinspection unchecked
         ObjectDelta<UserType> assObjDelta2 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -122,7 +122,7 @@ public class TestDelta extends AbstractPrismTest {
 
     @NotNull
     private PropertyDeltaImpl<String> createPropertyDelta(PrismPropertyDefinition<String> propertyDefinition) {
-        return new PropertyDeltaImpl<>(propertyDefinition, PrismTestUtil.getPrismContext());
+        return new PropertyDeltaImpl<>(propertyDefinition);
     }
 
     /**
@@ -432,8 +432,7 @@ public class TestDelta extends AbstractPrismTest {
 
     @NotNull
     private ObjectDeltaImpl<UserType> createUserModifyDelta() {
-        return new ObjectDeltaImpl<>(UserType.class, ChangeType.MODIFY,
-                PrismTestUtil.getPrismContext());
+        return new ObjectDeltaImpl<>(UserType.class, ChangeType.MODIFY);
     }
 
     /**
@@ -547,12 +546,12 @@ public class TestDelta extends AbstractPrismTest {
         PrismReferenceDefinition referenceDefinition =
                 new PrismReferenceDefinitionImpl(UserType.F_PARENT_ORG_REF, OBJECT_REFERENCE_TYPE_QNAME);
 
-        ReferenceDelta delta1 = new ReferenceDeltaImpl(referenceDefinition, PrismTestUtil.getPrismContext());
+        ReferenceDelta delta1 = new ReferenceDeltaImpl(referenceDefinition);
         delta1.addValueToAdd(new PrismReferenceValueImpl("oid1"));
         ObjectDelta<UserType> objectDelta1 = createUserModifyDelta();
         objectDelta1.addModification(delta1);
 
-        ReferenceDelta delta2 = new ReferenceDeltaImpl(referenceDefinition, PrismTestUtil.getPrismContext());
+        ReferenceDelta delta2 = new ReferenceDeltaImpl(referenceDefinition);
         delta2.addValueToAdd(new PrismReferenceValueImpl("oid1")); // here we add the same value
         ObjectDelta<UserType> objectDelta2 = createUserModifyDelta();
         objectDelta2.addModification(delta2);
@@ -601,7 +600,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta
         PrismContainerValue<AssignmentType> assignmentValue = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         //noinspection unchecked
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
@@ -628,7 +627,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         //noinspection unchecked
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
@@ -638,7 +637,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = getPrismContext().deltaFactory().container().createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -669,7 +668,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -678,7 +677,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl
                 .createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
@@ -707,7 +706,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -716,7 +715,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -744,7 +743,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -753,7 +752,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue2.setId(USER_ASSIGNMENT_2_ID);
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -781,7 +780,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -790,7 +789,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue2.setId(USER_ASSIGNMENT_2_ID);
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -818,7 +817,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -827,7 +826,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue2.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -855,7 +854,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 1
         PrismContainerValue<AssignmentType> assignmentValue1 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION);
 
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
@@ -864,7 +863,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue2.setId(USER_ASSIGNMENT_1_ID);
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -885,7 +884,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         // null container ID
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -920,7 +919,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         // null container ID
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -951,7 +950,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta 2
         PrismContainerValue<AssignmentType> assignmentValue2 = getPrismContext().itemFactory().createContainerValue();
         assignmentValue2.setId(USER_ASSIGNMENT_2_ID);
-        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION, PrismTestUtil.getPrismContext());
+        assignmentValue2.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_ABRAKADABRA_DESCRIPTION);
         ContainerDelta<AssignmentType> containerDelta2 = ContainerDeltaImpl.createDelta(UserType.F_ASSIGNMENT, getUserTypeDefinition());
         containerDelta2.addValueToAdd(assignmentValue2);
 
@@ -981,7 +980,7 @@ public class TestDelta extends AbstractPrismTest {
         //Delta
         PrismContainerValue<ActivationType> activationValue = getPrismContext().itemFactory().createContainerValue();
         // The value id is null
-        activationValue.setPropertyRealValue(ActivationType.F_ENABLED, true, PrismTestUtil.getPrismContext());
+        activationValue.setPropertyRealValue(ActivationType.F_ENABLED, true);
 
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,

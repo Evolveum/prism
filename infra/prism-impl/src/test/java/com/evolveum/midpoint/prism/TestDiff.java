@@ -386,11 +386,11 @@ public class TestDiff extends AbstractPrismTest {
 
         PrismContainer<AssignmentType> ass1 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass1cval = ass1.createNewValue();
-        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah", PrismTestUtil.getPrismContext());
+        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah");
 
         PrismContainer<AssignmentType> ass2 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass2cval = ass2.createNewValue();
-        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah", PrismTestUtil.getPrismContext());
+        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah");
 
         // WHEN
         Collection<? extends ItemDelta> modifications = ass1.diffModifications(ass2, EquivalenceStrategy.DATA);
@@ -411,12 +411,12 @@ public class TestDiff extends AbstractPrismTest {
         PrismContainer<AssignmentType> ass1 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass1cval = ass1.createNewValue();
         ass1cval.setId(1L);
-        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah", PrismTestUtil.getPrismContext());
+        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah");
 
         PrismContainer<AssignmentType> ass2 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass2cval = ass2.createNewValue();
         ass2cval.setId(1L);
-        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "chamalalia patlama paprtala", PrismTestUtil.getPrismContext());
+        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "chamalalia patlama paprtala");
 
         // WHEN
         Collection<? extends ItemDelta> modifications = ass1.diffModifications(ass2, EquivalenceStrategy.REAL_VALUE);
@@ -440,11 +440,11 @@ public class TestDiff extends AbstractPrismTest {
 
         PrismContainer<AssignmentType> ass1 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass1cval = ass1.createNewValue();
-        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah", PrismTestUtil.getPrismContext());
+        ass1cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "blah blah");
 
         PrismContainer<AssignmentType> ass2 = assignmentContDef.instantiate();
         PrismContainerValue<AssignmentType> ass2cval = ass2.createNewValue();
-        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "chamalalia patlama paprtala", PrismTestUtil.getPrismContext());
+        ass2cval.setPropertyRealValue(AssignmentType.F_DESCRIPTION, "chamalalia patlama paprtala");
 
         // WHEN
         Collection<? extends ItemDelta> modifications = ass1cval.diff(ass2cval, EquivalenceStrategy.IGNORE_METADATA);

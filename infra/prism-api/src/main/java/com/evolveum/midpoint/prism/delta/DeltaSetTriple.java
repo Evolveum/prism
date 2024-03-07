@@ -32,8 +32,8 @@ public interface DeltaSetTriple<T> extends DebugDumpable, ShortDumpable, Seriali
     /**
      * Compares two (unordered) collections and creates a triple describing the differences.
      */
-    static <T> DeltaSetTriple<T> diff(Collection<T> valuesOld, Collection<T> valuesNew, PrismContext prismContext) {
-        DeltaSetTriple<T> triple = prismContext.deltaFactory().createDeltaSetTriple();
+    static <T> DeltaSetTriple<T> diff(Collection<T> valuesOld, Collection<T> valuesNew) {
+        DeltaSetTriple<T> triple = PrismContext.get().deltaFactory().createDeltaSetTriple();
         DeltaSetTripleUtil.diff(valuesOld, valuesNew, triple);
         return triple;
     }

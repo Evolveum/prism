@@ -27,6 +27,7 @@ import com.evolveum.midpoint.prism.query.ValueFilter;
 import com.evolveum.midpoint.prism.query.builder.*;
 import com.evolveum.midpoint.util.MiscUtil;
 
+@SuppressWarnings("CheckStyle")
 public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_RightHandItemEntry {
 
     private final ItemPath itemPath;
@@ -131,7 +132,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     @Override
     public S_MatchingRuleEntry gt(Object value) {
         return new R_AtomicFilter(this, GreaterFilterImpl.createGreater(
-                itemPath, propertyDefinition, null, value, false, owner.getPrismContext()));
+                itemPath, propertyDefinition, null, value, false));
     }
 
     @Override
@@ -144,7 +145,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     @Override
     public S_MatchingRuleEntry ge(Object value) {
         return new R_AtomicFilter(this, GreaterFilterImpl.createGreater(
-                itemPath, propertyDefinition, null, value, true, owner.getPrismContext()));
+                itemPath, propertyDefinition, null, value, true));
     }
 
     @Override
@@ -157,7 +158,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     @Override
     public S_MatchingRuleEntry lt(Object value) {
         return new R_AtomicFilter(this, LessFilterImpl.createLess(
-                itemPath, propertyDefinition, null, value, false, owner.getPrismContext()));
+                itemPath, propertyDefinition, null, value, false));
     }
 
     @Override
@@ -170,7 +171,7 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
     @Override
     public S_MatchingRuleEntry le(Object value) {
         return new R_AtomicFilter(this, LessFilterImpl.createLess(
-                itemPath, propertyDefinition, null, value, true, owner.getPrismContext()));
+                itemPath, propertyDefinition, null, value, true));
     }
 
     @Override

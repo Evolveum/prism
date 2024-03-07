@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.lex.dom;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 
@@ -96,7 +97,7 @@ class DomReader {
     }
 
     private boolean rootIsNotObjectsMarker() {
-        QName objectsMarker = schemaRegistry.getPrismContext().getObjectsElementName();
+        QName objectsMarker = PrismContext.get().getObjectsElementName();
         return objectsMarker != null && !QNameUtil.match(rootElementName, objectsMarker);
     }
 

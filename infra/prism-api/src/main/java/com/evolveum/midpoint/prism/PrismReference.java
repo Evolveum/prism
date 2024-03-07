@@ -29,15 +29,6 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceDefinition> {
-//    public PrismReference(QName name) {
-//        super(name);
-//    }
-//
-//    PrismReference(QName name, PrismReferenceDefinition definition, PrismContext prismContext) {
-//        super(name, definition, prismContext);
-//    }
-
-
     @Override
     Referencable getRealValue();
 

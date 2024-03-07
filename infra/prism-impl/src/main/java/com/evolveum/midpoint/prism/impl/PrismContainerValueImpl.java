@@ -14,7 +14,6 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,20 +65,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     public PrismContainerValueImpl(C containerable) {
-        this(containerable, null);
-    }
-
-    public PrismContainerValueImpl(PrismContext prismContext) {
-        this(null, prismContext);
-    }
-
-    public PrismContainerValueImpl(C containerable, PrismContext prismContext) {
-        super(prismContext);
         this.containerable = containerable;
-
-        if (prismContext != null) {
-            getComplexTypeDefinition();        // to determine CTD (could be also called with null prismContext, but non-null prismContext provides additional information in some cases)
-        }
+        getComplexTypeDefinition();
     }
 
     public PrismContainerValueImpl(
@@ -87,26 +74,14 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             Objectable source,
             PrismContainerable container,
             Long id,
-            ComplexTypeDefinition complexTypeDefinition,
-            PrismContext prismContext) {
-        super(prismContext, type, source, container);
+            ComplexTypeDefinition complexTypeDefinition) {
+        super(type, source, container);
         this.id = id;
         this.complexTypeDefinition = complexTypeDefinition;
     }
 
     public static <T extends Containerable> T asContainerable(PrismContainerValue<T> value) {
         return value != null ? value.asContainerable() : null;
-    }
-
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
-    }
-
-    // Primarily for testing
-    @Override
-    public PrismContext getPrismContextLocal() {
-        return getPrismContext();
     }
 
     /**
@@ -312,11 +287,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             throw new SystemException("Can't create instance of class '" + clazz.getSimpleName() + "', it's abstract.");
         }
         try {
-            if (getPrismContext() != null) {
-                containerable = clazz.getConstructor(PrismContext.class).newInstance(getPrismContext());
-            } else {
-                containerable = clazz.getDeclaredConstructor().newInstance();
-            }
+            containerable = clazz.getDeclaredConstructor().newInstance();
             containerable.setupContainerValue(this);
             return containerable;
         } catch (SystemException ex) {
@@ -354,10 +325,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             throw new IllegalArgumentException("Item " + itemName + " is already present in " + this.getClass().getSimpleName());
         }
         item.setParent(this);
-        PrismContext prismContext = getPrismContext();
-        if (prismContext != null) {
-            item.setPrismContext(prismContext);
-        }
         if (getComplexTypeDefinition() != null && item.getDefinition() == null) {
             ID definition = determineItemDefinition(itemName, getComplexTypeDefinition());
             if (definition instanceof RemovedItemDefinition) {
@@ -811,7 +778,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 throw new IllegalStateException("PrismObject instantiated as a subItem in " + this + " from definition " + itemDefinition);
             }
         } else {
-            newItem = ItemImpl.createNewDefinitionlessItem(name, type, getPrismContext());
+            newItem = ItemImpl.createNewDefinitionlessItem(name, type);
             if (newItem instanceof PrismObject) {
                 throw new IllegalStateException("PrismObject instantiated as a subItem in " + this + " as definitionless instance of class " + type);
             }
@@ -874,7 +841,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
         PrismProperty<X> property;
         if (propertyDefinition == null) {
-            property = new PrismPropertyImpl<>(propertyName, getPrismContext());        // Definitionless
+            property = new PrismPropertyImpl<>(propertyName); // Definitionless
         } else {
             property = propertyDefinition.instantiate();
         }
@@ -949,13 +916,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <T> void setPropertyRealValue(QName propertyName, T realValue, PrismContext prismContext) throws SchemaException {
+    public <T> void setPropertyRealValue(QName propertyName, T realValue) throws SchemaException {
         checkMutable();
         PrismProperty<T> property = findOrCreateProperty(ItemName.fromQName(propertyName));
         property.setRealValue(realValue);
-        if (property.getPrismContext() == null) {
-            property.setPrismContext(prismContext);
-        }
     }
 
     @Override
@@ -1104,7 +1068,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> parseRawElement(Object element, PrismContainerDefinition<C> definition) throws SchemaException {
-        JaxbDomHack jaxbDomHack = ((PrismContextImpl) definition.getPrismContext()).getJaxbDomHack();
+        JaxbDomHack jaxbDomHack = ((PrismContextImpl) PrismContext.get()).getJaxbDomHack();
         return jaxbDomHack.parseRawElement(element, definition);
     }
 
@@ -1235,7 +1199,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     // this is the case in which we are going to overwrite a specific definition
                     // (e.g. WfPrimaryChangeProcessorStateType) with a generic one (e.g. WfProcessorSpecificStateType)
                     // --> we should either skip this, or fetch the fresh definition from the prism context
-                    ComplexTypeDefinition freshCtd = getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(complexTypeDefinition.getTypeName());
+                    ComplexTypeDefinition freshCtd = PrismContext.get().getSchemaRegistry()
+                            .findComplexTypeDefinitionByType(complexTypeDefinition.getTypeName());
                     if (freshCtd != null) {
                         //System.out.println("Using " + freshCtd + " instead of " + definitionToUse);
                         definitionToUse = freshCtd;
@@ -1289,7 +1254,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                         + ") to a non-raw property value: " + value);
             } else {
                 RootXNodeImpl rootXnode = new RootXNodeImpl(containerDefinition.getItemName(), rawElement);
-                PrismValue parsedValue = getPrismContext().parserFor(rootXnode).definition(containerDefinition).parseItemValue();
+                PrismValue parsedValue = PrismContext.get().parserFor(rootXnode).definition(containerDefinition).parseItemValue();
                 if (parsedValue instanceof PrismContainerValue) {
                     //noinspection unchecked
                     container.add((PrismContainerValue<C1>) parsedValue);
@@ -1311,14 +1276,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             return itemDefinition;
         }
         if (ctd == null || ctd.isXsdAnyMarker() || ctd.isRuntimeSchema()) {
-            // If we have prism context, try to locate global definition. But even if that is not
-            // found it is still OK. This is runtime container. We tolerate quite a lot here.
-            PrismContext prismContext = getPrismContext();
-            if (prismContext != null) {
-                return (ID) prismContext.getSchemaRegistry().resolveGlobalItemDefinition(itemName, ctd);
-            } else {
-                return null;
-            }
+            // Try to locate global definition. But even if that is not found it is still OK. This is runtime container.
+            // We tolerate quite a lot here.
+            return (ID) PrismContext.get().getSchemaRegistry().resolveGlobalItemDefinition(itemName, ctd);
         } else {
             if (ctd.isItemDefinitionRemoved(itemName)) {
                 // This allows the caller to treat removed definition differently, if desired. See MID-7939.
@@ -1410,8 +1370,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public PrismContainerValueImpl<C> cloneComplex(CloneStrategy strategy) {    // TODO resolve also the definition?
-        PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(getOriginType(), getOriginObject(), getParent(), null,
-                this.complexTypeDefinition, this.getPrismContext());
+        PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(
+                getOriginType(), getOriginObject(), getParent(), null, this.complexTypeDefinition);
         copyValues(strategy, clone);
         return clone;
     }
@@ -1640,16 +1600,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (containerable == null) {
             return parentCTD;
         }
-        if (getPrismContext() == null) {
-            // check if parentCTD matches containerable
-            if (parentCTD != null && containerable.getClass().equals(parentCTD.getCompileTimeClass())) {
-                return parentCTD;
-            } else {
-                //throw new IllegalStateException("Cannot determine complexTypeDefinition for PrismContainerValue because prismContext is missing; PCV = " + this);
-                return null;
-            }
-        }
-        return getPrismContext().getSchemaRegistry()
+        return PrismContext.get().getSchemaRegistry()
                 .findComplexTypeDefinitionByCompileTimeClass(containerable.getClass()); // may be null at this place
     }
 
@@ -1700,9 +1651,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
      */
     @Override
     public PrismContainer<C> asSingleValuedContainer(@NotNull QName itemName) throws SchemaException {
-        PrismContext prismContext = getPrismContext();
-        Validate.notNull(prismContext, "Prism context is null");
-
         PrismContainerDefinitionImpl<C> definition = new PrismContainerDefinitionImpl<>(itemName, getComplexTypeDefinition());
         definition.setMaxOccurs(1);
 

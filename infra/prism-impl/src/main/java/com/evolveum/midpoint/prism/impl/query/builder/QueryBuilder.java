@@ -67,15 +67,12 @@ import com.evolveum.midpoint.prism.util.DefinitionUtil;
 public final class QueryBuilder {
 
     @NotNull private final Class<?> queryClass;
-    @NotNull private final PrismContext prismContext;
+    @NotNull private final PrismContext prismContext = PrismContext.get();
     @Nullable private final ItemDefinitionResolver itemDefinitionResolver;
 
     private QueryBuilder(
-            @NotNull Class<?> queryClass,
-            @NotNull PrismContext prismContext,
-            @Nullable ItemDefinitionResolver itemDefinitionResolver) {
+            @NotNull Class<?> queryClass, @Nullable ItemDefinitionResolver itemDefinitionResolver) {
         this.queryClass = queryClass;
-        this.prismContext = prismContext;
         this.itemDefinitionResolver = itemDefinitionResolver;
     }
 
@@ -88,17 +85,14 @@ public final class QueryBuilder {
     }
 
     public static S_FilterEntryOrEmpty queryFor(
-            Class<? extends Containerable> queryClass,
-            PrismContext prismContext,
-            ItemDefinitionResolver itemDefinitionResolver) {
+            Class<? extends Containerable> queryClass, ItemDefinitionResolver itemDefinitionResolver) {
         return R_Filter.create(
-                new QueryBuilder(queryClass, prismContext, itemDefinitionResolver));
+                new QueryBuilder(queryClass, itemDefinitionResolver));
     }
 
     public static S_FilterEntryOrEmpty queryFor(
-            Class<? extends Containerable> queryClass,
-            PrismContext prismContext) {
-        return queryFor(queryClass, prismContext, null);
+            Class<? extends Containerable> queryClass) {
+        return queryFor(queryClass, null);
     }
 
     /**
@@ -108,12 +102,12 @@ public final class QueryBuilder {
      * or finish the query with {@link S_FilterEntryOrEmpty#build()}.
      */
     public static S_FilterEntryOrEmpty queryForReferenceOwnedBy(
-            Class<? extends Containerable> ownerClass, ItemPath referencePath, PrismContext prismContext) {
+            Class<? extends Containerable> ownerClass, ItemPath referencePath) {
         PrismReferenceDefinition refDefinition =
                 DefinitionUtil.findItemDefinitionMandatory(
-                        prismContext, ownerClass, referencePath, PrismReferenceDefinition.class);
+                        ownerClass, referencePath, PrismReferenceDefinition.class);
         return R_Filter.create(
-                        new QueryBuilder(Referencable.class, prismContext, null),
+                        new QueryBuilder(Referencable.class, null),
                         refDefinition)
                 .ownedBy(ownerClass, referencePath);
     }
@@ -129,6 +123,6 @@ public final class QueryBuilder {
                 return definition;
             }
         }
-        return DefinitionUtil.findItemDefinitionMandatory(prismContext, currentClass, itemPath, type);
+        return DefinitionUtil.findItemDefinitionMandatory(currentClass, itemPath, type);
     }
 }

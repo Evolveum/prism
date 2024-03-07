@@ -74,8 +74,8 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
     }
 
     public static <C extends Containerable> ExistsFilter createExists(
-            ItemPath itemPath, Class<C> clazz, PrismContext prismContext, ObjectFilter filter) {
-        ItemDefinition<?> itemDefinition = FilterImplUtil.findItemDefinition(itemPath, clazz, prismContext);
+            ItemPath itemPath, Class<C> clazz, ObjectFilter filter) {
+        ItemDefinition<?> itemDefinition = FilterImplUtil.findItemDefinition(itemPath, clazz);
         return new ExistsFilterImpl(itemPath, itemDefinition, filter);
     }
 

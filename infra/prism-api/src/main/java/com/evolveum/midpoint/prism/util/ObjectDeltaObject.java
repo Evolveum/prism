@@ -106,7 +106,7 @@ public class ObjectDeltaObject<O extends Objectable>
     // FIXME fragile!!! better don't use if you don't have to
     public void update(ItemDelta<?, ?> itemDelta) throws SchemaException {
         if (delta == null) {
-            delta = getAnyObject().getPrismContext().deltaFactory().object()
+            delta = PrismContext.get().deltaFactory().object()
                     .createModifyDelta(getAnyObject().getOid(), itemDelta, getAnyObject().getCompileTimeClass());
         } else {
             delta.swallow(itemDelta);

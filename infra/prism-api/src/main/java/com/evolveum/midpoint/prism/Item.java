@@ -302,11 +302,11 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
 
     @Experimental // Do NOT use !!!!
     @NotNull
-    default Collection<Object> getRealValuesOrRawTypes(PrismContext prismContext) {
+    default Collection<Object> getRealValuesOrRawTypes() {
         List<Object> rv = new ArrayList<>();
         for (V value : getValues()) {
             if (value != null) {
-                rv.add(value.getRealValueOrRawType(prismContext));
+                rv.add(value.getRealValueOrRawType());
             } else {
                 rv.add("null"); // fixme
             }
@@ -772,13 +772,6 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * (Shouldn't these methods be rather called findAllValues/findAllItems?)
      */
     @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path);
-
-    // Primarily for testing
-    @VisibleForTesting
-    PrismContext getPrismContextLocal();
-
-    @Deprecated
-    void setPrismContext(PrismContext prismContext); // todo remove
 
     Long getHighestId();
 }

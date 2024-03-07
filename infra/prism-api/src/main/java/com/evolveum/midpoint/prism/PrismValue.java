@@ -17,8 +17,6 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,9 +32,6 @@ import java.util.Optional;
  *
  */
 public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, PrismContextSensitive, MidpointOriginMetadata {      // todo ShortDumpable?
-
-    @VisibleForTesting
-    void setPrismContext(PrismContext prismContext);
 
     Map<String, Object> getUserData();
 
@@ -195,11 +190,11 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
 
     @Nullable
     @Experimental // todo reconsider method name
-    default Object getRealValueOrRawType(PrismContext prismContext) {
+    default Object getRealValueOrRawType() {
         if (hasRealClass() && getValueMetadata().isEmpty()) {
             return getRealValue();
         } else {
-            return new RawType(this, getTypeName(), prismContext);
+            return new RawType(this, getTypeName());
         }
     }
 

@@ -37,7 +37,7 @@ public interface QueryFactory {
     // values
     @Deprecated // please use QueryBuilder instead
     @NotNull <T> EqualFilter<T> createEqual(@NotNull ItemPath path, @Nullable PrismPropertyDefinition<T> definition,
-            @Nullable QName matchingRule, @NotNull PrismContext prismContext, Object... values);
+            @Nullable QName matchingRule, Object... values);
 
     // expression-related
     @Deprecated // please use QueryBuilder instead
@@ -71,7 +71,7 @@ public interface QueryFactory {
     @Deprecated
     // please use QueryBuilder instead
     <T> GreaterFilter<T> createGreater(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, Object value, boolean equals, @NotNull PrismContext prismContext);
+            QName matchingRule, Object value, boolean equals);
 
     // expression-related
     @NotNull
@@ -98,7 +98,7 @@ public interface QueryFactory {
     @Deprecated
     // please use QueryBuilder instead
     <T> LessFilter<T> createLess(@NotNull ItemPath path, PrismPropertyDefinition<T> definition,
-            QName matchingRule, Object value, boolean equals, @NotNull PrismContext prismContext);
+            QName matchingRule, Object value, boolean equals);
 
     // expression-related
     @NotNull
@@ -161,8 +161,7 @@ public interface QueryFactory {
 
     @Deprecated
         // please use QueryBuilder instead
-    <C extends Containerable> ExistsFilter createExists(
-            ItemPath path, Class<C> containerType, PrismContext prismContext, ObjectFilter inner);
+    <C extends Containerable> ExistsFilter createExists(ItemPath path, Class<C> containerType, ObjectFilter inner);
 
     @NotNull
     @Deprecated

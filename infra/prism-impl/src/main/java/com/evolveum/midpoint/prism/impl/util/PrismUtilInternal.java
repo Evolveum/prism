@@ -23,7 +23,7 @@ import java.util.Map;
  *
  */
 public class PrismUtilInternal {
-    public static ExpressionWrapper parseExpression(XNodeImpl node, PrismContext prismContext) throws SchemaException {
+    public static ExpressionWrapper parseExpression(XNodeImpl node) throws SchemaException {
         if (!(node instanceof MapXNodeImpl)) {
             return null;
         }
@@ -32,18 +32,18 @@ public class PrismUtilInternal {
         }
         for (Map.Entry<QName, XNodeImpl> entry: ((MapXNodeImpl)node).entrySet()) {
             if (PrismConstants.EXPRESSION_LOCAL_PART.equals(entry.getKey().getLocalPart())) {
-                return parseExpression(entry, prismContext);
+                return parseExpression(entry);
             }
         }
         return null;
     }
 
-    public static ExpressionWrapper parseExpression(Map.Entry<QName, XNodeImpl> expressionEntry, PrismContext prismContext) throws SchemaException {
+    public static ExpressionWrapper parseExpression(Map.Entry<QName, XNodeImpl> expressionEntry) throws SchemaException {
         if (expressionEntry == null) {
             return null;
         }
         RootXNodeImpl expressionRoot = new RootXNodeImpl(expressionEntry);
-        PrismPropertyValue expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
+        PrismPropertyValue expressionPropertyValue = PrismContext.get().parserFor(expressionRoot).parseItemValue();
         ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
         return expressionWrapper;
     }

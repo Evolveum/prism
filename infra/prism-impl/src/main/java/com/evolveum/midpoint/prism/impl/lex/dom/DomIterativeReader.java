@@ -17,6 +17,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 import org.apache.commons.io.IOUtils;
@@ -62,7 +63,7 @@ class DomIterativeReader {
             DOMConverter domConverter = new DOMConverter(DOMUtil.createDocumentBuilder());
             Map<String, String> rootNamespaceDeclarations = new HashMap<>();
 
-            QName objectsMarker = schemaRegistry.getPrismContext().getObjectsElementName();
+            QName objectsMarker = PrismContext.get().getObjectsElementName();
             if (objectsMarker != null && !QNameUtil.match(stream.getName(), objectsMarker)) {
                 readSingleObjectIteratively(stream, rootNamespaceDeclarations, domConverter, handler);
             }

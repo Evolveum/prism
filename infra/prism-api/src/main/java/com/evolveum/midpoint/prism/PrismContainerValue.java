@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.util.exception.CommonException;
-import com.google.common.annotations.VisibleForTesting;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,10 +33,6 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     static <T extends Containerable> T asContainerable(PrismContainerValue<T> value) {
         return value != null ? value.asContainerable() : null;
     }
-
-    // Primarily for testing
-    @VisibleForTesting
-    PrismContext getPrismContextLocal();
 
     /**
      * Returns a collection of items that the property container contains.
@@ -223,7 +219,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     void removeReference(ItemPath path);
 
-    <T> void setPropertyRealValue(QName propertyName, T realValue, PrismContext prismContext) throws SchemaException;
+    <T> void setPropertyRealValue(QName propertyName, T realValue) throws SchemaException;
 
     <T> T getPropertyRealValue(QName propertyName, Class<T> type);
 

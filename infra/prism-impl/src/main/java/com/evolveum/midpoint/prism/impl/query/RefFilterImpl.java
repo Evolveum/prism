@@ -133,7 +133,7 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         }
         if (!QNameUtil.match(PrismConstants.Q_ANY, filterValue.getRelation())) {
             // similar to relation-matching code in PrismReferenceValue (but awkward to unify, so keeping separate)
-            PrismContext prismContext = getPrismContext();
+            PrismContext prismContext = PrismContext.get();
             QName objectRelation = objectValue.getRelation();
             QName filterRelation = filterValue.getRelation();
             if (prismContext != null) {

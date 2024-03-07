@@ -107,12 +107,11 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
 
     @SafeVarargs
     static <O extends Objectable, C extends Containerable> void fillInModificationAddContainer(
-            ObjectDelta<O> objectDelta,
-            ItemPath propertyPath, PrismContext prismContext, C... containerables) throws SchemaException {
+            ObjectDelta<O> objectDelta, ItemPath propertyPath, C... containerables) throws SchemaException {
         ContainerDelta<C> containerDelta = objectDelta.createContainerModification(propertyPath);
         if (containerables != null) {
             for (C containerable: containerables) {
-                prismContext.adopt(containerable, objectDelta.getObjectTypeClass(), propertyPath);
+                PrismContext.get().adopt(containerable, objectDelta.getObjectTypeClass(), propertyPath);
                 PrismContainerValue<C> prismContainerValue = containerable.asPrismContainerValue();
                 containerDelta.addValueToAdd(prismContainerValue);
             }
@@ -121,12 +120,11 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
 
     @SafeVarargs
     static <O extends Objectable, C extends Containerable> void fillInModificationDeleteContainer(
-            ObjectDelta<O> objectDelta,
-            ItemPath propertyPath, PrismContext prismContext, C... containerables) throws SchemaException {
+            ObjectDelta<O> objectDelta, ItemPath propertyPath, C... containerables) throws SchemaException {
         ContainerDelta<C> containerDelta = objectDelta.createContainerModification(propertyPath);
         if (containerables != null) {
             for (C containerable: containerables) {
-                prismContext.adopt(containerable, objectDelta.getObjectTypeClass(), propertyPath);
+                PrismContext.get().adopt(containerable, objectDelta.getObjectTypeClass(), propertyPath);
                 PrismContainerValue<C> prismContainerValue = containerable.asPrismContainerValue();
                 containerDelta.addValueToDelete(prismContainerValue);
             }
@@ -153,7 +151,7 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
         if (containerValues != null) {
             ContainerDelta<C> containerDelta = objectDelta.createContainerModification(propertyPath);
             Collection<PrismContainerValue<C>> valuesToReplace = toPrismContainerValues(
-                    objectDelta.getObjectTypeClass(), propertyPath, objectDelta.getPrismContext(), containerValues);
+                    objectDelta.getObjectTypeClass(), propertyPath, containerValues);
             containerDelta.setValuesToReplace(valuesToReplace);
             objectDelta.addModification(containerDelta);
         }
@@ -161,7 +159,7 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
 
     @Override
     public <O extends Objectable> ObjectDelta<O> create(Class<O> type, ChangeType changeType) {
-        return new ObjectDeltaImpl<>(type, changeType, prismContext);
+        return new ObjectDeltaImpl<>(type, changeType);
     }
 
     /**

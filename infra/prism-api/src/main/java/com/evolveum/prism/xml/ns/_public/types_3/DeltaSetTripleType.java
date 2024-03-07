@@ -102,16 +102,15 @@ public class DeltaSetTripleType implements PlainStructured.WithoutStrategy, Jaxb
     }
 
     public static <V extends PrismValue> DeltaSetTripleType fromDeltaSetTriple(PrismValueDeltaSetTriple<V> triple) {
-        PrismContext prismContext = PrismContext.get();
         DeltaSetTripleType rv = new DeltaSetTripleType();
         for (V v : triple.getZeroSet()) {
-            rv.zero.add(v != null ? v.getRealValueOrRawType(prismContext) : "null"); // fixme
+            rv.zero.add(v != null ? v.getRealValueOrRawType() : "null"); // fixme
         }
         for (V v : triple.getPlusSet()) {
-            rv.plus.add(v != null ? v.getRealValueOrRawType(prismContext) : "null"); // fixme
+            rv.plus.add(v != null ? v.getRealValueOrRawType() : "null"); // fixme
         }
         for (V v : triple.getMinusSet()) {
-            rv.minus.add(v != null ? v.getRealValueOrRawType(prismContext) : "null"); // fixme
+            rv.minus.add(v != null ? v.getRealValueOrRawType() : "null"); // fixme
         }
         return rv;
     }

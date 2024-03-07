@@ -8,7 +8,6 @@
 package com.evolveum.midpoint.prism;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -24,5 +23,5 @@ import com.evolveum.prism.xml.ns._public.types_3.ProtectedDataType;
 public interface Hacks {
 
     @VisibleForTesting
-    <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNode xmap, PrismContext prismContext, ParsingContext pc) throws SchemaException;
+    <T> void parseProtectedType(ProtectedDataType<T> protectedType, MapXNode xmap, ParsingContext pc) throws SchemaException;
 }

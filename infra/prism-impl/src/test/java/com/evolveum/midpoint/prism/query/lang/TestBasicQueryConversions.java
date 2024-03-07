@@ -386,7 +386,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .findPropertyDefinition(validToPath);
 
         @NotNull
-        var innerFilter = LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext());
+        var innerFilter = LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false);
         ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, A_RELATION);
 
         ObjectFilter javaFilter = getPrismContext().queryFor(AccountType.class)
@@ -432,8 +432,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
         @NotNull
         var innerFilter = AndFilterImpl.createAnd(
-                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext()),
-                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false, getPrismContext())
+                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false),
+                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false)
         );
         ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
 
@@ -465,8 +465,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
         @NotNull
         var innerFilter = OrFilterImpl.createOr(
-                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false, getPrismContext()),
-                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false, getPrismContext())
+                LessFilterImpl.createLess(validToPath, validToDef, null, earlier, false),
+                GreaterFilterImpl.createGreater(validFromPath, validFromDef, null, earlier, false)
         );
         ObjectFilter filter = ReferencedByFilterImpl.create(UserType.COMPLEX_TYPE, UserType.F_ACCOUNT_REF, innerFilter, null);
 

@@ -64,9 +64,9 @@ class DomToSchemaPostProcessor {
     private boolean isRuntime;
     private boolean allowDelayedItemDefinitions;
 
-    DomToSchemaPostProcessor(XSSchemaSet xsSchemaSet, PrismContext prismContext) {
+    DomToSchemaPostProcessor(XSSchemaSet xsSchemaSet) {
         this.xsSchemaSet = xsSchemaSet;
-        this.prismContext = prismContext;
+        this.prismContext = PrismContext.get();
     }
 
     private SchemaRegistry getSchemaRegistry() {
@@ -154,8 +154,7 @@ class DomToSchemaPostProcessor {
             throws SchemaException {
 
         SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
-        MutableComplexTypeDefinition ctd = definitionFactory.createComplexTypeDefinition(
-                complexType, prismContext, complexType.getAnnotation());
+        var ctd = definitionFactory.createComplexTypeDefinition(complexType, complexType.getAnnotation());
 
         ComplexTypeDefinition existingComplexTypeDefinition = schema.findComplexTypeDefinitionByType(ctd.getTypeName());
         if (existingComplexTypeDefinition != null) {
@@ -266,7 +265,7 @@ class DomToSchemaPostProcessor {
             ItemName name = new ItemName(ctd.getTypeName().getNamespaceURI(), attributeDecl.getName());
             QName type = getType(attributeDecl.getType());
             var attributeDef = getDefinitionFactory().createPropertyDefinition(
-                    name, type, null, prismContext, null,  null);
+                    name, type, null, null,  null);
             attributeDef.toMutable().setMinOccurs(0);
             attributeDef.toMutable().setMaxOccurs(1);
             definitions.add(attributeDef);
@@ -296,13 +295,11 @@ class DomToSchemaPostProcessor {
         SimpleTypeDefinitionImpl std;
         SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
         if (isEnumeration(simpleType)) {
-            std = definitionFactory.createEnumerationTypeDefinition(simpleType, prismContext,
-                    simpleType.getAnnotation());
+            std = definitionFactory.createEnumerationTypeDefinition(simpleType, simpleType.getAnnotation());
 
 
         } else {
-            std = (SimpleTypeDefinitionImpl) definitionFactory.createSimpleTypeDefinition(simpleType, prismContext,
-                    simpleType.getAnnotation());
+            std = (SimpleTypeDefinitionImpl) definitionFactory.createSimpleTypeDefinition(simpleType, simpleType.getAnnotation());
         }
 
         SimpleTypeDefinition existingSimpleTypeDefinition = schema.findSimpleTypeDefinitionByType(std.getTypeName());
@@ -321,18 +318,15 @@ class DomToSchemaPostProcessor {
 
         extractDocumentation(std, simpleType.getAnnotation());
 
-        if (getSchemaRegistry() != null) {
-            Class<?> compileTimeClass = getSchemaRegistry().determineCompileTimeClass(std.getTypeName());
-            std.setCompileTimeClass(compileTimeClass);
-        }
+        std.setCompileTimeClass(
+                getSchemaRegistry().determineCompileTimeClass(std.getTypeName()));
 
         schema.add(std);
         return std;
     }
 
     private boolean isEnumeration(XSSimpleType simpleType) {
-        if (simpleType instanceof XSRestrictionSimpleType) {
-            XSRestrictionSimpleType restType = (XSRestrictionSimpleType) simpleType;
+        if (simpleType instanceof XSRestrictionSimpleType restType) {
             Collection<? extends XSFacet> facets = restType.getDeclaredFacets();
             if (facets.isEmpty() || restType.getDerivationMethod() != XSType.RESTRICTION) {
                 return false;
@@ -498,8 +492,8 @@ class DomToSchemaPostProcessor {
         }
         if (definition == null) {
             SchemaDefinitionFactory definitionFactory = getDefinitionFactory();
-            definition = (PrismReferenceDefinitionImpl) definitionFactory.createReferenceDefinition(primaryElementName, typeName,
-                    containingCtd, prismContext, annotation, elementParticle);
+            definition = (PrismReferenceDefinitionImpl) definitionFactory.createReferenceDefinition(
+                    primaryElementName, typeName, containingCtd, annotation, elementParticle);
             definition.setInherited(inherited);
             if (containingCtd != null) {
                 containingCtd.toMutable().add(definition);
@@ -948,8 +942,9 @@ class DomToSchemaPostProcessor {
 
         Object defaultValue = parseDefaultValue(elementParticle, typeName);
 
-        propDef = definitionFactory.createPropertyDefinition(elementName, typeName, ctd, prismContext,
-                annotation, elementParticle, allowedValues, (T) defaultValue);
+        //noinspection unchecked
+        propDef = definitionFactory.createPropertyDefinition(
+                elementName, typeName, ctd, annotation, elementParticle, allowedValues, (T) defaultValue);
         setMultiplicity(propDef, elementParticle, annotation, ctd == null);
 
         // Process generic annotations
@@ -1004,11 +999,9 @@ class DomToSchemaPostProcessor {
         Element valueEnumerationRefElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_VALUE_ENUMERATION_REF);
         if (valueEnumerationRefElement != null) {
             String oid = valueEnumerationRefElement.getAttribute(PrismConstants.ATTRIBUTE_OID_LOCAL_NAME);
-            if (oid != null) {
-                QName targetType = DOMUtil.getQNameAttribute(valueEnumerationRefElement, PrismConstants.ATTRIBUTE_REF_TYPE_LOCAL_NAME);
-                PrismReferenceValue valueEnumerationRef = new PrismReferenceValueImpl(oid, targetType);
-                propDef.setValueEnumerationRef(valueEnumerationRef);
-            }
+            QName targetType = DOMUtil.getQNameAttribute(valueEnumerationRefElement, PrismConstants.ATTRIBUTE_REF_TYPE_LOCAL_NAME);
+            PrismReferenceValue valueEnumerationRef = new PrismReferenceValueImpl(oid, targetType);
+            propDef.setValueEnumerationRef(valueEnumerationRef);
         }
 
         return propDef;
@@ -1057,14 +1050,14 @@ class DomToSchemaPostProcessor {
                             valueE = (Element) list.item(0);
                         }
                     }
-                    String label = null;
+                    String label;
                     if (valueE != null) {
                         label = valueE.getTextContent();
                     } else {
                         label = value;
                     }
-                    DisplayableValueImpl<T> edv = null;
-                    Class compileTimeClass = prismContext.getSchemaRegistry().getCompileTimeClass(typeName);
+                    DisplayableValueImpl<T> edv;
+                    Class<?> compileTimeClass = prismContext.getSchemaRegistry().getCompileTimeClass(typeName);
                     if (ctd != null && !ctd.isRuntimeSchema() && compileTimeClass != null) {
 
                         String fieldName = null;
@@ -1077,8 +1070,9 @@ class DomToSchemaPostProcessor {
 
                         }
                         if (fieldName != null) {
+                            //noinspection unchecked
                             T enumValue = (T) Enum.valueOf((Class<Enum>) compileTimeClass, fieldName);
-                            edv = new DisplayableValueImpl(enumValue, label,
+                            edv = new DisplayableValueImpl<>(enumValue, label,
                                     descriptionE != null ? descriptionE.getTextContent() : null);
                         } else {
                             edv = new DisplayableValueImpl(value, label,
@@ -1087,13 +1081,13 @@ class DomToSchemaPostProcessor {
 
 
                     } else {
-                    edv = new DisplayableValueImpl(value, label,
-                            descriptionE != null ? descriptionE.getTextContent() : null);
+                        edv = new DisplayableValueImpl(value, label,
+                                descriptionE != null ? descriptionE.getTextContent() : null);
                     }
                     enumValues.add(edv);
 
                 }
-                if (enumValues != null && !enumValues.isEmpty()) {
+                if (!enumValues.isEmpty()) {
                     return enumValues;
                 }
 
@@ -1102,7 +1096,7 @@ class DomToSchemaPostProcessor {
         return null;
     }
 
-    private void parseItemDefinitionAnnotations(MutableItemDefinition itemDef, XSAnnotation annotation) throws SchemaException {
+    private void parseItemDefinitionAnnotations(MutableItemDefinition<?> itemDef, XSAnnotation annotation) throws SchemaException {
         if (annotation == null || annotation.getAnnotation() == null) {
             return;
         }

@@ -167,7 +167,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 return prismValue.getRealValue();
             } else {
                 // This is an ugly hack. Reconsider!
-                return new RawType(prismValue, null, prismContext);
+                return new RawType(prismValue, null);
             }
         } else {
             return prismValue.getRealValue();

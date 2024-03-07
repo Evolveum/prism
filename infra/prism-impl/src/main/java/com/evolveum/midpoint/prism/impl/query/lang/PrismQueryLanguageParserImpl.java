@@ -356,7 +356,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -375,7 +375,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
-                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true, context);
+                    return GreaterFilterImpl.createGreater(path, definition, matchingRule, value, true);
                 }
 
                 @Override
@@ -394,7 +394,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, false);
                 }
 
                 @Override
@@ -413,7 +413,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 ObjectFilter valueFilter(PrismPropertyDefinition<?> definition, ItemPath path, QName matchingRule,
                         Object value) {
-                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true, context);
+                    return LessFilterImpl.createLess(path, definition, matchingRule, value, true);
                 }
 
                 @Override

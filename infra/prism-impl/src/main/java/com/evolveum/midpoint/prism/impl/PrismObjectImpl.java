@@ -25,6 +25,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,28 +53,14 @@ import java.util.stream.Collectors;
  */
 public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O> implements PrismObject<O> {
 
-    private static final long serialVersionUID = 7321429132391159949L;
+    @Serial private static final long serialVersionUID = 7321429132391159949L;
 
     public PrismObjectImpl(QName name, Class<O> compileTimeClass) {
         super(name, compileTimeClass);
     }
 
-    public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismContext prismContext) {
-        super(name, compileTimeClass, prismContext);
-    }
-
-    public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismContext prismContext, PrismObjectValue<O> value) {
-        super(name, compileTimeClass, prismContext);
-        try {
-            addIgnoringEquivalents(value);
-        } catch (SchemaException e) {
-            // This should not happen
-            throw new SystemException("Internal Error: " + e.getMessage(), e);
-        }
-    }
-
-    public PrismObjectImpl(QName name, PrismObjectDefinition<O> definition, PrismContext prismContext) {
-        super(name, definition, prismContext);
+    public PrismObjectImpl(QName name, PrismObjectDefinition<O> definition) {
+        super(name, definition);
     }
 
     public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismObjectValue<O> value) {
@@ -89,7 +76,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     @Override
     public PrismObjectValue<O> createNewValue() {
         checkMutable();
-        PrismObjectValue<O> newValue = new PrismObjectValueImpl<>(getPrismContext());
+        PrismObjectValue<O> newValue = new PrismObjectValueImpl<>();
         try {
             addIgnoringEquivalents(newValue);
             return newValue;
@@ -283,14 +270,14 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public PrismObjectImpl<O> cloneComplex(CloneStrategy strategy) {
-        PrismMonitor monitor = getPrismContext().getMonitor();
+        PrismMonitor monitor = PrismContext.get().getMonitor();
         if (monitor != null) {
             monitor.beforeObjectClone(this);
         }
 
         PrismObjectImpl<O> clone = null;
         try {
-            clone = new PrismObjectImpl<>(getElementName(), getDefinition(), getPrismContext());
+            clone = new PrismObjectImpl<>(getElementName(), getDefinition());
             copyValues(strategy, clone);
             return clone;
         } finally {
@@ -319,12 +306,12 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     @NotNull
     public ObjectDelta<O> diff(PrismObject<O> other, ParameterizedEquivalenceStrategy strategy) {
         if (other == null) {
-            ObjectDelta<O> objectDelta = new ObjectDeltaImpl<>(getCompileTimeClass(), ChangeType.DELETE, getPrismContext());
+            ObjectDelta<O> objectDelta = new ObjectDeltaImpl<>(getCompileTimeClass(), ChangeType.DELETE);
             objectDelta.setOid(getOid());
             return objectDelta;
         }
         // This must be a modify
-        ObjectDelta<O> objectDelta = new ObjectDeltaImpl<>(getCompileTimeClass(), ChangeType.MODIFY, getPrismContext());
+        ObjectDelta<O> objectDelta = new ObjectDeltaImpl<>(getCompileTimeClass(), ChangeType.MODIFY);
         objectDelta.setOid(getOid());
 
         Collection<? extends ItemDelta> itemDeltas = new ArrayList<>();
@@ -355,7 +342,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public ObjectDelta<O> createDelta(ChangeType changeType) {
-        ObjectDelta<O> delta = new ObjectDeltaImpl<>(getCompileTimeClass(), changeType, getPrismContext());
+        ObjectDelta<O> delta = new ObjectDeltaImpl<>(getCompileTimeClass(), changeType);
         delta.setOid(getOid());
         return delta;
     }

@@ -18,8 +18,6 @@ import com.sun.xml.xsom.XSSchemaSet;
 import com.sun.xml.xsom.parser.XSOMParser;
 import com.sun.xml.xsom.util.DomAnnotationParserFactory;
 
-import ch.qos.logback.core.joran.spi.XMLUtil;
-
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 import org.xml.sax.EntityResolver;
@@ -57,9 +55,9 @@ class DomToSchemaProcessor {
     private final PrismContext prismContext;
     private String shortDescription;
 
-    DomToSchemaProcessor(EntityResolver entityResolver, PrismContext prismContext) {
+    DomToSchemaProcessor(EntityResolver entityResolver) {
         this.entityResolver = entityResolver;
-        this.prismContext = prismContext;
+        this.prismContext = PrismContext.get();
     }
 
     /**
@@ -76,7 +74,7 @@ class DomToSchemaProcessor {
         if (xsSchemaSet == null) {
             return;
         }
-        DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet, prismContext);
+        DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet);
         postProcessor.postprocessSchema(prismSchema, isRuntime, allowDelayedItemDefinitions, shortDescription);
     }
 
@@ -92,7 +90,7 @@ class DomToSchemaProcessor {
             return;
         }
         for (SchemaDescription schemaDescription : schemaDescriptions) {
-            DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet, prismContext);
+            DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet);
             PrismSchemaImpl prismSchema = (PrismSchemaImpl) schemaDescription.getSchema();
             boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
             String schemaShortDescription = schemaDescription.getSourceDescription() + " in " + shortDescription;

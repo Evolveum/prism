@@ -68,9 +68,9 @@ public class PathGenerator {
         return "type/"+getTypeBaseName(typeDef)+".html";
     }
 
-    public String typeDefinitionUrl(QName typeName, String prefixToBase, PrismContext prismContext) {
+    public String typeDefinitionUrl(QName typeName, String prefixToBase) {
         String namespaceURI = typeName.getNamespaceURI();
-        PrismSchema schema = prismContext.getSchemaRegistry().findSchemaByNamespace(namespaceURI);
+        PrismSchema schema = PrismContext.get().getSchemaRegistry().findSchemaByNamespace(namespaceURI);
         if (schema == null) {
             return null;
         }

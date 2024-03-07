@@ -40,13 +40,13 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
                 return (PrismObject) parent;
             }
             if (parent == null) {
-                var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get(), objVal);
+                var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), objVal);
                 return object;
             }
 
         }
         if (value == null) {
-            var object =new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), PrismContext.get());
+            var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass());
             value = object.getValue();
             return object;
         }

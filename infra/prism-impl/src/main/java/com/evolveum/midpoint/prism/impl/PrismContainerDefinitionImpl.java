@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +57,7 @@ import com.google.common.collect.ImmutableSet;
 public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemDefinitionImpl<PrismContainer<C>>
         implements MutablePrismContainerDefinition<C> {
 
-    private static final long serialVersionUID = -5068923696147960699L;
+    @Serial private static final long serialVersionUID = -5068923696147960699L;
 
     // There are situations where CTD is (maybe) null but class is defined.
     // TODO clean up this.
@@ -142,16 +143,6 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     }
 
     @Override
-    public void revive(PrismContext prismContext) {
-        if (getPrismContext() != null) {
-            return;
-        }
-        if (complexTypeDefinition != null) {
-            complexTypeDefinition.revive(prismContext);
-        }
-    }
-
-    @Override
     public <ID extends ItemDefinition<?>> ID findItemDefinition(@NotNull ItemPath path, @NotNull Class<ID> clazz) {
         for (; ; ) {
             if (path.isEmpty()) {
@@ -169,11 +160,11 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
                 path = path.rest();
             } else if (ItemPath.isParent(first)) {
                 ItemPath rest = path.rest();
-                ComplexTypeDefinition parent = getSchemaRegistry().determineParentDefinition(getComplexTypeDefinition(), rest);
+                ComplexTypeDefinition parent = PrismContext.get().getSchemaRegistry().determineParentDefinition(getComplexTypeDefinition(), rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
                     //noinspection unchecked
-                    return (ID) getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
+                    return (ID) PrismContext.get().getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
                 } else {
                     return parent.findItemDefinition(rest, clazz);
                 }
@@ -210,12 +201,10 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
         }
 
         if (ctd != null && ctd.isXsdAnyMarker()) {
-            SchemaRegistry schemaRegistry = getSchemaRegistry();
-            if (schemaRegistry != null) {
-                ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
-                if (def != null) {
-                    return def.findItemDefinition(rest, clazz);
-                }
+            SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
+            ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
+            if (def != null) {
+                return def.findItemDefinition(rest, clazz);
             }
         }
 
@@ -233,7 +222,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
      * The set contains all property definitions of all types that were parsed.
      * Order of definitions is insignificant.
      *
-     * @return set of definitions
+     * @return list of definitions
      */
     @Override
     public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
@@ -265,12 +254,12 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public PrismContainer<C> instantiate(QName elementName) throws SchemaException {
         elementName = DefinitionUtil.addNamespaceIfApplicable(elementName, this.itemName);
-        return new PrismContainerImpl<>(elementName, this, getPrismContext());
+        return new PrismContainerImpl<>(elementName, this);
     }
 
     @Override
     public @NotNull ContainerDelta<C> createEmptyDelta(ItemPath path) {
-        return new ContainerDeltaImpl<>(path, this, getPrismContext());
+        return new ContainerDeltaImpl<>(path, this);
     }
 
     @Override
@@ -444,7 +433,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
     @Override
     public MutablePrismContainerDefinition<?> createContainerDefinition(QName name, QName typeName,
             int minOccurs, int maxOccurs) {
-        PrismSchema typeSchema = getPrismContext().getSchemaRegistry().findSchemaByNamespace(typeName.getNamespaceURI());
+        PrismSchema typeSchema = PrismContext.get().getSchemaRegistry().findSchemaByNamespace(typeName.getNamespaceURI());
         if (typeSchema == null) {
             throw new IllegalArgumentException("Schema for namespace " + typeName.getNamespaceURI() + " is not known in the prism context");
         }
@@ -490,7 +479,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
 
     @Override
     public PrismContainerValue<C> createValue() {
-        return new PrismContainerValueImpl<>(getPrismContext());
+        return new PrismContainerValueImpl<>();
     }
 
     @Override

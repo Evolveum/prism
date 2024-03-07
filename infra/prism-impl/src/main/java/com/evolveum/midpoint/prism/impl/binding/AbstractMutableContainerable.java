@@ -45,7 +45,7 @@ public abstract class AbstractMutableContainerable implements ContainerablePrism
     @Override
     public PrismContainerValue asPrismContainerValue() {
         if (value == null) {
-            value = new PrismContainerValueImpl<>(this, PrismContext.get());
+            value = new PrismContainerValueImpl<>(this);
         }
         return value;
     }

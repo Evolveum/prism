@@ -24,52 +24,46 @@ import javax.xml.namespace.QName;
  */
 public class ItemFactoryImpl implements ItemFactory {
 
-    @NotNull private final PrismContextImpl prismContext;
-
-    public ItemFactoryImpl(PrismContextImpl prismContext) {
-        this.prismContext = prismContext;
-    }
-
     @Override
     public <T> PrismProperty<T> createProperty(QName itemName) {
-        return new PrismPropertyImpl<>(itemName, prismContext);
+        return new PrismPropertyImpl<>(itemName);
     }
 
     @Override
     public <T> PrismProperty<T> createProperty(QName itemName, PrismPropertyDefinition<T> definition) {
-        return new PrismPropertyImpl<>(itemName, definition, prismContext);
+        return new PrismPropertyImpl<>(itemName, definition);
     }
 
     @Override
     public <T> PrismPropertyValue<T> createPropertyValue() {
-        return new PrismPropertyValueImpl<>(null, prismContext);
+        return new PrismPropertyValueImpl<>(null);
     }
 
     @Override
     public <T> PrismPropertyValue<T> createPropertyValue(T realValue) {
-        return new PrismPropertyValueImpl<>(realValue, prismContext);
+        return new PrismPropertyValueImpl<>(realValue);
     }
 
     @Override
     public <T> PrismPropertyValue<T> createPropertyValue(XNode rawValue) {
-        PrismPropertyValueImpl<T> rv = new PrismPropertyValueImpl<>(null, prismContext);
+        PrismPropertyValueImpl<T> rv = new PrismPropertyValueImpl<>(null);
         rv.setRawElement(rawValue);
         return rv;
     }
 
     @Override
     public <T> PrismPropertyValue<T> createPropertyValue(T value, OriginType originType, Objectable originObject) {
-        return new PrismPropertyValueImpl<>(value, prismContext, originType, originObject, null);
+        return new PrismPropertyValueImpl<>(value, originType, originObject, null);
     }
 
     @Override
     public PrismReference createReference(QName name) {
-        return new PrismReferenceImpl(name, null, prismContext);
+        return new PrismReferenceImpl(name, null);
     }
 
     @Override
     public PrismReference createReference(QName name, PrismReferenceDefinition definition) {
-        return new PrismReferenceImpl(name, definition, prismContext);
+        return new PrismReferenceImpl(name, definition);
     }
 
     @Override
@@ -80,7 +74,6 @@ public class ItemFactoryImpl implements ItemFactory {
     @Override
     public PrismReferenceValue createReferenceValue(PrismObject<?> target) {
         PrismReferenceValueImpl rv = new PrismReferenceValueImpl(target.getOid());
-        rv.setPrismContext(prismContext);
         rv.setObject(target);
         if (target.getDefinition() != null) {
             rv.setTargetType(target.getDefinition().getTypeName());
@@ -90,23 +83,17 @@ public class ItemFactoryImpl implements ItemFactory {
 
     @Override
     public PrismReferenceValue createReferenceValue(String targetOid) {
-        PrismReferenceValueImpl rv = new PrismReferenceValueImpl(targetOid);
-        rv.setPrismContext(prismContext);
-        return rv;
+        return new PrismReferenceValueImpl(targetOid);
     }
 
     @Override
     public PrismReferenceValue createReferenceValue(String oid, OriginType originType, Objectable originObject) {
-        PrismReferenceValueImpl rv = new PrismReferenceValueImpl(oid, originType, originObject);
-        rv.setPrismContext(prismContext);
-        return rv;
+        return new PrismReferenceValueImpl(oid, originType, originObject);
     }
 
     @Override
     public PrismReferenceValue createReferenceValue(String oid, QName targetType) {
-        PrismReferenceValueImpl rv = new PrismReferenceValueImpl(oid, targetType);
-        rv.setPrismContext(prismContext);
-        return rv;
+        return new PrismReferenceValueImpl(oid, targetType);
     }
 
     @Override
@@ -121,33 +108,33 @@ public class ItemFactoryImpl implements ItemFactory {
     }
 
     @Override
-    public PrismContainer createContainer(QName name) {
-        return new PrismContainerImpl(name, prismContext);
+    public <C extends Containerable> PrismContainer<C> createContainer(QName name) {
+        return new PrismContainerImpl<>(name);
     }
 
     @Override
     public <C extends Containerable> PrismContainer<C> createContainer(QName name, PrismContainerDefinition<C> definition) {
-        return new PrismContainerImpl<>(name, definition, prismContext);
+        return new PrismContainerImpl<>(name, definition);
     }
 
     @Override
     public <O extends Objectable> PrismObject<O> createObject(QName name, PrismObjectDefinition<O> definition) {
-        return new PrismObjectImpl<>(name, definition, prismContext);
+        return new PrismObjectImpl<>(name, definition);
     }
 
     @Override
     public <O extends Objectable> PrismObjectValue<O> createObjectValue(O objectable) {
-        return new PrismObjectValueImpl<>(objectable, prismContext);
+        return new PrismObjectValueImpl<>(objectable);
     }
 
     @Override
     public <C extends Containerable> PrismContainerValue<C> createContainerValue(C containerable) {
-        return new PrismContainerValueImpl<>(containerable, prismContext);
+        return new PrismContainerValueImpl<>(containerable);
     }
 
     @Override
     public <C extends Containerable> PrismContainerValue<C> createContainerValue() {
-        return new PrismContainerValueImpl<>(prismContext);
+        return new PrismContainerValueImpl<>();
     }
 
     @Override

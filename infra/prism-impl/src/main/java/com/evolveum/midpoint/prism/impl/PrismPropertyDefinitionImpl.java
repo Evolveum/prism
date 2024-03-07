@@ -85,7 +85,7 @@ public class PrismPropertyDefinitionImpl<T>
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
         super(elementName, typeName, definedInType);
         this.structuredType = Lazy.from(() ->
-            Optional.ofNullable(getPrismContext().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
+            Optional.ofNullable(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
     }
 
@@ -163,12 +163,12 @@ public class PrismPropertyDefinitionImpl<T>
     @Override
     public PrismProperty<T> instantiate(QName name) {
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
-        return new PrismPropertyImpl<>(name, this, getPrismContext());
+        return new PrismPropertyImpl<>(name, this);
     }
 
     @Override
     public @NotNull PropertyDelta<T> createEmptyDelta(ItemPath path) {
-        return new PropertyDeltaImpl<>(path, this, getPrismContext());
+        return new PropertyDeltaImpl<>(path, this);
     }
 
     @Override

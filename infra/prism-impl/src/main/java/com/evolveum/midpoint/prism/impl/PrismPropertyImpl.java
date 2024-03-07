@@ -69,12 +69,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         super(name);
     }
 
-    public PrismPropertyImpl(QName name, PrismContext prismContext) {
-        super(name, prismContext);
-    }
-
-    public PrismPropertyImpl(QName name, PrismPropertyDefinition<T> definition, PrismContext prismContext) {
-        super(name, definition, prismContext);
+    public PrismPropertyImpl(QName name, PrismPropertyDefinition<T> definition) {
+        super(name, definition);
     }
 
     /**
@@ -321,12 +317,12 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     public PropertyDelta<T> createDelta() {
-        return new PropertyDeltaImpl<>(getPath(), getDefinition(), getPrismContext());
+        return new PropertyDeltaImpl<>(getPath(), getDefinition());
     }
 
     @Override
     public PropertyDelta<T> createDelta(ItemPath path) {
-        return new PropertyDeltaImpl<>(path, getDefinition(), getPrismContext());
+        return new PropertyDeltaImpl<>(path, getDefinition());
     }
 
     @Override
@@ -379,7 +375,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     public PrismProperty<T> cloneComplex(CloneStrategy strategy) {
-        PrismPropertyImpl<T> clone = new PrismPropertyImpl<>(getElementName(), getDefinition(), getPrismContext());
+        PrismPropertyImpl<T> clone = new PrismPropertyImpl<>(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }
@@ -487,7 +483,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                                     sb.append(((DebugDumpable) realValue).debugDump(indent + 1));
                                 } else {
                                     if (DebugUtil.isDetailedDebugDump()) {
-                                        PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getPrismContext(), getElementName(), null);
+                                        PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getElementName(), null);
                                     } else {
                                         sb.append("SS{").append(realValue).append("}");
                                         PrettyPrinter.shortDump(sb, realValue);
@@ -514,7 +510,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                         T realValue = value.getValue();
                         if (DebugUtil.isDetailedDebugDump() ||
                                 !(realValue instanceof ShortDumpable) && DebugUtil.getPrettyPrintBeansAs() != null) {
-                            PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getPrismContext(), getElementName(), null);
+                            PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getElementName(), null);
                         } else {
                             PrettyPrinter.shortDump(sb, realValue);
                         }

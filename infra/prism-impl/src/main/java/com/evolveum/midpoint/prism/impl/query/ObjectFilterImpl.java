@@ -24,11 +24,6 @@ public abstract class ObjectFilterImpl extends AbstractFreezable implements Obje
         // NOOP
     }
 
-    @Override
-    public PrismContext getPrismContext() {
-        return PrismContext.get();
-    }
-
     public void setPrismContext(PrismContext prismContext) {
     }
 

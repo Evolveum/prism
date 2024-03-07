@@ -38,10 +38,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PrismUtil {
 
-    public static <T> void recomputeRealValue(T realValue, PrismContext prismContext) {
-        recomputeRealValue(realValue);
-    }
-
     public static <T> void recomputeRealValue(T realValue) {
         if (realValue == null) {
             return;
