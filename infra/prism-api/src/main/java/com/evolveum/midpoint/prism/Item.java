@@ -204,7 +204,13 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
 
     /**
      * Returns the values for this item. Although the ordering of this values is not important, and each value should
-     * be present at most once, we currently return them as a list instead of a set. TODO reconsider this
+     * be present at most once, we currently return them as a list instead of a set.
+     *
+     * TODO reconsider this
+     *
+     * FIXME we should return immutable list, to avoid manipulating the values directly
+     *
+     * FIXME and maybe we should return List<? extends V> to avoid specializing the values, see ShadowAssociationValue in midPoint
      */
     @NotNull
     List<V> getValues();

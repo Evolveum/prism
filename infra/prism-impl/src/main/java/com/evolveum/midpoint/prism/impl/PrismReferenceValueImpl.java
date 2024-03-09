@@ -628,7 +628,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     public String debugDump(int indent, boolean expandObject) {
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
-        sb.append(toString());
+        sb.append(this);
         if (expandObject && object != null) {
             sb.append("\n");
             sb.append(object.debugDump(indent + 1));

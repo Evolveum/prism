@@ -14,4 +14,9 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 public interface Checkable {
 
     void checkConsistence() throws SchemaException;
+
+    /** To throw unchecked exception in case of consistency check failure. */
+    default IllegalStateException checkFailedException(Throwable e) {
+        throw new IllegalStateException("Consistency check failed for " + this + ": " + e.getMessage(), e);
+    }
 }

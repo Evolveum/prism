@@ -6,10 +6,7 @@
  */
 package com.evolveum.midpoint.prism;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
@@ -24,6 +21,8 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 /**
  * @author semancik
@@ -345,6 +344,14 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      * Like isEmpty but ignores presence of container value ID.
      */
     boolean hasNoItems();
+
+    /** For simplicity, everything must be qualified: names to check, and existing names. */
+    default void checkNothingExceptFor(QName... allowedItemNames) {
+        var actualItems = new HashSet<>(getItemNames());
+        var expectedItems = Set.of(allowedItemNames);
+        actualItems.removeAll(expectedItems);
+        stateCheck(actualItems.isEmpty(), "Unexpected items in %s: %s", this, actualItems);
+    }
 
     /** Used when accessing an item whose definition was removed. To be used only at very specific places! */
     class RemovedItemDefinitionException extends CommonException {

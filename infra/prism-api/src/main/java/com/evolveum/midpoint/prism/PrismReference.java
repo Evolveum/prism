@@ -78,5 +78,4 @@ public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceD
      */
     @Experimental
     <I extends Item<?,?>> I findReferencedItem(ItemPath path, Class<I> type);
-
 }

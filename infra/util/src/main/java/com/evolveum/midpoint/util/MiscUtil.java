@@ -958,10 +958,16 @@ public class MiscUtil {
     }
 
     public static <T> T castSafely(Object value, Class<T> expectedClass) throws SchemaException {
+        return castSafely(value, expectedClass, null);
+    }
+
+    public static <T> T castSafely(Object value, Class<T> expectedClass, Object errorCtx) throws SchemaException {
         if (value == null) {
             return null;
         } else if (!expectedClass.isAssignableFrom(value.getClass())) {
-            throw new SchemaException("Expected '" + expectedClass.getName() + "' but got '" + value.getClass().getName() + "'");
+            var suffix = errorCtx != null ? " in " + errorCtx : "";
+            throw new SchemaException("Expected '%s' but got '%s'%s".formatted(
+                    expectedClass.getName(), value.getClass().getName(), suffix));
         } else {
             //noinspection unchecked
             return (T) value;

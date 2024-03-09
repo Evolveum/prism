@@ -20,6 +20,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +38,7 @@ import java.util.List;
  *
  */
 public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismReferenceDefinition> implements PrismReference {
-    private static final long serialVersionUID = 1872343401395762657L;
+    @Serial private static final long serialVersionUID = 1872343401395762657L;
 
     @SuppressWarnings("unused") // called dynamically from ItemImpl.createNewDefinitionlessItem
     public PrismReferenceImpl(QName name) {
@@ -247,11 +248,12 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
+
         PrismReferenceDefinition definition = getDefinition();
-        boolean multiline = true;
-        if (definition != null) {
-            multiline = definition.isMultiValue() || definition.isComposite();
-        }
+        boolean composite = definition != null && definition.isComposite();
+        boolean multivalue = definition != null && definition.isMultiValue();
+
+        boolean multiline = definition == null || multivalue || composite;
         if (DebugUtil.isDetailedDebugDump()) {
             sb.append(getDebugDumpClassName()).append(": ");
         }
@@ -265,22 +267,26 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
                 sb.append(" def ");
             }
             for (PrismReferenceValue value : values) {
-                if (multiline) {
-                    sb.append("\n");
-                    DebugUtil.indentDebugDump(sb, indent + 1);
-                }
                 if (DebugUtil.isDetailedDebugDump()) {
                     if (multiline) {
                         sb.append(value.debugDump(indent + 1, true));
                     } else {
-                        sb.append(value.toString());
+                        sb.append(value);
                     }
                 } else {
-                    sb.append(value.toHumanReadableString());
+                    if (composite) {
+                        sb.append("\n");
+                        sb.append(value.debugDump(indent + 1, true));
+                    } else {
+                        if (multiline) {
+                            sb.append("\n");
+                            DebugUtil.indentDebugDump(sb, indent + 1);
+                        }
+                        sb.append(value.toHumanReadableString());
+                    }
                 }
             }
         }
-
         return sb.toString();
     }
 
