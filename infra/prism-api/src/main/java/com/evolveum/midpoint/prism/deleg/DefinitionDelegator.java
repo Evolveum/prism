@@ -128,6 +128,13 @@ public interface DefinitionDelegator extends Definition {
     default DisplayHint getDisplayHint() {
         return delegate().getDisplayHint();
     }
+
+    @Override
+    @Nullable
+    default Merge getMerge() {
+        return delegate().getMerge();
+    }
+
     @Override
     default boolean isEmphasized() {
         return delegate().isEmphasized();
