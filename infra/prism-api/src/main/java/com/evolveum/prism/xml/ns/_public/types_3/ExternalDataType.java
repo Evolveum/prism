@@ -80,4 +80,8 @@ public class ExternalDataType implements Serializable, Cloneable, JaxbVisitable 
     public void accept(JaxbVisitor visitor) {
         visitor.visit(this);
     }
+
+    public boolean isEmpty() {
+        return key == null && provider == null;
+    }
 }
