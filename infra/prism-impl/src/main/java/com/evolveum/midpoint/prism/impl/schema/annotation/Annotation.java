@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.DisplayHint;
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.MutableItemDefinition;
-import com.evolveum.midpoint.prism.MutablePrismReferenceDefinition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -89,6 +86,26 @@ public enum Annotation {
             A_HETEROGENEOUS_LIST_ITEM, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setHeterogeneousListItem, true)),
 
     IGNORE(new IgnoreProcessor()),
+
+    MERGE(new AnnotationProcessor<MutableItemDefinition<?>, Merge>(
+            A_HETEROGENEOUS_LIST_ITEM, Merge.class, MutableItemDefinition::setMerge) {
+
+        @Override
+        protected @Nullable Merge convert(@NotNull Element element) {
+            String merger = null;
+            Element mergerElement = DOMUtil.getChildElement(element, A_MERGER);
+            if (mergerElement != null) {
+                merger = mergerElement.getTextContent();
+            }
+
+            List<Element> identifierElements = DOMUtil.getChildElements(element, A_IDENTIFIER);
+            List<QName> identifiers = identifierElements.stream()
+                    .map(DOMUtil::getQNameValue)
+                    .toList();
+
+            return new Merge(merger, identifiers);
+        }
+    }),
 
     OBJECT_REFERENCE_TARGET_TYPE(new AnnotationProcessor<>(
             A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, MutablePrismReferenceDefinition.class, MutablePrismReferenceDefinition::setTargetTypeName, null) {

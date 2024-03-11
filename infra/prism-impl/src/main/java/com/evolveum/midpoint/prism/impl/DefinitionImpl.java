@@ -14,10 +14,11 @@ import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstract definition in the schema.
@@ -62,6 +63,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
+    private Merge merge;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -90,6 +92,18 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public void setTypeName(@NotNull QName typeName) {
         checkMutable();
         this.typeName = typeName;
+    }
+
+    @Nullable
+    @Override
+    public Merge getMerge() {
+        return merge;
+    }
+
+    @Override
+    public void setMerge(Merge merge) {
+        checkMutable();
+        this.merge = merge;
     }
 
     @Override

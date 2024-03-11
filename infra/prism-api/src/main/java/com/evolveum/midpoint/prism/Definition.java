@@ -218,6 +218,9 @@ public interface Definition
     @Experimental
     List<ItemDiagramSpecification> getDiagrams();
 
+    @Nullable
+    Merge getMerge();
+
     @NotNull
     Definition clone();
 

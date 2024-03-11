@@ -48,6 +48,8 @@ public interface MutableDefinition extends Definition {
 
     void addDiagram(ItemDiagramSpecification diagram);
 
+    void setMerge(Merge merge);
+
     /**
      * A variant of {@link MutableDefinition} that does not allow any modifications. Useful for implementations that want
      * to allow only selected mutating operations.
@@ -91,6 +93,11 @@ public interface MutableDefinition extends Definition {
 
         @Override
         default void setDisplayHint(DisplayHint display) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        default void setMerge(Merge merge) {
             throw new UnsupportedOperationException();
         }
 

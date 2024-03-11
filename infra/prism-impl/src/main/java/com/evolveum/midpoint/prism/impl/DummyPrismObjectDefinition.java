@@ -376,4 +376,9 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     @Override
     public void freeze() {
     }
+
+    @Override
+    public @Nullable Merge getMerge() {
+        throw new UnsupportedOperationException();
+    }
 }

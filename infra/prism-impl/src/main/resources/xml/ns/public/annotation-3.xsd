@@ -961,6 +961,42 @@
         </xsd:restriction>
     </xsd:simpleType>
 
+    <xsd:complexType name="MergeType">
+        <xsd:annotation>
+            <xsd:documentation>
+                <p>
+                    Annotation that describes how the item should be merged.
+
+                    EXPERIMENTAL
+                </p>
+            </xsd:documentation>
+            <xsd:appinfo>
+                <a:since>4.9</a:since>
+                <a:experimental>true</a:experimental>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="merger" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Identifier of the implementation strategy that should be used to merge the item.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="identifier" type="xsd:QName" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Identifier(s) of the item that has to be used to decide whether two items represent the same object.
+
+                        TODO: this probably should be t:ItemPathType, however we can't import t namespace here.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="merge" type="tns:MergeType"/>
+
 </xsd:schema>
 
 
