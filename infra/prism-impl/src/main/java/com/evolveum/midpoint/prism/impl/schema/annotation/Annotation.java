@@ -88,7 +88,7 @@ public enum Annotation {
     IGNORE(new IgnoreProcessor()),
 
     MERGE(new AnnotationProcessor<MutableItemDefinition<?>, Merge>(
-            A_HETEROGENEOUS_LIST_ITEM, Merge.class, MutableItemDefinition::setMerge) {
+            A_MERGE, Merge.class, MutableItemDefinition::setMerge) {
 
         @Override
         protected @Nullable Merge convert(@NotNull Element element) {
