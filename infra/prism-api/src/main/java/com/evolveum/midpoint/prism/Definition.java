@@ -219,7 +219,10 @@ public interface Definition
     List<ItemDiagramSpecification> getDiagrams();
 
     @Nullable
-    Merge getMerge();
+    String getMerger();
+
+    @Nullable
+    List<QName> getNaturalKey();
 
     @NotNull
     Definition clone();

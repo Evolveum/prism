@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 
 import javax.xml.namespace.QName;
+import java.util.List;
 
 /**
  * An interface that provides an ability to modify a definition.
@@ -48,7 +49,9 @@ public interface MutableDefinition extends Definition {
 
     void addDiagram(ItemDiagramSpecification diagram);
 
-    void setMerge(Merge merge);
+    void setMerger(String merger);
+
+    void setNaturalKey(List<QName> naturalKey);
 
     /**
      * A variant of {@link MutableDefinition} that does not allow any modifications. Useful for implementations that want
@@ -97,7 +100,11 @@ public interface MutableDefinition extends Definition {
         }
 
         @Override
-        default void setMerge(Merge merge) {
+        default void setMerger(String merger) {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        default void setNaturalKey(List<QName> naturalKey) {
             throw new UnsupportedOperationException();
         }
 

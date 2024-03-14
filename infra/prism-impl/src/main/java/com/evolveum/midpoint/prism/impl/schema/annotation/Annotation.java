@@ -87,23 +87,21 @@ public enum Annotation {
 
     IGNORE(new IgnoreProcessor()),
 
-    MERGE(new AnnotationProcessor<MutableItemDefinition<?>, Merge>(
-            A_MERGE, Merge.class, MutableItemDefinition::setMerge) {
+    MERGER(new AnnotationProcessor<>(
+            A_MERGER, String.class, MutableDefinition::setMerger)),
+
+    NATURAL_KEY(new AnnotationProcessor<MutableItemDefinition<?>, List>(
+            A_NATURAL_KEY, List.class, MutableItemDefinition::setNaturalKey) {
 
         @Override
-        protected @Nullable Merge convert(@NotNull Element element) {
-            String merger = null;
-            Element mergerElement = DOMUtil.getChildElement(element, A_MERGER);
-            if (mergerElement != null) {
-                merger = mergerElement.getTextContent();
-            }
-
-            List<Element> identifierElements = DOMUtil.getChildElements(element, A_IDENTIFIER);
-            List<QName> identifiers = identifierElements.stream()
+        public void process(@NotNull MutableItemDefinition<?> definition, @NotNull List<Element> elements) throws SchemaException {
+            List<QName> naturalKey = elements.stream()
                     .map(DOMUtil::getQNameValue)
                     .toList();
 
-            return new Merge(merger, identifiers);
+            setValue.accept(definition, naturalKey);
+
+            definition.setAnnotation(name, naturalKey);
         }
     }),
 

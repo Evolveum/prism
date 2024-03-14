@@ -63,7 +63,8 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
-    private Merge merge;
+    private String merger;
+    private List<QName> naturalKey;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -94,16 +95,26 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         this.typeName = typeName;
     }
 
-    @Nullable
     @Override
-    public Merge getMerge() {
-        return merge;
+    public @Nullable String getMerger() {
+        return merger;
     }
 
     @Override
-    public void setMerge(Merge merge) {
+    public @Nullable List<QName> getNaturalKey() {
+        return naturalKey;
+    }
+
+    @Override
+    public void setMerger(String merger) {
         checkMutable();
-        this.merge = merge;
+        this.merger = merger;
+    }
+
+    @Override
+    public void setNaturalKey(List<QName> naturalKey) {
+        checkMutable();
+        this.naturalKey = naturalKey;
     }
 
     @Override

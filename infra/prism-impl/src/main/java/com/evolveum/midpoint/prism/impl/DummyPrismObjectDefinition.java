@@ -378,7 +378,12 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public @Nullable Merge getMerge() {
+    public @Nullable String getMerger() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @Nullable List<QName> getNaturalKey() {
         throw new UnsupportedOperationException();
     }
 }

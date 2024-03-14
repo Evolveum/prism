@@ -10,16 +10,13 @@ package com.evolveum.midpoint.prism.deleg;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.*;
-
 import org.jetbrains.annotations.NotNull;
-
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-
 import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 public interface DefinitionDelegator extends Definition {
 
@@ -131,8 +128,14 @@ public interface DefinitionDelegator extends Definition {
 
     @Override
     @Nullable
-    default Merge getMerge() {
-        return delegate().getMerge();
+    default String getMerger() {
+        return delegate().getMerger();
+    }
+
+    @Override
+    @Nullable
+    default List<QName> getNaturalKey() {
+        return delegate().getNaturalKey();
     }
 
     @Override
