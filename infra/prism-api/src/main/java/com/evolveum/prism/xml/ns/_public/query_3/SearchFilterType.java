@@ -74,6 +74,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         super();
         Objects.requireNonNull(o, "Cannot create a copy of 'SearchFilterType' from 'null'.");
         this.description = o.description;
+        this.text = o.text;
         this.filterClauseXNode = o.filterClauseXNode.clone();
     }
 
