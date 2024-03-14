@@ -1324,7 +1324,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 // This allows the caller to treat removed definition differently, if desired. See MID-7939.
                 return (ID) new RemovedItemDefinition<>(itemName);
             }
-            throw new SchemaException("No definition for item " + itemName + " in " + getParent());
+            throw new SchemaException("No definition for item " + itemName + " in " + getParent() + "; type: " + ctd);
         }
     }
 
