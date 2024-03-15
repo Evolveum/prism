@@ -2,8 +2,11 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.axiom.lang.antlr.AxiomQuerySource;
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +21,7 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
         this.prismContext = prismContext;
     }
 
-    public List<AxiomQueryError> validate(String query) {
+    public List<AxiomQueryError> validate(@Nullable ItemDefinition definition, String query) {
         AxiomQueryValidationVisitor axiomQueryValidationVisitor = new AxiomQueryValidationVisitor(this.prismContext);
         AxiomQuerySource axiomQuerySource = AxiomQuerySource.from(query);
         axiomQuerySource.root().accept(axiomQueryValidationVisitor);
@@ -26,7 +29,7 @@ public class AxiomQueryLangServiceImpl implements AxiomQueryLangService {
         return axiomQueryValidationVisitor.errorList;
     }
 
-    public Map<String, String> queryCompletion(String query) {
+    public Map<String, String> queryCompletion(@Nullable ItemDefinition definition, String query) {
 
         if (query.isEmpty()) query = " ";
 
