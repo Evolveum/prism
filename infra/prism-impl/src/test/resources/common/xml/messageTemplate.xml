@@ -1,0 +1,49 @@
+<messageTemplate xmlns='http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd'>
+    <name>message-template</name>
+    <defaultContent>
+        <bodyExpression>
+            <script>
+                <code><![CDATA[
+<html>
+    <head>
+        <style>
+/* Use your CSS styles as needed */
+div.footer {
+    height: 64px;
+    width: 100%;
+    border-top: solid thin;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: ivory;
+}
+
+body {
+    font: normal 14px Roboto, sans-serif;
+}
+
+.center {
+    text-align: center;
+}
+        </style>
+    </head>
+    <body>
+        <h1>User Modification Notification</h1>
+
+        <p>User <b>$!event.requesteeDisplayName</b> ($event.requesteeName) was <b>modified</b> (status: $event.statusAsText)</p>
+
+        <p>The user modification was requested by $event.requesterDisplayName ($event.requesterName)</p>
+
+        <div class="footer">
+            <img src="http://localhost/midpoint/static-web/example-logo-s.png" alt="[Example logo]" width="64" height="64" style="float:left;"/>
+            <p class="center">This notification has been from an unmonitored mailbox.<br/>
+            <b>IT Department of Example, Inc.</b>
+            </p>
+        </div>
+    </body>
+</html>
+
+]]></code>
+            </script>
+        </bodyExpression>
+    </defaultContent>
+</messageTemplate>

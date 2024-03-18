@@ -129,6 +129,9 @@ public class DOMUtil {
     public static final QName WSDL_ATTR_LOCATION = new QName(NS_WSDL, "location",
             NS_WSDL_SCHEMA_PREFIX);
 
+
+    public static final QName SCRIPT_CODE_ELEMENT_NAME = new QName("code");
+
     private static final String RANDOM_ATTR_PREFIX_PREFIX = "qn";
     private static final int RANDOM_ATTR_PREFIX_RND = 1000;
     private static final int RANDOM_ATTR_PREFIX_MAX_ITERATIONS = 30;
@@ -1460,6 +1463,52 @@ public class DOMUtil {
     public static void setElementTextContent(Element element, String value) {
         checkValidXmlChars(value);
         element.setTextContent(value);
+    }
+
+    public static void setElementTextContentWithCDATAPrefix(Element element, String value) {
+        CDATASection cdataElement = element.getOwnerDocument().createCDATASection(value);
+        element.appendChild(cdataElement);
+    }
+
+    public static boolean containsHTML(String code) {
+        if (StringUtils.isBlank(code)) {
+            return false;
+        }
+
+        List<String> lines = code.lines().filter(line -> !line.trim().startsWith("#") && !line.isBlank()).toList();
+
+        if (lines.isEmpty()) {
+            return false;
+        }
+
+        if (lines.size() == 1) {
+            String line = lines.get(0).trim();
+            String tag = "</";
+            if (!line.startsWith("<") || !line.contains(">")) {
+                return false;
+            } else {
+                tag += line.substring(1, line.indexOf(">") + 1);
+            }
+
+            if (!line.endsWith(tag)) {
+                return false;
+            }
+        } else {
+            String tag = "</";
+            String firstLine = lines.get(0).trim();
+            if (!firstLine.startsWith("<") || !firstLine.contains(">")) {
+                return false;
+            } else {
+                tag += firstLine.substring(1, firstLine.indexOf(">") + 1);
+            }
+
+            String lastLine = lines.get(lines.size() - 1).trim();
+            if (!lastLine.contains(tag)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static void checkValidXmlChars(String stringValue) {

@@ -8,18 +8,18 @@
   -->
 
 <xsd:schema targetNamespace="http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd"
-            xmlns:tns="http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            xmlns:a="http://prism.evolveum.com/xml/ns/public/annotation-3"
-            xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
-            xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
-            xmlns:ft="http://midpoint.evolveum.com/xml/ns/test/foo-types-1"
-            xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-            xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
-            xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
-            elementFormDefault="qualified"
-            jaxb:extensionBindingPrefixes="xjc"
-            jaxb:version="2.0">
+        xmlns:tns="http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:a="http://prism.evolveum.com/xml/ns/public/annotation-3"
+        xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+        xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+        xmlns:ft="http://midpoint.evolveum.com/xml/ns/test/foo-types-1"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+        elementFormDefault="qualified"
+        jaxb:extensionBindingPrefixes="xjc"
+        jaxb:version="2.0">
 
     <xsd:annotation>
         <xsd:documentation>
@@ -27,13 +27,13 @@
         </xsd:documentation>
         <xsd:appinfo>
             <jaxb:globalBindings>
-                <xjc:typeSubstitution type="complex" />
-                <xjc:serializable uid="201202081233" />
+                <xjc:typeSubstitution type="complex"/>
+                <xjc:serializable uid="201202081233"/>
             </jaxb:globalBindings>
         </xsd:appinfo>
     </xsd:annotation>
 
-    <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/query-3" schemaLocation="http://prism.evolveum.com/xml/ns/public/query-3" />
+    <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/query-3" schemaLocation="http://prism.evolveum.com/xml/ns/public/query-3"/>
 
     <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/types-3" schemaLocation="http://prism.evolveum.com/xml/ns/public/types-3">
         <xsd:annotation>
@@ -169,17 +169,17 @@
                     <!-- element that has different names in XML/JSON/YAML and in java bean -->
                     <xsd:element name="special" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                     <!-- single-occurrence container -->
-                    <xsd:element name="singleActivation" type="tns:ActivationType" minOccurs="0" />
+                    <xsd:element name="singleActivation" type="tns:ActivationType" minOccurs="0"/>
                     <!-- multi-occurrence container -->
-                    <xsd:element name="multiActivation" type="tns:ActivationType" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element name="multiActivation" type="tns:ActivationType" minOccurs="0" maxOccurs="unbounded"/>
                     <!-- multi-occurrence container -->
-                    <xsd:element name="multiActivationCopy" type="tns:ActivationType" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element name="multiActivationCopy" type="tns:ActivationType" minOccurs="0" maxOccurs="unbounded"/>
                     <!-- single-occurrence structured property (not a container) -->
-                    <xsd:element name="singleConstruction" type="tns:AccountConstructionType" minOccurs="0" />
+                    <xsd:element name="singleConstruction" type="tns:AccountConstructionType" minOccurs="0"/>
                     <!-- multi-occurrence container -->
-                    <xsd:element name="multiConstruction" type="tns:AccountConstructionType" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element name="multiConstruction" type="tns:AccountConstructionType" minOccurs="0" maxOccurs="unbounded"/>
                     <!-- multi-occurrence container -->
-                    <xsd:element name="multiConstructionCopy" type="tns:AccountConstructionType" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element name="multiConstructionCopy" type="tns:AccountConstructionType" minOccurs="0" maxOccurs="unbounded"/>
 
                 </xsd:sequence>
             </xsd:extension>
@@ -361,18 +361,18 @@
     <xsd:complexType name="EventHandlerType">
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
-    <xsd:element name="handler" type="tns:EventHandlerType" abstract="true" />
+    <xsd:element name="handler" type="tns:EventHandlerType" abstract="true"/>
 
     <xsd:complexType name="EventHandlerChainType">
         <xsd:complexContent>
             <xsd:extension base="tns:EventHandlerType">
                 <xsd:sequence>
-                    <xsd:element ref="tns:handler" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element ref="tns:handler" minOccurs="0" maxOccurs="unbounded"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="handlerChain" type="tns:EventHandlerChainType" substitutionGroup="tns:handler" />
+    <xsd:element name="handlerChain" type="tns:EventHandlerChainType" substitutionGroup="tns:handler"/>
 
     <xsd:complexType name="EventCategoryFilterType">
         <xsd:complexContent>
@@ -383,7 +383,7 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="categoryFilter" type="tns:EventCategoryFilterType" substitutionGroup="tns:handler" />
+    <xsd:element name="categoryFilter" type="tns:EventCategoryFilterType" substitutionGroup="tns:handler"/>
 
     <xsd:complexType name="EventStatusFilterType">
         <xsd:complexContent>
@@ -394,7 +394,7 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="statusFilter" type="tns:EventStatusFilterType" substitutionGroup="tns:handler" />
+    <xsd:element name="statusFilter" type="tns:EventStatusFilterType" substitutionGroup="tns:handler"/>
 
     <xsd:complexType name="EventOperationFilterType">
         <xsd:complexContent>
@@ -405,7 +405,7 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-    <xsd:element name="operationFilter" type="tns:EventOperationFilterType" substitutionGroup="tns:handler" />
+    <xsd:element name="operationFilter" type="tns:EventOperationFilterType" substitutionGroup="tns:handler"/>
 
     <xsd:complexType name="FooValueMetadataType">
         <xsd:annotation>
@@ -418,5 +418,35 @@
             <xsd:element name="test" type="xsd:string" minOccurs="0"/>
         </xsd:sequence -->
     </xsd:complexType>
-    <xsd:element name="fooValueMetadataType" type="tns:FooValueMetadataType" />
+    <xsd:element name="fooValueMetadataType" type="tns:FooValueMetadataType"/>
+
+    <xsd:complexType name="MessageTemplateType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="defaultContent" type="tns:MessageTemplateContentType" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="messageTemplate" type="tns:MessageTemplateType"/>
+
+    <xsd:complexType name="MessageTemplateContentType">
+        <xsd:sequence>
+            <xsd:element name="bodyExpression" type="tns:ExpressionType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ExpressionType">
+        <xsd:sequence>
+            <xsd:element name="script" type="tns:ScriptExpressionEvaluatorType"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ScriptExpressionEvaluatorType">
+        <xsd:sequence>
+            <xsd:element name="code" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
 </xsd:schema>
