@@ -11,6 +11,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import com.evolveum.midpoint.prism.xnode.*;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -23,10 +26,6 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
-import com.evolveum.midpoint.prism.xnode.MapXNode;
-import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
-import com.evolveum.midpoint.prism.xnode.RootXNode;
-import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -76,6 +75,14 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         this.description = o.description;
         this.text = o.text;
         this.filterClauseXNode = o.filterClauseXNode.clone();
+    }
+
+    public SearchFilterType(String text, PrismNamespaceContext namespaceContext) {
+        super();
+        this.text = text;
+        var xnodeFactory = PrismContext.get().xnodeFactory();
+        var textNode = xnodeFactory.primitive(text);
+        filterClauseXNode = xnodeFactory.map(namespaceContext, F_TEXT, textNode);
     }
 
     public String getDescription() {

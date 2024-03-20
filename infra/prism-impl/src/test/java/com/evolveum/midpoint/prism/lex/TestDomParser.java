@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.lex;
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.USER_JACK_FILE_BASENAME;
 import static com.evolveum.midpoint.prism.util.PrismTestUtil.createDefaultParsingContext;
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import java.util.List;
 import com.evolveum.midpoint.prism.ParserFileSource;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.impl.lex.dom.DomLexicalProcessor;
+import com.evolveum.midpoint.prism.xnode.RootXNode;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 
 import org.testng.annotations.Test;
@@ -31,6 +34,8 @@ import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 
+import javax.xml.namespace.QName;
+
 /**
  * @author semancik
  *
@@ -39,6 +44,8 @@ public class TestDomParser extends AbstractLexicalProcessorTest {
 
     private static final String OBJECTS_XML_1_NO_NS = "objects-xml-1-no-ns";
     private static final String OBJECTS_XML_2_NS = "objects-xml-2-ns";
+
+    private static final String MESSAGE_TEMPLATE = "messageTemplate";
 
     @Override
     protected String getSubdirName() {
@@ -147,6 +154,24 @@ public class TestDomParser extends AbstractLexicalProcessorTest {
         System.out.println(DebugUtil.debugDump(nodesStandard));
 
         assertEquals("Nodes are different", nodesStandard, nodes);
+    }
+
+    @Test
+    public void testWriteScriptCode() throws Exception {
+        // GIVEN
+        LexicalProcessor<String> lexicalProcessor = createLexicalProcessor();
+        RootXNodeImpl xnode = lexicalProcessor.read(new ParserFileSource(getFile(MESSAGE_TEMPLATE)), createDefaultParsingContext());
+        ((MapXNodeImpl)((MapXNodeImpl)((MapXNodeImpl)((MapXNodeImpl) xnode.getSubnode()).get("defaultContent"))
+                .get("bodyExpression"))
+                .get("script"))
+                .get("code").setTypeQName(DOMUtil.XSD_STRING);
+
+        // WHEN (parse to xnode)
+        String xml = lexicalProcessor.write(xnode, null);
+
+        // THEN
+        assertTrue(xml.contains("<code><![CDATA["));
+        assertTrue(xml.contains("]]></code>"));
     }
 
 
