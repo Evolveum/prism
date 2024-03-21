@@ -202,6 +202,9 @@ class DomToSchemaPostProcessor {
                 ctd.setSuperType(prismContext.getExtensionContainerTypeName());
             }
 
+            Annotation.processAnnotation(ctd, annotation, Annotation.NATURAL_KEY);
+            Annotation.processAnnotation(ctd, annotation, Annotation.MERGER);
+
             parseSchemaMigrations(ctd, annotation);
             parseDiagrams(ctd, annotation);
         }

@@ -17,7 +17,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.DisplayHint;
+import com.evolveum.midpoint.prism.MutableDefinition;
+import com.evolveum.midpoint.prism.MutableItemDefinition;
+import com.evolveum.midpoint.prism.MutablePrismReferenceDefinition;
 import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -90,16 +93,16 @@ public enum Annotation {
     MERGER(new AnnotationProcessor<>(
             A_MERGER, String.class, MutableDefinition::setMerger)),
 
-    NATURAL_KEY(new AnnotationProcessor<MutableItemDefinition<?>, List>(
-            A_NATURAL_KEY, List.class, MutableItemDefinition::setNaturalKey) {
+    NATURAL_KEY(new AnnotationProcessor<>(
+            A_NATURAL_KEY, List.class, null) {
 
         @Override
-        public void process(@NotNull MutableItemDefinition<?> definition, @NotNull List<Element> elements) throws SchemaException {
+        public void process(@NotNull MutableDefinition definition, @NotNull List<Element> elements) {
             List<QName> naturalKey = elements.stream()
                     .map(DOMUtil::getQNameValue)
                     .toList();
 
-            setValue.accept(definition, naturalKey);
+            definition.setNaturalKey(naturalKey);
 
             definition.setAnnotation(name, naturalKey);
         }
