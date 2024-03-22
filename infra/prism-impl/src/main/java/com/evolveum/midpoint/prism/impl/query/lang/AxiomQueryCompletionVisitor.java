@@ -29,10 +29,13 @@ import static com.evolveum.midpoint.prism.impl.query.lang.PrismQueryLanguagePars
 public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Object> {
     private final SchemaRegistry schemaRegistry;
     private ParseTree lastSeparator = null;
-    private ParseTree lastType = null;
+    private QName lastType = null;
 
-    public AxiomQueryCompletionVisitor(PrismContext prismContext) {
+    public AxiomQueryCompletionVisitor(ItemDefinition<?> rootDef, PrismContext prismContext) {
         schemaRegistry = prismContext.getSchemaRegistry();
+        if (rootDef != null) {
+            lastType = rootDef.getTypeName();
+        }
     }
 
     @Override
@@ -51,11 +54,12 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
 
     @Override
     public Object visitItemComponent(AxiomQueryParser.ItemComponentContext ctx) {
-
-        if (schemaRegistry.findTypeDefinitionByType(new QName(ctx.getText())) != null) {
-            lastType = ctx;
+        // FIXME: Is this correct? This is actually also executed for item paths
+        var maybeQName = new QName(ctx.getText());
+        var maybeType = schemaRegistry.findTypeDefinitionByType(maybeQName);
+        if (maybeType != null) {
+            lastType = maybeType.getTypeName();
         }
-
         return super.visitItemComponent(ctx);
     }
 
@@ -187,8 +191,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     private QName defineObjectType() {
         if (lastType == null) {
             return new QName("UserType");
-        } else {
-            return new QName(lastType.getText());
         }
+        return lastType;
     }
 }
