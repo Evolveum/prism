@@ -107,7 +107,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         } else if (values.size() > 1) {
             throw new IllegalStateException("PrismObject with more than one value: " + values);
         }
-        return (PrismObjectValue<O>) values.get(0);
+        return (PrismObjectValue<O>) values.getOnlyValue();
     }
 
     @Override
@@ -126,7 +126,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         if (values.size() > 1) {
             throw new IllegalStateException("PrismObject with more than one value: " + this);
         } else if (values.size() == 1) {
-            PrismObjectValue<O> value = (PrismObjectValue<O>) values.get(0);
+            PrismObjectValue<O> value = (PrismObjectValue<O>) values.getOnlyValue();
             if (value.isEmpty() && value.getOid() == null) {
                 clear();
             } else {

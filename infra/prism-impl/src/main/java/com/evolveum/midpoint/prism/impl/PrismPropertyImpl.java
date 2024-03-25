@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.impl;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.exception.SystemException;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -211,28 +213,15 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     public void addValue(PrismPropertyValue<T> pValueToAdd, boolean checkUniqueness) {
         checkMutable();
-        ((PrismPropertyValueImpl<T>) pValueToAdd).checkValue();
-        enableOrDisableIndex(pValueToAdd, true);
-        if (checkUniqueness && shouldIterateList(pValueToAdd)) {
-            Iterator<PrismPropertyValue<T>> iterator = getValues().iterator();
-            while (iterator.hasNext()) {
-                PrismPropertyValue<T> pValue = iterator.next();
-                if (pValue.equals(pValueToAdd, EquivalenceStrategy.REAL_VALUE)) {
-                    LOGGER.warn("Adding value to property " + getElementName() + " that already exists (overwriting), value: "
-                            + pValueToAdd);
-                    iterator.remove();
-                }
-            }
+
+        var strategy = checkUniqueness ? EquivalenceStrategy.REAL_VALUE : null;
+        try {
+            addInternal(pValueToAdd, checkUniqueness, strategy);
+        } catch (SchemaException e) {
+            throw new SystemException(e);
         }
-        pValueToAdd.setParent(this);
         pValueToAdd.recompute();
         addInternalExecution(pValueToAdd);
-    }
-
-    @Override
-    protected boolean addInternalExecution(@NotNull PrismPropertyValue<T> newValue) {
-        addToIndex(newValue, true);
-        return super.addInternalExecution(newValue);
     }
 
     @Override

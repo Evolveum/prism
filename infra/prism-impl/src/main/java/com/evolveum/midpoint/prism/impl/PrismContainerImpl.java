@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
+import com.evolveum.midpoint.prism.impl.storage.ItemStorage;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -86,6 +87,13 @@ public class PrismContainerImpl<C extends Containerable>
         }
     }
 
+    @Override
+    protected ItemStorage<PrismContainerValue<C>> createEmptyItemStorage() {
+        if (definition != null && definition.isSingleValue()) {
+            return ItemStorage.emptySingleValue();
+        }
+        return ItemStorage.containerList();
+    }
 
     public PrismContainerImpl(QName name, PrismContainerDefinition<C> definition, PrismContext prismContext) {
         super(name, definition, prismContext);
@@ -214,19 +222,6 @@ public class PrismContainerImpl<C extends Containerable>
             getPrismContext().adopt(newValue);
         }
         return super.addInternal(newValue, checkEquivalents, strategy);
-    }
-
-    @Override
-    protected boolean addInternalExecution(@NotNull PrismContainerValue<C> newValue) {
-        if (newValue.getId() != null) {
-            for (PrismContainerValue existingValue : getValues()) {
-                if (existingValue.getId() != null && existingValue.getId().equals(newValue.getId())) {
-                    throw new IllegalStateException("Attempt to add a container value with an id that already exists: " + newValue.getId());
-                }
-            }
-        }
-
-        return super.addInternalExecution(newValue);
     }
 
     private boolean canAssumeSingleValue() {
@@ -915,12 +910,12 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
         if (path.isEmpty()) {
-            return Collections.unmodifiableCollection(values);
+            return Collections.unmodifiableCollection(values.asList());
         }
         if (values.isEmpty()) {
             return List.of();
-        } else if (values.size() == 1) {
-            return values.get(0).getAllValues(path);
+        } else if (values.containsSingleValue()) {
+            return values.getOnlyValue().getAllValues(path);
         } else {
             List<PrismValue> rv = new ArrayList<>();
             for (PrismValue prismValue : values) {
@@ -938,8 +933,8 @@ public class PrismContainerImpl<C extends Containerable>
         }
         if (values.isEmpty()) {
             return List.of();
-        } else if (values.size() == 1) {
-            return values.get(0).getAllItems(path);
+        } else if (values.containsSingleValue()) {
+            return values.getOnlyValue().getAllItems(path);
         } else {
             List<Item<?, ?>> rv = new ArrayList<>();
             for (PrismValue prismValue : values) {
