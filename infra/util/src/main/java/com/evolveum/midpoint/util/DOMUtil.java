@@ -1465,11 +1465,19 @@ public class DOMUtil {
         element.setTextContent(value);
     }
 
+    /**
+     * Method to create a child with a CDATA section for a DOM element.
+     * @param element The DOM element for which a child element with a CDATA section will be created.
+     * @param value The value that will be wrapped in the CDATA section.
+     */
     public static void setElementTextContentWithCDATAPrefix(Element element, String value) {
         CDATASection cdataElement = element.getOwnerDocument().createCDATASection(value);
         element.appendChild(cdataElement);
     }
 
+    /**
+     * Method to check if the code in the script element contains HTML.
+     */
     public static boolean containsHTML(String code) {
         if (StringUtils.isBlank(code)) {
             return false;
