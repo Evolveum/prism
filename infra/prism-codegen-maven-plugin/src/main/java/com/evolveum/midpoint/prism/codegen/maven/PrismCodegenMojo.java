@@ -22,7 +22,6 @@ import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
-import com.evolveum.midpoint.prism.impl.schema.SchemaDefinitionFactory;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
 import com.evolveum.midpoint.prism.impl.xml.GlobalDynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
@@ -163,7 +162,6 @@ public class PrismCodegenMojo extends AbstractMojo {
             }
 
             PrismContextImpl context = PrismContextImpl.create(schemaRegistry);
-            context.setDefinitionFactory(new SchemaDefinitionFactory());
             context.initialize();
 
             return context;

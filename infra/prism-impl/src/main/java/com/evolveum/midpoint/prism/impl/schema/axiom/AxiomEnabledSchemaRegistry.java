@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.api.AxiomName;
@@ -20,16 +22,7 @@ import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.axiom.lang.antlr.AxiomModelStatementSource;
 import com.evolveum.axiom.lang.impl.ModelReactorContext;
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.Containerable;
-import com.evolveum.midpoint.prism.MutableComplexTypeDefinition;
-import com.evolveum.midpoint.prism.MutableItemDefinition;
-import com.evolveum.midpoint.prism.MutablePrismPropertyDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.impl.ComplexTypeDefinitionImpl;
-import com.evolveum.midpoint.prism.impl.PrismContainerDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.PrismPropertyDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.PrismReferenceDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
@@ -55,7 +48,6 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     private static final AxiomName REFERENCE_ITEM = AxiomName.from(PRISM_NAMESPACE, "ReferenceItemDefinition");
 
     private static final String XSD = "http://www.w3.org/2001/XMLSchema";
-
 
     private static final BiMap<AxiomName, QName> AXIOM_XSD_TYPES = ImmutableBiMap.<AxiomName, QName>builder()
             .put(AxiomName.builtIn("String"), DOMUtil.XSD_STRING)
@@ -108,24 +100,24 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         Preconditions.checkState(targetDef != null,"Value metadata type needs to be available");
         valueMetadata = targetDef;
         Preconditions.checkState(targetDef.canModify(), "Value metadata definition not can be modified");
-        copyItemDefs(asMutable(targetDef.getComplexTypeDefinition()),axiomMetadata);
+        copyItemDefs(targetDef.getComplexTypeDefinition(), axiomMetadata);
 
     }
 
-    private void copyItemDefs(MutableComplexTypeDefinition target, AxiomTypeDefinition source) {
+    private void copyItemDefs(ComplexTypeDefinition target, AxiomTypeDefinition source) {
         for (Entry<AxiomName, AxiomItemDefinition> entry : source.itemDefinitions().entrySet()) {
-            MutableItemDefinition<?> prismified = prismify(entry.getValue());
+            ItemDefinition<?> prismified = prismify(entry.getValue());
             QName name = qName(entry.getValue().name());
-            MutableComplexTypeDefinition realTarget = primaryOrExtension(target, entry.getValue());
+            ComplexTypeDefinition realTarget = primaryOrExtension(target, entry.getValue());
             if(realTarget.containsItemDefinition(name)) {
-                realTarget.replaceDefinition(name , prismified);
+                realTarget.mutator().replaceDefinition(name, prismified);
             } else {
-                realTarget.add(prismified);
+                realTarget.mutator().add(prismified);
             }
         }
     }
 
-    private MutableComplexTypeDefinition primaryOrExtension(MutableComplexTypeDefinition target,
+    private ComplexTypeDefinition primaryOrExtension(ComplexTypeDefinition target,
             AxiomItemDefinition value) {
         if (value.name().namespace().equals(target.getTypeName().getNamespaceURI())) {
             return target;
@@ -133,12 +125,12 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         return extensionFor(target, value.name().namespace());
     }
 
-    private MutableComplexTypeDefinition extensionFor(MutableComplexTypeDefinition target, String namespace) {
+    private ComplexTypeDefinition extensionFor(ComplexTypeDefinition target, String namespace) {
         PrismContainerDefinition<Containerable> extContainer = target.findContainerDefinition(PrismConstants.EXTENSION_ITEM_NAME);
-        return asMutable(extContainer.getComplexTypeDefinition());
+        return extContainer.getComplexTypeDefinition();
     }
 
-    private MutableItemDefinition<?> prismify(AxiomItemDefinition value) {
+    private ItemDefinition<?> prismify(AxiomItemDefinition value) {
 
         if(isType(value, PROPERTY_ITEM)) {
             return prismifyProperty(value);
@@ -153,31 +145,30 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         throw new UnsupportedOperationException("Not implemented mapping for " + value.asComplex().get().type().get().name());
     }
 
-    private MutableItemDefinition<?> prismifyReference(AxiomItemDefinition value) {
+    private ItemDefinition<?> prismifyReference(AxiomItemDefinition value) {
         QName elementName = qName(value.name());
         QName typeName = OBJECT_REFERENCE_TYPE;
         PrismReferenceDefinitionImpl ret = new PrismReferenceDefinitionImpl(elementName, typeName);
-
-
 
         // FIXME
 
         return fillDetails(ret,value);
     }
 
-    private MutableItemDefinition<?> prismifyContainer(AxiomItemDefinition value) {
+    private ItemDefinition<?> prismifyContainer(AxiomItemDefinition value) {
         QName elementName = qName(value.name());
-        ComplexTypeDefinition complexTypeDefinition = prismifyStructured(value.typeDefinition());
-        PrismContainerDefinitionImpl<?> container = new PrismContainerDefinitionImpl<>(elementName, complexTypeDefinition);
+        ComplexTypeDefinition ctd = prismifyStructured(value.typeDefinition());
+        PrismContainerDefinition<?> container = prismContext.definitionFactory().newContainerDefinition(elementName, ctd);
         return fillDetails(container, value);
     }
 
-    private MutableItemDefinition<?> fillDetails(MutableItemDefinition<?> target, AxiomItemDefinition source) {
-        set(target::setDisplayName, source, DISPLAY_NAME);
-        target.setMinOccurs(source.minOccurs());
-        target.setMaxOccurs(source.maxOccurs());
-        target.setDocumentation(source.documentation());
+    private ItemDefinition<?> fillDetails(ItemDefinition<?> target, AxiomItemDefinition source) {
+        var mutable = target.mutator();
 
+        set(mutable::setDisplayName, source, DISPLAY_NAME);
+        mutable.setMinOccurs(source.minOccurs());
+        mutable.setMaxOccurs(source.maxOccurs());
+        mutable.setDocumentation(source.documentation());
 
         return target;
     }
@@ -194,7 +185,7 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         }
     }
 
-    private MutablePrismPropertyDefinition<?> prismifyProperty(AxiomItemDefinition value) {
+    private PrismPropertyDefinition<?> prismifyProperty(AxiomItemDefinition value) {
         QName elementName = qName(value.name());
         QName typeName = prismify(value.typeDefinition());
 
@@ -218,10 +209,10 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         throw new UnsupportedOperationException(typeDefinition.name().toString());
     }
 
-    private ComplexTypeDefinition prismifyStructured(AxiomTypeDefinition typeDefinition) {
+    private @NotNull ComplexTypeDefinition prismifyStructured(AxiomTypeDefinition typeDefinition) {
         QName prismName = qName(typeDefinition.name());
         ComplexTypeDefinition maybe = findComplexTypeDefinitionByType(prismName);
-        if(maybe != null) {
+        if (maybe != null) {
             return maybe;
         }
 
@@ -233,10 +224,9 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
 
     private void reuseXjcClassIfExists(ComplexTypeDefinitionImpl typeDef) {
         ComplexTypeDefinition maybeClass = findComplexTypeDefinitionByType(typeQname(typeDef.getTypeName()));
-        if(maybeClass != null) {
+        if (maybeClass != null) {
             typeDef.setCompileTimeClass(maybeClass.getCompileTimeClass());
         }
-
     }
 
     private @NotNull QName typeQname(QName name) {
@@ -255,8 +245,8 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         return type.equals(value.asComplex().get().type().get().name());
     }
 
-    private MutableComplexTypeDefinition asMutable(ComplexTypeDefinition complexTypeDefinition) {
-        return (MutableComplexTypeDefinition) complexTypeDefinition;
+    private ComplexTypeDefinition.ComplexTypeDefinitionMutator asMutable(ComplexTypeDefinition complexTypeDefinition) {
+        return (ComplexTypeDefinition.ComplexTypeDefinitionMutator) complexTypeDefinition;
     }
 
     @Override

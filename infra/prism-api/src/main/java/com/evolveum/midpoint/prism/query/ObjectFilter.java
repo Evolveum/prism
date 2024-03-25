@@ -17,7 +17,7 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Freezable, PrismContextSensitive {
+public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Freezable {
 
     /**
      * Does a SHALLOW clone.

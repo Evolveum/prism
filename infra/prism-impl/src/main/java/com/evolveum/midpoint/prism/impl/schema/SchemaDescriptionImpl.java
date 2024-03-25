@@ -194,7 +194,7 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
         sb.append(path);
         if (schema != null) {
             sb.append(" ");
-            sb.append(schema.toString());
+            sb.append(schema);
         }
         return sb.toString();
     }
@@ -213,6 +213,7 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
                 ", usualPrefix='" + usualPrefix + '\'' +
                 ", namespace='" + namespace + '\'' +
                 ", schema=" + schema +
+                ", runtime=" + isRuntime() +
                 '}';
     }
 

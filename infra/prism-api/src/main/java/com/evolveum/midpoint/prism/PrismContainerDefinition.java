@@ -79,9 +79,8 @@ public interface PrismContainerDefinition<C extends Containerable>
      * The set contains all property definitions of all types that were parsed.
      * Order of definitions is insignificant.
      *
-     * The returned set is immutable! All changes may be lost.
-     *
-     * @return set of definitions
+     * The returned collection is immutable or detached from the source. Don't try to modify it.
+     * It may fail or the changes may be lost.
      */
     List<PrismPropertyDefinition<?>> getPropertyDefinitions();
 
@@ -93,10 +92,13 @@ public interface PrismContainerDefinition<C extends Containerable>
     @Override
     PrismContainerDefinition<C> clone();
 
+    /** Changes the type name and definition for this PCD. Use only in special cases. */
+    @NotNull PrismContainerDefinition<?> cloneWithNewType(@NotNull QName newTypeName, @NotNull ComplexTypeDefinition newCtd);
+
     /**
      * TODO
      */
-    PrismContainerDefinition<C> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition);
+    PrismContainerDefinition<C> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition);
 
     /**
      * TODO
@@ -119,7 +121,7 @@ public interface PrismContainerDefinition<C extends Containerable>
     boolean canRepresent(@NotNull QName type);
 
     @Override
-    MutablePrismContainerDefinition<C> toMutable();
+    PrismContainerDefinitionMutator<C> mutator();
 
     @Override
     Class<C> getTypeClass();
@@ -145,5 +147,36 @@ public interface PrismContainerDefinition<C extends Containerable>
     @Experimental
     default Collection<QName> getAlwaysUseForEquals() {
         return Collections.emptySet();
+    }
+
+    /**
+     * The "createXXX" methods also add the new definition into this container.
+     */
+    interface PrismContainerDefinitionMutator<C extends Containerable>
+            extends ItemDefinitionMutator {
+
+        void setCompileTimeClass(Class<C> compileTimeClass);
+
+        PrismPropertyDefinition<?> createPropertyDefinition(QName name, QName propType, int minOccurs, int maxOccurs);
+
+        PrismPropertyDefinition<?> createPropertyDefinition(QName name, QName propType);
+
+        PrismPropertyDefinition<?> createPropertyDefinition(String localName, QName propType);
+
+        PrismContainerDefinition<?> createContainerDefinition(QName name, QName typeName, int minOccurs, int maxOccurs);
+
+        PrismContainerDefinition<?> createContainerDefinition(
+                @NotNull QName name, @NotNull ComplexTypeDefinition ctd, int minOccurs, int maxOccurs);
+
+        void setComplexTypeDefinition(ComplexTypeDefinition complexTypeDefinition);
+
+        /**
+         * Experimental: Use only with care, this overrides behavior of listed operational=true items in equivalence strategies
+         * for containers.
+         */
+        @Experimental
+        default void setAlwaysUseForEquals(@NotNull Collection<QName> keysElem) {
+            // NOOP
+        }
     }
 }

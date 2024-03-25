@@ -30,16 +30,24 @@ import java.io.Serial;
  * "Instance" class of this class is MidPointObject, not Object - to avoid
  * confusion with java.lang.Object.
  *
- * @author Radovan Semancik
+ * *Do not call constructors on this object.* Use {@link DefinitionFactory} instead.
  *
+ * @author Radovan Semancik
  */
-public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContainerDefinitionImpl<O> implements
-        MutablePrismObjectDefinition<O> {
+public class PrismObjectDefinitionImpl<O extends Objectable>
+        extends PrismContainerDefinitionImpl<O>
+        implements PrismObjectDefinition<O>, PrismObjectDefinition.PrismObjectDefinitionMutator<O> {
+
     @Serial private static final long serialVersionUID = -8298581031956931008L;
 
-    public PrismObjectDefinitionImpl(QName elementName, ComplexTypeDefinition complexTypeDefinition, Class<O> compileTimeClass) {
+    PrismObjectDefinitionImpl(@NotNull QName itemName, @NotNull ComplexTypeDefinition ctd) {
+        //noinspection unchecked
+        this(itemName, ctd.getTypeName(), ctd, (Class<O>) ctd.getCompileTimeClass());
+    }
+
+    private PrismObjectDefinitionImpl(QName itemName, QName typeName, ComplexTypeDefinition ctd, Class<O> compileTimeClass) {
         // Object definition can only be top-level, hence SCHEMA ROOT parent
-        super(elementName, complexTypeDefinition, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT);
+        super(itemName, typeName, ctd, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT);
     }
 
     @Override
@@ -62,12 +70,22 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
-    @NotNull
     @Override
-    public PrismObjectDefinitionImpl<O> clone() {
-        PrismObjectDefinitionImpl<O> clone = new PrismObjectDefinitionImpl<>(itemName, complexTypeDefinition, compileTimeClass);
+    public @NotNull PrismObjectDefinitionImpl<O> clone() {
+        var clone = new PrismObjectDefinitionImpl<>(itemName, typeName, complexTypeDefinition, compileTimeClass);
         clone.copyDefinitionDataFrom(this);
         return clone;
+    }
+
+    @Override
+    public @NotNull PrismObjectDefinition<?> cloneWithNewType(
+            @NotNull QName newTypeName, @NotNull ComplexTypeDefinition newCtd) {
+        throw new UnsupportedOperationException("Implement if needed");
+    }
+
+    @Override
+    public @NotNull PrismObjectDefinition<O> cloneWithNewName(@NotNull ItemName newItemName) {
+        throw new UnsupportedOperationException("Implement if needed");
     }
 
     @Override
@@ -77,8 +95,8 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
 
     @Override
     @NotNull
-    public PrismObjectDefinition<O> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
-        return (PrismObjectDefinition<O>) super.cloneWithReplacedDefinition(itemName, newDefinition);
+    public PrismObjectDefinition<O> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition) {
+        return (PrismObjectDefinition<O>) super.cloneWithNewDefinition(newItemName, newDefinition);
     }
 
     @Override
@@ -108,7 +126,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable> extends PrismContai
     }
 
     @Override
-    public MutablePrismObjectDefinition<O> toMutable() {
+    public PrismObjectDefinitionMutator<O> mutator() {
         checkMutableOnExposing();
         return this;
     }

@@ -7,10 +7,11 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-import com.evolveum.midpoint.prism.Definition;
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+/** Used to provide delayed definition building. */
 @FunctionalInterface
-public interface DefinitionSupplier {
-    Definition get() throws SchemaException;
+public interface ItemDefinitionSupplier {
+    ItemDefinition<?> get() throws SchemaException;
 }

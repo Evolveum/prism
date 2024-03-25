@@ -10,14 +10,13 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
-
 import javax.xml.namespace.QName;
 
 /**
  * TODO
  */
-public interface PrismObjectDefinition<O extends Objectable> extends PrismContainerDefinition<O> {
+public interface PrismObjectDefinition<O extends Objectable>
+        extends PrismContainerDefinition<O> {
 
     @Override
     @NotNull
@@ -33,7 +32,7 @@ public interface PrismObjectDefinition<O extends Objectable> extends PrismContai
     @Override
     PrismObjectDefinition<O> deepClone(@NotNull DeepCloneOperation operation);
 
-    @NotNull PrismObjectDefinition<O> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition);
+    @NotNull PrismObjectDefinition<O> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition);
 
     PrismContainerDefinition<?> getExtensionDefinition();
 
@@ -41,5 +40,9 @@ public interface PrismObjectDefinition<O extends Objectable> extends PrismContai
     PrismObjectValue<O> createValue();
 
     @Override
-    MutablePrismObjectDefinition<O> toMutable();
+    PrismObjectDefinitionMutator<O> mutator();
+
+    interface PrismObjectDefinitionMutator<O extends Objectable>
+            extends PrismContainerDefinitionMutator<O> {
+    }
 }

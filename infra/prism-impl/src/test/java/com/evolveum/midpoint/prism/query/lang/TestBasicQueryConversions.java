@@ -210,7 +210,8 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
 
     @Test
     public void testMatchEqualMultivalue() throws Exception {
-        MutablePrismPropertyDefinition<?> def = getPrismContext().definitionFactory().createPropertyDefinition(new QName("indexedString"), DOMUtil.XSD_STRING);
+        PrismPropertyDefinition<?> def = getPrismContext().definitionFactory().newPropertyDefinition(
+                new QName("indexedString"), DOMUtil.XSD_STRING);
         ObjectFilter filter = getPrismContext().queryFor(UserType.class)
                 .item(ItemPath.create(UserType.F_EXTENSION, "indexedString"), def).eq("alpha")
                 .buildFilter();
@@ -706,7 +707,7 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
             ItemName itemName, QName itemType, BiFunction<ItemPath, PrismPropertyDefinition<Integer>, ObjectFilter> filterSupplier) {
         ItemPath path = ItemPath.create(UserType.F_EXTENSION, itemName);
         PrismPropertyDefinition<Integer> definition = getPrismContext().definitionFactory()
-                .createPropertyDefinition(itemName, itemType);
+                .newPropertyDefinition(itemName, itemType);
         ObjectFilter filter = filterSupplier.apply(path, definition);
         return filter;
     }

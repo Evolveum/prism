@@ -15,6 +15,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -37,7 +38,8 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.EXTENSION_NUM_EL
 
 public class TestObjectQuery extends AbstractPrismTest {
 
-    public static final File FILE_USER_JACK_FILTERS = new File(PrismInternalTestUtil.COMMON_DIR_XML, "user-jack-filters.xml");
+    private static final File FILE_USER_JACK_FILTERS =
+            new File(PrismInternalTestUtil.COMMON_DIR_XML, "user-jack-filters.xml");
 
     private static final MatchingRuleRegistry MATCHING_RULE_REGISTRY =
             MatchingRuleRegistryFactory.createRegistry();
@@ -78,12 +80,17 @@ public class TestObjectQuery extends AbstractPrismTest {
     @Test
     public void testMatchEqualMultivalue() throws Exception {
         PrismObject<UserType> user = parseUserJack();
-        MutablePrismPropertyDefinition<?> def = getPrismContext().definitionFactory().createPropertyDefinition(new QName("indexedString"), DOMUtil.XSD_STRING);
+        var def = getDefinitionFactory().newPropertyDefinition(new QName("indexedString"), DOMUtil.XSD_STRING);
         ObjectFilter filter = getPrismContext().queryFor(UserType.class)
                 .item(ItemPath.create(UserType.F_EXTENSION, "indexedString"), def).eq("alpha")
                 .buildFilter();
         boolean match = ObjectQuery.match(user, filter, MATCHING_RULE_REGISTRY);
         AssertJUnit.assertTrue("filter does not match object", match);
+    }
+
+    @NotNull
+    private static DefinitionFactory getDefinitionFactory() {
+        return getPrismContext().definitionFactory();
     }
 
     @Test
@@ -409,6 +416,7 @@ public class TestObjectQuery extends AbstractPrismTest {
                         .buildFilter());
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void assertLeFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException {
         assertFilter(user, itemName, itemType, value, expected,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
@@ -416,6 +424,7 @@ public class TestObjectQuery extends AbstractPrismTest {
                         .buildFilter());
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void assertGtFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected) throws SchemaException {
         assertFilter(user, itemName, itemType, value, expected,
                 (path, definition) -> getPrismContext().queryFor(UserType.class)
@@ -433,8 +442,8 @@ public class TestObjectQuery extends AbstractPrismTest {
     private void assertFilter(PrismObject<UserType> user, ItemName itemName, QName itemType, Object value, boolean expected,
             BiFunction<ItemPath, PrismPropertyDefinition<Integer>, ObjectFilter> filterSupplier) throws SchemaException {
         ItemPath path = ItemPath.create(UserType.F_EXTENSION, itemName);
-        PrismPropertyDefinition<Integer> definition = getPrismContext().definitionFactory()
-                .createPropertyDefinition(itemName, itemType);
+        PrismPropertyDefinition<Integer> definition = getDefinitionFactory()
+                .newPropertyDefinition(itemName, itemType);
         ObjectFilter filter = filterSupplier.apply(path, definition);
         boolean match = ObjectQuery.match(user, filter, MATCHING_RULE_REGISTRY);
         AssertJUnit.assertEquals("filter " + filter + " produces wrong result for " + itemName +

@@ -6,17 +6,20 @@
  */
 package com.evolveum.midpoint.prism;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
-import com.evolveum.prism.xml.ns._public.types_3.RawType;
-
+import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSComponent;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -26,40 +29,16 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * @see TypeDefinition
  */
 public interface ItemDefinition<I extends Item<?, ?>>
-        extends Definition, PrismItemAccessDefinition {
+        extends Definition,
+        PrismItemBasicDefinition,
+        PrismItemStorageDefinition,
+        PrismItemAccessDefinition,
+        LivePrismItemDefinition {
 
-    /**
-     * Gets the "canonical" name of the item for the definition.
-     * Should be qualified, if at all possible.
-     */
-    @NotNull ItemName getItemName();
+    ItemProcessing getProcessing();
 
-    /**
-     * Return the number of minimal value occurrences.
-     */
-    int getMinOccurs();
-
-    /**
-     * Return the number of maximal value occurrences. Any negative number means "unbounded".
-     */
-    int getMaxOccurs();
-
-    default boolean isSingleValue() {
-        int maxOccurs = getMaxOccurs();
-        return maxOccurs >= 0 && maxOccurs <= 1;
-    }
-
-    default boolean isMultiValue() {
-        int maxOccurs = getMaxOccurs();
-        return maxOccurs < 0 || maxOccurs > 1;
-    }
-
-    default boolean isMandatory() {
-        return getMinOccurs() > 0;
-    }
-
-    default boolean isOptional() {
-        return getMinOccurs() == 0;
+    default boolean isIgnored() {
+        return getProcessing() == ItemProcessing.IGNORE;
     }
 
     /**
@@ -82,14 +61,6 @@ public interface ItemDefinition<I extends Item<?, ?>>
      */
     @Experimental
     boolean isAlwaysUseForEquals();
-
-    /**
-     * If true, this item is not stored in XML representation in repo.
-     *
-     * TODO better name
-     */
-    @Experimental
-    boolean isIndexOnly();
 
     /**
      * Whether the item is inherited from a supertype.
@@ -128,27 +99,6 @@ public interface ItemDefinition<I extends Item<?, ?>>
     PrismReferenceValue getValueEnumerationRef();
 
     /**
-     * Returns true if this definition is valid for given element name and definition class,
-     * in either case-sensitive (the default) or case-insensitive way.
-     *
-     * Used e.g. for "slow" path lookup where we iterate over all definitions in a complex type.
-     */
-    boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition<?>> clazz, boolean caseInsensitive);
-
-    /**
-     * Used to find a matching item definition _within_ this definition.
-     * Treats e.g. de-referencing in prism references.
-     */
-    <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz);
-
-    /**
-     * Transfers selected parts of the definition (currently item name, min/max occurs) from another definition.
-     *
-     * TODO used only on few places, consider removing
-     */
-    void adoptElementDefinitionFrom(ItemDefinition<?> otherDef);
-
-    /**
      * Create an item instance. Definition name or default name will
      * be used as an element name for the instance. The instance will otherwise be empty.
      */
@@ -170,6 +120,13 @@ public interface ItemDefinition<I extends Item<?, ?>>
     @NotNull ItemDefinition<I> clone();
 
     /**
+     * Returns a clone of this definition, but with name changed to the provided one.
+     *
+     * @see PrismContainerDefinition#cloneWithNewDefinition(QName, ItemDefinition)
+     */
+    @NotNull ItemDefinition<I> cloneWithNewName(@NotNull ItemName itemName);
+
+    /**
      * TODO document
      */
     ItemDefinition<I> deepClone(@NotNull DeepCloneOperation operation);
@@ -180,20 +137,8 @@ public interface ItemDefinition<I extends Item<?, ?>>
      */
     void debugDumpShortToString(StringBuilder sb);
 
-    /**
-     * TODO document
-     */
-    boolean canBeDefinitionOf(I item);
-
-    /**
-     * TODO document
-     *
-     * The prism value must not be of {@link RawType}.
-     */
-    boolean canBeDefinitionOf(@NotNull PrismValue pvalue);
-
     @Override
-    MutableItemDefinition<I> toMutable();
+    ItemDefinitionMutator mutator();
 
     /**
      * Returns complex type definition of item, if underlying value is possible structured.
@@ -205,11 +150,60 @@ public interface ItemDefinition<I extends Item<?, ?>>
     @Experimental
     Optional<ComplexTypeDefinition> structuredType();
 
-    /**
-     * Returns true if item definition is searchable.
-     */
-    @Experimental
-    default boolean isSearchable() {
-        return false;
+    interface ItemDefinitionMutator
+            extends
+            DefinitionMutator,
+            PrismPresentationDefinition.Mutable,
+            PrismItemBasicDefinition.Mutable,
+            PrismItemAccessDefinition.Mutable,
+            PrismItemStorageDefinition.Mutable,
+            PrismLifecycleDefinition.Mutable {
+
+        void setProcessing(ItemProcessing processing);
+
+        /** A bit dubious. Should be removed eventually. */
+        default void setIgnored(boolean value) {
+            if (value) {
+                setProcessing(ItemProcessing.IGNORE);
+            }
+        }
+
+        void setValueEnumerationRef(PrismReferenceValue valueEnumerationRef);
+
+        void setOperational(boolean operational);
+
+        void setAlwaysUseForEquals(boolean alwaysUseForEquals);
+
+        void setDynamic(boolean value);
+
+        void setReadOnly();
+
+        void setDeprecatedSince(String value);
+
+        void setPlannedRemoval(String value);
+
+        void setElaborate(boolean value);
+
+        void setHeterogeneousListItem(boolean value);
+
+        void setSubstitutionHead(QName value);
+
+        void setIndexOnly(boolean value);
+
+        void setInherited(boolean value);
+
+        void setSearchable(boolean value);
+    }
+
+    /** To be seen if useful. */
+    interface ItemDefinitionLikeBuilder extends ItemDefinitionMutator, DefinitionBuilder {
+
+        /**
+         * See {@link ComplexTypeDefinition.ComplexTypeDefinitionLikeBuilder#getExtraFeaturesToParse()}. These annotations
+         * must accept {@link XSComponent} or {@link XSAnnotation} as source.
+         */
+        default Collection<DefinitionFeature<?, ?, Object, ?>> getExtraFeaturesToParse() {
+            return List.of();
+        }
     }
 }

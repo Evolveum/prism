@@ -57,7 +57,7 @@ public class TestDelta extends AbstractPrismTest {
         assertPath(delta1, UserType.F_DESCRIPTION);
 
         PrismReferenceDefinition referenceDefinition = prismContext.definitionFactory()
-                .createReferenceDefinition(UserType.F_PARENT_ORG_REF, OBJECT_REFERENCE_TYPE_QNAME);
+                .newReferenceDefinition(UserType.F_PARENT_ORG_REF, OBJECT_REFERENCE_TYPE_QNAME);
         ReferenceDelta delta2 = prismContext.deltaFactory().reference().create(referenceDefinition);
         delta2.addValueToAdd(new PrismReferenceValueImpl("oid1"));
         assertPath(delta2, UserType.F_PARENT_ORG_REF);
@@ -369,7 +369,7 @@ public class TestDelta extends AbstractPrismTest {
 
     private PrismPropertyDefinition<String> createDescriptionDefinition() {
         return getPrismContext().definitionFactory()
-                    .createPropertyDefinition(UserType.F_DESCRIPTION, DOMUtil.XSD_STRING);
+                    .newPropertyDefinition(UserType.F_DESCRIPTION, DOMUtil.XSD_STRING);
     }
 
     /**
@@ -1011,8 +1011,7 @@ public class TestDelta extends AbstractPrismTest {
         PrismObject<UserType> user = PrismTestUtil.parseObject(USER_JACK_FILE_XML);
         //Delta
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
-                .createModificationAddProperty(UserType.class, USER_FOO_OID,
-                        UserType.F_LOCALITY, "Caribbean");
+                .createModificationAddProperty(UserType.class, USER_FOO_OID, UserType.F_LOCALITY, "Caribbean");
 
         when();
         userDelta.applyTo(user);

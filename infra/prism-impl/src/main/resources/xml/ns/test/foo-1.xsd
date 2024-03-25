@@ -48,19 +48,19 @@
     <xsd:element name="name" type="t:PolyStringType"/>
     <xsd:element name="displayName" type="xsd:string"/>
     <xsd:element name="description" type="xsd:string"/>
-    <xsd:element name="extension">
+    <xsd:element name="extension" type="tns:ExtensionType"/>
+
+    <xsd:complexType name="ExtensionType">
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
             </xsd:appinfo>
         </xsd:annotation>
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax">
-                </xsd:any>
-            </xsd:sequence>
-        </xsd:complexType>
-    </xsd:element>
+        <xsd:sequence>
+            <xsd:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax">
+            </xsd:any>
+        </xsd:sequence>
+    </xsd:complexType>
 
     <!-- Basic Object Types -->
 
@@ -89,13 +89,6 @@
                         <a:displayName>ObjectType.extension</a:displayName>
                         <a:displayOrder>1000</a:displayOrder>
                         <a:help>Object extension contains extra properties</a:help>
-                    </xsd:appinfo>
-                </xsd:annotation>
-            </xsd:element>
-            <xsd:element name="parentOrg" type="tns:ObjectType" minOccurs="0" maxOccurs="unbounded">
-                <xsd:annotation>
-                    <xsd:appinfo>
-                        <a:objectReference>tns:parentOrgRef</a:objectReference>
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
@@ -152,17 +145,11 @@
                         </xsd:annotation>
                     </xsd:element>
                     <xsd:element name="password" type="t:ProtectedStringType" minOccurs="0"/>
-                    <xsd:element name="account" type="tns:AccountType" minOccurs="0" maxOccurs="unbounded">
-                        <xsd:annotation>
-                            <xsd:appinfo>
-                                <a:objectReference>tns:accountRef</a:objectReference>
-                            </xsd:appinfo>
-                        </xsd:annotation>
-                    </xsd:element>
                     <xsd:element name="accountRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded">
                         <xsd:annotation>
                             <xsd:appinfo>
                                 <a:objectReferenceTargetType>tns:AccountType</a:objectReferenceTargetType>
+                                <a:composite>true</a:composite>
                             </xsd:appinfo>
                         </xsd:annotation>
                     </xsd:element>

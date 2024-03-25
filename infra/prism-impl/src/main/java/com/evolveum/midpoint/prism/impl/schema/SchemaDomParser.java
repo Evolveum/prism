@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.schema.SchemaBuilder;
 import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -20,7 +21,6 @@ import com.sun.xml.xsom.util.DomAnnotationParserFactory;
 
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -33,77 +33,72 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Parser for DOM-represented XSD, creates midPoint Schema representation.
  *
- * It will parse schema in several passes. DOM -> XSSchemaSet parsing
- * is done by this class. Postprocessing (creation of prism schemas) is delegated
- * to DomToSchemaPostProcessor.
+ * It will parse schema in two steps:
+ *
+ * . DOM -> XSOM ({@link XSSchemaSet}) parsing is done by this class.
+ * . XSOM -> Prism is delegated to {@link SchemaXsomParser}.
  *
  * @author lazyman
  * @author Radovan Semancik
  */
-class DomToSchemaProcessor {
+class SchemaDomParser {
 
-    private static final Trace LOGGER = TraceManager.getTrace(DomToSchemaProcessor.class);
+    private static final Trace LOGGER = TraceManager.getTrace(SchemaDomParser.class);
 
-    private static final Object SCHEMA_PARSING = new Object();
+    private static final Object SCHEMA_PARSING_SYNC_GUARD = new Object();
 
-    private EntityResolver entityResolver;
-    private final PrismContext prismContext;
     private String shortDescription;
-
-    DomToSchemaProcessor(EntityResolver entityResolver) {
-        this.entityResolver = entityResolver;
-        this.prismContext = PrismContext.get();
-    }
 
     /**
      * Parses single schema.
      */
     void parseSchema(
-            @NotNull PrismSchemaImpl prismSchema,
+            @NotNull SchemaBuilder schemaBuilder,
             @NotNull Element xsdSchema,
             boolean isRuntime,
             boolean allowDelayedItemDefinitions,
             String shortDescription) throws SchemaException {
         this.shortDescription = shortDescription;
-        XSSchemaSet xsSchemaSet = parseSchema(xsdSchema);
-        if (xsSchemaSet == null) {
-            return;
+        schemaBuilder.setRuntime(isRuntime);
+        XSSchemaSet xsSchemaSet = parseSchemaToXsom(xsdSchema);
+        if (xsSchemaSet != null) {
+            new SchemaXsomParser(xsSchemaSet, List.of(schemaBuilder), allowDelayedItemDefinitions, shortDescription)
+                    .parseSchema();
         }
-        DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet);
-        postProcessor.postprocessSchema(prismSchema, isRuntime, allowDelayedItemDefinitions, shortDescription);
     }
 
     /**
      * Parses several schemas, referenced by a wrapper schema.
      * Provided to allow circular references (e.g. common-3 -> scripting-3 -> common-3).
      */
-    void parseSchemas(List<SchemaDescription> schemaDescriptions, Element wrapper,
-            boolean allowDelayedItemDefinitions, String shortDescription) throws SchemaException {
-        this.shortDescription = shortDescription;
-        XSSchemaSet xsSchemaSet = parseSchema(wrapper);
-        if (xsSchemaSet == null) {
-            return;
-        }
-        for (SchemaDescription schemaDescription : schemaDescriptions) {
-            DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet);
-            PrismSchemaImpl prismSchema = (PrismSchemaImpl) schemaDescription.getSchema();
-            boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
-            String schemaShortDescription = schemaDescription.getSourceDescription() + " in " + shortDescription;
-            postProcessor.postprocessSchema(prismSchema, isRuntime, allowDelayedItemDefinitions, schemaShortDescription);
+    void parseSchemas(
+            Collection<SchemaDescription> schemaDescriptions, Element wrapper) throws SchemaException {
+        XSSchemaSet xsSchemaSet = parseSchemaToXsom(wrapper);
+        if (xsSchemaSet != null) {
+            var builders = schemaDescriptions.stream()
+                    .map(sd -> sd.getSchema().builder())
+                    .toList();
+            new SchemaXsomParser(
+                    xsSchemaSet,
+                    builders,
+                    true,
+                    "multiple sources")
+                    .parseSchema();
         }
     }
 
-    private XSSchemaSet parseSchema(Element schema) throws SchemaException {
+    private XSSchemaSet parseSchemaToXsom(Element schema) throws SchemaException {
         // Synchronization here is a brutal workaround for MID-5648. We need to synchronize on parsing schemas globally, because
         // it looks like there are many fragments (referenced schemas) that get resolved during parsing.
         //
         // Unfortunately, this is not sufficient by itself -- there is a pre-processing that must be synchronized as well.
-        synchronized (SCHEMA_PARSING) {
+        synchronized (SCHEMA_PARSING_SYNC_GUARD) {
             // Make sure that the schema parser sees all the namespace declarations
             DOMUtil.fixNamespaceDeclarations(schema);
             try {
@@ -129,18 +124,19 @@ class DomToSchemaProcessor {
                 return parser.getResult();
 
             } catch (SAXException e) {
-                throw new SchemaException("XML error during XSD schema parsing: " + e.getMessage()
-                        + "(embedded exception " + e.getException() + ") in " + shortDescription, e);
+                throw new SchemaException(
+                        "XML error during XSD schema parsing: %s (embedded exception %s) in %s".formatted(
+                                e.getMessage(), e.getException(), shortDescription),
+                        e);
             } catch (TransformerException e) {
-                throw new SchemaException("XML transformer error during XSD schema parsing: " + e.getMessage()
-                        + "(locator: " + e.getLocator() + ", embedded exception:" + e.getException() + ") in "
-                        + shortDescription, e);
+                throw new SchemaException(
+                        "XML transformer error during XSD schema parsing: %s (locator: %s, embedded exception:%s) in %s".formatted(
+                                e.getMessage(), e.getLocator(), e.getException(), shortDescription),
+                        e);
             } catch (RuntimeException e) {
                 // This sometimes happens, e.g. NPEs in Saxon
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("Unexpected error {} during parsing of schema:\n{}", e.getMessage(),
-                            DOMUtil.serializeDOMToString(schema));
-                }
+                LOGGER.error("Unexpected error {} during parsing of schema:\n{}",
+                        e.getMessage(), DOMUtil.serializeDOMToString(schema));
                 throw new SchemaException(
                         "XML error during XSD schema parsing: " + e.getMessage() + " in " + shortDescription, e);
             }
@@ -151,18 +147,11 @@ class DomToSchemaProcessor {
         var saxParser = SAXParserFactory.newInstance();
         saxParser.setNamespaceAware(true);
         XSOMParser parser = new XSOMParser(saxParser);
-        if (entityResolver == null) {
-            entityResolver = ((PrismContextImpl) prismContext).getEntityResolver();
-            if (entityResolver == null) {
-                throw new IllegalStateException(
-                        "Entity resolver is not set (even tried to pull it from prism context)");
-            }
-        }
 
-        SchemaHandler errorHandler = new SchemaHandler(entityResolver);
-        parser.setErrorHandler(errorHandler);
+        SchemaHandler schemaHandler = new SchemaHandler(((PrismContextImpl) PrismContext.get()).getEntityResolver());
+        parser.setErrorHandler(schemaHandler);
         parser.setAnnotationParser(new DomAnnotationParserFactory());
-        parser.setEntityResolver(errorHandler);
+        parser.setEntityResolver(schemaHandler);
 
         return parser;
     }

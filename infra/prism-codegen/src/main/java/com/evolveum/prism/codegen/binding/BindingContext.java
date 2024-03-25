@@ -172,10 +172,7 @@ public class BindingContext {
 
         createBinding(schema);
 
-
-        @NotNull
-        List<TypeDefinition> typeDefs = schema.getDefinitions(TypeDefinition.class);
-        for (TypeDefinition typeDef : typeDefs) {
+        for (TypeDefinition typeDef : schema.getDefinitions(TypeDefinition.class)) {
             if (!isSchemaNative(schema, typeDef)) {
                 continue;
             }

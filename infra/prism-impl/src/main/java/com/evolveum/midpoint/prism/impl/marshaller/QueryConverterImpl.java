@@ -137,7 +137,7 @@ public class QueryConverterImpl implements QueryConverter {
 
     private ItemDefinition<?> getItemDefinitionForTypeClass(@NotNull Class<?> clazz) {
         if (Referencable.class.isAssignableFrom(clazz)) {
-            return prismContext.definitionFactory().createReferenceDefinition(
+            return prismContext.definitionFactory().newReferenceDefinition(
                     PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE);
         }
 
@@ -153,7 +153,7 @@ public class QueryConverterImpl implements QueryConverter {
                     (Class<? extends Containerable>) clazz);
             if (typeDef != null) {
                 // Ugly hack: construct fake PCD
-                return prismContext.definitionFactory().createContainerDefinition(PrismConstants.T_SELF, typeDef);
+                return prismContext.definitionFactory().newContainerDefinition(PrismConstants.T_SELF, typeDef);
             }
         }
 
@@ -708,7 +708,7 @@ public class QueryConverterImpl implements QueryConverter {
         ItemDefinition<?> itemDefinitionForParse = refDef;
         if (refDef != null && refDef.getMaxOccurs() != -1) {
             itemDefinitionForParse = refDef.clone();
-            itemDefinitionForParse.toMutable().setMaxOccurs(-1);
+            itemDefinitionForParse.mutator().setMaxOccurs(-1);
         }
 
         XNodeImpl filterXnode = clauseXMap.get(ELEMENT_FILTER);

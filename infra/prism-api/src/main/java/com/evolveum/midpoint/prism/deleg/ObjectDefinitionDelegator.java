@@ -1,8 +1,6 @@
 package com.evolveum.midpoint.prism.deleg;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
@@ -44,7 +42,7 @@ public interface ObjectDefinitionDelegator<O extends Objectable>
 
     @Override
     @NotNull
-    PrismObjectDefinition<O> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition);
+    PrismObjectDefinition<O> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition);
 
     @Override
     PrismObjectDefinition<O> deepClone(@NotNull DeepCloneOperation operation);

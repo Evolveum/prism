@@ -111,11 +111,18 @@
 
     <xsd:simpleType name="AccessAnnotationType">
         <xsd:restriction base="xsd:string">
-            <xsd:enumeration value="read">
-            </xsd:enumeration>
-            <xsd:enumeration value="update">
-            </xsd:enumeration>
-            <xsd:enumeration value="create">
+            <xsd:enumeration value="read"/>
+            <xsd:enumeration value="update"/>
+            <xsd:enumeration value="create"/>
+            <xsd:enumeration value="none">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Means "no access". Cannot be combined with other values.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <tns:since>4.9</tns:since>
+                    </xsd:appinfo>
+                </xsd:annotation>
             </xsd:enumeration>
         </xsd:restriction>
     </xsd:simpleType>

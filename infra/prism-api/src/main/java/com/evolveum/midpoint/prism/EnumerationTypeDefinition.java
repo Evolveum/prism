@@ -10,11 +10,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- *
  * Simple type, which behaves as enumeration in most modeling languages.
  *
  * Enumeration has restricted value set - only declared value can be used.
- *
  */
 public interface EnumerationTypeDefinition extends SimpleTypeDefinition {
 
@@ -25,10 +23,8 @@ public interface EnumerationTypeDefinition extends SimpleTypeDefinition {
      */
     Collection<ValueDefinition> getValues();
 
-
     /**
      * Definition of enumeration value
-     *
      */
     interface ValueDefinition {
 

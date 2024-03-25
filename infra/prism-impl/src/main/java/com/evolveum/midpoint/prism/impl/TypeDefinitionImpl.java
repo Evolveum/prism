@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismStaticConfiguration;
-import com.evolveum.midpoint.prism.TypeDefinition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -18,8 +15,10 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.QNameUtil;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
+import java.io.Serial;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -31,7 +30,7 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
     protected Class<?> compileTimeClass;
     @NotNull final Set<TypeDefinition> staticSubTypes = new HashSet<>();
     protected Integer instantiationOrder;
-    protected final transient SerializationProxy serializationProxy;
+    private final transient SerializationProxy serializationProxy;
 
     TypeDefinitionImpl(QName typeName) {
         this(typeName, false);
@@ -42,12 +41,12 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
         this.serializationProxy = schemaRegistryProvided ? SerializationProxy.forTypeDef(typeName) : null;
     }
 
-    protected static boolean useSerializationProxy(boolean localeEnabled) {
+    private static boolean useSerializationProxy(boolean localeEnabled) {
         return PrismStaticConfiguration.javaSerializationProxiesEnabled() && localeEnabled;
     }
 
     @Override
-    public QName getSuperType() {
+    public @Nullable QName getSuperType() {
         return superType;
     }
 
@@ -108,9 +107,8 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
     @Override
     public boolean equals(Object o) {
         if (this == o)  return true;
-        if (!(o instanceof TypeDefinitionImpl)) return false;
+        if (!(o instanceof TypeDefinitionImpl that)) return false;
         if (!super.equals(o)) return false;
-        TypeDefinitionImpl that = (TypeDefinitionImpl) o;
         return Objects.equals(superType, that.superType) &&
                 Objects.equals(compileTimeClass, that.compileTimeClass);
     }
@@ -141,6 +139,7 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
         return false;
     }
 
+    @Serial
     protected Object writeReplace() {
         return useSerializationProxy(serializationProxy != null) ? serializationProxy : this;
     }

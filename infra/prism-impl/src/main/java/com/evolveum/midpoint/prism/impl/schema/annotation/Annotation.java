@@ -8,138 +8,157 @@
 package com.evolveum.midpoint.prism.impl.schema.annotation;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
+import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.XsomParsers.DF_DOCUMENTATION_PARSER;
 
-import java.util.List;
 import javax.xml.namespace.QName;
 
-import com.sun.xml.xsom.XSAnnotation;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.w3c.dom.Element;
+import com.evolveum.midpoint.prism.path.ItemPath;
 
-import com.evolveum.midpoint.prism.DisplayHint;
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.MutableItemDefinition;
-import com.evolveum.midpoint.prism.MutablePrismReferenceDefinition;
-import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
+import com.evolveum.midpoint.util.MiscUtil;
+
+import com.sun.xml.xsom.XSAnnotation;
+
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.XsomParsers;
+import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import java.util.Collection;
+
 /**
- * Prism annotations enumeration that used for processing when definitions are being parsed.
+ * A specialization of a {@link DefinitionFeature}, such that:
+ *
+ * . the XSOM source being always {@link XSAnnotation},
+ * . the list of these features is provided in the form of a Java enum ({@link Annotation}, i.e., a fixed list of values.
+ *
+ * It contains {@link AnnotationBasedFeature} instance (a subclass of {@link DefinitionFeature}) that carries out
+ * practically all the processing.
+ *
+ * TODO think if we can somehow unify this with {@link DefinitionFeature}. It seems we could.
  */
 public enum Annotation {
 
-    ALWAYS_USE_FOR_EQUALS(new AlwaysUseForEqualsProcessor()),
+    ALWAYS_USE_FOR_EQUALS(AnnotationBasedFeature.custom(
+            A_ALWAYS_USE_FOR_EQUALS, AlwaysUseForEquals.class,
+            ItemDefinition.ItemDefinitionMutator.class,
+            (target, alwaysUseForEquals) -> {
+                if (alwaysUseForEquals == null) {
+                    target.setAlwaysUseForEquals(true);
+                    return;
+                }
 
-    DEPRECATED(new AnnotationProcessor<>(
-            A_DEPRECATED, Boolean.class, MutableDefinition::setDeprecated, true)),
+                if (alwaysUseForEquals.isUniversal()) {
+                    target.setAlwaysUseForEquals(true);
+                    return;
+                }
 
-    DEPRECATED_SINCE(new AnnotationProcessor<MutableItemDefinition, String>(
-            A_DEPRECATED_SINCE, String.class, MutableItemDefinition.class, MutableItemDefinition::setDeprecatedSince, null)),
+                if (target instanceof PrismContainerDefinition<?> pcd) {
 
-    DISPLAY_NAME(new AnnotationProcessor<>(
-            A_DISPLAY_NAME, String.class, MutableDefinition::setDisplayName)),
+                    Collection<QName> itemNames = alwaysUseForEquals.getItemNames();
 
-    DISPLAY_ORDER(new AnnotationProcessor<>(
-            A_DISPLAY_ORDER, Integer.class, MutableDefinition::setDisplayOrder)),
+                    pcd.mutator().setAlwaysUseForEquals(itemNames);
 
-    DOCUMENTATION(new AnnotationProcessor<>(
-            DOMUtil.XSD_DOCUMENTATION_ELEMENT, String.class, MutableDefinition::setDocumentation) {
+                    // TODO TODO TODO - is this OK? What if we are modifying a shared definition?
+                    for (QName itemName : itemNames) {
+                        ItemDefinition<?> id =
+                                MiscUtil.stateNonNull( // should be SchemaException but that's complicated now
+                                        pcd.findItemDefinition(ItemPath.create(itemName)),
+                                        "No definition for item '%s' in %s (referenced by alwaysUseForEquals annotation)",
+                                        itemName, pcd);
+                        id.mutator().setAlwaysUseForEquals(true);
+                    }
+                }
+            },
+            XsomParsers.DF_ALWAYS_USE_FOR_EQUALS_PARSER)),
 
-        @Override
-        protected @Nullable String convert(@NotNull Element element) {
-            return DOMUtil.serializeElementContent(element);
-        }
-    }),
+    DEPRECATED(AnnotationBasedFeature.forBooleanMark(
+            A_DEPRECATED, Definition.DefinitionMutator.class, Definition.DefinitionMutator::setDeprecated)),
 
-    ELABORATE(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
-            A_ELABORATE, Boolean.class, MutableItemDefinition::setElaborate, true)),
+    DEPRECATED_SINCE(AnnotationBasedFeature.forString(
+            A_DEPRECATED_SINCE, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setDeprecatedSince)),
+
+    DISPLAY_NAME(AnnotationBasedFeature.forString(
+            A_DISPLAY_NAME, PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setDisplayName)),
+
+    DISPLAY_ORDER(AnnotationBasedFeature.forType(
+            A_DISPLAY_ORDER, Integer.class,
+            PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setDisplayOrder)),
+
+    DOCUMENTATION(AnnotationBasedFeature.custom(
+            DOMUtil.XSD_DOCUMENTATION_ELEMENT, String.class,
+            PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setDocumentation,
+            // Original parser takes arbitrary Object values, which does not fit here, hence the restrictToSource call.
+            DF_DOCUMENTATION_PARSER.restrictToSource(XSAnnotation.class))),
+
+    ELABORATE(AnnotationBasedFeature.forBooleanMark(
+            A_ELABORATE, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setElaborate)),
 
     @Deprecated
-    EMPHASIZED(new AnnotationProcessor<>(
-            A_EMPHASIZED, Boolean.class, MutableDefinition::setEmphasized, true)),
+    EMPHASIZED(AnnotationBasedFeature.forBooleanMark(
+            A_EMPHASIZED, PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setEmphasized)),
 
-    DISPLAY_HINT(new AnnotationProcessor<>(
-            A_DISPLAY_HINT, DisplayHint.class, MutableDefinition::setDisplayHint) {
+    DISPLAY_HINT(AnnotationBasedFeature.custom(
+            A_DISPLAY_HINT, DisplayHint.class,
+            PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setDisplayHint,
+            XsomParsers.DF_DISPLAY_HINT_PARSER)),
 
-        @Override
-        protected @Nullable DisplayHint convert(@NotNull Element element) {
-            return DisplayHint.findByValue(element.getTextContent());
-        }
+    EXPERIMENTAL(AnnotationBasedFeature.forBooleanMark(
+            A_EXPERIMENTAL, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setExperimental)),
 
-        @Override
-        public void process(@NotNull MutableDefinition definition, @NotNull List<Element> elements) throws SchemaException {
-            super.process(definition, elements);
+    HELP(AnnotationBasedFeature.forString(
+            A_HELP, PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setHelp)),
 
-            // backward compatibility with emphasized annotation
-            if (definition.getDisplayHint() == DisplayHint.EMPHASIZED) {
-                definition.setEmphasized(true);
-            }
-        }
-    }),
+    HETEROGENEOUS_LIST_ITEM(AnnotationBasedFeature.forBooleanMark(
+            A_HETEROGENEOUS_LIST_ITEM, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setHeterogeneousListItem)),
 
-    EXPERIMENTAL(new AnnotationProcessor<>(
-            A_EXPERIMENTAL, Boolean.class, MutableDefinition::setExperimental, true)),
+    IGNORE(AnnotationBasedFeature.forBooleanMark(
+            A_IGNORE, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setIgnored)),
 
-    HELP(new AnnotationProcessor<>(
-            A_HELP, String.class, MutableDefinition::setHelp)),
+    OBJECT_REFERENCE_TARGET_TYPE(AnnotationBasedFeature.custom(
+            A_OBJECT_REFERENCE_TARGET_TYPE, QName.class,
+            PrismReferenceDefinition.PrismReferenceDefinitionMutator.class, PrismReferenceDefinition.PrismReferenceDefinitionMutator::setTargetTypeName,
+            XsomParsers.qName(A_OBJECT_REFERENCE_TARGET_TYPE).restrictToSource(XSAnnotation.class))),
 
-    HETEROGENEOUS_LIST_ITEM(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
-            A_HETEROGENEOUS_LIST_ITEM, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setHeterogeneousListItem, true)),
+    OPERATIONAL(AnnotationBasedFeature.forBooleanMark(
+            A_OPERATIONAL, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setOperational)),
 
-    IGNORE(new IgnoreProcessor()),
+    OPTIONAL_CLEANUP(AnnotationBasedFeature.forBooleanMark(
+            A_OPTIONAL_CLEANUP, Definition.DefinitionMutator.class, Definition.DefinitionMutator::setOptionalCleanup)),
 
-    OBJECT_REFERENCE_TARGET_TYPE(new AnnotationProcessor<>(
-            A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, MutablePrismReferenceDefinition.class, MutablePrismReferenceDefinition::setTargetTypeName, null) {
+    PLANNED_REMOVAL(AnnotationBasedFeature.forString(
+            A_PLANNED_REMOVAL, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setPlannedRemoval)),
 
-        protected @Nullable QName convert(@NotNull Element element) {
-            return DOMUtil.getQNameValue(element);
-        }
-    }),
+    PROCESSING(AnnotationBasedFeature.custom(
+            A_PROCESSING, ItemProcessing.class,
+            ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setProcessing,
+            XsomParsers.enumBased(ItemProcessing.class, A_PROCESSING, ItemProcessing::getValue)
+                    .restrictToSource(XSAnnotation.class))),
 
-    OPERATIONAL(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
-            A_OPERATIONAL, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setOperational, true)),
+    REMOVED(AnnotationBasedFeature.forBooleanMark(
+            A_REMOVED, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setRemoved)),
 
-    OPTIONAL_CLEANUP(new AnnotationProcessor<>(
-            A_OPTIONAL_CLEANUP, Boolean.class, MutableDefinition::setOptionalCleanup, true)),
+    REMOVED_SINCE(AnnotationBasedFeature.forString(
+            A_REMOVED_SINCE, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setRemovedSince)),
 
-    PLANNED_REMOVAL(new AnnotationProcessor<MutableItemDefinition<?>, String>(
-            A_PLANNED_REMOVAL, String.class, MutableItemDefinition.class, MutableItemDefinition::setPlannedRemoval, null)),
+    SEARCHABLE(AnnotationBasedFeature.forBooleanMark(
+            A_SEARCHABLE, PrismItemStorageDefinition.Mutable.class, PrismItemStorageDefinition.Mutable::setSearchable));
 
-    PROCESSING(new ItemProcessingProcessor()),
+    /** This is the object that does all the work. */
+    private final AnnotationBasedFeature<?, ?> definitionFeature;
 
-    REMOVED(new AnnotationProcessor<>(
-            A_REMOVED, Boolean.class, MutableDefinition::setRemoved, true)),
-
-    REMOVED_SINCE(new AnnotationProcessor<>(
-            A_REMOVED_SINCE, String.class, MutableDefinition::setRemovedSince)),
-
-    SEARCHABLE(new AnnotationProcessor<MutableItemDefinition<?>, Boolean>(
-            A_SEARCHABLE, Boolean.class, MutableItemDefinition.class, MutableItemDefinition::setSearchable, true));
-
-    final AnnotationProcessor processor;
-
-    Annotation(AnnotationProcessor processor) {
-        this.processor = processor;
+    Annotation(AnnotationBasedFeature<?, ?> definitionFeature) {
+        this.definitionFeature = definitionFeature;
     }
 
-    public static void processAnnotations(MutableDefinition itemDef, XSAnnotation annotation) throws SchemaException {
+    public static void parseAllAnnotations(Object target, XSAnnotation annotation) throws SchemaException {
         for (Annotation a : Annotation.values()) {
-            processAnnotation(itemDef, annotation, a);
+            a.parseIfApplicable(target, annotation);
         }
     }
 
-    public static void processAnnotation(MutableDefinition definition, XSAnnotation xsAnnotation, Annotation annotation) throws SchemaException {
-        if (!annotation.processor.definitionType.isAssignableFrom(definition.getClass())) {
-            return;
-        }
-
-        List<Element> elements = SchemaProcessorUtil.getAnnotationElements(xsAnnotation, annotation.processor.name);
-        if (elements.isEmpty()) {
-            return;
-        }
-
-        annotation.processor.process(definition, elements);
+    public void parseIfApplicable(Object target, XSAnnotation xsAnnotation) throws SchemaException {
+        //noinspection unchecked
+        ((DefinitionFeature<Object, Object, XSAnnotation, ?>) definitionFeature).parseIfApplicable(target, xsAnnotation);
     }
 }

@@ -32,7 +32,7 @@ import java.util.function.Function;
 /**
  * Maintains system-wide schemas.
  */
-public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, GlobalDefinitionsStore {
+public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     static SchemaRegistry get() {
         return PrismContext.get().getSchemaRegistry();
@@ -97,7 +97,9 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     <T> Class<T> determineCompileTimeClass(QName typeName);
 
-    <T> Class<T> getCompileTimeClass(QName xsdType);
+    default <T> Class<T> getCompileTimeClass(QName xsdType) {
+        return determineCompileTimeClass(xsdType);
+    }
 
     PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass);
 

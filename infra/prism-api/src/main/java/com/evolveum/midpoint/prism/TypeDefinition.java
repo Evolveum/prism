@@ -23,7 +23,7 @@ import java.util.Collection;
  *
  * @see ItemDefinition
  */
-public interface TypeDefinition extends Definition {
+public interface TypeDefinition extends Definition, AbstractTypeDefinition {
 
     /**
      * Returns compile-time class, if this type has any. For example, UserType.class, ObjectType.class, ExtensionType.class.
@@ -32,9 +32,11 @@ public interface TypeDefinition extends Definition {
     Class<?> getCompileTimeClass();
 
     /**
-     * Name of super type of this complex type definition. E.g. c:ObjectType is a super type for
-     * c:FocusType which is a super type for c:UserType. Or (more complex example) ri:ShadowAttributesType
-     * is a super type of ri:AccountObjectClass. (TODO is this really true?)
+     * Name of super type of this complex type definition.
+     *
+     * For example, `c:ObjectType` is a super type for `c:FocusType` which is a super type for `c:UserType`.
+     *
+     * Extension types have `c:ExtensionType` as their supertype, if no explicit supertype is specified in XSD.
      */
     @Nullable
     QName getSuperType();
@@ -68,5 +70,17 @@ public interface TypeDefinition extends Definition {
             other = PrismContext.get().getSchemaRegistry().findTypeDefinitionByType(other.getSuperType());
         }
         return false;
+    }
+
+    interface TypeDefinitionMutator extends DefinitionMutator {
+    }
+
+    interface TypeDefinitionLikeBuilder
+            extends
+            PrismPresentationDefinition.Mutable,
+            DefinitionBuilder {
+
+        void setInstantiationOrder(Integer value);
+        void setSuperType(QName value);
     }
 }

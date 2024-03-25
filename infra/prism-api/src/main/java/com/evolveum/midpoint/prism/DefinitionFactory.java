@@ -19,14 +19,52 @@ import java.util.Collection;
  */
 public interface DefinitionFactory {
 
-    MutableComplexTypeDefinition createComplexTypeDefinition(QName name);
+    ComplexTypeDefinition newComplexTypeDefinition(QName name);
 
-    <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName);
+    <T> PrismPropertyDefinition<T> newPropertyDefinition(QName name, QName typeName);
 
-    MutablePrismReferenceDefinition createReferenceDefinition(QName name, QName typeName);
+    default <T> PrismPropertyDefinition<T> newPropertyDefinition(QName name, QName typeName, int minOccurs, int maxOccurs) {
+        PrismPropertyDefinition<T> def = newPropertyDefinition(name, typeName);
+        def.mutator().setMinOccurs(minOccurs);
+        def.mutator().setMaxOccurs(maxOccurs);
+        return def;
+    }
 
-    @NotNull
-    MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition ctd);
+    default <T> PrismPropertyDefinition<T> newPropertyDefinition(
+            QName name, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
+        PrismPropertyDefinition<T> def = newPropertyDefinition(name, typeName);
+        def.mutator().setAllowedValues(allowedValues);
+        def.mutator().setDefaultValue(defaultValue);
+        return def;
+    }
 
-    <T> PrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName, Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue);
+    PrismReferenceDefinition newReferenceDefinition(QName name, QName typeName);
+
+    default PrismReferenceDefinition newReferenceDefinition(QName name, QName typeName, int minOccurs, int maxOccurs) {
+        PrismReferenceDefinition def = newReferenceDefinition(name, typeName);
+        def.mutator().setMinOccurs(minOccurs);
+        def.mutator().setMaxOccurs(maxOccurs);
+        return def;
+    }
+
+    //region Containers and objects
+    /** Standard case: creating container with known CTD. */
+    <C extends Containerable> @NotNull PrismContainerDefinition<C> newContainerDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd);
+
+    /** Quite a special case - no complex type definition is known. */
+    @NotNull PrismContainerDefinition<?> newContainerDefinitionWithoutTypeDefinition(@NotNull QName name, @NotNull QName typeName);
+
+    default <C extends Containerable> @NotNull PrismContainerDefinition<C> createContainerDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd, int minOccurs, int maxOccurs) {
+
+        var pcd = this.<C>newContainerDefinition(name, ctd);
+        pcd.mutator().setMinOccurs(minOccurs);
+        pcd.mutator().setMaxOccurs(maxOccurs);
+        return pcd;
+    }
+
+    <O extends Objectable> @NotNull PrismObjectDefinition<O> newObjectDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd);
+    //endregion
 }

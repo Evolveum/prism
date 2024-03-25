@@ -9,10 +9,8 @@ package com.evolveum.midpoint.prism.schema;
 
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- */
+// TODO consider removal
 public interface SchemaFactory {
 
-    MutablePrismSchema createPrismSchema(@NotNull String namespace);
+    PrismSchema createPrismSchema(@NotNull String namespace);
 }

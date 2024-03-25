@@ -8,8 +8,14 @@
 package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
+import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
+import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
 import com.evolveum.midpoint.util.*;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -17,6 +23,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serial;
 import java.util.*;
 
 import javax.xml.namespace.QName;
@@ -28,11 +35,13 @@ import static com.evolveum.midpoint.prism.DeepCloneOperation.notUltraDeep;
  *
  * @author Radovan Semancik
  */
-public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements MutableComplexTypeDefinition {
+public class ComplexTypeDefinitionImpl
+        extends TypeDefinitionImpl
+        implements ComplexTypeDefinition, ComplexTypeDefinitionMutator, ComplexTypeDefinitionLikeBuilder, SerializableComplexTypeDefinition {
 
     private static final Trace LOGGER = TraceManager.getTrace(ComplexTypeDefinitionImpl.class);
 
-    private static final long serialVersionUID = -9142629126376258513L;
+    @Serial private static final long serialVersionUID = -9142629126376258513L;
 
     /**
      * Collection of constituents of this complex type.
@@ -87,7 +96,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     /** TODO */
     private final @NotNull Map<QName, ItemDefinition<?>> substitutions = new HashMap<>();
 
-    private transient List<PrismPropertyDefinition<?>> attributeDefinitions;
+    private transient List<PrismPropertyDefinition<?>> xmlAttributeDefinitions;
 
     private boolean strictAnyMarker;
 
@@ -96,17 +105,15 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     }
 
     //region Trivia
-    protected String getSchemaNamespace() {
+    private String getSchemaNamespace() {
         return getTypeName().getNamespaceURI();
     }
 
     /**
-     * Returns set of item definitions.
+     * Returns item definitions.
      *
      * The set contains all item definitions of all types that were parsed.
      * Order of definitions is insignificant.
-     *
-     * @return set of definitions
      */
     @Override
     public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
@@ -114,10 +121,26 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     }
 
     @Override
+    public @NotNull Collection<? extends SerializableItemDefinition> getDefinitionsToSerialize() {
+        //noinspection unchecked
+        return (Collection<? extends SerializableItemDefinition>) getDefinitions();
+    }
+
+    @Override
     public void add(ItemDefinition<?> definition) {
         checkMutable();
         itemDefinitions.add(definition);
         invalidateCaches();
+    }
+
+    @Override
+    public void add(DefinitionFragmentBuilder builder) {
+        Object objectBuilt = builder.getObjectBuilt();
+        if (objectBuilt instanceof ItemDefinition<?> itemDefinition) {
+            add(itemDefinition);
+        } else {
+            throw new UnsupportedOperationException("Only item definitions can be put into " + this + "; not " + objectBuilt);
+        }
     }
 
     private void invalidateCaches() {
@@ -229,7 +252,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public PrismPropertyDefinitionImpl<?> createPropertyDefinition(QName name, QName typeName) {
         PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(name, typeName);
-        add(propDef);
+        add((ItemDefinition<?>) propDef);
         return propDef;
     }
 
@@ -326,7 +349,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @Override
     public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
-        var explicit = MutableComplexTypeDefinition.super.findLocalItemDefinition(name, clazz, caseInsensitive);
+        var explicit = ComplexTypeDefinition.super.findLocalItemDefinition(name, clazz, caseInsensitive);
         if (explicit != null) {
             return explicit;
         }
@@ -344,9 +367,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
                 MiscUtil.stateNonNull(
                         PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(defaultTypeName),
                         "No complex type definition for %s", defaultTypeName);
-        //noinspection unchecked
-        var pcd = new PrismContainerDefinitionImpl<>(
-                firstName, typeDef, (Class<? extends Containerable>) typeDef.getCompileTimeClass());
+        var pcd = new PrismContainerDefinitionImpl<>(firstName, typeDef);
         pcd.setMinOccurs(0);
         pcd.setMaxOccurs(-1);
         pcd.setDynamic(true); // TODO ok?
@@ -473,22 +494,24 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     public void replaceDefinition(@NotNull QName itemName, ItemDefinition<?> newDefinition) {
         checkMutable();
         invalidateCaches();
-        for (int i=0; i<itemDefinitions.size(); i++) {
+        for (int i = 0; i < itemDefinitions.size(); i++) {
             ItemDefinition<?> itemDef = itemDefinitions.get(i);
             if (itemDef.getItemName().equals(itemName)) {
                 if (!itemDef.getClass().isAssignableFrom(newDefinition.getClass())) {
-                    throw new IllegalArgumentException("The provided definition of class "+newDefinition.getClass().getName()+" does not match existing definition of class "+itemDef.getClass().getName());
+                    throw new IllegalArgumentException(
+                            "The provided definition of class %s does not match existing definition of class %s".formatted(
+                                    newDefinition.getClass().getName(), itemDef.getClass().getName()));
                 }
                 if (!itemDef.getItemName().equals(newDefinition.getItemName())) {
-                    newDefinition = newDefinition.clone();
-                    ((ItemDefinitionImpl<?>) newDefinition).setItemName(itemName);
+                    newDefinition = newDefinition.cloneWithNewName(ItemName.fromQName(itemName));
                 }
                 // Make sure this is set, not add. set will keep correct ordering
                 itemDefinitions.set(i, newDefinition);
                 return;
             }
         }
-        throw new IllegalArgumentException("The definition with name "+ itemName +" was not found in complex type "+getTypeName());
+        throw new IllegalArgumentException(
+                "The definition with name " + itemName + " was not found in complex type " + getTypeName());
     }
 
     @Override
@@ -554,9 +577,6 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             sb.append(",ext:");
             sb.append(PrettyPrinter.prettyPrint(extensionForType));
         }
-        if (processing != null) {
-            sb.append(",").append(processing);
-        }
         if (containerMarker) {
             sb.append(",Mc");
         }
@@ -580,14 +600,9 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             for (ItemDefinition<?> def : getDefinitions()) {
                 sb.append("\n");
                 sb.append(def.debugDump(indent + 1));
-                extendItemDumpDefinition(sb, def);
             }
         }
         return sb.toString();
-    }
-
-    protected void extendItemDumpDefinition(StringBuilder sb, ItemDefinition<?> def) {
-        // Do nothing
     }
 
     /**
@@ -611,8 +626,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
             ItemPath itemPath = itemDef.getItemName();
             if (!ItemPathCollectionsUtil.containsSuperpathOrEquivalent(paths, itemPath)) {
                 iterator.remove();
-            } else if (itemDef instanceof PrismContainerDefinition) {
-                PrismContainerDefinition<?> itemPcd = (PrismContainerDefinition<?>) itemDef;
+            } else if (itemDef instanceof PrismContainerDefinition<?> itemPcd) {
                 if (itemPcd.getComplexTypeDefinition() != null) {
                     itemPcd.getComplexTypeDefinition().trimTo(ItemPathCollectionsUtil.remainder(paths, itemPath, false));
                 }
@@ -628,7 +642,7 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     }
 
     @Override
-    public MutableComplexTypeDefinition toMutable() {
+    public ComplexTypeDefinitionMutator mutator() {
         checkMutableOnExposing();
         return this;
     }
@@ -659,8 +673,8 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
 
     @Override
     public boolean hasSubstitutions(QName itemName) {
-        for(ItemDefinition<?> substition : substitutions.values()) {
-            if (itemName.equals(substition.getSubstitutionHead())) {
+        for (ItemDefinition<?> substitution : substitutions.values()) {
+            if (itemName.equals(substitution.getSubstitutionHead())) {
                 return true;
             }
         }
@@ -668,13 +682,16 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     }
 
     @Override
-    public void setAttributeDefinitions(List<PrismPropertyDefinition<?>> definitions) {
-        this.attributeDefinitions = definitions;
+    public void addXmlAttributeDefinition(PrismPropertyDefinition<?> attributeDef) {
+        if (xmlAttributeDefinitions == null) {
+            xmlAttributeDefinitions = new ArrayList<>();
+        }
+        xmlAttributeDefinitions.add(attributeDef);
     }
 
     @Override
     public List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
-        return attributeDefinitions != null ? attributeDefinitions : Collections.emptyList();
+        return xmlAttributeDefinitions != null ? xmlAttributeDefinitions : Collections.emptyList();
     }
 
     @Override
@@ -690,5 +707,30 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
     @Override
     public Class<?> getTypeClass() {
         return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());
+    }
+
+    @Override
+    public <T> PrismPropertyLikeDefinitionBuilder<T> newPropertyLikeDefinition(QName itemName, QName typeName) {
+        return definitionFactory().newPropertyDefinition(itemName, typeName, getTypeName());
+    }
+
+    @Override
+    public ItemDefinitionLikeBuilder newContainerLikeDefinition(QName itemName, AbstractTypeDefinition ctd) {
+        return definitionFactory().newContainerDefinition(itemName, (ComplexTypeDefinition) ctd, getTypeName());
+    }
+
+    @Override
+    public ItemDefinitionLikeBuilder newObjectLikeDefinition(QName itemName, AbstractTypeDefinition ctd) {
+        return definitionFactory().newObjectDefinition(itemName, (ComplexTypeDefinition) ctd);
+    }
+
+    @NotNull
+    private static DefinitionFactoryImpl definitionFactory() {
+        return ((PrismContextImpl) PrismContext.get()).definitionFactory();
+    }
+
+    @Override
+    public ComplexTypeDefinitionImpl getObjectBuilt() {
+        return this;
     }
 }

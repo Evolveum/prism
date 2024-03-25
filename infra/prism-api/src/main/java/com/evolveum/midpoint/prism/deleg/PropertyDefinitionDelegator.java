@@ -10,8 +10,8 @@ package com.evolveum.midpoint.prism.deleg;
 import java.util.Collection;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.match.MatchingRule;
-import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -29,6 +29,11 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     PrismPropertyDefinition<T> delegate();
 
     @Override
+    default @NotNull QName getTypeName() {
+        return delegate().getTypeName();
+    }
+
+    @Override
     @Nullable
     default Collection<? extends DisplayableValue<T>> getAllowedValues() {
         return delegate().getAllowedValues();
@@ -42,11 +47,6 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     @Override
     default T defaultValue() {
         return delegate().defaultValue();
-    }
-
-    @Override
-    default Boolean isIndexed() {
-        return delegate().isIndexed();
     }
 
     @Override
@@ -77,5 +77,10 @@ public interface PropertyDefinitionDelegator<T> extends ItemDefinitionDelegator<
     @Override
     default Class<T> getTypeClass() {
         return delegate().getTypeClass();
+    }
+
+    @Override
+    default PrismReferenceValue getValueEnumerationRef() {
+        return delegate().getValueEnumerationRef();
     }
 }

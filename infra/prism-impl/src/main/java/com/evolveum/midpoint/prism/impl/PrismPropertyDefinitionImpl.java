@@ -7,32 +7,26 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
+import com.evolveum.midpoint.prism.path.ItemName;
+
+import com.evolveum.midpoint.prism.schema.SerializablePropertyDefinition;
+import com.evolveum.midpoint.util.DisplayableValue;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
-import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryImpl;
-import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
-import com.evolveum.midpoint.util.DisplayableValue;
-
-import com.evolveum.midpoint.util.exception.SchemaException;
-
-import com.evolveum.midpoint.util.exception.SystemException;
-
-import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Property Definition.
@@ -65,16 +59,31 @@ import org.jetbrains.annotations.Nullable;
  */
 public class PrismPropertyDefinitionImpl<T>
         extends ItemDefinitionImpl<PrismProperty<T>>
-        implements PrismPropertyDefinition<T>, MutablePrismPropertyDefinition<T> {
+        implements
+        PrismPropertyDefinition<T>,
+        PrismPropertyDefinition.PrismPropertyDefinitionMutator<T>,
+        PrismItemValuesDefinition.Delegable<T>,
+        PrismItemValuesDefinition.Mutator.Delegable<T>,
+        PrismItemMatchingDefinition.Delegable<T>,
+        PrismItemMatchingDefinition.Mutator.Delegable,
+        PrismPropertyLikeDefinitionBuilder<T>,
+        SerializablePropertyDefinition {
 
     // TODO some documentation
-    private static final long serialVersionUID = 7259761997904371009L;
-    private Collection<? extends DisplayableValue<T>> allowedValues;
+    @Serial private static final long serialVersionUID = 7259761997904371009L;
 
-    private Collection<? extends DisplayableValue<T>> suggestedValues;
-    private Boolean indexed = null;
-    private T defaultValue;
-    private QName matchingRuleQName = null;
+    @NotNull private final PrismItemValuesDefinition.Data<T> prismItemValuesDefinition = new PrismItemValuesDefinition.Data<>();
+    @NotNull private final PrismItemMatchingDefinition.Data<T> prismItemMatchingDefinition;
+
+    @Override
+    public PrismItemValuesDefinition.Data<T> prismItemValuesDefinition() {
+        return prismItemValuesDefinition;
+    }
+
+    @Override
+    public PrismItemMatchingDefinition.Data<T> prismItemMatchingDefinition() {
+        return prismItemMatchingDefinition;
+    }
 
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
@@ -84,6 +93,7 @@ public class PrismPropertyDefinitionImpl<T>
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, QName definedInType) {
         super(elementName, typeName, definedInType);
+        prismItemMatchingDefinition = new PrismItemMatchingDefinition.Data<>(typeName);
         this.structuredType = Lazy.from(() ->
             Optional.ofNullable(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(getTypeName()))
         );
@@ -95,62 +105,12 @@ public class PrismPropertyDefinitionImpl<T>
 
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, T defaultValue, QName definedInType) {
         this(elementName, typeName, definedInType);
-        this.defaultValue = defaultValue;
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DisplayableValue<T>> getAllowedValues() {
-        return allowedValues;
-    }
-
-    @Override
-    public void setAllowedValues(Collection<? extends DisplayableValue<T>> allowedValues) {
-        this.allowedValues = allowedValues;
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DisplayableValue<T>> getSuggestedValues() {
-        return suggestedValues;
-    }
-
-    @Override
-    public void setSuggestedValues(Collection<? extends DisplayableValue<T>> suggestedValues) {
-        this.suggestedValues = suggestedValues;
-    }
-
-    @Override
-    public T defaultValue() {
-        return defaultValue;
-    }
-
-    @Override
-    public Boolean isIndexed() {
-        return indexed;
-    }
-
-    @Override
-    public void setIndexed(Boolean indexed) {
-        checkMutable();
-        this.indexed = indexed;
+        setDefaultValue(defaultValue);
     }
 
     @Override
     public QName getMatchingRuleQName() {
-        return matchingRuleQName;
-    }
-
-    @Override
-    public @NotNull MatchingRule<T> getMatchingRule() {
-        return MatchingRuleRegistryImpl.instance()
-                .getMatchingRuleSafe(getMatchingRuleQName(), getTypeName());
-    }
-
-    @Override
-    public void setMatchingRuleQName(QName matchingRuleQName) {
-        checkMutable();
-        this.matchingRuleQName = matchingRuleQName;
+        return PrismItemMatchingDefinition.Delegable.super.getMatchingRuleQName();
     }
 
     @NotNull
@@ -172,46 +132,27 @@ public class PrismPropertyDefinitionImpl<T>
     }
 
     @Override
-    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
-        if (!(pvalue instanceof PrismPropertyValue<?>)) {
-            return false;
-        }
-        Itemable parent = pvalue.getParent();
-        if (parent != null) {
-            if (!(parent instanceof PrismProperty<?> property)) {
-                return false;
-            }
-            //noinspection unchecked
-            return canBeDefinitionOf((PrismProperty<T>) property);
-        } else {
-            // TODO: maybe look actual value java type?
-            return true;
-        }
+    public @NotNull PrismPropertyDefinitionImpl<T> clone() {
+        return cloneWithNewName(itemName);
     }
 
-    @NotNull
     @Override
-    public PrismPropertyDefinitionImpl<T> clone() {
-        PrismPropertyDefinitionImpl<T> clone = new PrismPropertyDefinitionImpl<>(getItemName(), getTypeName());
+    public @NotNull PrismPropertyDefinitionImpl<T> cloneWithNewName(@NotNull ItemName itemName) {
+        PrismPropertyDefinitionImpl<T> clone = new PrismPropertyDefinitionImpl<>(itemName, getTypeName());
         clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
     protected void copyDefinitionDataFrom(PrismPropertyDefinition<T> source) {
         super.copyDefinitionDataFrom(source);
-        allowedValues = source.getAllowedValues(); // todo new collection?
-        suggestedValues = source.getSuggestedValues();
-        indexed = source.isIndexed();
-        defaultValue = source.defaultValue();
-        matchingRuleQName = source.getMatchingRuleQName();
+        prismItemValuesDefinition.copyFrom(source);
+        prismItemMatchingDefinition.copyFrom(source);
     }
 
     @Override
     protected void extendToString(StringBuilder sb) {
         super.extendToString(sb);
-        if (indexed != null && indexed) {
-            sb.append(",I");
-        }
+        var allowedValues = getAllowedValues();
         if (allowedValues != null && !allowedValues.isEmpty()) {
             sb.append(",AVals:").append(allowedValues.size());
         }
@@ -219,19 +160,23 @@ public class PrismPropertyDefinitionImpl<T>
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         PrismPropertyDefinitionImpl<?> that = (PrismPropertyDefinitionImpl<?>) o;
-        return Objects.equals(allowedValues, that.allowedValues)
-                && Objects.equals(indexed, that.indexed)
-                && Objects.equals(defaultValue, that.defaultValue)
-                && Objects.equals(matchingRuleQName, that.matchingRuleQName);
+        return Objects.equals(prismItemValuesDefinition, that.prismItemValuesDefinition)
+                && Objects.equals(prismItemMatchingDefinition, that.prismItemMatchingDefinition);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), allowedValues, indexed, defaultValue, matchingRuleQName);
+        return Objects.hash(super.hashCode(), prismItemValuesDefinition, prismItemMatchingDefinition);
     }
 
     /**
@@ -248,7 +193,7 @@ public class PrismPropertyDefinitionImpl<T>
     }
 
     @Override
-    public MutablePrismPropertyDefinition<T> toMutable() {
+    public PrismPropertyDefinitionMutator<T> mutator() {
         checkMutableOnExposing();
         return this;
     }
@@ -258,8 +203,12 @@ public class PrismPropertyDefinitionImpl<T>
         return structuredType.get();
     }
 
+    /**
+     * Not sure why the default method is not inherited here -
+     * from {@link PrismItemValuesDefinition.Mutator.Delegable#setAllowedValues(Collection)}.
+     */
     @Override
-    public Class<T> getTypeClass() {
-        return PrismContext.get().getSchemaRegistry().determineJavaClassForType(getTypeName());
+    public void setAllowedValues(Collection<? extends DisplayableValue<T>> displayableValues) {
+        prismItemValuesDefinition.setAllowedValues(displayableValues);
     }
 }

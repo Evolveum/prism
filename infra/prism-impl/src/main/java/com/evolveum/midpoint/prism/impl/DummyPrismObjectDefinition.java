@@ -64,6 +64,11 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
+    public Boolean isIndexed() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isIndexOnly() {
         throw new UnsupportedOperationException();
     }
@@ -114,10 +119,6 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void adoptElementDefinitionFrom(ItemDefinition otherDef) {
-    }
-
     @NotNull
     @Override
     public PrismObject<Objectable> instantiate() {
@@ -154,17 +155,6 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public boolean canBeDefinitionOf(PrismContainer<Objectable> item) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
-        throw new UnsupportedOperationException();
-    }
-
-    @SuppressWarnings("unchecked") // temporary workaround
-    @Override
     public @NotNull List<? extends ItemDefinition<?>> getDefinitions() {
         throw new UnsupportedOperationException();
     }
@@ -191,8 +181,17 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public @NotNull PrismObjectDefinition<Objectable> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
+    public @NotNull PrismObjectDefinition<Objectable> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @NotNull ItemDefinition<PrismContainer<Objectable>> cloneWithNewName(@NotNull ItemName itemName) {
+        throw new UnsupportedOperationException();
+    }
+
+    public @NotNull PrismContainerDefinition<?> cloneWithNewType(@NotNull QName newTypeName, @NotNull ComplexTypeDefinition newCtd) {
+        return null;
     }
 
     @Override
@@ -220,7 +219,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public MutablePrismObjectDefinition<Objectable> toMutable() {
+    public PrismObjectDefinitionMutator<Objectable> mutator() {
         throw new UnsupportedOperationException();
     }
 
@@ -333,10 +332,6 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     @Override
     public <A> A getAnnotation(QName qname) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public <A> void setAnnotation(QName qname, A value) {
     }
 
     @Override

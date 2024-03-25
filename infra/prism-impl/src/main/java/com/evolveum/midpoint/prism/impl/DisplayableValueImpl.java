@@ -12,9 +12,9 @@ import com.evolveum.midpoint.util.DisplayableValue;
 
 public class DisplayableValueImpl<T> implements DisplayableValue<T>, Serializable {
 
-    private T value;
-    private String label;
-    private String description;
+    private final T value;
+    private final String label;
+    private final String description;
 
     public DisplayableValueImpl(T value, String label) {
         this(value, label, null);

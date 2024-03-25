@@ -26,8 +26,8 @@ public class StructuredContract extends Contract {
 
     private final ComplexTypeDefinition typeDefinition;
 
-    private @NotNull Collection<ItemBinding> attributes = new ArrayList();
-    private @NotNull Collection<ItemBinding> localDefinitions = new ArrayList<>();
+    private final @NotNull Collection<ItemBinding> attributes = new ArrayList<>();
+    private final @NotNull Collection<ItemBinding> localDefinitions = new ArrayList<>();
 
     public StructuredContract(ComplexTypeDefinition typeDefinition, String packageName) {
         super(packageName);

@@ -12,10 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 
 public interface PrismReferenceDefinition extends ItemDefinition<PrismReference> {
-    QName getTargetTypeName();
 
-    @Deprecated
-    QName getCompositeObjectElementName();
+    QName getTargetTypeName();
 
     boolean isComposite();
 
@@ -30,4 +28,16 @@ public interface PrismReferenceDefinition extends ItemDefinition<PrismReference>
     @NotNull
     @Override
     PrismReferenceDefinition clone();
+
+    PrismReferenceDefinitionMutator mutator();
+
+    interface PrismReferenceDefinitionMutator extends ItemDefinitionMutator {
+
+        void setTargetTypeName(QName typeName);
+        void setComposite(boolean value);
+    }
+
+    interface PrismReferenceDefinitionBuilder
+            extends ItemDefinitionLikeBuilder, PrismReferenceDefinitionMutator {
+    }
 }

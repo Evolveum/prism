@@ -10,6 +10,12 @@ package com.evolveum.midpoint.prism;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
+import com.evolveum.midpoint.prism.schema.DefinitionFeature;
+
+import com.sun.xml.xsom.XSComplexType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +29,9 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  *
  * @author semancik
  */
-public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefinitionStore {
+public interface ComplexTypeDefinition
+        extends TypeDefinition,
+        LocalItemDefinitionStore {
 
     /**
      * Returns definitions for all inner items.
@@ -161,7 +169,7 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     }
 
     @Override
-    MutableComplexTypeDefinition toMutable();
+    ComplexTypeDefinitionMutator mutator();
 
     @Experimental
     default List<PrismPropertyDefinition<?>> getXmlAttributeDefinitions() {
@@ -191,5 +199,90 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
             }
         }
         return props;
+    }
+
+    /** Accepts information about this complex type definition during schema parsing. */
+    interface ComplexTypeDefinitionLikeBuilder
+            extends TypeDefinitionLikeBuilder,
+            PrismPresentationDefinition.Mutable,
+            PrismLifecycleDefinition.Mutable {
+
+        // getters
+
+        @NotNull QName getTypeName();
+        boolean isRuntimeSchema();
+        boolean isContainerMarker();
+
+        // setters
+
+        void setAbstract(boolean value);
+        void setContainerMarker(boolean value);
+        void setObjectMarker(boolean value);
+        void setReferenceMarker(boolean value);
+        void setListMarker(boolean value);
+
+        void setExtensionForType(QName typeName);
+        void setDefaultItemTypeName(QName value);
+        void setDefaultNamespace(String value);
+        void setIgnoredNamespaces(List<String> ignoredNamespaces);
+        void setXsdAnyMarker(boolean value);
+        void setStrictAnyMarker(boolean marker);
+
+        void addXmlAttributeDefinition(PrismPropertyDefinition<?> attributeDef);
+
+        void setRuntimeSchema(boolean value);
+
+        /** Should provide and register compile time class. */
+        void add(DefinitionFragmentBuilder builder);
+
+        // creating other builders
+
+        <T> PrismPropertyLikeDefinitionBuilder<T> newPropertyLikeDefinition(QName elementName, QName typeName);
+        ItemDefinitionLikeBuilder newContainerLikeDefinition(QName itemName, AbstractTypeDefinition ctd);
+        ItemDefinitionLikeBuilder newObjectLikeDefinition(QName itemName, AbstractTypeDefinition ctd);
+
+        /**
+         * Returns a set of "extra" features for the CTD-like definition currently being built.
+         * These are features that are not processed by the standard parser; they are known only to the upper layers.
+         * The input for parsing CTD-like definitions is {@link XSComplexType}, so they must accept it.
+         *
+         * All these features must be applicable to "this" builder. I am not sure how to state this in Java.
+         * The workaround is {@link DefinitionFeature#asForBuilder(Class)} method.
+         */
+        default Collection<DefinitionFeature<?, ?, ? super XSComplexType, ?>> getExtraFeaturesToParse() {
+            return List.of();
+        }
+    }
+
+    /**
+     * An interface to mutate the definition of a complex type.
+     *
+     * TODO document the interface (e.g. what should {@link #add(ItemDefinition)} method do
+     *   in the case of duplicate definitions, etc)
+     */
+    interface ComplexTypeDefinitionMutator extends TypeDefinitionMutator {
+
+        void add(ItemDefinition<?> definition);
+
+        void delete(QName itemName);
+
+        // TODO return builder instead of mutator
+        PrismPropertyDefinitionMutator<?> createPropertyDefinition(QName name, QName typeName);
+
+        // TODO return builder instead of mutator
+        PrismPropertyDefinitionMutator<?> createPropertyDefinition(String name, QName typeName);
+
+        @NotNull
+        ComplexTypeDefinition clone();
+
+        /**
+         * Replaces a definition for an item with given name.
+         *
+         * TODO specify the behavior more precisely
+         */
+        void replaceDefinition(@NotNull QName itemName, ItemDefinition<?> newDefinition);
+
+        @Experimental
+        void addSubstitution(ItemDefinition<?> itemDef, ItemDefinition<?> maybeSubst);
     }
 }

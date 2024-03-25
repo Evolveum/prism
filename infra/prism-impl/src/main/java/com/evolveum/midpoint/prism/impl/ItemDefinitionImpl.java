@@ -11,9 +11,13 @@ import java.io.Serial;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionMutator;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -45,10 +49,16 @@ import com.evolveum.midpoint.util.QNameUtil;
  */
 public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         extends DefinitionImpl
-        implements MutableItemDefinition<I>, ItemDefinitionTestAccess {
+        implements ItemDefinition<I>,
+        ItemDefinitionMutator,
+        ItemDefinitionLikeBuilder,
+        SerializableItemDefinition,
+        ItemDefinitionTestAccess {
     @Serial private static final long serialVersionUID = -2643332934312107274L;
 
-    @NotNull protected ItemName itemName;
+    /** Final because it's sometimes used as a key in maps; moreover, it forms an identity of the definition somehow. */
+    @NotNull protected final ItemName itemName;
+
     private int minOccurs = 1;
     private int maxOccurs = 1;
     private boolean operational = false;
@@ -63,11 +73,14 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     protected boolean heterogeneousListItem;
     private PrismReferenceValue valueEnumerationRef;
 
+    private Boolean indexed = null;
     private boolean indexOnly = false;
 
     private boolean isSearchable = false;
 
     private final transient SerializationProxy serializationProxy;
+
+    protected ItemProcessing processing;
 
     // TODO: annotations
 
@@ -113,12 +126,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     @NotNull
     public ItemName getItemName() {
         return itemName;
-    }
-
-    @Override
-    public void setItemName(@NotNull QName name) {
-        checkMutable();
-        this.itemName = ItemName.fromQName(name); // todo
     }
 
     @Override
@@ -275,43 +282,9 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     }
 
     @Override
-    public void adoptElementDefinitionFrom(ItemDefinition<?> otherDef) {
-        if (otherDef == null) {
-            return;
-        }
-        setItemName(otherDef.getItemName());
-        setMinOccurs(otherDef.getMinOccurs());
-        setMaxOccurs(otherDef.getMaxOccurs());
-    }
-
-    @Override
     public <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
-        if (path.isEmpty()) {
-            if (clazz.isAssignableFrom(this.getClass())) {
-                //noinspection unchecked
-                return (T) this;
-            } else {
-                throw new IllegalArgumentException("Looking for definition of class " + clazz + " but found " + this);
-            }
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public boolean canBeDefinitionOf(I item) {
-        if (item == null) {
-            return false;
-        }
-        ItemDefinition<?> itemDefinition = ((Item<?, ?>) item).getDefinition();
-        if (itemDefinition != null) {
-            if (!QNameUtil.match(((ItemDefinition<?>) this).getTypeName(), itemDefinition.getTypeName())) {
-                return false;
-            }
-            // TODO: compare entire definition? Probably not.
-            return true;
-        }
-        return true;
+        //noinspection unchecked
+        return LivePrismItemDefinition.matchesThisDefinition(path, clazz, this) ? (T) this : null;
     }
 
     @NotNull
@@ -320,7 +293,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     protected void copyDefinitionDataFrom(ItemDefinition<I> source) {
         super.copyDefinitionDataFrom(source);
-        this.itemName = source.getItemName();
         this.minOccurs = source.getMinOccurs();
         this.maxOccurs = source.getMaxOccurs();
         this.dynamic = source.isDynamic();
@@ -329,6 +301,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         this.canModify = source.canModify();
         this.operational = source.isOperational();
         this.valueEnumerationRef = source.getValueEnumerationRef(); // clone?
+        this.indexed = source.isIndexed();
         this.indexOnly = source.isIndexOnly();
     }
 
@@ -351,7 +324,8 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         ItemDefinitionImpl<?> that = (ItemDefinitionImpl<?>) o;
-        return minOccurs == that.minOccurs
+        return processing == that.processing
+                && minOccurs == that.minOccurs
                 && maxOccurs == that.maxOccurs
                 && operational == that.operational
                 && dynamic == that.dynamic
@@ -360,6 +334,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
                 && canModify == that.canModify
                 && inherited == that.inherited
                 && heterogeneousListItem == that.heterogeneousListItem
+                && indexed == that.indexed
                 && indexOnly == that.indexOnly
                 && itemName.equals(that.itemName)
                 && Objects.equals(substitutionHead, that.substitutionHead)
@@ -369,7 +344,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), itemName, minOccurs, maxOccurs, operational, dynamic, canAdd, canRead, canModify,
-                inherited, substitutionHead, heterogeneousListItem, valueEnumerationRef, indexOnly);
+                inherited, substitutionHead, heterogeneousListItem, valueEnumerationRef, indexed, indexOnly);
     }
 
     @Override
@@ -469,6 +444,17 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     }
 
     @Override
+    public Boolean isIndexed() {
+        return indexed;
+    }
+
+    @Override
+    public void setIndexed(Boolean indexed) {
+        checkMutable();
+        this.indexed = indexed;
+    }
+
+    @Override
     public boolean isIndexOnly() {
         return indexOnly;
     }
@@ -477,6 +463,9 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     public void setIndexOnly(boolean indexOnly) {
         checkMutable();
         this.indexOnly = indexOnly;
+        if (indexOnly) {
+            setIndexed(true);
+        }
     }
 
     @Override
@@ -491,10 +480,22 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     @Override
     public void replaceName(ItemName newName) {
-        itemName = newName;
+        throw new UnsupportedOperationException("FIXME (used only in a test; that will be eliminated)");
     }
 
     protected Object writeReplace() {
         return useSerializationProxy(serializationProxy != null) ? serializationProxy : this;
+    }
+
+    public ItemProcessing getProcessing() {
+        return processing;
+    }
+
+    public void setProcessing(ItemProcessing itemProcessing) {
+        this.processing = itemProcessing;
+    }
+
+    public ItemDefinition<?> getObjectBuilt() {
+        return this;
     }
 }

@@ -45,5 +45,4 @@ public abstract class AbstractFreezable implements Freezable {
         }
         return ImmutableList.copyOf(values);
     }
-
 }

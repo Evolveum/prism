@@ -12,6 +12,10 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.util.MiscUtil;
+import com.evolveum.midpoint.util.QNameUtil;
+
 import jakarta.xml.bind.annotation.XmlType;
 
 import com.google.common.base.Preconditions;
@@ -60,8 +64,9 @@ import com.evolveum.midpoint.util.exception.TunnelException;
  * significant effort to unify XNode and parsed items hashcode computation.
  */
 @XmlType(name = "RawType")
-public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, Revivable, ShortDumpable, PrismContextSensitive {
-    private static final long serialVersionUID = 4430291958902286779L;
+public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, Revivable, ShortDumpable {
+
+    @Serial private static final long serialVersionUID = 4430291958902286779L;
 
     /**
      * State wrapper class captures if we have xnode or parsed value
@@ -660,17 +665,31 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                 } else {
                     value = null;
                 }
-                if (value != null && !itemDefinition.canBeDefinitionOf(value)) {
-                    throw new SchemaException(
-                            "Attempt to parse raw value into %s that does not match provided definition %s".formatted(
-                                    value, itemDefinition));
-                }
+                checkDefinitionMatches(value, itemDefinition);
                 return new Parsed<>(value, itemDefinition.getTypeName());
             }
             // we don't really want to set 'parsed', as we didn't perform real parsing
             @SuppressWarnings("unchecked")
             Parsed<IV> ret = (Parsed<IV>) new Transient<>(PrismContext.get().itemFactory().createPropertyValue(node));
             return ret;
+        }
+
+        /**
+         * Checks whether the value matches the type of the definition. Actually, it should be so, because the value
+         * was created by parsing according to that definition! But let's check to be sure.
+         *
+         * Note that this code was originally in "canBeDefinitionOf" pair of methods in {@link ItemDefinition}
+         * and its subtypes. Probably too complex for this simple use.
+         * */
+        private static <IV extends PrismValue> void checkDefinitionMatches(
+                @Nullable PrismValue value, @NotNull ItemDefinition<?> itemDefinition)
+                throws SchemaException {
+            var parent = value != null ? value.getParent() : null;
+            var definition = parent != null ? parent.getDefinition() : null;
+            MiscUtil.schemaCheck(
+                    definition == null || QNameUtil.match(definition.getTypeName(), itemDefinition.getTypeName()),
+                    "Attempt to parse raw value into %s that does not match provided definition %s",
+                    value, itemDefinition);
         }
 
         @Override

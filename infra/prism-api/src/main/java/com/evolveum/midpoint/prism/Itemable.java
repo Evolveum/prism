@@ -20,7 +20,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
  * @author Radovan Semancik
  *
  */
-public interface Itemable extends PrismContextSensitive {
+public interface Itemable {
 
     ItemName getElementName();
 

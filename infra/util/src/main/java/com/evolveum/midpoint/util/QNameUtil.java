@@ -95,6 +95,22 @@ public class QNameUtil {
                 : new QName(defaultNamespace, name.getLocalPart());
     }
 
+    public static @NotNull QName enforceNamespace(@NotNull QName name, @NotNull String requiredNamespace) {
+        var namespace = name.getNamespaceURI();
+        if (StringUtils.isEmpty(namespace)) {
+            return new QName(requiredNamespace, name.getLocalPart());
+        } else if (namespace.equals(requiredNamespace)) {
+            return name;
+        } else {
+            throw new IllegalArgumentException("Namespace mismatch in " + name + ", expected " + requiredNamespace);
+        }
+    }
+
+    public static @NotNull String getLocalPartCheckingNamespace(@NotNull QName name, @NotNull String requiredNamespace) {
+        enforceNamespace(name, requiredNamespace); // eventually, implement more effectively
+        return name.getLocalPart();
+    }
+
     /**
      * Finds value in the map by QName key using {@link #match(QName, QName)}.
      * Fails if multiple matches are found.

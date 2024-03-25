@@ -201,33 +201,13 @@ public class ContainerableGenerator<T extends ContainerableContract> extends Str
 
     @Override
     protected void implementAdditionalFieldMethod(JDefinedClass clazz, ItemBinding definition, JType returnType) {
-
-        if (definition.getDefinition() instanceof PrismReferenceDefinition) {
-            PrismReferenceDefinition prismRef = (PrismReferenceDefinition) definition.getDefinition();
-            QName compositeObjectName = prismRef.getCompositeObjectElementName();
-            if (compositeObjectName != null) {
-                String name = StructuredContract.javaFromItemName(compositeObjectName);
-                JClass type = asBindingTypeUnwrapped(prismRef.getTargetTypeName());
-                var itemName = fieldConstant(definition.constantName());
-
-                JMethod getter = clazz.method(JMod.PUBLIC, type, "get" + name);
-                getter.body()._return(JExpr.invoke(GET_REFERENCE_OBJECTABLE)
-                        .arg(itemName)
-                        .arg(type.dotclass()));
-
-                JMethod setter = clazz.method(JMod.PUBLIC,void.class, "set" + name);
-                var value = setter.param(type, "value");
-                setter.body().invoke(SET_REFERENCE_OBJECTABLE).arg(itemName).arg(value);
-            }
-        } else if (definition.isList() && bindingFor(definition.getDefinition().getTypeName()).getDefaultContract() instanceof ContainerableContract) {
+        if (definition.isList() && bindingFor(definition.getDefinition().getTypeName()).getDefaultContract() instanceof ContainerableContract) {
             JMethod create = clazz.method(JMod.PUBLIC, returnType, "create" + definition.getJavaName() + "List");
             create.body().staticInvoke(clazz(PrismForJAXBUtil.class), "createContainer")
                 .arg(JExpr.invoke("asPrismContainerValue"))
                 .arg(fieldConstant(definition.constantName()));
             create.body()._return(JExpr.invoke(definition.getterName()));
         }
-
-
     }
 
     @Override

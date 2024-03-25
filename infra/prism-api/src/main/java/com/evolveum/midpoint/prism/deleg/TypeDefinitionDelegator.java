@@ -22,6 +22,11 @@ public interface TypeDefinitionDelegator extends DefinitionDelegator, TypeDefini
     TypeDefinition delegate();
 
     @Override
+    default @NotNull QName getTypeName() {
+        return delegate().getTypeName();
+    }
+
+    @Override
     default @Nullable Class<?> getCompileTimeClass() {
         return delegate().getCompileTimeClass();
     }
@@ -44,5 +49,10 @@ public interface TypeDefinitionDelegator extends DefinitionDelegator, TypeDefini
     @Override
     default boolean canRepresent(QName typeName) {
         return delegate().canRepresent(typeName);
+    }
+
+    @Override
+    default String getHelp() {
+        return delegate().getHelp();
     }
 }

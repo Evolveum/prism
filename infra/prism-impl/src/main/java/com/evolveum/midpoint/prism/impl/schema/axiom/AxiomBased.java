@@ -2,15 +2,12 @@ package com.evolveum.midpoint.prism.impl.schema.axiom;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.schema.AxiomNamedDefinition;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
-import com.evolveum.midpoint.prism.MutableComplexTypeDefinition;
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.ComplexTypeDefinitionImpl;
 
 public class AxiomBased {
@@ -19,7 +16,7 @@ public class AxiomBased {
         return new QName(name.namespace(), name.localName());
     }
 
-    MutableComplexTypeDefinition complexTypeDefinition(PrismContext context, AxiomTypeDefinition source) {
+    ComplexTypeDefinition.ComplexTypeDefinitionMutator complexTypeDefinition(PrismContext context, AxiomTypeDefinition source) {
         QName typeName = qName(source.name());
         ComplexTypeDefinitionImpl target = new ComplexTypeDefinitionImpl(typeName);
         fillFromAxiom(target, source);
@@ -34,7 +31,7 @@ public class AxiomBased {
 
     }
 
-    private void fillDefinitinon(MutableDefinition target, AxiomNamedDefinition source) {
+    private void fillDefinitinon(Definition.DefinitionMutator target, AxiomNamedDefinition source) {
         // TODO Auto-generated method stub
         // target.setTypeName(typeName);
         // target.setAnnotation(qname, value);

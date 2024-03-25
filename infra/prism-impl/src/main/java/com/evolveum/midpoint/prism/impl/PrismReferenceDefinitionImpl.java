@@ -7,20 +7,26 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
+import java.util.Optional;
+import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionBuilder;
+import com.evolveum.midpoint.prism.path.ItemName;
+
+import com.evolveum.midpoint.prism.schema.SerializableReferenceDefinition;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.delta.ItemDelta;
+import com.evolveum.midpoint.prism.delta.ReferenceDelta;
 import com.evolveum.midpoint.prism.impl.delta.ReferenceDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ObjectReferencePathSegment;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
-import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
-
-import org.jetbrains.annotations.NotNull;
-
-import javax.xml.namespace.QName;
-import java.util.Optional;
 
 /**
  * Object Reference Schema Definition.
@@ -38,13 +44,16 @@ import java.util.Optional;
  *
  * @author Radovan Semancik
  */
-public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismReference> implements MutablePrismReferenceDefinition {
+public class PrismReferenceDefinitionImpl
+        extends ItemDefinitionImpl<PrismReference>
+        implements PrismReferenceDefinition, PrismReferenceDefinitionBuilder, SerializableReferenceDefinition {
 
-    private static final long serialVersionUID = 2427488779612517600L;
+    @Serial private static final long serialVersionUID = 2427488779612517600L;
+
     private QName targetTypeName;
-    private QName compositeObjectElementName;
     private boolean isComposite = false;
 
+    // TODO What will we do after deserialization?
     private transient Lazy<Optional<ComplexTypeDefinition>> structuredType;
 
     public PrismReferenceDefinitionImpl(QName elementName, QName typeName) {
@@ -79,15 +88,6 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     @Override
-    public QName getCompositeObjectElementName() {
-        return compositeObjectElementName;
-    }
-
-    public void setCompositeObjectElementName(QName compositeObjectElementName) {
-        this.compositeObjectElementName = compositeObjectElementName;
-    }
-
-    @Override
     public boolean isComposite() {
         return isComposite;
     }
@@ -96,13 +96,6 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     public void setComposite(boolean isComposite) {
         checkMutable();
         this.isComposite = isComposite;
-    }
-
-    @Override
-    public boolean isValidFor(@NotNull QName elementQName, @NotNull Class<? extends ItemDefinition<?>> clazz, boolean caseInsensitive) {
-        return clazz.isAssignableFrom(this.getClass()) &&
-                (QNameUtil.match(elementQName, getItemName(), caseInsensitive) ||
-                        QNameUtil.match(elementQName, getCompositeObjectElementName(), caseInsensitive));
     }
 
     @Override
@@ -142,41 +135,29 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     @Override
-    public @NotNull ItemDelta createEmptyDelta(ItemPath path) {
+    public @NotNull ReferenceDelta createEmptyDelta(ItemPath path) {
         return new ReferenceDeltaImpl(path, this);
     }
 
     @Override
-    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
-        if (!(pvalue instanceof PrismReferenceValue)) {
-            return false;
-        }
-        Itemable parent = pvalue.getParent();
-        if (parent != null) {
-            if (!(parent instanceof PrismReference)) {
-                return false;
-            }
-            return canBeDefinitionOf((PrismReference) parent);
-        } else {
-            return true;
-        }
-    }
-
-    @Override
-    public Class getTypeClass() {
+    public Class<ObjectReferenceType> getTypeClass() {
         return ObjectReferenceType.class;
     }
 
     @Override
-    public MutablePrismReferenceDefinition toMutable() {
+    public PrismReferenceDefinitionMutator mutator() {
         checkMutableOnExposing();
         return this;
     }
 
-    @NotNull
     @Override
-    public PrismReferenceDefinition clone() {
-        PrismReferenceDefinitionImpl clone = new PrismReferenceDefinitionImpl(getItemName(), getTypeName());
+    public @NotNull PrismReferenceDefinition clone() {
+        return cloneWithNewName(itemName);
+    }
+
+    @Override
+    public @NotNull PrismReferenceDefinition cloneWithNewName(@NotNull ItemName itemName) {
+        PrismReferenceDefinitionImpl clone = new PrismReferenceDefinitionImpl(itemName, getTypeName());
         clone.copyDefinitionDataFrom(this);
         return clone;
     }
@@ -184,7 +165,6 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     protected void copyDefinitionDataFrom(PrismReferenceDefinition source) {
         super.copyDefinitionDataFrom(source);
         targetTypeName = source.getTargetTypeName();
-        compositeObjectElementName = source.getCompositeObjectElementName();
         isComposite = source.isComposite();
     }
 

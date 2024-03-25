@@ -28,7 +28,6 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObjectDefinition;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
-import com.evolveum.midpoint.prism.impl.schema.SchemaDefinitionFactory;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
 import com.evolveum.midpoint.prism.impl.xml.GlobalDynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
@@ -283,7 +282,6 @@ public class SchemaDocMojo extends AbstractMojo {
             }
 
             PrismContextImpl context = PrismContextImpl.create(schemaRegistry);
-            context.setDefinitionFactory(new SchemaDefinitionFactory());
             context.initialize();
 
             return context;

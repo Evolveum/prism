@@ -13,6 +13,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.Definition.DefinitionBuilder;
+import com.evolveum.midpoint.prism.schema.*;
+import com.evolveum.midpoint.prism.schema.PrismSchema.PrismSchemaMutator;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.commons.collections4.CollectionUtils;
@@ -22,16 +27,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.*;
-import com.evolveum.midpoint.prism.schema.DefinitionSupplier;
-import com.evolveum.midpoint.prism.schema.MutablePrismSchema;
-import com.evolveum.midpoint.prism.schema.PrismSchema;
-import com.evolveum.midpoint.prism.schema.SchemaDescription;
-import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -40,9 +38,14 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 /**
  * @author Radovan Semancik
  */
-public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSchema {
+public class PrismSchemaImpl
+        extends AbstractFreezable
+        implements PrismSchema, PrismSchemaMutator, SchemaBuilder, SerializableSchema {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismSchema.class);
+
+    // TEMPORARY
+    boolean isRuntime;
 
     @NotNull protected final Collection<Definition> definitions = new ArrayList<>();
 
@@ -81,14 +84,14 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      */
     @NotNull protected final String namespace;
 
-    protected PrismContext prismContext;
+    @NotNull protected final PrismContextImpl prismContext = (PrismContextImpl) PrismContext.get();
 
     /**
      * Item definitions that couldn't be created when parsing the schema because of unresolvable CTD.
      * (Caused by the fact that the type resides in another schema.)
      * These definitions are to be resolved after parsing the set of schemas.
      */
-    @NotNull private final List<DefinitionSupplier> delayedItemDefinitions = new ArrayList<>();
+    @NotNull private final List<ItemDefinitionSupplier> delayedItemDefinitions = new ArrayList<>();
 
     /**
      * TODO
@@ -108,7 +111,6 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     public PrismSchemaImpl(@NotNull String namespace) {
         argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
         this.namespace = namespace;
-        this.prismContext = PrismContext.get();
     }
 
     private void invalidateCaches() {
@@ -116,9 +118,8 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     }
 
     //region Trivia
-    @NotNull
     @Override
-    public String getNamespace() {
+    public @NotNull String getNamespace() {
         return namespace;
     }
 
@@ -128,34 +129,33 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         return Collections.unmodifiableCollection(definitions);
     }
 
-    @SuppressWarnings("unchecked")
-    @NotNull
     @Override
-    public <T extends Definition> List<T> getDefinitions(@NotNull Class<T> type) {
+    public @NotNull Collection<? extends SerializableDefinition> getDefinitionsToSerialize() {
+        //noinspection unchecked,rawtypes
+        return (Collection) getDefinitions(); // TODO resolve the casting
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NotNull <T extends Definition> List<T> getDefinitions(@NotNull Class<T> type) {
         List<T> list = new ArrayList<>();
         for (Definition def : definitions) {
             if (type.isAssignableFrom(def.getClass())) {
                 list.add((T) def);
             }
         }
-        return list;
+        return List.copyOf(list);
     }
 
     @Override
-    public void addDelayedItemDefinition(DefinitionSupplier supplier) {
+    public void addDelayedItemDefinition(ItemDefinitionSupplier supplier) {
         checkMutable();
         delayedItemDefinitions.add(supplier);
         invalidateCaches();
     }
 
-    @NotNull
-    List<DefinitionSupplier> getDelayedItemDefinitions() {
+    @NotNull List<ItemDefinitionSupplier> getDelayedItemDefinitions() {
         return delayedItemDefinitions;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return definitions.isEmpty();
     }
 
     @Override
@@ -181,20 +181,61 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
                 }
             }
 
-        } else if (def instanceof TypeDefinition) {
+            QName substitutionHead = itemDef.getSubstitutionHead();
+            if (substitutionHead != null) {
+                addSubstitution(substitutionHead, itemDef);
+            }
+
+        } else if (def instanceof TypeDefinition typeDef) { // We hope all types will be of this
             QName typeName = def.getTypeName();
             if (QNameUtil.isUnqualified(typeName)) {
                 throw new IllegalArgumentException("Unqualified definition of type " + typeName + " cannot be added to " + this);
             }
-            typeDefinitionMap.put(typeName, (TypeDefinition) def);
+            typeDefinitionMap.put(typeName, typeDef);
+        } else {
+            throw new IllegalArgumentException("Unsupported type to be added to this schema: " + def);
         }
 
         invalidateCaches();
     }
 
+    void setupCompileTimeClass(@NotNull TypeDefinition typeDef) {
+        // Not caching the negative result, as this is called during schema parsing.
+        Class<Object> compileTimeClass = prismContext.getSchemaRegistry()
+                .determineCompileTimeClassInternal(typeDef.getTypeName(), false);
+        if (typeDef instanceof TypeDefinitionImpl typeDefImpl) {
+            typeDefImpl.setCompileTimeClass(compileTimeClass); // FIXME do better!
+        }
+        registerCompileTimeClass(compileTimeClass, typeDef);
+    }
+
     @Override
-    public void registerCompileTimeClass(Class<?> compileTimeClass, TypeDefinition typeDefinition) {
-        if (compileTimeClass != null) {
+    public @NotNull ComplexTypeDefinitionLikeBuilder newComplexTypeDefinitionLikeBuilder(String localTypeName) {
+        return prismContext.definitionFactory()
+                .newComplexTypeDefinition(qualify(localTypeName));
+    }
+
+    @Override
+    public void add(@NotNull DefinitionBuilder builder) {
+        var definition = builder.getObjectBuilt();
+        if (definition instanceof Definition typeDef) {
+            add(typeDef);
+        } else {
+            // Only the subclasses can deal with non-prism definitions. This is why the builder was created in the first place.
+            throw new IllegalArgumentException("The builder does not produce a prism definition: " + definition);
+        }
+    }
+
+    @Override
+    public SchemaBuilder builder() {
+        return this;
+    }
+
+    private void registerCompileTimeClass(@Nullable Class<?> compileTimeClass, @NotNull TypeDefinition typeDefinition) {
+        // FIXME use more relevant criteria to decide whether to put a definition into this map. Currently we skip
+        //  extension types because multiple unrelated types correspond to ExtensionType.class and that causes the insertion
+        //  into the map fail (as it takes care to avoid overwriting the entries, for obvious reasons)
+        if (compileTimeClass != null && !isExtensionType(typeDefinition)) {
             var previous = typeDefinitionByCompileTimeClassMap.put(compileTimeClass, typeDefinition);
             stateCheck(previous == null,
                     "Multiple type definitions for %s: %s and %s",
@@ -202,8 +243,13 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         }
     }
 
-    @Override
-    public void addSubstitution(QName substitutionHead, ItemDefinition<?> definition) {
+    // FIXME put into correct place
+    private boolean isExtensionType(TypeDefinition typeDefinition) {
+        return typeDefinition instanceof ComplexTypeDefinition ctd
+                && ctd.getExtensionForType() != null;
+    }
+
+    private void addSubstitution(QName substitutionHead, ItemDefinition<?> definition) {
         this.substitutions.put(substitutionHead, definition);
     }
 
@@ -216,147 +262,15 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
 
     //region XSD parsing and serialization
 
-    // TODO: cleanup this chaos
-    // Currently used for connector schema (at least in production code)
-    public static PrismSchema parse(Element element, boolean isRuntime, String shortDescription)
-            throws SchemaException {
-        // We need to synchronize, because the DOM structures are not thread-safe, even for reading.
-        // Here, DOMUtil.getSchemaTargetNamespace gets an exception, see MID-8860.
-        //
-        // We intentionally synchronize on the schema element. Note that synchronizing e.g. on the owning ConnectorType object
-        // is not sufficient, because of not cloning the embedded schema (59bee63b1b8eb933db39e8a9b61a4023b25ec4c0 - wrong
-        // decision at that time) we usually have different connector objects (in parallel threads) sharing the same schema
-        // DOM element.
-        //
-        // FIXME this should be resolved more seriously; maybe we will have to put the schema cloning back?
-        //
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (element) {
-            PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
-            return parse(
-                    element, ((PrismContextImpl) PrismContext.get()).getEntityResolver(),
-                    schema, isRuntime, shortDescription, false);
-        }
-    }
-
-    // used for parsing prism schemas; only in exceptional cases
-    public static PrismSchema parse(
-            Element element, EntityResolver resolver, boolean isRuntime, String shortDescription,
-            boolean allowDelayedItemDefinitions) throws SchemaException {
-        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(element));
-        return parse(element, resolver, schema, isRuntime, shortDescription, allowDelayedItemDefinitions);
-    }
-
-    // main entry point for parsing standard prism schemas
-    static void parseSchemas(Element wrapperElement, XmlEntityResolver resolver,
-            List<SchemaDescription> schemaDescriptions,
-            boolean allowDelayedItemDefinitions) throws SchemaException {
-        DomToSchemaProcessor processor = new DomToSchemaProcessor(resolver);
-        processor.parseSchemas(schemaDescriptions, wrapperElement, allowDelayedItemDefinitions, "multiple schemas");
-    }
-
-    // used for connector and resource schemas
-    @Override
-    public void parseThis(Element element, boolean isRuntime, String shortDescription) throws SchemaException {
-        checkMutable();
-        parse(element, ((PrismContextImpl) prismContext).getEntityResolver(), this, isRuntime, shortDescription, false);
-    }
-
-    private static PrismSchema parse(
-            Element element,
-            EntityResolver resolver,
-            PrismSchemaImpl schema,
-            boolean isRuntime,
-            String shortDescription,
-            boolean allowDelayedItemDefinitions) throws SchemaException {
-        if (element == null) {
-            throw new IllegalArgumentException("Schema element must not be null in " + shortDescription);
-        }
-        DomToSchemaProcessor processor = new DomToSchemaProcessor(resolver);
-        processor.parseSchema(schema, element, isRuntime, allowDelayedItemDefinitions, shortDescription);
-        return schema;
-    }
+    // used for connector schemas
 
     @Override
     public @NotNull Document serializeToXsd() throws SchemaException {
-        SchemaToDomProcessor processor = new SchemaToDomProcessor();
-        processor.setPrismContext(prismContext);
-        return processor.parseSchema(this);
+        return new SchemaDomSerializer(this).serializeSchema();
     }
     //endregion
 
     //region Creating definitions
-
-    /**
-     * Creates a new property container definition and adds it to the schema.
-     *
-     * This is a preferred way how to create definition in the schema.
-     *
-     * @param localTypeName type name "relative" to schema namespace
-     * @return new property container definition
-     */
-    @Override
-    public MutablePrismContainerDefinition<?> createContainerDefinition(String localTypeName) {
-        QName typeName = new QName(getNamespace(), localTypeName);
-        QName name = new QName(getNamespace(), toElementName(localTypeName));
-        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName);
-        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef);
-        add(cTypeDef);
-        add(def);
-        return def;
-    }
-
-    @Override
-    public MutablePrismContainerDefinition<?> createContainerDefinition(String localItemName, String localTypeName) {
-        QName typeName = new QName(getNamespace(), localTypeName);
-        QName name = new QName(getNamespace(), localItemName);
-        ComplexTypeDefinition cTypeDef = findComplexTypeDefinitionByType(typeName);
-        if (cTypeDef == null) {
-            cTypeDef = new ComplexTypeDefinitionImpl(typeName);
-            add(cTypeDef);
-        }
-        PrismContainerDefinitionImpl<?> def = new PrismContainerDefinitionImpl<>(name, cTypeDef);
-        add(def);
-        return def;
-    }
-
-    @Override
-    public ComplexTypeDefinition createComplexTypeDefinition(QName typeName) {
-        ComplexTypeDefinition cTypeDef = new ComplexTypeDefinitionImpl(typeName);
-        add(cTypeDef);
-        return cTypeDef;
-    }
-
-    /**
-     * Creates a top-level property definition and adds it to the schema.
-     *
-     * This is a preferred way how to create definition in the schema.
-     *
-     * @param localName element name "relative" to schema namespace
-     * @param typeName XSD type name of the element
-     * @return new property definition
-     */
-    @Override
-    public PrismPropertyDefinition<?> createPropertyDefinition(String localName, QName typeName) {
-        QName name = new QName(getNamespace(), localName);
-        return createPropertyDefinition(name, typeName);
-    }
-
-    /**
-     * Creates a top-level property definition and adds it to the schema.
-     *
-     * This is a preferred way how to create definition in the schema.
-     *
-     * @param name element name
-     * @param typeName XSD type name of the element
-     * @return new property definition
-     */
-    @Override
-    public PrismPropertyDefinition<?> createPropertyDefinition(QName name, QName typeName) {
-        PrismPropertyDefinition<?> def = new PrismPropertyDefinitionImpl<>(name, typeName);
-        add(def);
-        return def;
-    }
 
     /**
      * Internal method to create a "nice" element name from the type name.
@@ -389,7 +303,11 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
                 sb.append("\n");
             }
         }
+        extendDebugDump(sb, indent);
         return sb.toString();
+    }
+
+    protected void extendDebugDump(StringBuilder sb, int indent) {
     }
 
     @Override
@@ -525,8 +443,7 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     @Override
     public <C extends Containerable> ComplexTypeDefinition findComplexTypeDefinitionByCompileTimeClass(@NotNull Class<C> compileTimeClass) {
         for (Definition def : definitions) {
-            if (def instanceof ComplexTypeDefinition) {
-                ComplexTypeDefinition ctd = (ComplexTypeDefinition) def;
+            if (def instanceof ComplexTypeDefinition ctd) {
                 if (compileTimeClass.equals(ctd.getCompileTimeClass())) {
                     return ctd;
                 }
@@ -535,12 +452,16 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         return null;
     }
 
+    public TypeDefinition findTypeDefinitionByType(@NotNull QName typeName) {
+        return findTypeDefinitionByType(typeName, TypeDefinition.class);
+    }
+
     @Nullable
     @Override
     public <TD extends TypeDefinition> TD findTypeDefinitionByType(@NotNull QName typeName, @NotNull Class<TD> definitionClass) {
         Collection<TD> definitions = findTypeDefinitionsByType(typeName, definitionClass);
         return !definitions.isEmpty() ?
-                definitions.iterator().next() : null;        // TODO treat multiple results somehow
+                definitions.iterator().next() : null; // TODO treat multiple results somehow
     }
 
     @NotNull
@@ -590,6 +511,11 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
         return clone;
     }
 
+    @Override
+    public PrismSchemaMutator mutator() {
+        return this;
+    }
+
     protected void copyContent(PrismSchemaImpl target) {
         assertNoDelayedDefinitionsOnClone();
         for (Definition definition : definitions) {
@@ -603,5 +529,19 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     protected void assertNoDelayedDefinitionsOnClone() {
         stateCheck(delayedItemDefinitions.isEmpty(),
                 "Cannot clone schema with delayed definitions: %s (%s)", delayedItemDefinitions.size(), this);
+    }
+
+    protected @NotNull QName qualify(@NotNull String localTypeName) {
+        return new QName(namespace, localTypeName);
+    }
+
+    @Override
+    public boolean isRuntime() {
+        return isRuntime;
+    }
+
+    public void setRuntime(boolean runtime) {
+        checkMutable();
+        isRuntime = runtime;
     }
 }

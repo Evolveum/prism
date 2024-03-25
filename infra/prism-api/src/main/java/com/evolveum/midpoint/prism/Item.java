@@ -49,7 +49,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  * @author Radovan Semancik
  */
 public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PathVisitable,
-        ParentVisitable, Serializable, Revivable, Freezable, PrismContextSensitive {
+        ParentVisitable, Serializable, Revivable, Freezable {
 
     /**
      * Returns applicable definition.

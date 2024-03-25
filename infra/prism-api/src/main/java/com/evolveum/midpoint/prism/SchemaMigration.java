@@ -6,15 +6,16 @@
  */
 package com.evolveum.midpoint.prism;
 
+import java.io.Serial;
 import java.io.Serializable;
-
 import javax.xml.namespace.QName;
 
 /**
  * @author semancik
  */
 public class SchemaMigration implements Serializable {
-    private static final long serialVersionUID = 1L;
+
+    @Serial private static final long serialVersionUID = 1L;
 
     private final QName elementQName;
     private final String version;
@@ -97,5 +98,4 @@ public class SchemaMigration implements Serializable {
     public QName getReplacement() {
         return replacement;
     }
-
 }

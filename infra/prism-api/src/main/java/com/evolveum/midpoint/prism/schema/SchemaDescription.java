@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.schema;
 
+import com.evolveum.midpoint.prism.Definition;
 import com.evolveum.midpoint.prism.Freezable;
 import com.evolveum.midpoint.util.DebugDumpable;
 import org.w3c.dom.Element;
@@ -56,4 +57,13 @@ public interface SchemaDescription extends DebugDumpable, Freezable {
     Source getSource();
 
     Element getDomElement();
+
+    /**
+     * See {@link Definition#isRuntimeSchema()}.
+     *
+     * TODO however, is this expression correct? What if there are statically compiled packages in an extension schema?
+     */
+    default boolean isRuntime() {
+        return getCompileTimeClassesPackage() == null;
+    }
 }

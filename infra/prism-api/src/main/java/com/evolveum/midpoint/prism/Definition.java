@@ -9,25 +9,22 @@ package com.evolveum.midpoint.prism;
 
 import java.io.Serializable;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
-
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Common interface to access all definitions.
  */
 public interface Definition
-        extends PrismContextSensitive, Serializable, DebugDumpable, Revivable, Cloneable, Freezable, SmartVisitable<Definition> {
+        extends
+        PrismPresentationDefinition, PrismLifecycleDefinition,
+        Serializable, DebugDumpable, Revivable, Cloneable, Freezable, SmartVisitable<Definition> {
 
     /**
      * Returns a name of the type for this definition.
@@ -64,16 +61,6 @@ public interface Definition
      */
     boolean isRuntimeSchema();
 
-    /** Just a shortcut for now. */
-    default boolean isIgnored() {
-        return getProcessing() == ItemProcessing.IGNORE;
-    }
-
-    /**
-     * Level of processing (ignore, minimal, auto, full) for this item/type.
-     */
-    ItemProcessing getProcessing();
-
     /**
      * For types: is the type abstract so that it should not be instantiated directly?
      *
@@ -81,28 +68,10 @@ public interface Definition
      */
     boolean isAbstract();
 
-    boolean isDeprecated();
-
-    boolean isRemoved();
-
-    String getRemovedSince();
-
     /**
      * Marks item that could be ignored by SCM tools (e.g. Git), or removed before commit.
      */
     boolean isOptionalCleanup();
-
-    /**
-     * Experimental functionality is not stable and it may be changed in any
-     * future release without any warning. Use at your own risk.
-     */
-    boolean isExperimental();
-
-    /**
-     * Version of data model in which the item is likely to be removed.
-     * This annotation is used for deprecated item to indicate imminent incompatibility in future versions of data model.
-     */
-    String getPlannedRemoval();
 
     /**
      * Elaborate items are complicated data structure that may deviate from
@@ -113,66 +82,6 @@ public interface Definition
      */
     boolean isElaborate();
 
-    String getDeprecatedSince();
-
-    /**
-     * True for definitions that are more important than others and that should be emphasized
-     * during presentation. E.g. the emphasized definitions will always be displayed in the user
-     * interfaces (even if they are empty), they will always be included in the dumps, etc.
-     */
-    boolean isEmphasized();
-
-    /**
-     * Enumeration annotation that specifies how/whether the item should be displayed.
-     *
-     * It is also a replacement for the old "emphasized" annotation.
-     */
-    DisplayHint getDisplayHint();
-
-    /**
-     * Returns display name.
-     *
-     * Specifies the printable name of the object class or attribute. It must
-     * contain a printable string. It may also contain a key to catalog file.
-     *
-     * Returns null if no display name is set.
-     *
-     * Corresponds to "displayName" XSD annotation.
-     *
-     * @return display name string or catalog key
-     */
-    String getDisplayName();
-
-    /**
-     * Specifies an order in which the item should be displayed relative to other items
-     * at the same level. The items will be displayed by sorting them by the
-     * values of displayOrder annotation (ascending). Items that do not have
-     * any displayOrder annotation will be displayed last. The ordering of
-     * values with the same displayOrder is undefined and it may be arbitrary.
-     */
-    Integer getDisplayOrder();
-
-    /**
-     * Returns help string.
-     *
-     * Specifies the help text or a key to catalog file for a help text. The
-     * help text may be displayed in any suitable way by the GUI. It should
-     * explain the meaning of an attribute or object class.
-     *
-     * Returns null if no help string is set.
-     *
-     * Corresponds to "help" XSD annotation.
-     *
-     * @return help string or catalog key
-     */
-    String getHelp();
-
-    String getDocumentation();
-
-    /**
-     * Returns only a first sentence of documentation.
-     */
-    String getDocumentationPreview();
 
     /**
      * Returns a compile-time class that is used to represent items.
@@ -198,8 +107,6 @@ public interface Definition
     @Experimental
     <A> A getAnnotation(QName qname);
 
-    <A> void setAnnotation(QName qname, A value);
-
     /**
      * Returns all annotations, as unmodifiable map.
      *
@@ -207,13 +114,7 @@ public interface Definition
      */
     @Nullable Map<QName, Object> getAnnotations();
 
-    @Nullable List<SchemaMigration> getSchemaMigrations();
-
-    @Experimental
-    List<ItemDiagramSpecification> getDiagrams();
-
-    @NotNull
-    Definition clone();
+    @NotNull Definition clone();
 
     default String debugDump(int indent, IdentityHashMap<Definition,Object> seen) {
         return debugDump(indent);
@@ -222,7 +123,7 @@ public interface Definition
     /**
      * Returns an interface to mutate this definition.
      */
-    MutableDefinition toMutable();
+    DefinitionMutator mutator();
 
     // TODO reconsider/fix this
     default String getMutabilityFlag() {
@@ -233,5 +134,22 @@ public interface Definition
         if (isImmutable()) {
             throw new IllegalStateException("Definition couldn't be exposed as mutable because it is immutable: " + this);
         }
+    }
+    /**
+     * An interface that provides an ability to modify a definition.
+     */
+    interface DefinitionMutator
+            extends
+            PrismPresentationDefinition.Mutable,
+            PrismLifecycleDefinition.Mutable {
+
+        void setOptionalCleanup(boolean optionalCleanup);
+
+        void setRuntimeSchema(boolean value);
+
+        <A> void setAnnotation(QName qname, A value);
+    }
+
+    interface DefinitionBuilder extends DefinitionFragmentBuilder {
     }
 }

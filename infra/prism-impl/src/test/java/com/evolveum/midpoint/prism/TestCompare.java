@@ -276,8 +276,8 @@ public abstract class TestCompare extends AbstractPrismTest {
     public void testEqualsReferenceValuesSchema() throws Exception {
         PrismContext prismContext = constructInitializedPrismContext();
 
-        MutablePrismReferenceDefinition ref1Def = prismContext.definitionFactory().createReferenceDefinition(REF_QNAME, REF_TYPE_QNAME);
-        ref1Def.setTargetTypeName(ACCOUNT_TYPE_QNAME);
+        var ref1Def = prismContext.definitionFactory().newReferenceDefinition(REF_QNAME, REF_TYPE_QNAME);
+        ref1Def.mutator().setTargetTypeName(ACCOUNT_TYPE_QNAME);
 
         PrismReference ref1a = prismContext.itemFactory().createReference(REF_QNAME, ref1Def);
         PrismReferenceValue val11 = new PrismReferenceValueImpl("oid1");
@@ -297,7 +297,7 @@ public abstract class TestCompare extends AbstractPrismTest {
         // No type
         assertFalse(ref1b.add(val14));
 
-        PrismReferenceDefinition ref2Def = prismContext.definitionFactory().createReferenceDefinition(REF_QNAME, REF_TYPE_QNAME);
+        PrismReferenceDefinition ref2Def = prismContext.definitionFactory().newReferenceDefinition(REF_QNAME, REF_TYPE_QNAME);
         // no target type def
 
         PrismReference ref2a = prismContext.itemFactory().createReference(REF_QNAME, ref2Def);

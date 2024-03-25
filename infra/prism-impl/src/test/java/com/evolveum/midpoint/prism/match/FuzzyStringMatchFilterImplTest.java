@@ -35,11 +35,11 @@ public class FuzzyStringMatchFilterImplTest extends AbstractPrismTest {
     @BeforeTest
     public void initialize() {
         defNationalId = PrismContext.get().definitionFactory()
-                .createPropertyDefinition(QNAME_NATIONAL_ID, DOMUtil.XSD_STRING, null, null);
+                .newPropertyDefinition(QNAME_NATIONAL_ID, DOMUtil.XSD_STRING, null, null);
         defDateOfBirth = PrismContext.get().definitionFactory()
-                .createPropertyDefinition(QNAME_DATE_BIRTH, DOMUtil.XSD_STRING, null, null);
+                .newPropertyDefinition(QNAME_DATE_BIRTH, DOMUtil.XSD_STRING, null, null);
         defSubFamilyName = PrismContext.get().definitionFactory()
-                .createPropertyDefinition(QNAME_FAMILY_NAME_3, DOMUtil.XSD_STRING, null, null);
+                .newPropertyDefinition(QNAME_FAMILY_NAME_3, DOMUtil.XSD_STRING, null, null);
     }
 
     @Test

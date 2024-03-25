@@ -19,16 +19,11 @@ public enum SchemaMigrationOperation {
         if (s == null) {
             return null;
         }
-        switch (s) {
-            case "removed":
-                return REMOVED;
-            case "moved":
-                return MOVED;
-            case "renamedParent":
-                return RENAMED_PARENT;
-            default:
-                throw new SchemaException("Unknown schema migration operation "+s);
-        }
+        return switch (s) {
+            case "removed" -> REMOVED;
+            case "moved" -> MOVED;
+            case "renamedParent" -> RENAMED_PARENT;
+            default -> throw new SchemaException("Unknown schema migration operation " + s);
+        };
     }
-
 }

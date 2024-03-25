@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import com.evolveum.midpoint.prism.MutableDefinition;
-import com.evolveum.midpoint.prism.MutableTypeDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.SimpleTypeDefinition;
+import com.evolveum.midpoint.prism.*;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -19,7 +16,8 @@ import javax.xml.namespace.QName;
 /**
  * TODO document
  */
-public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements SimpleTypeDefinition, MutableTypeDefinition {
+public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl
+        implements SimpleTypeDefinition, TypeDefinition.TypeDefinitionMutator, SimpleTypeDefinition.SimpleTypeDefinitionBuilder, PrismPresentationDefinition.Mutable {
 
     private final QName baseTypeName;
     private final DerivationMethod derivationMethod; // usually RESTRICTION
@@ -68,8 +66,13 @@ public class SimpleTypeDefinitionImpl extends TypeDefinitionImpl implements Simp
     }
 
     @Override
-    public MutableDefinition toMutable() {
+    public TypeDefinitionMutator mutator() {
         checkMutableOnExposing();
+        return this;
+    }
+
+    @Override
+    public SimpleTypeDefinition getObjectBuilt() {
         return this;
     }
 }

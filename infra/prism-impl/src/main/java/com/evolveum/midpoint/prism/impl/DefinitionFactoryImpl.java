@@ -7,49 +7,55 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.util.DisplayableValue;
+import javax.xml.namespace.QName;
+
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.namespace.QName;
-import java.util.Collection;
+import com.evolveum.midpoint.prism.*;
 
-/**
- *
- */
 public class DefinitionFactoryImpl implements DefinitionFactory {
 
-    @NotNull private final PrismContextImpl prismContext;
-
-    DefinitionFactoryImpl(@NotNull PrismContextImpl prismContext) {
-        this.prismContext = prismContext;
-    }
-
     @Override
-    public ComplexTypeDefinitionImpl createComplexTypeDefinition(QName name) {
+    public ComplexTypeDefinitionImpl newComplexTypeDefinition(QName name) {
         return new ComplexTypeDefinitionImpl(name);
     }
 
     @Override
-    public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName) {
+    public <T> PrismPropertyDefinitionImpl<T> newPropertyDefinition(QName name, QName typeName) {
         return new PrismPropertyDefinitionImpl<>(name, typeName);
     }
 
+    public <T> PrismPropertyDefinitionImpl<T> newPropertyDefinition(QName name, QName typeName, QName definedInType) {
+        return new PrismPropertyDefinitionImpl<>(name, typeName, definedInType);
+    }
+
     @Override
-    public MutablePrismReferenceDefinition createReferenceDefinition(QName name, QName typeName) {
+    public PrismReferenceDefinition newReferenceDefinition(QName name, QName typeName) {
         return new PrismReferenceDefinitionImpl(name, typeName);
     }
 
+    //region Containers and objects
     @Override
-    public @NotNull MutablePrismContainerDefinition<?> createContainerDefinition(QName name, ComplexTypeDefinition ctd) {
-        return new PrismContainerDefinitionImpl<>(name, ctd);
+    public @NotNull PrismContainerDefinition<?> newContainerDefinitionWithoutTypeDefinition(
+            @NotNull QName name, @NotNull QName typeName) {
+        return new PrismContainerDefinitionImpl<>(name, typeName);
     }
 
     @Override
-    public <T> MutablePrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName,
-            Collection<? extends DisplayableValue<T>> allowedValues, T defaultValue) {
-        PrismPropertyDefinitionImpl def = new PrismPropertyDefinitionImpl<>(name, typeName, defaultValue);
-        def.setAllowedValues(allowedValues);
-        return def;
+    public <C extends Containerable> @NotNull PrismContainerDefinitionImpl<C> newContainerDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd) {
+        return new PrismContainerDefinitionImpl<>(name, ctd);
     }
+
+    public <C extends Containerable> @NotNull PrismContainerDefinitionImpl<C> newContainerDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd, @NotNull QName definedInType) {
+        return new PrismContainerDefinitionImpl<>(name, ctd, definedInType);
+    }
+
+    public <O extends Objectable> @NotNull PrismObjectDefinitionImpl<O> newObjectDefinition(
+            @NotNull QName name, @NotNull ComplexTypeDefinition ctd) {
+        return new PrismObjectDefinitionImpl<>(name, ctd);
+    }
+
+    //endregion
 }

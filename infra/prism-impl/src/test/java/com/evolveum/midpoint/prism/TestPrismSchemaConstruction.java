@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism;
 
+import static com.evolveum.midpoint.prism.schema.PrismSchemaBuildingUtil.addNewComplexTypeDefinition;
 import static org.testng.AssertJUnit.*;
 
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
@@ -15,6 +16,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
+import com.evolveum.midpoint.prism.impl.schema.SchemaParsingUtil;
+import com.evolveum.midpoint.prism.schema.PrismSchemaBuildingUtil;
 
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
@@ -37,7 +43,6 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
 
     private static final String NS_MY_SCHEMA = "http://midpoint.evolveum.com/xml/ns/test/my-1";
     private static final String WEAPON_TYPE_LOCAL_NAME = "WeaponType";
-    private static final QName WEAPON_TYPE_QNAME = new QName(NS_MY_SCHEMA, WEAPON_TYPE_LOCAL_NAME);
     private static final ItemName WEAPON_KIND_QNAME = new ItemName(NS_MY_SCHEMA, "kind");
     private static final QName WEAPON_CREATE_TIMESTAMP_QNAME = new QName(NS_MY_SCHEMA, "createTimestamp");
     private static final String WEAPON_LOCAL_NAME = "weapon";
@@ -108,7 +113,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         assertPrefix(PrismConstants.PREFIX_NS_ANNOTATION, displayNameElement);
 
         // re-parse
-        PrismSchema reparsedSchema = PrismSchemaImpl.parse(xsdElement, true, "serialized schema");
+        PrismSchema reparsedSchema = SchemaParsingUtil.createAndParse(xsdElement, true, "serialized schema");
         System.out.println("Re-parsed schema");
         System.out.println(reparsedSchema.debugDump());
         assertSchema(reparsedSchema);
@@ -117,17 +122,17 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
     private PrismSchema constructSchema(PrismContext prismContext) {
         PrismSchemaImpl schema = new PrismSchemaImpl(NS_MY_SCHEMA);
 
-        MutableComplexTypeDefinition weaponTypeDef = schema.createComplexTypeDefinition(WEAPON_TYPE_QNAME).toMutable();
-        MutablePrismPropertyDefinition<?> kindPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_KIND_QNAME, DOMUtil.XSD_STRING);
+        ComplexTypeDefinitionMutator weaponTypeDef = addNewComplexTypeDefinition(schema, WEAPON_TYPE_LOCAL_NAME).mutator();
+        PrismPropertyDefinitionMutator<?> kindPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_KIND_QNAME, DOMUtil.XSD_STRING);
         kindPropertyDef.setDisplayName("Weapon kind");
         weaponTypeDef.createPropertyDefinition(WEAPON_BRAND_LOCAL_NAME, PrismInternalTestUtil.WEAPONS_WEAPON_BRAND_TYPE_QNAME);
         weaponTypeDef.createPropertyDefinition(WEAPON_PASSWORD_LOCAL_NAME, PrismInternalTestUtil.DUMMY_PROTECTED_STRING_TYPE);
         weaponTypeDef.createPropertyDefinition(WEAPON_BLADE_LOCAL_NAME, PrismInternalTestUtil.EXTENSION_BLADE_TYPE_QNAME);
-        MutablePrismPropertyDefinition<?> createTimestampPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_CREATE_TIMESTAMP_QNAME, DOMUtil.XSD_DATETIME);
+        PrismPropertyDefinitionMutator<?> createTimestampPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_CREATE_TIMESTAMP_QNAME, DOMUtil.XSD_DATETIME);
         createTimestampPropertyDef.setDisplayName("Create timestamp");
         createTimestampPropertyDef.setOperational(true);
 
-        schema.createContainerDefinition(WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
+        PrismSchemaBuildingUtil.addNewContainerDefinition(schema, WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
 
         return schema;
     }
@@ -143,8 +148,8 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         Iterator<Definition> schemaDefIter = definitions.iterator();
         ComplexTypeDefinition weaponTypeDef = (ComplexTypeDefinition) schemaDefIter.next();
         assertEquals("Unexpected number of definitions in weaponTypeDef", 5, weaponTypeDef.getDefinitions().size());
-        Iterator<? extends ItemDefinition> weaponTypeDefIter = weaponTypeDef.getDefinitions().iterator();
-        PrismPropertyDefinition kindPropertyDef = (PrismPropertyDefinition) weaponTypeDefIter.next();
+        Iterator<? extends ItemDefinition<?>> weaponTypeDefIter = weaponTypeDef.getDefinitions().iterator();
+        PrismPropertyDefinition<?> kindPropertyDef = (PrismPropertyDefinition<?>) weaponTypeDefIter.next();
         PrismAsserts.assertDefinition(kindPropertyDef, WEAPON_KIND_QNAME, DOMUtil.XSD_STRING, 1, 1);
         assertEquals("Wrong kindPropertyDef displayName", "Weapon kind", kindPropertyDef.getDisplayName());
         assertFalse("kindPropertyDef IS operational", kindPropertyDef.isOperational());

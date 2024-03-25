@@ -25,4 +25,14 @@ public interface SimpleTypeDefinition extends TypeDefinition {
     QName getBaseTypeName();
 
     DerivationMethod getDerivationMethod();
+
+    interface SimpleTypeDefinitionMutator {
+        // base type and derivation method are immutable
+    }
+
+    interface SimpleTypeDefinitionBuilder
+            extends SimpleTypeDefinitionMutator, TypeDefinitionLikeBuilder {
+
+        SimpleTypeDefinition getObjectBuilt();
+    }
 }

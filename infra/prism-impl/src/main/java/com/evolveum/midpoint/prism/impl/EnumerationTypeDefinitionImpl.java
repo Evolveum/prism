@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ import com.google.common.collect.ImmutableList;
 
 public class EnumerationTypeDefinitionImpl extends SimpleTypeDefinitionImpl implements EnumerationTypeDefinition {
 
-    private static final long serialVersionUID = -4026772475698851565L;
+    @Serial private static final long serialVersionUID = -4026772475698851565L;
 
     private final List<ValueDefinition> values;
 

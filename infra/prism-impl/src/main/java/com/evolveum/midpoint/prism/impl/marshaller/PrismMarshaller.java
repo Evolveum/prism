@@ -574,8 +574,7 @@ public class PrismMarshaller {
             return createExpressionXNode(expression);
         }
         T realValue = value.getValue();
-        if (realValue instanceof RawType) {
-            RawType rawValue = (RawType) realValue;
+        if (realValue instanceof RawType rawValue) {
             if (rawValue.isParsed()) {
                 return marshalItemValue(
                         rawValue.getAlreadyParsedValue(), definition, typeNameIfNoDefinition, ctx, PathSet.empty());
@@ -648,8 +647,7 @@ public class PrismMarshaller {
         }
         T realValue = value.getValue();
         if (realValue != null) {
-            if (realValue instanceof RawType) {
-                RawType raw = (RawType) realValue;
+            if (realValue instanceof RawType raw) {
                 if (!raw.isParsed()) {
                     return (XNodeImpl) raw.serializeToXNode();
                 }

@@ -24,12 +24,6 @@ public interface ReferenceDefinitionDelegator extends ItemDefinitionDelegator<Pr
         return delegate().getTargetTypeName();
     }
 
-    @Deprecated
-    @Override
-    default QName getCompositeObjectElementName() {
-        return delegate().getCompositeObjectElementName();
-    }
-
     @Override
     default boolean isComposite() {
         return delegate().isComposite();

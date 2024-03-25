@@ -747,7 +747,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     public <T> ObjectFilter parseFilter(Class<T> typeClass, String query) throws SchemaException {
         SchemaRegistry schemaRegistry = context.getSchemaRegistry();
         ItemDefinition<?> definition = Referencable.class.isAssignableFrom(typeClass)
-                ? PrismContext.get().definitionFactory().createReferenceDefinition(
+                ? PrismContext.get().definitionFactory().newReferenceDefinition(
                 PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE)
                 : schemaRegistry.findItemDefinitionByCompileTimeClass(typeClass, ItemDefinition.class);
         if (definition == null) {
@@ -771,7 +771,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     public <T> PreparedPrismQuery parse(Class<T> typeClass, String query) throws SchemaException {
         SchemaRegistry schemaRegistry = context.getSchemaRegistry();
         ItemDefinition<?> definition = Referencable.class.isAssignableFrom(typeClass)
-                ? PrismContext.get().definitionFactory().createReferenceDefinition(
+                ? PrismContext.get().definitionFactory().newReferenceDefinition(
                 PrismConstants.T_SELF, PrismConstants.T_OBJECT_REFERENCE)
                 : schemaRegistry.findItemDefinitionByCompileTimeClass(typeClass, ItemDefinition.class);
         if (definition == null) {

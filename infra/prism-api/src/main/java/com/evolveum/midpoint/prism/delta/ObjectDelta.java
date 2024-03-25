@@ -41,7 +41,7 @@ import static com.evolveum.midpoint.prism.PrismObject.asObjectable;
  * @see PropertyDelta
  */
 public interface ObjectDelta<O extends Objectable>
-        extends DebugDumpable, PrismContextSensitive, Visitable, PathVisitable, Serializable, Freezable, Cloneable {
+        extends DebugDumpable, Visitable, PathVisitable, Serializable, Freezable, Cloneable {
 
     void accept(Visitor visitor, boolean includeOldValues);
 

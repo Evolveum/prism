@@ -30,6 +30,38 @@ public interface ComplexTypeDefinitionDelegator extends TypeDefinitionDelegator,
     ComplexTypeDefinition delegate();
 
     @Override
+    @NotNull
+    default QName getTypeName() {
+        return delegate().getTypeName();
+    }
+
+    @Override
+    @Nullable
+    default QName getSuperType() {
+        return delegate().getSuperType();
+    }
+
+    @Override
+    default String getHelp() {
+        return delegate().getHelp();
+    }
+
+    @Override
+    default String getDisplayName() {
+        return delegate().getDisplayName();
+    }
+
+    @Override
+    default Integer getDisplayOrder() {
+        return delegate().getDisplayOrder();
+    }
+
+    @Override
+    default boolean isEmphasized() {
+        return delegate().isEmphasized();
+    }
+
+    @Override
     default @Nullable QName getExtensionForType() {
         return delegate().getExtensionForType();
     }

@@ -31,7 +31,7 @@ import java.util.Optional;
  * @author semancik
  *
  */
-public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, PrismContextSensitive, MidpointOriginMetadata {      // todo ShortDumpable?
+public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata {      // todo ShortDumpable?
 
     Map<String, Object> getUserData();
 

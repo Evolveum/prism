@@ -7,7 +7,9 @@
 package com.evolveum.midpoint.prism.impl.schema;
 
 import java.io.IOException;
+import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.*;
 
 import com.evolveum.midpoint.util.logging.Trace;
@@ -23,11 +25,11 @@ public class SchemaHandler implements ErrorHandler, EntityResolver {
 
     private static final Trace LOGGER = TraceManager.getTrace(SchemaHandler.class);
 
-    private final EntityResolver entityResolver;
+    @NotNull private final EntityResolver entityResolver;
 
-    public SchemaHandler(EntityResolver entityResolver) {
+    public SchemaHandler(@NotNull EntityResolver entityResolver) {
         super();
-        this.entityResolver = entityResolver;
+        this.entityResolver = Objects.requireNonNull(entityResolver, "No entity resolver");
     }
 
     @Override
@@ -62,20 +64,17 @@ public class SchemaHandler implements ErrorHandler, EntityResolver {
      */
     @Override
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-        if (entityResolver == null) {
-            throw new IllegalStateException("Entity resolver is not set");
-        }
         try {
             InputSource source = entityResolver.resolveEntity(publicId, systemId);
             LOGGER.trace("Resolved entity '{}', '{}': '{}' (resolver: {})",
                     publicId, systemId, source, entityResolver);
             return source;
         } catch (SAXException e) {
-            LOGGER.error("XML error resolving entity '{}', '{}': '{}-{}'",
+            LOGGER.error("XML error resolving entity '{}', '{}': '{}'",
                     publicId, systemId, e.getMessage(), e);
             throw e;
         } catch (IOException e) {
-            LOGGER.error("IO error resolving entity '{}', '{}': '{}-{}'",
+            LOGGER.error("IO error resolving entity '{}', '{}': '{}'",
                     publicId, systemId, e.getMessage(), e);
             throw e;
         }

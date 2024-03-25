@@ -8,13 +8,10 @@
 package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.schema.MutablePrismSchema;
+import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaFactory;
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- */
 public class SchemaFactoryImpl implements SchemaFactory {
 
     @NotNull private final PrismContext prismContext;
@@ -24,7 +21,7 @@ public class SchemaFactoryImpl implements SchemaFactory {
     }
 
     @Override
-    public MutablePrismSchema createPrismSchema(@NotNull String namespace) {
+    public PrismSchema createPrismSchema(@NotNull String namespace) {
         return new PrismSchemaImpl(namespace);
     }
 }

@@ -64,16 +64,6 @@ public interface DefinitionDelegator extends Definition {
     }
 
     @Override
-    default boolean isIgnored() {
-        return delegate().isIgnored();
-    }
-
-    @Override
-    default ItemProcessing getProcessing() {
-        return delegate().getProcessing();
-    }
-
-    @Override
     default boolean isAbstract() {
         return delegate().isAbstract();
     }
@@ -164,11 +154,6 @@ public interface DefinitionDelegator extends Definition {
     @Override
     default @Nullable Map<QName, Object> getAnnotations() {
         return delegate().getAnnotations();
-    }
-
-    @Override
-    default <A> void setAnnotation(QName qname, A value) {
-        delegate().setAnnotation(qname, value);
     }
 
     @Override

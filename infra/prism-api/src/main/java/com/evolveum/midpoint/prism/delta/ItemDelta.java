@@ -48,7 +48,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * See <a href="https://docs.evolveum.com/midpoint/prism/deltas/">this document</a> for more.
  */
 public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
-        extends Itemable, DebugDumpable, Visitable, PathVisitable, Foreachable<V>, Serializable, Freezable, PrismContextSensitive {
+        extends Itemable, DebugDumpable, Visitable, PathVisitable, Foreachable<V>, Serializable, Freezable {
 
     ItemName getElementName();
 

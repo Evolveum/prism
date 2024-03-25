@@ -6,14 +6,17 @@
  */
 package com.evolveum.midpoint.prism.annotation;
 
-import com.evolveum.midpoint.util.annotation.Experimental;
-
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.evolveum.midpoint.util.annotation.Experimental;
+
+@SuppressWarnings("ClassCanBeRecord")
 @Experimental
 public class ItemDiagramSpecification implements Serializable {
-    private static final long serialVersionUID = 1L;
+
+    @Serial private static final long serialVersionUID = 1L;
 
     private final String name;
     private final DiagramElementFormType form;

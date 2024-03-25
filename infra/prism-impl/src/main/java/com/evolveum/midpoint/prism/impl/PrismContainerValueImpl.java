@@ -559,23 +559,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return findItem(ItemName.fromQName(elementName), PrismReference.class);
     }
 
-    // todo optimize this some day
-    @Override
-    public PrismReference findReferenceByCompositeObjectElementName(QName elementName) {
-        for (Item<?, ?> item : items.values()) {
-            if (item instanceof PrismReference) {
-                PrismReference ref = (PrismReference) item;
-                PrismReferenceDefinition refDef = ref.getDefinition();
-                if (refDef != null) {
-                    if (elementName.equals(refDef.getCompositeObjectElementName())) {
-                        return ref;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     public <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemPath itemPath, Class<I> type) {
         try {
@@ -850,7 +833,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public <X> PrismProperty<X> createProperty(PrismPropertyDefinition propertyDefinition) throws SchemaException {
+    public <X> PrismProperty<X> createProperty(PrismPropertyDefinition<X> propertyDefinition) throws SchemaException {
         PrismProperty<X> property = propertyDefinition.instantiate();
         add(property);
         return property;
@@ -1189,7 +1172,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         ComplexTypeDefinition definitionToUse = containerDef.getComplexTypeDefinition();
         if (complexTypeDefinition != null) {
             if (!force) {
-                return;                // there's a definition already
+                return; // there's a definition already
             }
             if (!complexTypeDefinition.getTypeName().equals(containerDef.getTypeName())) {
                 // the second condition is a hack because e.g.
@@ -1202,7 +1185,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     ComplexTypeDefinition freshCtd = PrismContext.get().getSchemaRegistry()
                             .findComplexTypeDefinitionByType(complexTypeDefinition.getTypeName());
                     if (freshCtd != null) {
-                        //System.out.println("Using " + freshCtd + " instead of " + definitionToUse);
                         definitionToUse = freshCtd;
                     }
                 } else {
@@ -1278,7 +1260,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (ctd == null || ctd.isXsdAnyMarker() || ctd.isRuntimeSchema()) {
             // Try to locate global definition. But even if that is not found it is still OK. This is runtime container.
             // We tolerate quite a lot here.
-            return (ID) PrismContext.get().getSchemaRegistry().resolveGlobalItemDefinition(itemName, ctd);
+            PrismContext prismContext = PrismContext.get();
+            if (prismContext != null) {
+                return (ID) prismContext.getSchemaRegistry().resolveGlobalItemDefinition(itemName, ctd);
+            } else {
+                // Not initialized yet. Ignoring this.
+                return null;
+            }
         } else {
             if (ctd.isItemDefinitionRemoved(itemName)) {
                 // This allows the caller to treat removed definition differently, if desired. See MID-7939.
@@ -1600,8 +1588,14 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (containerable == null) {
             return parentCTD;
         }
-        return PrismContext.get().getSchemaRegistry()
-                .findComplexTypeDefinitionByCompileTimeClass(containerable.getClass()); // may be null at this place
+        PrismContext prismContext = PrismContext.get();
+        if (prismContext != null) {
+            return prismContext.getSchemaRegistry()
+                    .findComplexTypeDefinitionByCompileTimeClass(containerable.getClass()); // may be null at this place
+        } else {
+            // Ignoring this. We may be in midPoint initialization, called e.g. from a class initializer.
+            return null;
+        }
     }
 
     public static <T extends Containerable> List<PrismContainerValue<T>> toPcvList(List<T> beans) {
@@ -1647,12 +1641,18 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     /**
      * Returns a single-valued container (with a single-valued definition) holding just this value.
      *
+     * *TODO* Consider moving this into some "util" class; it is not really in the spirit of prism.
+     *
      * @param itemName Item name for newly-created container.
      */
     @Override
     public PrismContainer<C> asSingleValuedContainer(@NotNull QName itemName) throws SchemaException {
-        PrismContainerDefinitionImpl<C> definition = new PrismContainerDefinitionImpl<>(itemName, getComplexTypeDefinition());
-        definition.setMaxOccurs(1);
+        ComplexTypeDefinition ctd = MiscUtil.stateNonNull(
+                getComplexTypeDefinition(),
+                "Cannot invoke 'asSingleValuedContainer' on a container value without CTD: %s", this);
+
+        PrismContainerDefinition<C> definition = PrismContext.get().definitionFactory().newContainerDefinition(itemName, ctd);
+        definition.mutator().setMaxOccurs(1);
 
         PrismContainer<C> pc = definition.instantiate();
         pc.add(clone());
@@ -1884,52 +1884,56 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
         @Override
         public @NotNull I instantiate() throws SchemaException {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
         public @NotNull I instantiate(QName name) throws SchemaException {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
         public @NotNull ItemDelta<?, ?> createEmptyDelta(ItemPath path) {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
-        public boolean canBeDefinitionOf(@NotNull PrismValue value) {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
-        }
-
-        @Override
-        public MutableItemDefinition<I> toMutable() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        public ItemDefinitionMutator mutator() {
+            throw unsupported();
         }
 
         @Override
         public Optional<ComplexTypeDefinition> structuredType() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
         protected String getDebugDumpClassName() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
         public String getDocClassName() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
 
         @Override
         public @NotNull ItemDefinition<I> clone() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
+        }
+
+        @Override
+        public @NotNull ItemDefinition<I> cloneWithNewName(@NotNull ItemName itemName) {
+            throw unsupported();
+        }
+
+        private @NotNull UnsupportedOperationException unsupported() {
+            return new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
         }
 
         @Override
         public Class<?> getTypeClass() {
-            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+            throw unsupported();
         }
     }
 }

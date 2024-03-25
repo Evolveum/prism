@@ -16,10 +16,6 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.impl.polystring.NoOpNormalizer;
-
-import com.evolveum.midpoint.prism.normalization.Normalizer;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
@@ -41,20 +37,23 @@ import com.evolveum.midpoint.prism.impl.delta.builder.DeltaBuilder;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessorRegistry;
 import com.evolveum.midpoint.prism.impl.lex.dom.DomLexicalProcessor;
 import com.evolveum.midpoint.prism.impl.marshaller.*;
+import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryImpl;
 import com.evolveum.midpoint.prism.impl.path.CanonicalItemPathImpl;
 import com.evolveum.midpoint.prism.impl.polystring.AlphanumericPolyStringNormalizer;
 import com.evolveum.midpoint.prism.impl.polystring.ConfigurableNormalizer;
+import com.evolveum.midpoint.prism.impl.polystring.NoOpNormalizer;
 import com.evolveum.midpoint.prism.impl.query.QueryFactoryImpl;
 import com.evolveum.midpoint.prism.impl.query.builder.QueryBuilder;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQueryLanguageParserImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQuerySerializerImpl;
-import com.evolveum.midpoint.prism.impl.schema.SchemaDefinitionFactory;
 import com.evolveum.midpoint.prism.impl.schema.SchemaFactoryImpl;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeFactoryImpl;
 import com.evolveum.midpoint.prism.marshaller.JaxbDomHack;
 import com.evolveum.midpoint.prism.marshaller.ParsingMigrator;
+import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.metadata.ValueMetadataFactory;
+import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.path.CanonicalItemPath;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
@@ -62,7 +61,6 @@ import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
 import com.evolveum.midpoint.prism.schema.SchemaFactory;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.prism.util.PrismPrettyPrinter;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
@@ -95,7 +93,7 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull private final DeltaFactory deltaFactory;
     @NotNull private final QueryFactory queryFactory;
     @NotNull private final ItemFactory itemFactory;
-    @NotNull private final DefinitionFactory definitionFactory;
+    @NotNull private final DefinitionFactoryImpl definitionFactory;
     @NotNull private final ItemPathParser itemPathParser;
     @NotNull private final ItemPathSerializer itemPathSerializer;
     @NotNull private final SchemaFactory schemaFactory;
@@ -105,8 +103,6 @@ public final class PrismContextImpl implements PrismContext {
 
     private ParsingMigrator parsingMigrator;
     private PrismMonitor monitor = null;
-
-    private SchemaDefinitionFactory schemaDefinitionFactory;
 
     @Autowired private Protector defaultProtector;
 
@@ -139,12 +135,14 @@ public final class PrismContextImpl implements PrismContext {
     private PrismContextImpl(@NotNull SchemaRegistryImpl schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
         schemaRegistry.setPrismContext(this);
+        this.schemaFactory = new SchemaFactoryImpl(this);
+        this.definitionFactory = new DefinitionFactoryImpl();
         this.queryConverter = new QueryConverterImpl(this);
         this.lexicalProcessorRegistry = new LexicalProcessorRegistry(schemaRegistry);
         PrismBeanInspector inspector = new PrismBeanInspector(this);
         this.beanMarshaller = new BeanMarshaller(this, inspector);
         this.beanUnmarshaller = new BeanUnmarshaller(this, inspector, beanMarshaller);
-        this.prismUnmarshaller = new PrismUnmarshaller(this, beanUnmarshaller, schemaRegistry);
+        this.prismUnmarshaller = new PrismUnmarshaller(this, beanUnmarshaller, schemaRegistry, definitionFactory);
         this.prismMarshaller = new PrismMarshaller(beanMarshaller);
         this.jaxbDomHack = new JaxbDomHackImpl(lexicalProcessorRegistry.domProcessor());
         this.hacks = new HacksImpl();
@@ -152,10 +150,8 @@ public final class PrismContextImpl implements PrismContext {
         this.deltaFactory = new DeltaFactoryImpl(this);
         this.queryFactory = new QueryFactoryImpl();
         this.itemFactory = new ItemFactoryImpl();
-        this.definitionFactory = new DefinitionFactoryImpl(this);
         this.itemPathParser = new ItemPathParserImpl(this);
         this.itemPathSerializer = new ItemPathSerializerImpl();
-        this.schemaFactory = new SchemaFactoryImpl(this);
         this.defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
 
         try {
@@ -234,10 +230,14 @@ public final class PrismContextImpl implements PrismContext {
         return schemaRegistry.getEntityResolver();
     }
 
-    @NotNull
     @Override
-    public SchemaRegistry getSchemaRegistry() {
+    public @NotNull SchemaRegistryImpl getSchemaRegistry() {
         return schemaRegistry;
+    }
+
+    @Override
+    public @NotNull MatchingRuleRegistry getMatchingRuleRegistry() {
+        return MatchingRuleRegistryImpl.instance();
     }
 
     /**
@@ -275,18 +275,6 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull
     public JaxbDomHack getJaxbDomHack() {
         return jaxbDomHack;
-    }
-
-    @NotNull
-    public SchemaDefinitionFactory getDefinitionFactory() {
-        if (schemaDefinitionFactory == null) {
-            schemaDefinitionFactory = new SchemaDefinitionFactory();
-        }
-        return schemaDefinitionFactory;
-    }
-
-    public void setDefinitionFactory(SchemaDefinitionFactory schemaDefinitionFactory) {
-        this.schemaDefinitionFactory = schemaDefinitionFactory;
     }
 
     @NotNull
@@ -715,7 +703,7 @@ public final class PrismContextImpl implements PrismContext {
 
     @NotNull
     @Override
-    public DefinitionFactory definitionFactory() {
+    public DefinitionFactoryImpl definitionFactory() {
         return definitionFactory;
     }
 

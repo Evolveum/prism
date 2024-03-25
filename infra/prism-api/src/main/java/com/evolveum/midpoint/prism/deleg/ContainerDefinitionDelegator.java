@@ -31,6 +31,25 @@ public interface ContainerDefinitionDelegator<C extends Containerable>
     @Override
     PrismContainerDefinition<C> delegate();
 
+    default @NotNull QName getTypeName() {
+        return delegate().getTypeName();
+    }
+
+    @Override
+    default String getDisplayName() {
+        return delegate().getDisplayName();
+    }
+
+    @Override
+    default Integer getDisplayOrder() {
+        return delegate().getDisplayOrder();
+    }
+
+    @Override
+    default boolean isEmphasized() {
+        return delegate().isEmphasized();
+    }
+
     @Override
     default Class<C> getCompileTimeClass() {
         return delegate().getCompileTimeClass();
@@ -62,8 +81,8 @@ public interface ContainerDefinitionDelegator<C extends Containerable>
     }
 
     @Override
-    default PrismContainerDefinition<C> cloneWithReplacedDefinition(QName itemName, ItemDefinition<?> newDefinition) {
-        return delegate().cloneWithReplacedDefinition(itemName, newDefinition);
+    default PrismContainerDefinition<C> cloneWithNewDefinition(QName newItemName, ItemDefinition<?> newDefinition) {
+        return delegate().cloneWithNewDefinition(newItemName, newDefinition);
     }
 
     @Override

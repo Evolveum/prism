@@ -400,7 +400,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         RawType value1 = accountConstructionType.getValue().get(0).clone();
         if (expectRawInConstructions) {
             assertNotNull("Value #1 has no XNode present", value1.getXnode());
-            PrismPropertyDefinition value1def = PrismContext.get().definitionFactory().createPropertyDefinition(
+            PrismPropertyDefinition value1def = PrismContext.get().definitionFactory().newPropertyDefinition(
                     new QName(NS_FOO, "dummy"),
                     DOMUtil.XSD_STRING);
             PrismPropertyValue<String> prismValue1 = value1.getParsedValue(value1def, value1def.getItemName());
@@ -487,7 +487,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         PrismProperty<?> indexedString = extension.findProperty(EXTENSION_INDEXED_STRING_TYPE_ELEMENT);
         PrismPropertyDefinition indexedStringPropertyDef = indexedString.getDefinition();
         PrismAsserts.assertDefinition(indexedStringPropertyDef, EXTENSION_SINGLE_STRING_TYPE_ELEMENT, DOMUtil.XSD_STRING, 0, -1);
-        assertEquals("'Indexed' attribute on 'singleStringType' property is wrong", Boolean.FALSE, indexedStringPropertyDef.isIndexed());
+        assertEquals("'Indexed' attribute on 'indexedString' property is wrong", Boolean.TRUE, indexedStringPropertyDef.isIndexed());
 
         ItemPath barPath = ItemPath.create(new QName(NS_FOO,"extension"), EXTENSION_BAR_ELEMENT);
         PrismProperty<String> barProperty = user.findProperty(barPath);

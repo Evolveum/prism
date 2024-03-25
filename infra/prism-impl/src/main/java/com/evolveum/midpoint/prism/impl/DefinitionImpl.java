@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.*;
 import javax.xml.namespace.QName;
 
@@ -15,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 
 /**
@@ -39,11 +39,15 @@ import com.evolveum.midpoint.util.PrettyPrinter;
  *
  * @author Radovan Semancik
  */
-public abstract class DefinitionImpl extends AbstractFreezable implements MutableDefinition {
+public abstract class DefinitionImpl
+        extends AbstractFreezable
+        implements Definition, Definition.DefinitionMutator {
 
-    private static final long serialVersionUID = -2643332934312107274L;
-    @NotNull protected QName typeName;
-    protected ItemProcessing processing;
+    @Serial private static final long serialVersionUID = -2643332934312107274L;
+
+    /** Final because it's sometimes used as a key in maps; moreover, it forms an identity of the definition somehow. */
+    @NotNull protected final QName typeName;
+
     protected boolean isAbstract = false;
     protected DisplayHint displayHint;
     protected String displayName;
@@ -83,28 +87,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull
     public QName getTypeName() {
         return typeName;
-    }
-
-    @Override
-    public void setTypeName(@NotNull QName typeName) {
-        checkMutable();
-        this.typeName = typeName;
-    }
-
-    @Override
-    public boolean isIgnored() {
-        return processing == ItemProcessing.IGNORE;
-    }
-
-    @Override
-    public ItemProcessing getProcessing() {
-        return processing;
-    }
-
-    @Override
-    public void setProcessing(ItemProcessing processing) {
-        checkMutable();
-        this.processing = processing;
     }
 
     @Override
@@ -213,7 +195,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public boolean isEmphasized() {
-        return emphasized;
+        return emphasized || displayHint == DisplayHint.EMPHASIZED;
     }
 
     @Override
@@ -268,15 +250,7 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
 
     @Override
     public String getDocumentationPreview() {
-        if (documentation == null || documentation.isEmpty()) {
-            return documentation;
-        }
-        String plainDoc = MiscUtil.stripHtmlMarkup(documentation);
-        int i = plainDoc.indexOf('.');
-        if (i < 0) {
-            return plainDoc;
-        }
-        return plainDoc.substring(0, i + 1);
+        return PrismPresentationDefinition.toDocumentationPreview(documentation);
     }
 
     @Override
@@ -338,27 +312,26 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
+    public void setSchemaMigrations(List<SchemaMigration> value) {
+        checkMutable();
+        schemaMigrations = value;
+    }
+
+    @Override
     public List<ItemDiagramSpecification> getDiagrams() {
         return diagrams;
     }
 
     @Override
-    public void addDiagram(ItemDiagramSpecification diagram) {
+    public void setDiagrams(List<ItemDiagramSpecification> value) {
         checkMutable();
-        if (diagrams == null) {
-            diagrams = new ArrayList<>();
-        }
-        if (!diagrams.contains(diagram)) {
-            diagrams.add(diagram);
-        }
+        diagrams = value;
     }
 
     @Override
     public abstract void revive(PrismContext prismContext);
 
     protected void copyDefinitionDataFrom(Definition source) {
-        this.processing = source.getProcessing();
-        this.typeName = source.getTypeName();
         this.displayName = source.getDisplayName();
         this.displayOrder = source.getDisplayOrder();
         this.help = source.getHelp();
@@ -388,7 +361,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((processing == null) ? 0 : processing.hashCode());
         result = prime * result + ((typeName == null) ? 0 : typeName.hashCode());
         return result;
     }
@@ -400,7 +372,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         if (obj == null) {return false;}
         if (getClass() != obj.getClass()) {return false;}
         DefinitionImpl other = (DefinitionImpl) obj;
-        if (processing != other.processing) {return false;}
         if (typeName == null) {
             if (other.typeName != null) {return false;}
         } else if (!typeName.equals(other.typeName)) {

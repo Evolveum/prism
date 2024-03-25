@@ -7,18 +7,17 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.util.DebugDumpable;
-import com.evolveum.midpoint.util.exception.SchemaException;
-import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.List;
+import javax.xml.namespace.QName;
 
+import com.google.common.collect.Multimap;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.xml.namespace.QName;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.util.DebugDumpable;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * Schema as a collection of definitions. This is a midPoint-specific view of
@@ -35,52 +34,26 @@ import javax.xml.namespace.QName;
  */
 public interface PrismSchema
         extends DebugDumpable, GlobalDefinitionsStore, DefinitionSearchImplementation,
-        PrismContextSensitive, Freezable, Cloneable {
+        Freezable, Cloneable {
+
+    /** All top-level definitions (types, items) are in this namespace. */
+    @NotNull String getNamespace();
 
     /**
-     * Returns schema namespace.
+     * Returns all definitions: both types and items. Their order is insignificant.
      *
-     * All schema definitions are placed in the returned namespace.
-     *
-     * @return schema namespace
+     * The collection is unmodifiable. The returned value should not be used for looking up specific definitions,
+     * as there may be thousands of them. Use more specific lookup methods instead.
      */
-    @NotNull
-    String getNamespace();
+    @NotNull Collection<Definition> getDefinitions();
 
-    /**
-     * Returns set of definitions.
-     *
-     * The set contains all definitions of all types that were parsed. Order of definitions is insignificant.
-     *
-     * @return set of definitions
-     */
-    @NotNull
-    Collection<Definition> getDefinitions();
-
-    /**
-     * Returns set of definitions of a given type.
-     *
-     * The set contains all definitions of the given type that were parsed. Order of definitions is insignificant.
-     *
-     * @return set of definitions
-     */
-    @NotNull
-    <T extends Definition> List<T> getDefinitions(@NotNull Class<T> type);
-
-    @NotNull
-    default List<? extends PrismObjectDefinition<?>> getObjectDefinitions() {
-        //noinspection unchecked,RedundantCast,rawtypes
-        return (List<? extends PrismObjectDefinition<?>>) (List) getDefinitions(PrismObjectDefinition.class);
+    default int size() {
+        return getDefinitions().size();
     }
 
-    @NotNull
-    default List<ComplexTypeDefinition> getComplexTypeDefinitions() {
-        return getDefinitions(ComplexTypeDefinition.class);
+    default boolean isEmpty() {
+        return getDefinitions().isEmpty();
     }
-
-    @NotNull Document serializeToXsd() throws SchemaException;
-
-    boolean isEmpty();
 
     static boolean isNullOrEmpty(PrismSchema schema) {
         return schema == null || schema.isEmpty();
@@ -90,5 +63,33 @@ public interface PrismSchema
         return !isNullOrEmpty(schema);
     }
 
+    /**
+     * Returns a collection of definitions of a given type. Similar to {@link #getDefinitions()}.
+     */
+    <T extends Definition> @NotNull List<T> getDefinitions(@NotNull Class<T> type);
+
+    default @NotNull List<? extends PrismObjectDefinition<?>> getObjectDefinitions() {
+        //noinspection unchecked,RedundantCast,rawtypes
+        return (List<? extends PrismObjectDefinition<?>>) (List) getDefinitions(PrismObjectDefinition.class);
+    }
+
+    default @NotNull List<ComplexTypeDefinition> getComplexTypeDefinitions() {
+        return getDefinitions(ComplexTypeDefinition.class);
+    }
+
+    @NotNull Document serializeToXsd() throws SchemaException;
+
     Multimap<QName, ItemDefinition<?>> getSubstitutions();
+
+    PrismSchemaMutator mutator();
+
+    SchemaBuilder builder();
+
+    /** Object that allows modifying a {@link PrismSchema} - unless it's immutable. */
+    interface PrismSchemaMutator {
+
+        /** Adds any definition (item or type). */
+        void add(@NotNull Definition def);
+
+    }
 }

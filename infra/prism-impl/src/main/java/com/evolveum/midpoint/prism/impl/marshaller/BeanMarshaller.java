@@ -114,7 +114,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 QName typeName = ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE);
                 XNodeImpl xnode = (XNodeImpl) prismContext.xnodeSerializer()
                         .context(createNameSerializationContext(ctx, referenceValue))
-                        .definition(prismContext.definitionFactory().createReferenceDefinition(
+                        .definition(prismContext.definitionFactory().newReferenceDefinition(
                                 new QName(typeName.getNamespaceURI(), "dummy"), typeName))
                         .serialize(referenceValue)
                         .getSubnode();

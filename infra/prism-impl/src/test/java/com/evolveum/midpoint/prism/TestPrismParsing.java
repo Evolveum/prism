@@ -600,7 +600,7 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
         PrismProperty<String> indexedString = extension.findProperty(EXTENSION_INDEXED_STRING_TYPE_ELEMENT);
         PrismPropertyDefinition indexedStringPropertyDef = indexedString.getDefinition();
         PrismAsserts.assertDefinition(indexedStringPropertyDef, EXTENSION_SINGLE_STRING_TYPE_ELEMENT, DOMUtil.XSD_STRING, 0, -1);
-        assertEquals("'Indexed' attribute on 'singleStringType' property is wrong", Boolean.FALSE, indexedStringPropertyDef.isIndexed());
+        assertEquals("'Indexed' attribute on 'indexedString' property is wrong", Boolean.TRUE, indexedStringPropertyDef.isIndexed());
 
         ItemPath barPath = ItemPath.create(new QName(NS_FOO, "extension"), EXTENSION_BAR_ELEMENT);
         PrismProperty<String> barProperty = user.findProperty(barPath);

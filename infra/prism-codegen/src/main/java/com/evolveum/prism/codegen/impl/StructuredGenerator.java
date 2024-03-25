@@ -290,9 +290,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         }
         if (definition.getJavaName().equals("Object")) {
             TypeBinding type = bindingFor(definition.getDefinition().getTypeName());
-            if (type.getDefaultContract() instanceof ContainerableContract) {
-                ComplexTypeDefinition typeDef = ((ContainerableContract) type.getDefaultContract()).getTypeDefinition();
-                return typeDef.isAbstract();
+            if (type.getDefaultContract() instanceof ContainerableContract containerableContract) {
+                return containerableContract.getTypeDefinition().isAbstract();
             }
             return false;
         }

@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 
 import org.jetbrains.annotations.NotNull;
@@ -68,8 +69,9 @@ public interface PrismContext extends ProtectorCreator {
     /**
      * Returns the schema registry.
      */
-    @NotNull
-    SchemaRegistry getSchemaRegistry();
+    @NotNull SchemaRegistry getSchemaRegistry();
+
+    @NotNull MatchingRuleRegistry getMatchingRuleRegistry();
 
     /**
      * Returns the default PolyString normalizer.

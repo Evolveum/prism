@@ -50,8 +50,8 @@ public class ReferenceDeltaImpl extends ItemDeltaImpl<PrismReferenceValue, Prism
 
     @Override
     public void applyDefinition(PrismReferenceDefinition definition) throws SchemaException {
-        if (!(definition instanceof PrismReferenceDefinition)) {
-            throw new IllegalArgumentException("Cannot apply definition " + definition + " to reference delta " + this);
+        if (definition == null) { // TODO consider making the argument @NotNull universally
+            throw new IllegalArgumentException("Cannot apply 'null' definition to reference delta " + this);
         }
         super.applyDefinition(definition);
     }

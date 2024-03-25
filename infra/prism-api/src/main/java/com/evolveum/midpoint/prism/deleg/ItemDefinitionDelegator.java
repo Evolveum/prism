@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.deleg;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 
@@ -24,19 +23,29 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface ItemDefinitionDelegator<I extends Item<?,?>>
-        extends DefinitionDelegator, ItemDefinition<I> {
+        extends DefinitionDelegator, ItemDefinition<I>, PrismItemBasicDefinition {
 
     @Override
     ItemDefinition<I> delegate();
 
     @Override
-    default boolean canRead() {
-        return delegate().canRead();
+    default @NotNull ItemName getItemName() {
+        return delegate().getItemName();
     }
 
     @Override
-    default @NotNull ItemName getItemName() {
-        return delegate().getItemName();
+    default @NotNull QName getTypeName() {
+        return delegate().getTypeName();
+    }
+
+    @Override
+    default String getHelp() {
+        return delegate().getHelp();
+    }
+
+    @Override
+    default boolean canRead() {
+        return delegate().canRead();
     }
 
     @Override
@@ -57,6 +66,11 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
     @Override
     default boolean isIndexOnly() {
         return delegate().isIndexOnly();
+    }
+
+    @Override
+    default Boolean isIndexed() {
+        return delegate().isIndexed();
     }
 
     @Override
@@ -106,11 +120,6 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
     }
 
     @Override
-    default void adoptElementDefinitionFrom(ItemDefinition<?> otherDef) {
-        delegate().adoptElementDefinitionFrom(otherDef);
-    }
-
-    @Override
     default @NotNull I instantiate() throws SchemaException {
         return delegate().instantiate();
     }
@@ -122,16 +131,8 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
 
     @Override
     default <T extends ItemDefinition<?>> T findItemDefinition(@NotNull ItemPath path, @NotNull Class<T> clazz) {
-        if (path.isEmpty()) {
-            if (clazz.isAssignableFrom(this.getClass())) {
-                //noinspection unchecked
-                return (T) this;
-            } else {
-                throw new IllegalArgumentException("Looking for definition of class " + clazz + " but found " + this);
-            }
-        } else {
-            return null;
-        }
+        //noinspection unchecked
+        return LivePrismItemDefinition.matchesThisDefinition(path, clazz, this) ? (T) this : null;
     }
 
     @Override
@@ -150,16 +151,6 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
     }
 
     @Override
-    default boolean canBeDefinitionOf(I item) {
-        return delegate().canBeDefinitionOf(item);
-    }
-
-    @Override
-    default boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
-        return delegate().canBeDefinitionOf(pvalue);
-    }
-
-    @Override
     default Optional<ComplexTypeDefinition> structuredType() {
         return delegate().structuredType();
     }
@@ -168,5 +159,4 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>>
     default boolean isSearchable() {
         return delegate().isSearchable();
     }
-
 }

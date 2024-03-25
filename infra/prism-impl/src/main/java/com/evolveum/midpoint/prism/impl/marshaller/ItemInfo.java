@@ -8,10 +8,10 @@
 package com.evolveum.midpoint.prism.impl.marshaller;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.PrismContainerDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.PrismPropertyDefinitionImpl;
 import com.evolveum.midpoint.prism.schema.DefinitionStoreUtils;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -123,9 +123,12 @@ public class ItemInfo<ID extends ItemDefinition> {
                 } else if (Containerable.class.isAssignableFrom(classExplicit)) {
                     @SuppressWarnings("unchecked")
                     Class<Containerable> containerableClass = (Class<Containerable>) classExplicit;
-                    ComplexTypeDefinition ctd = schemaRegistry.findComplexTypeDefinitionByCompileTimeClass(containerableClass);
+                    ComplexTypeDefinition ctd =
+                            MiscUtil.requireNonNull(
+                                    schemaRegistry.findComplexTypeDefinitionByCompileTimeClass(containerableClass),
+                                    "No complex type definition for %s", containerableClass);
                     @SuppressWarnings("unchecked")
-                    ID id = (ID) new PrismContainerDefinitionImpl<>(info.itemName, ctd, containerableClass);
+                    ID id = (ID) PrismContext.get().definitionFactory().newContainerDefinition(info.itemName, ctd);
                     info.itemDefinition = id;
                 } else {
                     @SuppressWarnings("unchecked")

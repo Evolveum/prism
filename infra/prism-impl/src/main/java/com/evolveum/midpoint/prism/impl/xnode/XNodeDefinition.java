@@ -225,19 +225,19 @@ public abstract class XNodeDefinition {
 
 
         XNodeDefinition awareFrom(QName name, ItemDefinition<?> definition, boolean inherited) {
-            if(definition instanceof PrismReferenceDefinition) {
-                var refDef = ((PrismReferenceDefinition) definition);
-                QName compositeName = refDef.getCompositeObjectElementName();
-                // FIXME: MID-6818 We use lastName in xmaps, because references returns accountRef even for account
-                // where these two are really different types - accountRef is strict reference
-                // account is composite reference (probably should be different types altogether)
-                if(QNameUtil.match(name, compositeName)) {
-                    // Return composite item definition
-                    return fromType(compositeName, refDef.getTargetTypeName(), inherited);
-                }
-                // TODO: This could allow special handling of object reference attributes
-                //return new ObjectReference(name, definition.structuredType().get(), this, inherited);
-            }
+//            if(definition instanceof PrismReferenceDefinition) {
+//                var refDef = ((PrismReferenceDefinition) definition);
+//                QName compositeName = refDef.getCompositeObjectElementName();
+//                // FIXME: MID-6818 We use lastName in xmaps, because references returns accountRef even for account
+//                // where these two are really different types - accountRef is strict reference
+//                // account is composite reference (probably should be different types altogether)
+//                if(QNameUtil.match(name, compositeName)) {
+//                    // Return composite item definition
+//                    return fromType(compositeName, refDef.getTargetTypeName(), inherited);
+//                }
+//                // TODO: This could allow special handling of object reference attributes
+//                //return new ObjectReference(name, definition.structuredType().get(), this, inherited);
+//            }
 
             if(definition != null) {
                 if (definition.isDynamic()) {

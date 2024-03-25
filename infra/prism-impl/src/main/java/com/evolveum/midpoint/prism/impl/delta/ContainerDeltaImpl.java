@@ -73,8 +73,8 @@ public class ContainerDeltaImpl<V extends Containerable> extends ItemDeltaImpl<P
 
     @Override
     public void applyDefinition(PrismContainerDefinition<V> definition) throws SchemaException {
-        if (definition == null) {
-            throw new IllegalArgumentException("Cannot apply definition "+definition+" to container delta "+this);
+        if (definition == null) { // TODO consider marking the definition as @NonNull in the interface
+            throw new IllegalArgumentException("Cannot apply 'null' definition to container delta "+this);
         }
         super.applyDefinition(definition);
     }

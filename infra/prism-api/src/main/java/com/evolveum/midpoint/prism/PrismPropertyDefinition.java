@@ -11,113 +11,36 @@ import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
-import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.DisplayableValue;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
-import com.evolveum.midpoint.prism.match.MatchingRule;
-import com.evolveum.midpoint.prism.normalization.Normalizer;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.DisplayableValue;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * Definition of a prism property.
  */
-public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty<T>> {
+public interface PrismPropertyDefinition<T>
+        extends ItemDefinition<PrismProperty<T>>,
+        PrismItemMatchingDefinition<T>,
+        PrismItemValuesDefinition<T>,
+        PrismItemInstantiableDefinition<T, PrismPropertyValue<T>, PrismProperty<T>, PrismPropertyDefinition<T>, PropertyDelta<T>> {
 
-    /**
-     * Returns allowed values for this property.
-     */
-    @Nullable Collection<? extends DisplayableValue<T>> getAllowedValues();
-
-    /**
-     * Returns suggested values for this property.
-     */
-    @Nullable Collection<? extends DisplayableValue<T>> getSuggestedValues();
-
-    @Nullable T defaultValue();
-
-    /**
-     * This is XSD annotation that specifies whether a property should
-     * be indexed in the storage. It can only apply to properties. It
-     * has following meaning:
-     *
-     * true: the property must be indexed. If the storage is not able to
-     * index the value, it should indicate an error.
-     *
-     * false: the property should not be indexed.
-     *
-     * null: data store decides whether to index the property or
-     * not.
-     */
-    Boolean isIndexed();
+    @Override
+    default Class<T> getTypeClass() {
+        return PrismItemMatchingDefinition.super.getTypeClass();
+    }
 
     default boolean isAnyType() {
         return DOMUtil.XSD_ANYTYPE.equals(getTypeName());
     }
 
-    /**
-     * Returns matching rule name. Matching rules are algorithms that specify
-     * how to compare, normalize and/or order the values. E.g. there are matching
-     * rules for case insensitive string comparison, for LDAP DNs, etc.
-     *
-     * TODO describe the semantics where special normalizations are to be used
-     *  Use with care until this description is complete.
-     *
-     * @return matching rule name
-     */
-    QName getMatchingRuleQName();
-
-    /** Returns the resolved {@link MatchingRule} for this property. */
-    @NotNull MatchingRule<T> getMatchingRule();
-
-    /**
-     * Returns the normalizer that is to be applied when the normalized form of this property is to be computed.
-     * For polystring-typed properties (that are assumed to be already normalized) it returns "no-op" normalizer.
-     */
-    default @NotNull Normalizer<T> getNormalizer() {
-        return getMatchingRule().getNormalizer();
-    }
-
-    /** Returns the normalizer that is to be applied for {@link PolyString} properties. Throws an exception if not applicable. */
-    default @NotNull Normalizer<String> getStringNormalizerForPolyStringProperty() {
-        if (PolyString.class.equals(getTypeClass())) {
-            // This is the default for PolyString properties
-            return PrismContext.get().getDefaultPolyStringNormalizer();
-        } else {
-            throw new UnsupportedOperationException("Cannot get string normalizer for non-PolyString property " + this);
-        }
-    }
-
-    /** TODO */
-    default boolean isCustomPolyString() {
-        return false;
-    }
-
     @Override
-    @NotNull
-    PropertyDelta<T> createEmptyDelta(ItemPath path);
-
-    @NotNull
-    @Override
-    PrismProperty<T> instantiate();
-
-    @NotNull
-    @Override
-    PrismProperty<T> instantiate(QName name);
-
-    @NotNull
-    @Override
-    PrismPropertyDefinition<T> clone();
-
-    @Override
-    Class<T> getTypeClass();
+    @NotNull PrismPropertyDefinition<T> clone();
 
     /**
      * This is the original implementation. Moving to more comprehensive one (as part of MID-2119 implementation) broke some
@@ -131,10 +54,27 @@ public interface PrismPropertyDefinition<T> extends ItemDefinition<PrismProperty
     }
 
     @Override
-    MutablePrismPropertyDefinition<T> toMutable();
+    PrismPropertyDefinitionMutator<T> mutator();
 
     /** TEMPORARY! Used only for normalization-aware resource attribute storage. FIXME as part of MID-2119. */
     default @NotNull List<T> adoptRealValues(@NotNull Collection<?> realValues) throws SchemaException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(); // FIXME
+    }
+
+    interface PrismPropertyDefinitionMutator<T>
+            extends
+            ItemDefinitionMutator,
+            PrismItemMatchingDefinition.Mutator,
+            PrismItemValuesDefinition.Mutator<T> {
+
+        PrismPropertyDefinitionMutator<T> clone();
+    }
+
+    interface PrismPropertyLikeDefinitionBuilder<T>
+            extends PrismPropertyDefinitionMutator<T>,
+            ItemDefinitionLikeBuilder {
+
+        void setAllowedValues(Collection<? extends DisplayableValue<T>> displayableValues);
+
     }
 }
