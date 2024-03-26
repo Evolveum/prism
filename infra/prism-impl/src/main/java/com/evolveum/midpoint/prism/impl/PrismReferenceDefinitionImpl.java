@@ -11,7 +11,6 @@ import java.io.Serial;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionBuilder;
 import com.evolveum.midpoint.prism.path.ItemName;
 
@@ -27,6 +26,8 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.ObjectReferencePathSegment;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Object Reference Schema Definition.
@@ -51,6 +52,10 @@ public class PrismReferenceDefinitionImpl
     @Serial private static final long serialVersionUID = 2427488779612517600L;
 
     private QName targetTypeName;
+
+    /** @see #getTargetObjectDefinition() */
+    private PrismObjectDefinition<?> targetObjectDefinition;
+
     private boolean isComposite = false;
 
     // TODO What will we do after deserialization?
@@ -85,6 +90,15 @@ public class PrismReferenceDefinitionImpl
     public void setTargetTypeName(QName targetTypeName) {
         checkMutable();
         this.targetTypeName = targetTypeName;
+    }
+
+    @Override
+    public @Nullable PrismObjectDefinition<?> getTargetObjectDefinition() {
+        return targetObjectDefinition;
+    }
+
+    public void setTargetObjectDefinition(PrismObjectDefinition<?> targetObjectDefinition) {
+        this.targetObjectDefinition = targetObjectDefinition;
     }
 
     @Override
@@ -165,6 +179,7 @@ public class PrismReferenceDefinitionImpl
     protected void copyDefinitionDataFrom(PrismReferenceDefinition source) {
         super.copyDefinitionDataFrom(source);
         targetTypeName = source.getTargetTypeName();
+        targetObjectDefinition = source.getTargetObjectDefinition();
         isComposite = source.isComposite();
     }
 

@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +37,7 @@ import java.util.stream.Collectors;
  * @author Radovan Semancik
  */
 public class PrismReferenceValueImpl extends PrismValueImpl implements PrismReferenceValue {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private static final QName F_OID = new QName(PrismConstants.NS_TYPES, "oid");
     private static final QName F_TYPE = new QName(PrismConstants.NS_TYPES, "type");
@@ -105,8 +107,9 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
      * The client must expect that the object is null.
      */
     @Override
-    public PrismObject getObject() {
-        return object;
+    public <O extends Objectable> PrismObject<O> getObject() {
+        //noinspection unchecked
+        return (PrismObject<O>) object;
     }
 
     @Override
@@ -340,33 +343,48 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (object.getDefinition() != null && !force) {
             return;
         }
-        PrismContext prismContext = PrismContext.get();
+        var objectDefinitionToApply = determineObjectDefinitionToApply(definition);
+        if (objectDefinitionToApply != null) {
+            //noinspection unchecked,rawtypes
+            object.applyDefinition((PrismObjectDefinition) objectDefinitionToApply, force);
+        }
+    }
+
+    /** If not found, either returns `null` (meaning "ignore this"), or throws an exception. */
+    private PrismObjectDefinition<? extends Objectable> determineObjectDefinitionToApply(PrismReferenceDefinition definition)
+            throws SchemaException {
+        if (definition.getTargetObjectDefinition() != null) {
+            return definition.getTargetObjectDefinition();
+        }
+
+        SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
         //noinspection ConstantConditions
-        PrismObjectDefinition<? extends Objectable> objectDefinition = prismContext.getSchemaRegistry()
-                .findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
+        PrismObjectDefinition<? extends Objectable> byClass =
+                schemaRegistry.findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
+        if (byClass != null) {
+            return byClass;
+        }
+
         QName targetTypeName = definition.getTargetTypeName();
-        if (objectDefinition == null) {
-            if (targetTypeName == null) {
-                if (object.getDefinition() != null) {
-                    // Target type is not specified (e.g. as in task.objectRef) but we have at least some definition;
-                    // so let's keep it. TODO reconsider this
-                    return;
-                } else {
-                    throw new SchemaException("Cannot apply definition to composite object in reference "+getParent()
-                            +": the object has no present definition; it's definition cannot be determined from it's class;"
-                            + "and target type name is not specified in the reference schema");
-                }
+        if (targetTypeName == null) {
+            if (object.getDefinition() != null) {
+                // Target type is not specified (e.g. as in task.objectRef) but we have at least some definition;
+                // so let's keep it. TODO reconsider this
+                return null;
+            } else {
+                throw new SchemaException(
+                        "Cannot apply definition to composite object in reference " + getParent()
+                                + ": the object has no present definition; it's definition cannot be determined from it's class;"
+                                + "and target type name is not specified in the reference schema");
             }
-            objectDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(targetTypeName);
         }
-        if (objectDefinition == null) {
-            throw SchemaException.of(
-                    "Cannot apply definition to composite object in reference %s: no definition for object type %s",
-                    getParent(), targetTypeName);
+        var byTypeName = schemaRegistry.findObjectDefinitionByType(targetTypeName);
+        if (byTypeName != null) {
+            return byTypeName;
         }
-        // this should do it
-        //noinspection unchecked
-        object.applyDefinition((PrismObjectDefinition)objectDefinition, force);
+        throw SchemaException.of(
+                "Cannot apply definition to composite object in reference %s: no definition for object type %s",
+                getParent(), targetTypeName);
     }
 
     @Override
@@ -386,9 +404,8 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (StringUtils.isBlank(oid) && object == null && filter == null && targetName == null) {
             boolean mayBeEmpty = false;
             if (getParent() != null && getParent().getDefinition() != null) {
-                ItemDefinition itemDefinition = getParent().getDefinition();
-                if (itemDefinition instanceof PrismReferenceDefinition) {
-                    PrismReferenceDefinition prismReferenceDefinition = (PrismReferenceDefinition) itemDefinition;
+                ItemDefinition<?> itemDefinition = getParent().getDefinition();
+                if (itemDefinition instanceof PrismReferenceDefinition prismReferenceDefinition) {
                     mayBeEmpty = prismReferenceDefinition.isComposite();
                 }
             }
@@ -751,7 +768,8 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             if (rest.isEmpty() && type.isInstance(getObject())) {
                 return type.cast(getObject());
             }
-            return (I) getObject().findItem(path.rest(), type);
+            //noinspection rawtypes
+            return (I) getObject().findItem(path.rest(), (Class) type);
         }
         return null;
     }

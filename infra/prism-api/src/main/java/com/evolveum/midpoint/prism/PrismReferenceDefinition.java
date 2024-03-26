@@ -7,13 +7,27 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.util.annotation.Experimental;
+
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 
 public interface PrismReferenceDefinition extends ItemDefinition<PrismReference> {
 
     QName getTargetTypeName();
+
+    /**
+     * Returns a definition applicable to the target of this reference.
+     *
+     * Introduced to support shadow association definitions in midPoint:
+     * it applies to `ShadowAssociationValueType.shadowRef`.
+     */
+    @Experimental
+    default @Nullable PrismObjectDefinition<?> getTargetObjectDefinition() {
+        return null;
+    }
 
     boolean isComposite();
 
@@ -34,6 +48,7 @@ public interface PrismReferenceDefinition extends ItemDefinition<PrismReference>
     interface PrismReferenceDefinitionMutator extends ItemDefinitionMutator {
 
         void setTargetTypeName(QName typeName);
+        void setTargetObjectDefinition(PrismObjectDefinition<?> definition);
         void setComposite(boolean value);
     }
 
