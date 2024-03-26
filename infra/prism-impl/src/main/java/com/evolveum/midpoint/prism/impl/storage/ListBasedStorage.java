@@ -5,6 +5,9 @@ import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.prism.impl.PrismContainerValueImpl;
+
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,8 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy.DEFAULT_FOR_EQUALS;
+import java.util.function.Function;
 
 public class ListBasedStorage<V extends PrismValue> extends MultiValueStorage<V> {
 
@@ -25,6 +27,12 @@ public class ListBasedStorage<V extends PrismValue> extends MultiValueStorage<V>
 
     ListBasedStorage(V value) {
         storage.add(value);
+    }
+
+    ListBasedStorage(ItemStorage<V> values) {
+        for (var v : values) {
+            storage.add(v);
+        }
     }
 
     @Override
@@ -46,49 +54,16 @@ public class ListBasedStorage<V extends PrismValue> extends MultiValueStorage<V>
     public ItemStorage<V> add(@NotNull Itemable owner, @NotNull V newValue, @Nullable EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException {
 
         if (strategy != null) {
-            boolean exactEquivalentFound = false;
-            boolean somethingRemoved = false;
-            Iterator<V> iterator = storage.iterator();
-            while (iterator.hasNext()) {
-                V currentValue = iterator.next();
-                if (strategy.equals(currentValue, newValue)) {
-                    if (!exactEquivalentFound &&
-                            (isDefaultEquals(strategy)) || exactEquals(currentValue, newValue)) {
-                        exactEquivalentFound = true;
-                    } else {
-                        iterator.remove();
-                        somethingRemoved = true;
-                        valueRemoved(currentValue);
-                    }
-                }
-            }
-            if (exactEquivalentFound && !somethingRemoved) {
-                throw ExactValueExistsException.INSTANCE;
-            }
+            iterateAndRemoveEquivalentValues(owner, newValue, strategy);
         }
         checkKeyUnique(owner, newValue);
         storage.add(newValue);
         return this;
     }
 
-
-
     @Override
-    public ItemStorage<V> remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
-        boolean changed = false;
-        Iterator<V> iterator = storage.iterator();
-        while (iterator.hasNext()) {
-            V val = iterator.next();
-            if (val.representsSameValue(value, false) || val.equals(value, strategy)) {
-                iterator.remove();
-                valueRemoved(val);
-                changed = true;
-            }
-        }
-        if (!changed) {
-            throw ValueDoesNotExistsException.INSTANCE;
-        }
-        return this;
+    Iterator<V> mutableIterator() {
+        return storage.iterator();
     }
 
     @Override
@@ -120,4 +95,113 @@ public class ListBasedStorage<V extends PrismValue> extends MultiValueStorage<V>
             }
         }
     }
+
+    static abstract  class AbstractKeyed<K,V extends PrismValue> extends ListBasedStorage<V> implements KeyedStorage<K,V> {
+
+        protected AbstractKeyed() {
+            super();
+        }
+
+        protected AbstractKeyed(ItemStorage<V> values) {
+            super(values);
+        }
+
+        @Override
+        protected void checkKeyUnique(@NotNull Itemable owner, V newValue) {
+            var newKey = extractKey(newValue);
+            if (newKey != null) {
+                for (V existingValue : this) {
+                    var existingKey = extractKey(existingValue);
+                    if (newKey.equals(existingKey)) {
+                        throw new IllegalStateException("Attempt to add a value with an key that already exists: " + newKey);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public @Nullable V get(K key) {
+            Preconditions.checkArgument(key != null, "Null Key provided for get");
+            for (V value : this) {
+                var valueKey = extractKey(value);
+                if (key.equals(valueKey)) {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public KeyedStorage<K,V> add(@NotNull Itemable owner, @NotNull V newValue, @Nullable EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException {
+            super.add(owner, newValue, strategy);
+            return changeImplementationIfNeeded(newValue);
+        }
+
+        @Override
+        public KeyedStorage<K,V> addForced(V newValue) {
+            super.addForced(newValue);
+            return changeImplementationIfNeeded(newValue);
+        }
+
+        @Override
+        public KeyedStorage<K, V> remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
+            return (KeyedStorage<K, V>) super.remove(value, strategy);
+        }
+
+        protected KeyedStorage<K,V> changeImplementationIfNeeded(V lastAddedValue) {
+            if (extractKey(lastAddedValue) == null) {
+                return downgraded();
+            }
+            if (size() >= DEFAULT_MAP_THRESHOLD) {
+                return upgraded();
+            }
+            return this;
+        }
+
+        protected KeyedStorage<K,V> downgraded() {
+            return new KeyedDowngraded<>(this);
+        }
+
+        abstract protected KeyedStorage<K,V> upgraded();
+    }
+
+    /**
+     * Implementation of keyed storage which was downgraded (contains value without key).
+     *
+     * This is fallback implementation when we started with well behaved storage - all items had key, but then ended up with
+     * add which added value without key - so we do not know how to reason about keys in future.
+     *
+     * @param <K>
+     * @param <V>
+     */
+    static class KeyedDowngraded<K,V extends PrismValue> extends AbstractKeyed<K,V> {
+
+        private final Function<V,K> keyExtractor;
+
+        public KeyedDowngraded(KeyedStorage<K, V> original) {
+            super(original);
+            this.keyExtractor = original.keyExtractor();
+        }
+
+        @Override
+        public Function<V, K> keyExtractor() {
+            return keyExtractor;
+        }
+
+        @Override
+        protected KeyedStorage<K, V> changeImplementationIfNeeded(V lastAddedValue) {
+            return this;
+        }
+
+        @Override
+        protected KeyedStorage<K, V> upgraded() {
+            return this;
+        }
+    }
+
+    static abstract class KeyedUpgradable<K,V extends PrismValue> extends AbstractKeyed<K,V> {
+
+    }
+
+
 }

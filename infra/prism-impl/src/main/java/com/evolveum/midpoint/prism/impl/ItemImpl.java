@@ -15,6 +15,11 @@ import java.util.*;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.storage.ExactValueExistsException;
+import com.evolveum.midpoint.prism.impl.storage.ItemStorage;
+
+import com.evolveum.midpoint.prism.impl.storage.ValueDoesNotExistsException;
+
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +63,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     protected PrismContainerValue<?> parent;
     protected D definition;
     // FIXME: THis should be Collection, not list, since list implementations does not allow hashing
-    @NotNull protected final List<V> values = new ArrayList<>();
+    @NotNull protected ItemStorage<V> values;
     private transient Map<String, Object> userData = new HashMap<>();
 
     protected boolean incomplete;
@@ -72,11 +77,13 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     ItemImpl(QName elementName) {
         super();
         this.elementName = ItemName.fromQName(elementName);
+        values = createEmptyItemStorage();
     }
 
     ItemImpl(QName elementName, PrismContext prismContext) {
         super();
         this.elementName = ItemName.fromQName(elementName);
+        values = createEmptyItemStorage();
     }
 
     /**
@@ -87,6 +94,20 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         super();
         this.elementName = ItemName.fromQName(elementName);
         this.definition = definition;
+        values = createEmptyItemStorage();
+    }
+
+    /**
+     * Creates empty item storage specific to this item and its definition.
+     *
+     *
+     * @return
+     */
+    protected ItemStorage<V> createEmptyItemStorage() {
+        if (definition != null && definition.isSingleValue()) {
+            return ItemStorage.emptySingleValue();
+        }
+        return ItemStorage.createListBased();
     }
 
     static <T extends Item> T createNewDefinitionlessItem(QName name, Class<T> type, PrismContext prismContext) {
@@ -316,15 +337,15 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     @NotNull
     public List<V> getValues() {
-        return values;
+        return values.asList();
     }
 
     @Override
     public V getValue() {
         if (values.isEmpty()) {
             return null;
-        } else if (values.size() == 1) {
-            return values.get(0);
+        } else if (values.containsSingleValue()) {
+            return values.getOnlyValue();
         } else {
             throw new IllegalStateException("Attempt to get single value from item " + getElementName() + " with multiple values");
         }
@@ -374,36 +395,14 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         Itemable originalParent = newValue.getParent();
         newValue.setParent(this);
 
-        if (checkEquivalents) {
-            boolean exactEquivalentFound = false;
-            boolean somethingRemoved = false;
-            Iterator<V> iterator = values.iterator();
-            while (iterator.hasNext()) {
-                V currentValue = iterator.next();
-                if (equivalenceStrategy.equals(currentValue, newValue)) {
-                    if (!exactEquivalentFound &&
-                            (DEFAULT_FOR_EQUALS.equals(equivalenceStrategy) || DEFAULT_FOR_EQUALS.equals(currentValue, newValue))) {
-                        exactEquivalentFound = true;
-                    } else {
-                        iterator.remove();
-                        valueRemoved(currentValue);
-                        currentValue.setParent(null);
-                        somethingRemoved = true;
-                    }
-                }
-            }
-
-            if (exactEquivalentFound && !somethingRemoved) {
-                newValue.setParent(originalParent);
-                return false;
-            }
+        try {
+            values = values.add(this, newValue, equivalenceStrategy);
+        } catch (ExactValueExistsException e) {
+            newValue.setParent(originalParent);
+            return false;
         }
-
         D definition = getDefinition();
         if (definition != null) {
-            if (!values.isEmpty() && definition.isSingleValue()) {
-                throw new SchemaException("Attempt to put more than one value to single-valued item " + this + "; newly added value: " + newValue);
-            }
             newValue.applyDefinition(definition, false);
         }
         return addInternalExecution(newValue);
@@ -415,7 +414,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     protected boolean addInternalExecution(@NotNull V newValue) {
-        return values.add(newValue);
+        // NOOP
+        return true;
     }
 
     /**
@@ -424,7 +424,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
      */
     @Experimental
     public void addForced(@NotNull V newValue) {
-        values.add(newValue);
+        values = values.addForced(newValue);
     }
 
     @Override
@@ -495,26 +495,16 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public boolean remove(V value, @NotNull EquivalenceStrategy strategy) {
         checkMutable();
-        boolean changed = false;
-        Iterator<V> iterator = values.iterator();
-        while (iterator.hasNext()) {
-            V val = iterator.next();
-            if (val.representsSameValue(value, false) || val.equals(value, strategy)) {
-                iterator.remove();
-                valueRemoved(val);
-                val.setParent(null);
-                changed = true;
-            }
+        try {
+            values = values.remove(value, strategy);
+            return true;
+        } catch (ValueDoesNotExistsException e) {
+            return false;
         }
-        return changed;
     }
 
     public V remove(int index) {
-        checkMutable();
-        V removed = values.remove(index);
-        valueRemoved(removed);
-        removed.setParent(null);
-        return removed;
+        throw new UnsupportedOperationException("Removal by index is unsupported");
     }
 
     @Override
@@ -537,7 +527,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         for (V value : values) {
             value.setParent(null);
         }
-        values.clear();
+        values = createEmptyItemStorage();
     }
 
     @Override
@@ -829,7 +819,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
             //System.out.println("HashCode is 0 because of runtime: " + this);
             return 0;
         }
-        int valuesHash = MiscUtil.unorderedCollectionHashcode(values, null);
+        int valuesHash = MiscUtil.unorderedCollectionHashcode(values.asList(), null);
         if (valuesHash == 0) {
             // empty or non-significant container. We do not want this to destroy hashcode of parent item
             //System.out.println("HashCode is 0 because values hashCode is 0: " + this);
@@ -880,7 +870,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         return (!parameterizedEquivalenceStrategy.isConsideringDefinitions() || Objects.equals(definition, second.getDefinition())) &&
                 (!parameterizedEquivalenceStrategy.isConsideringElementNames() || Objects.equals(elementName, second.getElementName())) &&
                 incomplete == second.isIncomplete() &&
-                MiscUtil.unorderedCollectionEquals(values, secondValues, parameterizedEquivalenceStrategy::equals);
+                MiscUtil.unorderedCollectionEquals(values.asList(), secondValues, parameterizedEquivalenceStrategy::equals);
         // Do not compare parents at all. They are not relevant.
     }
 
@@ -935,7 +925,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
         if (path.isEmpty()) {
-            return Collections.unmodifiableCollection(values);
+            return Collections.unmodifiableCollection(values.asList());
         } else {
             return List.of();  // Overridden for containers
         }

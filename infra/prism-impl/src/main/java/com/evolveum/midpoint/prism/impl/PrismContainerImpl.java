@@ -13,7 +13,9 @@ import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
+import com.evolveum.midpoint.prism.impl.storage.ContainerValueStorage;
 import com.evolveum.midpoint.prism.impl.storage.ItemStorage;
+import com.evolveum.midpoint.prism.impl.storage.KeyedStorage;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -21,6 +23,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+
+import com.google.common.base.Preconditions;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -90,9 +94,19 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     protected ItemStorage<PrismContainerValue<C>> createEmptyItemStorage() {
         if (definition != null && definition.isSingleValue()) {
-            return ItemStorage.emptySingleValue();
+            return ContainerValueStorage.emptySingleValue();
         }
-        return ItemStorage.containerList();
+        return ContainerValueStorage.emptyMultiValue();
+    }
+
+    /**
+     * Returns storage as ContainerValueStorage - cast should be safe - see {@link #createEmptyItemStorage()} - it should always
+     * creates implemententations of {@link ContainerValueStorage}
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    protected ContainerValueStorage<PrismContainerValue<C>> storage() {
+        return (ContainerValueStorage<PrismContainerValue<C>>) values;
     }
 
     public PrismContainerImpl(QName name, PrismContainerDefinition<C> definition, PrismContext prismContext) {
@@ -161,8 +175,8 @@ public class PrismContainerImpl<C extends Containerable>
     @Override
     @NotNull
     public PrismContainerValue<C> getValue() {
-        if (getValues().size() == 1) {
-            return getValues().get(0);
+        if (values.containsSingleValue()) {
+            return values.getOnlyValue();
         }
         if (getValues().size() > 1) {
             throw new IllegalStateException("Attempt to get single value from a multivalued container "+ getElementName());
@@ -234,13 +248,22 @@ public class PrismContainerImpl<C extends Containerable>
 
     @Override
     public PrismContainerValue<C> getValue(Long id) {
+
+        /**
         for (PrismContainerValue<C> pval: getValues()) {
             if ((id == null && pval.getId() == null) ||
                     id.equals(pval.getId())) {
                 return pval;
             }
         }
-        return null;
+        **/
+
+        if (id == null && isSingleValue() && storage().containsSingleValue()) {
+            return storage().getOnlyValue();
+        }
+
+        Preconditions.checkArgument(id != null);
+        return storage().get(id);
     }
 
     @Override

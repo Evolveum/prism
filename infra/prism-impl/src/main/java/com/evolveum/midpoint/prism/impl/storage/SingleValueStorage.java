@@ -8,10 +8,12 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 import com.sun.xml.xsom.impl.scd.Iterators;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+
 
 class SingleValueStorage<V extends PrismValue> extends AbstractMutableStorage<V> {
 
@@ -66,15 +68,66 @@ class SingleValueStorage<V extends PrismValue> extends AbstractMutableStorage<V>
     }
 
     @Override
-    public ItemStorage<V> remove(V value, EquivalenceStrategy strategy) {
+    public ItemStorage<V> remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
         if (strategy.equals(value, this.value)) {
             return ItemStorage.emptySingleValue();
         }
-        return this;
+        throw ValueDoesNotExistsException.INSTANCE;
     }
 
     @Override
     public ItemStorage<V> addForced(V newValue) {
         throw new UnsupportedOperationException("Add forced on single value item");
+    }
+
+    static class Empty<V extends PrismValue> extends EmptyStorage<V> {
+
+        @Override
+        public ItemStorage<V> add(@NotNull Itemable owner, @NotNull V newValue, EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException, SchemaException {
+            return new SingleValueStorage<>(newValue);
+        }
+
+        @Override
+        public ItemStorage<V> addForced(V newValue) {
+            return new SingleValueStorage<>(newValue);
+        }
+    }
+
+
+    static abstract class Keyed<K,V extends PrismValue> extends SingleValueStorage<V>  implements KeyedStorage<K, V> {
+
+        protected Keyed(V value) {
+            super(value);
+        }
+
+        @Override
+        public @Nullable V get(K key) {
+            if (key.equals(extractKey(value))) {
+                return value;
+            }
+            return null;
+        }
+
+        @Override
+        public KeyedStorage<K, V> add(@NotNull Itemable owner, @NotNull V newValue, EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException, SchemaException {
+            super.add(owner, newValue, strategy);
+            return this;
+        }
+
+        @Override
+        public KeyedStorage<K, V> addForced(V newValue) {
+            super.addForced(newValue);
+            return this;
+        }
+
+        @Override
+        public KeyedStorage<K, V> remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
+            if (strategy.equals(value, this.value)) {
+                return this.createEmpty();
+            }
+            throw ValueDoesNotExistsException.INSTANCE;
+        }
+
+        protected abstract KeyedStorage<K,V> createEmpty();
     }
 }

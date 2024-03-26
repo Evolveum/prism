@@ -4,15 +4,18 @@ import com.evolveum.midpoint.prism.Itemable;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.util.exception.SchemaException;
+
 import com.google.common.collect.Iterators;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 
-class EmptyStorage<V extends PrismValue> implements ItemStorage<V> {
+abstract class EmptyStorage<V extends PrismValue> implements ItemStorage<V> {
 
     private static final Iterator EMPTY_ITERATOR = new Iterator() {
         @Override
@@ -25,12 +28,6 @@ class EmptyStorage<V extends PrismValue> implements ItemStorage<V> {
             throw new IllegalStateException("No next value");
         }
     };
-
-    private final Function<V, ItemStorage<V>> nextStorage;
-
-    public EmptyStorage(Function<V, ItemStorage<V>> nextStorage) {
-        this.nextStorage = nextStorage;
-    }
 
     @Override
     public boolean isEmpty() {
@@ -48,10 +45,6 @@ class EmptyStorage<V extends PrismValue> implements ItemStorage<V> {
         return EMPTY_ITERATOR;
     }
 
-    @Override
-    public ItemStorage<V> add(@NotNull Itemable owner, @NotNull V newValue, EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException {
-        return nextStorage.apply(newValue);
-    }
 
     @Override
     public List<V> asList() {
@@ -69,12 +62,28 @@ class EmptyStorage<V extends PrismValue> implements ItemStorage<V> {
     }
 
     @Override
-    public ItemStorage<V> remove(V value, EquivalenceStrategy strategy) {
-        return this;
+    public ItemStorage<V> remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
+        throw ValueDoesNotExistsException.INSTANCE;
     }
 
-    @Override
-    public ItemStorage<V> addForced(V newValue) {
-        return nextStorage.apply(newValue);
+    static abstract class Keyed<K,V extends PrismValue> extends EmptyStorage<V> implements KeyedStorage<K,V> {
+
+        @Override
+        public abstract KeyedStorage<K, V> add(@NotNull Itemable owner, @NotNull V newValue, EquivalenceStrategy strategy) throws IllegalStateException, ExactValueExistsException, SchemaException;
+
+        @Override
+        public abstract KeyedStorage<K, V> addForced(V newValue);
+
+        @Override
+        public KeyedStorage<K, V>  remove(V value, EquivalenceStrategy strategy) throws ValueDoesNotExistsException {
+            throw ValueDoesNotExistsException.INSTANCE;
+        }
+
+
+        @Override
+        public @Nullable V get(K key) {
+            return null;
+        }
     }
+
 }

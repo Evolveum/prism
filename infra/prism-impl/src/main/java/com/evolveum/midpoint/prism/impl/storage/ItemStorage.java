@@ -11,6 +11,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,10 +35,9 @@ import java.util.List;
  * @param <V>
  */
 
-public interface ItemStorage<V extends PrismValue> extends Iterable<V> {
+public interface ItemStorage<V extends PrismValue> extends Iterable<V>, Serializable {
 
-    static ItemStorage<PrismValue> EMPTY_LIST_BASED = new EmptyStorage<>((v) -> new ListBasedStorage<>().addForced(v));
-    static ItemStorage EMPTY_SINGLE_VALUE = new EmptyStorage<>(SingleValueStorage::new);
+    static ItemStorage EMPTY_SINGLE_VALUE = new SingleValueStorage.Empty<>();
 
 
     static <V extends PrismValue> ItemStorage<V> createListBased() {
