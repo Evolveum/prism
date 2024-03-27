@@ -52,8 +52,7 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         implements ItemDefinition<I>,
         ItemDefinitionMutator,
         ItemDefinitionLikeBuilder,
-        SerializableItemDefinition,
-        ItemDefinitionTestAccess {
+        SerializableItemDefinition {
     @Serial private static final long serialVersionUID = -2643332934312107274L;
 
     /** Final because it's sometimes used as a key in maps; moreover, it forms an identity of the definition somehow. */
@@ -476,11 +475,6 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
     @Override
     public void setSearchable(boolean searchable) {
         isSearchable = searchable;
-    }
-
-    @Override
-    public void replaceName(ItemName newName) {
-        throw new UnsupportedOperationException("FIXME (used only in a test; that will be eliminated)");
     }
 
     protected Object writeReplace() {
