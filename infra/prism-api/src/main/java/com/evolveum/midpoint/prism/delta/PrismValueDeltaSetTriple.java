@@ -14,6 +14,8 @@ import com.evolveum.midpoint.prism.Visitable;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * DeltaSetTriple that is limited to hold prism values. By limiting to the PrismValue descendants we gain advantage to be
  * cloneable and ability to compare real values.
@@ -35,7 +37,7 @@ public interface PrismValueDeltaSetTriple<V extends PrismValue> extends DeltaSet
 
     boolean isRaw();
 
-    void applyDefinition(ItemDefinition itemDefinition) throws SchemaException;
+    void applyDefinition(@NotNull ItemDefinition<?> itemDefinition) throws SchemaException;
 
     /**
      * Sets specified source type for all values in all sets

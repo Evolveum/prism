@@ -105,11 +105,34 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
      */
     void clearParent();
 
-    default void applyDefinition(@NotNull ItemDefinition definition) throws SchemaException {
-        applyDefinition(definition, true);
+    /**
+     * Definition application MAY change the value (currently only for container values). The caller must deal with that.
+     * To be seen if this is a good idea. But probably so, because there are various situations when the definition
+     * application changes the nature of a prism value (midPoint shadow associations are currently the only places)
+     * but of prism items (midPoint attributes and associations need this; and it must be worked around for now).
+     */
+    default PrismValue applyDefinition(@NotNull ItemDefinition<?> definition) throws SchemaException {
+        return applyDefinition(definition, true);
     }
 
-    void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException;
+    /** This one checks that nothing has changed. */
+    default void applyDefinitionLegacy(@NotNull ItemDefinition<?> definition) throws SchemaException {
+        if (applyDefinition(definition) != this) {
+            throw new UnsupportedOperationException(
+                    "Unsupported identity change in " + this + " when applying definition " + definition);
+        }
+    }
+
+    /** Definition application MAY change the value (currently only for container values). The caller must deal with that. */
+    PrismValue applyDefinition(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException;
+
+    /** Definition application MAY change the value (currently only for container values). The caller must deal with that. */
+    default void applyDefinitionLegacy(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException {
+        if (applyDefinition(definition, force) != this) {
+            throw new UnsupportedOperationException(
+                    "Unsupported identity change in " + this + " when applying definition " + definition);
+        }
+    }
 
     /**
      * Recompute the value or otherwise "initialize" it before adding it to a prism tree.

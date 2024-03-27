@@ -330,7 +330,7 @@ public class PrismContainerImpl<C extends Containerable>
         }
         PrismContainerValue<C> clonedOtherValue = otherValue.clone();
         if (getDefinition() != null) {
-            clonedOtherValue.applyDefinition(getDefinition());
+            clonedOtherValue = clonedOtherValue.applyDefinition(getDefinition());
         }
         add(clonedOtherValue);
     }

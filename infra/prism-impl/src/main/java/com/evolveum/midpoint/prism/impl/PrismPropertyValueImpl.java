@@ -121,36 +121,14 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     @Override
     public T getValue() {
         if (rawElement != null) {
-            ItemDefinition def = null;
+            ItemDefinition<?> def = null;
             Itemable parent = getParent();
             if (parent != null && parent.getDefinition() != null) {
                 def = getParent().getDefinition();
             }
-//            if (def == null) {
-//                // We are weak now. If there is no better definition for this we assume a default definition and process
-//                // the attribute now. But we should rather do this: TODO:
-//                // throw new IllegalStateException("Attempt to get value withot a type from raw value of property "+getParent());
-//                if (parent != null && getPrismContext() != null) {
-//                    def = SchemaRegistryImpl.createDefaultItemDefinition(parent.getElementName(), getPrismContext());
-//                } else if (PrismContextImpl.isAllowSchemalessSerialization()) {
-//                    if (rawElement instanceof PrimitiveXNode) {
-//                        try {
-//                            QName type = rawElement.getTypeQName() != null ? rawElement.getTypeQName() : DOMUtil.XSD_STRING;
-//                            value = (T) ((PrimitiveXNode) rawElement).getParsedValueWithoutRecording(type);
-//                        } catch (SchemaException ex){
-//                            throw new IllegalStateException("Cannot fetch value from raw element. " + ex.getMessage(), ex);
-//                        }
-//                    } else {
-//                        throw new IllegalStateException("No parent or prism context in property value "+this+", cannot create default definition." +
-//                            "The element is also not a DOM element but it is "+rawElement.getClass()+". Epic fail.");
-//                    }
-//                } else {
-//                    throw new IllegalStateException("No parent or prism context in property value "+this+" (schemaless serialization is disabled)");
-//                }
-//            }
             if (def != null) {
                 try {
-                    applyDefinition(def);
+                    applyDefinitionLegacy(def);
                 } catch (SchemaException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
@@ -190,7 +168,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
+    public PrismValue applyDefinition(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException {
         // "force" is currently ignored (this is as it was before)
         PrismPropertyDefinition<?> propertyDefinition = (PrismPropertyDefinition<?>) definition;
         if (!propertyDefinition.isAnyType()) {
@@ -240,6 +218,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 }
             }
         }
+        return this;
     }
 
     @Override
@@ -357,8 +336,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             }
             if (value instanceof PolyString poly) {
                 ItemDefinition<?> definition = getDefinition();
-                MiscUtil.stateCheck(definition == null
-                                || definition instanceof PrismPropertyDefinition<?> prismPropertyDefinition,
+                MiscUtil.stateCheck(definition == null || definition instanceof PrismPropertyDefinition<?>,
                         "Definition is not a property definition: %s in %s", definition, this);
                 PrismPropertyDefinition<?> propDef = (PrismPropertyDefinition<?>) definition;
 

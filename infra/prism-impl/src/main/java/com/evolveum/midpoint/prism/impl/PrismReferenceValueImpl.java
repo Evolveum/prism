@@ -320,11 +320,12 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
+    public PrismValue applyDefinition(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException {
         if (!(definition instanceof PrismReferenceDefinition referenceDefinition)) {
             throw new IllegalArgumentException("Cannot apply " + definition + " to a reference value");
         }
         applyDefinition(referenceDefinition, force);
+        return this;
     }
 
     @Override

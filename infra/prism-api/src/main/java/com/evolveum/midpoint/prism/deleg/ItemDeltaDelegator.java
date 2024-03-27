@@ -68,7 +68,7 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    default void setDefinition(D definition) {
+    default void setDefinition(@NotNull D definition) {
         delegate().setDefinition(definition);
     }
 
@@ -96,7 +96,7 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    default void applyDefinition(D definition) throws SchemaException {
+    default void applyDefinition(@NotNull D definition) throws SchemaException {
         delegate().applyDefinition(definition);
     }
 

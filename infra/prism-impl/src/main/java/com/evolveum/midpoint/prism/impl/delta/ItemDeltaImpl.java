@@ -150,7 +150,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    public void setDefinition(D definition) {
+    public void setDefinition(@NotNull D definition) {
         checkMutable();
         this.definition = definition;
     }
@@ -256,27 +256,6 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                 }
             } else {
                 throw new IllegalArgumentException("Attempt to fit container id to " + pval.getClass());
-            }
-        }
-    }
-
-    @Override
-    public void applyDefinition(D definition) throws SchemaException {
-        checkMutable();
-        this.definition = definition;
-        if (getValuesToAdd() != null) {
-            for (V pval : getValuesToAdd()) {
-                pval.applyDefinition(definition);
-            }
-        }
-        if (getValuesToDelete() != null) {
-            for (V pval : getValuesToDelete()) {
-                pval.applyDefinition(definition);
-            }
-        }
-        if (getValuesToReplace() != null) {
-            for (V pval : getValuesToReplace()) {
-                pval.applyDefinition(definition);
             }
         }
     }
@@ -1865,10 +1844,16 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
+    public void applyDefinition(@NotNull D definition) throws SchemaException {
+        applyDefinition(definition, true);
+    }
+
+    @Override
     public void applyDefinition(@NotNull D itemDefinition, boolean force) throws SchemaException {
         if (this.definition != null && !force) {
             return;
         }
+        checkMutable();
         this.definition = itemDefinition;
         applyDefinitionSet(valuesToAdd, itemDefinition, force);
         applyDefinitionSet(valuesToReplace, itemDefinition, force);
@@ -1880,7 +1865,12 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             return;
         }
         for (V val : set) {
-            val.applyDefinition(itemDefinition, force);
+            //noinspection unchecked
+            V newVal = (V) val.applyDefinition(itemDefinition, force);
+            if (newVal != val) {
+                set.remove(val);
+                set.add(newVal);
+            }
         }
     }
 

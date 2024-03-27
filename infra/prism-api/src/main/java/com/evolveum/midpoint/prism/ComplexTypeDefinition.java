@@ -201,6 +201,12 @@ public interface ComplexTypeDefinition
         return props;
     }
 
+    /** A hook to migrate the value after this definition was applied to it. */
+    @Experimental
+    default @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value) {
+        return value;
+    }
+
     /** Accepts information about this complex type definition during schema parsing. */
     interface ComplexTypeDefinitionLikeBuilder
             extends TypeDefinitionLikeBuilder,
@@ -284,5 +290,15 @@ public interface ComplexTypeDefinition
 
         @Experimental
         void addSubstitution(ItemDefinition<?> itemDef, ItemDefinition<?> maybeSubst);
+
+        default void setValueMigrator(ValueMigrator valueMigrator) {
+            // no-op to avoid the need of implementing in various implementations
+        }
+    }
+
+    /** TODO decide about this */
+    @Experimental
+    interface ValueMigrator {
+        @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value);
     }
 }

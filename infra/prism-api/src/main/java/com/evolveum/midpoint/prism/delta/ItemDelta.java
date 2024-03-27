@@ -11,7 +11,6 @@ import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.getRealValue
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -69,8 +68,6 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         return definition != null && definition.isOperational();
     }
 
-    void setDefinition(D definition);
-
     @Override
     void accept(Visitor visitor);
 
@@ -82,7 +79,11 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     @Override
     void accept(Visitor visitor, ItemPath path, boolean recursive);
 
-    void applyDefinition(D definition) throws SchemaException;
+    /** Note: this may change the implementation of the prism values in the delta. */
+    void applyDefinition(@NotNull D definition) throws SchemaException;
+
+    /** TODO do we need this method publicly? */
+    void setDefinition(@NotNull D definition);
 
     boolean hasCompleteDefinition();
 

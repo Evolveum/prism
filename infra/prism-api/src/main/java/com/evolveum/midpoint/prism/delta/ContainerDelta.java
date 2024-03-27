@@ -14,6 +14,8 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface ContainerDelta<V extends Containerable> extends ItemDelta<PrismContainerValue<V>,PrismContainerDefinition<V>>, PrismContainerable<V> {
 
     @Override
@@ -26,10 +28,10 @@ public interface ContainerDelta<V extends Containerable> extends ItemDelta<Prism
     <T extends Containerable> Collection<PrismContainerValue<T>> getValues(Class<T> type);
 
     @Override
-    void setDefinition(PrismContainerDefinition<V> definition);
+    void setDefinition(@NotNull PrismContainerDefinition<V> definition);
 
     @Override
-    void applyDefinition(PrismContainerDefinition<V> definition) throws SchemaException;
+    void applyDefinition(@NotNull PrismContainerDefinition<V> definition) throws SchemaException;
 
     @Override
     boolean hasCompleteDefinition();

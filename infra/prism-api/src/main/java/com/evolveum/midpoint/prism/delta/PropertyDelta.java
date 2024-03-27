@@ -34,10 +34,10 @@ public interface PropertyDelta<T> extends ItemDelta<PrismPropertyValue<T>, Prism
     void setPropertyDefinition(PrismPropertyDefinition<T> propertyDefinition);
 
     @Override
-    void setDefinition(PrismPropertyDefinition<T> definition);
+    void setDefinition(@NotNull PrismPropertyDefinition<T> definition);
 
     @Override
-    void applyDefinition(PrismPropertyDefinition<T> definition) throws SchemaException;
+    void applyDefinition(@NotNull PrismPropertyDefinition<T> definition) throws SchemaException;
 
     @Override
     Class<PrismProperty> getItemClass();

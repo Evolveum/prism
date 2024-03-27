@@ -1158,21 +1158,27 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
+    public PrismContainerValue<C> applyDefinition(@NotNull ItemDefinition<?> definition) throws SchemaException {
+        return applyDefinition(definition, true);
+    }
+
+    @Override
+    public PrismContainerValue<C> applyDefinition(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException {
         checkMutable();
         if (!(definition instanceof PrismContainerDefinition)) {
             throw new IllegalArgumentException("Cannot apply " + definition + " to container " + this);
         }
-        applyDefinition((PrismContainerDefinition<C>) definition, force);
+        //noinspection unchecked
+        return applyDefinition((PrismContainerDefinition<C>) definition, force);
     }
 
     @Override
-    public void applyDefinition(@NotNull PrismContainerDefinition<C> containerDef, boolean force) throws SchemaException {
+    public PrismContainerValue<C> applyDefinition(@NotNull PrismContainerDefinition<C> containerDef, boolean force) throws SchemaException {
         checkMutable();
         ComplexTypeDefinition definitionToUse = containerDef.getComplexTypeDefinition();
         if (complexTypeDefinition != null) {
             if (!force) {
-                return; // there's a definition already
+                return this; // there's a definition already
             }
             if (!complexTypeDefinition.getTypeName().equals(containerDef.getTypeName())) {
                 // the second condition is a hack because e.g.
@@ -1196,6 +1202,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
         // we need to continue even if CTD is null or 'any' - e.g. to resolve definitions within object extension
         applyDefinitionToItems(force);
+
+        return definitionToUse.migrateIfNeeded(this);
     }
 
     private void applyDefinitionToItems(boolean force) throws SchemaException {

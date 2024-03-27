@@ -63,7 +63,7 @@ public class AbstractDelegatedPrismValueDeltaSetTriple<V extends PrismValue> imp
     }
 
     @Override
-    public void applyDefinition(ItemDefinition itemDefinition) throws SchemaException {
+    public void applyDefinition(@NotNull ItemDefinition<?> itemDefinition) throws SchemaException {
         inner.applyDefinition(itemDefinition);
     }
 

@@ -100,6 +100,9 @@ public class ComplexTypeDefinitionImpl
 
     private boolean strictAnyMarker;
 
+    // FIXME decide about this & implement seriously
+    private transient ValueMigrator valueMigrator;
+
     public ComplexTypeDefinitionImpl(@NotNull QName typeName) {
         super(typeName);
     }
@@ -732,5 +735,14 @@ public class ComplexTypeDefinitionImpl
     @Override
     public ComplexTypeDefinitionImpl getObjectBuilt() {
         return this;
+    }
+
+    @Override
+    public @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value) {
+        return valueMigrator != null ? valueMigrator.migrateIfNeeded(value) : value;
+    }
+
+    public void setValueMigrator(ValueMigrator valueMigrator) {
+        this.valueMigrator = valueMigrator;
     }
 }

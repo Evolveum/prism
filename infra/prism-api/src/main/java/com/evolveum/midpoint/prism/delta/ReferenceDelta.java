@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.delta;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author semancik
  *
@@ -19,10 +21,10 @@ public interface ReferenceDelta extends ItemDelta<PrismReferenceValue,PrismRefer
     Class<PrismReference> getItemClass();
 
     @Override
-    void setDefinition(PrismReferenceDefinition definition);
+    void setDefinition(@NotNull PrismReferenceDefinition definition);
 
     @Override
-    void applyDefinition(PrismReferenceDefinition definition) throws SchemaException;
+    void applyDefinition(@NotNull PrismReferenceDefinition definition) throws SchemaException;
 
     boolean isApplicableToType(Item item);
 

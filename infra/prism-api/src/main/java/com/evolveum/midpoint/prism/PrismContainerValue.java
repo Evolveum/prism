@@ -245,7 +245,11 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     boolean removeRawElement(Object element);
 
-    void applyDefinition(@NotNull PrismContainerDefinition<C> containerDef, boolean force) throws SchemaException;
+    PrismContainerValue<C> applyDefinition(@NotNull ItemDefinition<?> itemDefinition) throws SchemaException;
+
+    PrismContainerValue<C> applyDefinition(@NotNull ItemDefinition<?> itemDefinition, boolean force) throws SchemaException;
+
+    PrismContainerValue<C> applyDefinition(@NotNull PrismContainerDefinition<C> containerDef, boolean force) throws SchemaException;
 
     boolean isIdOnly();
 

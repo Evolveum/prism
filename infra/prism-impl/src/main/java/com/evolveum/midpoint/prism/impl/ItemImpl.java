@@ -380,7 +380,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
             if (!values.isEmpty() && definition.isSingleValue()) {
                 throw new SchemaException("Attempt to put more than one value to single-valued item " + this + "; newly added value: " + newValue);
             }
-            newValue.applyDefinition(definition, false);
+            newValue.applyDefinitionLegacy(definition, false);
         }
         return addInternalExecution(newValue);
     }
@@ -668,8 +668,17 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     protected void applyDefinitionToValues(@NotNull D definition, boolean force) throws SchemaException {
+        List<V> newVals = new ArrayList<>();
+        boolean changed = false;
         for (PrismValue pval : getValues()) {
-            pval.applyDefinition(definition, force);
+            //noinspection unchecked
+            V newVal = (V) pval.applyDefinition(definition, force);
+            newVals.add(newVal);
+            changed = true;
+        }
+        if (changed) {
+            clear();
+            addAllInternal(newVals, false, null);
         }
     }
 

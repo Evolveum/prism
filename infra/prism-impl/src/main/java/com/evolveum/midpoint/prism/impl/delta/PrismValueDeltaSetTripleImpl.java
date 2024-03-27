@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.delta.PrismValueDeltaSetTriple;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.Processor;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -98,18 +99,23 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
         return false;
     }
 
-    public void applyDefinition(ItemDefinition itemDefinition) throws SchemaException {
+    public void applyDefinition(@NotNull ItemDefinition<?> itemDefinition) throws SchemaException {
         applyDefinition(zeroSet, itemDefinition);
         applyDefinition(plusSet, itemDefinition);
         applyDefinition(minusSet, itemDefinition);
     }
 
-    private void applyDefinition(Collection<V> set, ItemDefinition itemDefinition) throws SchemaException {
+    private void applyDefinition(Collection<V> set, ItemDefinition<?> itemDefinition) throws SchemaException {
         if (set == null) {
             return;
         }
-        for (V item: set) {
-            item.applyDefinition(itemDefinition);
+        for (V val : set) {
+            //noinspection unchecked
+            V newVal = (V) val.applyDefinition(itemDefinition);
+            if (newVal != val) {
+                set.remove(val);
+                set.add(newVal);
+            }
         }
     }
 

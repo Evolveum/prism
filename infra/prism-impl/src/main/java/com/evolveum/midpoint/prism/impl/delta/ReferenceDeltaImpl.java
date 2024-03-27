@@ -16,7 +16,8 @@ import com.evolveum.midpoint.prism.delta.ReferenceDelta;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.exception.SchemaException;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author semancik
@@ -38,22 +39,6 @@ public class ReferenceDeltaImpl extends ItemDeltaImpl<PrismReferenceValue, Prism
     @Override
     public Class<PrismReference> getItemClass() {
         return PrismReference.class;
-    }
-
-    @Override
-    public void setDefinition(PrismReferenceDefinition definition) {
-        if (!(definition instanceof PrismReferenceDefinition)) {
-            throw new IllegalArgumentException("Cannot apply " + definition + " to reference delta");
-        }
-        super.setDefinition(definition);
-    }
-
-    @Override
-    public void applyDefinition(PrismReferenceDefinition definition) throws SchemaException {
-        if (definition == null) { // TODO consider making the argument @NotNull universally
-            throw new IllegalArgumentException("Cannot apply 'null' definition to reference delta " + this);
-        }
-        super.applyDefinition(definition);
     }
 
     @Override
