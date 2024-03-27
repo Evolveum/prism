@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.storage.ExactValueExistsException;
 import com.evolveum.midpoint.util.exception.SystemException;
 
 import org.jetbrains.annotations.NotNull;
@@ -213,16 +214,20 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     public void addValue(PrismPropertyValue<T> pValueToAdd, boolean checkUniqueness) {
         checkMutable();
-
+        ((PrismPropertyValueImpl<T>) pValueToAdd).checkValue();
         var strategy = checkUniqueness ? EquivalenceStrategy.REAL_VALUE : null;
         try {
-            addInternal(pValueToAdd, checkUniqueness, strategy);
+            values = values.add(this, pValueToAdd, strategy);
+            pValueToAdd.setParent(this);
+            pValueToAdd.recompute();
+            addInternalExecution(pValueToAdd);
+        } catch (ExactValueExistsException e) {
+            // NOOP
         } catch (SchemaException e) {
             throw new SystemException(e);
         }
-        pValueToAdd.recompute();
-        addInternalExecution(pValueToAdd);
     }
+
 
     @Override
     public void addRealValue(T valueToAdd) {

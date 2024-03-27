@@ -12,6 +12,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
@@ -974,6 +975,18 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         for (V pval : values) {
             if (pval instanceof TransformableValue) {
                 ((TransformableValue) pval).transformDefinition(parent, definition, transformation);
+            }
+        }
+    }
+
+    @Override
+    public void filterValues(Function<V, Boolean> function) {
+        // FIXME: Consider moving filter inside storage?
+        Iterator<V> iterator = values.iterator();
+        while (iterator.hasNext()) {
+            Boolean keep = function.apply(iterator.next());
+            if (keep == null || !keep) {
+                iterator.remove();
             }
         }
     }

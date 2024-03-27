@@ -49,17 +49,32 @@ abstract class MapBasedStorage<K,V extends PrismValue> extends MultiValueStorage
         }
         if (strategy != null) {
             // Only if strategy allows for different keys
-
-
-            iterateAndRemoveEquivalentValues(owner, newValue, strategy);
+            if (ignoringExactKeys(strategy)) {
+                iterateAndRemoveEquivalentValues(owner, newValue, strategy);
+            } else {
+                V maybe = storage.get(extractKey(newValue));
+                if (maybe != null && exactEquals(maybe, newValue)) {
+                    throw ExactValueExistsException.INSTANCE;
+                }
+            }
         }
         checkKeyUnique(owner, newValue);
         return addForced(newValue);
     }
 
+    protected boolean ignoringExactKeys(EquivalenceStrategy strategy) {
+        return false;
+    }
+
     @Override
-    protected void checkKeyUnique(@NotNull Itemable owner, V value) {
-        super.checkKeyUnique(owner, value);
+    protected void checkKeyUnique(@NotNull Itemable owner, V newValue) {
+        var newKey = extractKey(newValue);
+        if (newKey != null) {
+            var maybeValue = storage.get(newKey);
+            if (storage.get(newKey) != null) {
+                    throw new IllegalStateException("Attempt to add a value with an key that already exists: " + newKey);
+            }
+        }
     }
 
     @Override

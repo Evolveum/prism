@@ -158,4 +158,9 @@ public abstract class PrismContainerArrayList<T extends Containerable> extends A
     public boolean isEmpty() {
         return size() == 0;
     }
+
+    @Override
+    public void clear() {
+        container.clear();
+    }
 }

@@ -3,6 +3,7 @@ package com.evolveum.midpoint.prism.impl.storage;
 import com.evolveum.midpoint.prism.Itemable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
+import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
@@ -93,6 +94,15 @@ public interface ContainerValueStorage<V extends PrismContainerValue<?>> extends
         @Override
         protected KeyedStorage<Long, V> createDowngraded() {
             return new Downgraded(this);
+        }
+
+        @Override
+        protected boolean ignoringExactKeys(EquivalenceStrategy strategy) {
+            if (strategy instanceof ParameterizedEquivalenceStrategy param) {
+                return !param.isConsideringContainerIds();
+            }
+
+            return false;
         }
     }
 
