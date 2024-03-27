@@ -97,8 +97,8 @@ public interface PrismItemBasicDefinition {
 
         @NotNull private final ItemName itemName;
         @NotNull private final QName typeName;
-        private int minOccurs;
-        private int maxOccurs;
+        private int minOccurs = 1;
+        private int maxOccurs = 1;
 
         public Data(@NotNull ItemName itemName, @NotNull QName typeName) {
             this.itemName = itemName;

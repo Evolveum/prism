@@ -80,9 +80,9 @@ public interface PrismItemAccessDefinition {
             extends AbstractFreezable
             implements PrismItemAccessDefinition, PrismItemAccessDefinition.Mutable, Serializable {
 
-        boolean canRead;
-        boolean canModify;
-        boolean canAdd;
+        boolean canRead = true;
+        boolean canModify = true;
+        boolean canAdd = true;
 
         @Override
         public boolean canRead() {
