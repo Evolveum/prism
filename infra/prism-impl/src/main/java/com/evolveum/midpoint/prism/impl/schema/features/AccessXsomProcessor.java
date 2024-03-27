@@ -37,10 +37,16 @@ public class AccessXsomProcessor
         DefinitionFeatureSerializer<Info> {
 
     @Override
-    public @NotNull Info getValue(@Nullable XSAnnotation source) throws SchemaException {
+    public @Nullable Info getValue(@Nullable XSAnnotation source) throws SchemaException {
         List<Element> accessElements = SchemaProcessorUtil.getAnnotationElements(source, A_ACCESS);
         if (accessElements.isEmpty()) {
-            return Info.full(); // Default access is read-write-create
+            // This means the default, which is "full access", but due to the way element annotations are processed
+            // in SchemaXsomParser, we should return null value if there's no explicit information. So the XSAnnotation items
+            // with no "a:access" annotation will not falsely give full access.
+            //
+            // This works well with prism item definitions, which have "all access" as their default; and keeps it,
+            // unless explicitly stated otherwise in XSD.
+            return null;
         } else {
             boolean canAdd = false;
             boolean canModify = false;
@@ -60,24 +66,28 @@ public class AccessXsomProcessor
 
     @Override
     public void serialize(@NotNull Info value, @NotNull SerializationTarget target) {
-        if (!value.canAdd() || !value.canRead() || !value.canModify()) {
-            // read-write-create attribute is the default. If any of this flags is missing, we must add appropriate annotations.
-            boolean any = false;
-            if (value.canAdd()) {
-                target.addAnnotation(A_ACCESS, A_ACCESS_CREATE);
-                any = true;
-            }
-            if (value.canRead()) {
-                target.addAnnotation(A_ACCESS, A_ACCESS_READ);
-                any = true;
-            }
-            if (value.canModify()) {
-                target.addAnnotation(A_ACCESS, A_ACCESS_UPDATE);
-                any = true;
-            }
-            if (!any) {
-                target.addAnnotation(A_ACCESS, A_ACCESS_NONE);
-            }
+
+        if (value.canAdd() && value.canRead() && value.canModify()) {
+            // Read-write-create access is the default. Only if any of this flags is missing,
+            // we must add appropriate annotations.
+            return;
+        }
+
+        boolean anyAccess = false;
+        if (value.canAdd()) {
+            target.addAnnotation(A_ACCESS, A_ACCESS_CREATE);
+            anyAccess = true;
+        }
+        if (value.canRead()) {
+            target.addAnnotation(A_ACCESS, A_ACCESS_READ);
+            anyAccess = true;
+        }
+        if (value.canModify()) {
+            target.addAnnotation(A_ACCESS, A_ACCESS_UPDATE);
+            anyAccess = true;
+        }
+        if (!anyAccess) {
+            target.addAnnotation(A_ACCESS, A_ACCESS_NONE);
         }
     }
 }

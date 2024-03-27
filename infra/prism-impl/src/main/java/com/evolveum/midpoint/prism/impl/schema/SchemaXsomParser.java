@@ -714,6 +714,10 @@ class SchemaXsomParser {
 
         ALWAYS_USE_FOR_EQUALS.parseIfApplicable(pcdBuilder, annotation);
 
+        // This is quite a wild attempt to collect annotations from somewhere (provided by the caller),
+        // the element declaration (relevant in the case of "xsd:element ref" constructs), and the element particle.
+        // We must take care not to overwrite the feature values by each other. We rely on the fact that there should be
+        // no "default values", i.e. the parser should return non-null value only if there is something really present there.
         parseItemDefinitionAnnotations(pcdBuilder, annotation);
         parseItemDefinitionAnnotations(pcdBuilder, elementDecl.getAnnotation());
         if (elementParticle != null) {
@@ -754,7 +758,6 @@ class SchemaXsomParser {
 
         parseItemDefinitionAnnotations(ppdBuilder, annotation);
 
-        DF_ACCESS.parse(ppdBuilder, annotation);
         DF_INDEXED.parse(ppdBuilder, annotation);
         DF_INDEX_ONLY.parse(ppdBuilder, annotation);
         DF_MATCHING_RULE.parse(ppdBuilder, annotation);
@@ -824,6 +827,7 @@ class SchemaXsomParser {
 
         parseAllAnnotations(builder, sourceAnnotation);
 
+        DF_ACCESS.parse(builder, sourceAnnotation);
         DF_DOCUMENTATION.parse(builder, sourceAnnotation);
         DF_SCHEMA_MIGRATIONS.parse(builder, sourceAnnotation);
         DF_DIAGRAMS.parse(builder, sourceAnnotation);
