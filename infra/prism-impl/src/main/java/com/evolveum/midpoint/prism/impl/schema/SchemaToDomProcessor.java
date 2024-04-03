@@ -115,6 +115,10 @@ public class SchemaToDomProcessor {
 
             init();            // here the document is initialized
 
+            Collection<EnumerationTypeDefinition> enumerationTypes = schema.getDefinitions(EnumerationTypeDefinition.class);
+            for (EnumerationTypeDefinition enumerationTypeDefinition: enumerationTypes) {
+                addEnumerationTypeDefinition(enumerationTypeDefinition, document.getDocumentElement());
+            }
             // Process complex types first.
             Collection<ComplexTypeDefinition> complexTypes = schema.getDefinitions(ComplexTypeDefinition.class);
             for (ComplexTypeDefinition complexTypeDefinition: complexTypes) {
@@ -134,7 +138,7 @@ public class SchemaToDomProcessor {
                     addPropertyDefinition((PrismPropertyDefinition) definition,
                             document.getDocumentElement());
 
-                } else if (definition instanceof ComplexTypeDefinition){
+                } else if (definition instanceof ComplexTypeDefinition || definition instanceof EnumerationTypeDefinition) {
                     // Skip this. Already processed above.
 
                 } else {
@@ -376,6 +380,62 @@ public class SchemaToDomProcessor {
         setAttribute(anyElement, "processContents", "lax");
     }
 
+    private Element addEnumerationTypeDefinition(EnumerationTypeDefinition definition, Element parent) {
+        if (definition == null) {
+            // Nothing to do
+            return null;
+        }
+
+        Element simpleType = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "simpleType"));
+        parent.appendChild(simpleType);
+        // "typeName" should be used instead of "name" when defining a XSD type
+        setAttribute(simpleType, "name", definition.getTypeName().getLocalPart());
+        Element annotation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"));
+        simpleType.appendChild(annotation);
+
+        Element appinfo = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"));
+        annotation.appendChild(appinfo);
+        addCommonDefinitionAnnotations(definition, appinfo);
+        if (!appinfo.hasChildNodes()) {
+            // remove unneeded <annotation> element
+            simpleType.removeChild(annotation);
+        }
+
+        Element restriction = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "restriction"));
+        setAttribute(restriction, "base", definition.getBaseTypeName());
+        simpleType.appendChild(restriction);
+
+        Collection<EnumerationTypeDefinition.ValueDefinition> valueDefinitions = definition.getValues();
+        for (EnumerationTypeDefinition.ValueDefinition valueDefinition : valueDefinitions) {
+            restriction.appendChild(createValueDefinitionChild(valueDefinition));
+        }
+        return simpleType;
+    }
+
+    private Element createValueDefinitionChild(EnumerationTypeDefinition.ValueDefinition valueDefinition) {
+        Element enumeration = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "enumeration"));
+        setAttribute(enumeration, "value", valueDefinition.getValue());
+        Element annotation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"));
+        enumeration.appendChild(annotation);
+
+        if (valueDefinition.getDocumentation().isPresent()) {
+            Element documentation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "documentation"));
+            documentation.setTextContent(valueDefinition.getDocumentation().get());
+            annotation.appendChild(documentation);
+        }
+
+        Element appinfo = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"));
+        annotation.appendChild(appinfo);
+        if (valueDefinition.getConstantName().isPresent()) {
+            Element typeSafeEnum = createElement(SchemaDefinitionFactory.TYPESAFE_ENUM_MEMBER);
+            setAttribute(typeSafeEnum, "name", valueDefinition.getConstantName().get());
+            appinfo.appendChild(typeSafeEnum);
+        }
+
+        return enumeration;
+    }
+
+
     /**
      * Adds XSD complexType definition from the midPoint Schema ComplexTypeDefinion object
      * @param definition midPoint Schema ComplexTypeDefinion object
@@ -440,6 +500,12 @@ public class SchemaToDomProcessor {
         } else if (definition.isContainerMarker()) {
             // annotation: propertyContainer
             addAnnotation(A_CONTAINER, definition.getDisplayName(), appinfo);
+        }
+
+        QName extensionForType = definition.getExtensionForType();
+        if (extensionForType != null) {
+            Element extension = addAnnotation(A_EXTENSION, appinfo);
+            extension.setAttribute("ref", extensionForType.getLocalPart());
         }
 
         addCommonDefinitionAnnotations(definition, appinfo);

@@ -32,7 +32,7 @@ import static com.evolveum.midpoint.prism.SimpleTypeDefinition.DerivationMethod.
  */
 public class SchemaDefinitionFactory {
 
-    private static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
+    public static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember"); //TODO move somewhere else?
     private static final QName TYPESAFE_ENUM_MEMBER_LEGACY = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
 
     private static final String ENUMERATION_FACET = "enumeration";
