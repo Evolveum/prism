@@ -6,15 +6,13 @@
  */
 package com.evolveum.midpoint.prism.impl.match;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.match.MatchingRule;
-import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.impl.polystring.UuidNormalizer;
+import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.util.DOMUtil;
 
 /**
@@ -23,7 +21,6 @@ import com.evolveum.midpoint.util.DOMUtil;
  * Currently it is (almost) simple case ignore matching.
  *
  * @author Radovan Semancik
- *
  */
 public class UuidMatchingRule implements MatchingRule<String> {
 
@@ -38,33 +35,8 @@ public class UuidMatchingRule implements MatchingRule<String> {
     }
 
     @Override
-    public boolean match(String a, String b) {
-        if (a == null && b == null) {
-            return true;
-        }
-        if (a == null || b == null) {
-            return false;
-        }
-        return StringUtils.equalsIgnoreCase(a.trim(), b.trim());
-    }
-
-    @Override
-    public String normalize(String original) {
-        if (original == null) {
-            return null;
-        }
-        return StringUtils.lowerCase(original).trim();
-    }
-
-    @Override
-    public boolean matchRegex(String a, String regex) {
-        if (a == null){
-            return false;
-        }
-
-        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(a);
-        return matcher.matches();
+    public @NotNull UuidNormalizer getNormalizer() {
+        return UuidNormalizer.instance();
     }
 
     @Override

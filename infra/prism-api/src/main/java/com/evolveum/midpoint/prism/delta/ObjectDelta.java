@@ -23,6 +23,8 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import static com.evolveum.midpoint.prism.PrismObject.asObjectable;
+
 /**
  * Relative difference (delta) of the object.
  * This class describes how the object changes. It can describe either object addition, modification of deletion.
@@ -75,6 +77,10 @@ public interface ObjectDelta<O extends Objectable>
     void setPrismContext(PrismContext prismContext);
 
     PrismObject<O> getObjectToAdd();
+
+    default O getObjectableToAdd() {
+        return asObjectable(getObjectToAdd());
+    }
 
     void setObjectToAdd(PrismObject<O> objectToAdd);
 
@@ -244,19 +250,26 @@ public interface ObjectDelta<O extends Objectable>
     @SuppressWarnings("unchecked")
     <X> PropertyDelta<X> addModificationReplaceProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <X> void addModificationAddProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <X> void addModificationDeleteProperty(ItemPath propertyPath, X... propertyValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationAddContainer(ItemPath propertyPath, C... containerables) throws SchemaException;
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationAddContainer(ItemPath propertyPath, PrismContainerValue<C>... containerValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationDeleteContainer(ItemPath propertyPath, C... containerables) throws SchemaException;
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationDeleteContainer(ItemPath propertyPath,
             PrismContainerValue<C>... containerValues);
 
+    @SuppressWarnings("unchecked")
     <C extends Containerable> void addModificationReplaceContainer(ItemPath propertyPath,
             PrismContainerValue<C>... containerValues);
 
@@ -291,7 +304,7 @@ public interface ObjectDelta<O extends Objectable>
 
     void revive(PrismContext prismContext) throws SchemaException;
 
-    void applyDefinition(PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException;
+    void applyDefinition(@NotNull PrismObjectDefinition<O> objectDefinition, boolean force) throws SchemaException;
 
     boolean equivalent(ObjectDelta other);
 

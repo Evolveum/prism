@@ -706,9 +706,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     }
 
     private Object parseLiteral(PrismPropertyDefinition<?> propDef, LiteralValueContext literalValue) {
-        if (propDef.getTypeClass() != null) {
+        Class<?> simpleTypeClass = propDef.getTypeClassLegacy();
+        if (simpleTypeClass != null) {
             // shortcut
-            return parseLiteral(propDef.getTypeClass(), literalValue);
+            return parseLiteral(simpleTypeClass, literalValue);
         }
         PrismNamespaceContext nsCtx = PrismNamespaceContext.from(namespaceContext);
         RootXNodeImpl xnode = new RootXNodeImpl(propDef.getItemName(), nsCtx);
@@ -1133,16 +1134,15 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         } else if (definition instanceof PrismReferenceDefinition) {
             return matchesReferenceFilter(context, path, (PrismReferenceDefinition) definition,
                     subfilterOrValue.subfilterSpec().filter());
-        } else if (definition instanceof PrismPropertyDefinition<?>) {
-            var typeClass = definition.getTypeClass();
-            var typeName = definition.getTypeName();
+        } else if (definition instanceof PrismPropertyDefinition<?> propertyDefinition) {
+            var typeClass = propertyDefinition.getTypeClassLegacy();
+            var typeName = propertyDefinition.getTypeName();
             // for properties, typeClass may be null in case of enums, so we need to check to avoid NPE in isAssignableFrom
             if (typeClass != null && PolyString.class.isAssignableFrom(typeClass)) {
                 // Polystring requires special handling, since it is composite, but it is processed by EqualFilter with matching
-                return matchesPolystringFilter(path, (PrismPropertyDefinition<?>) definition,
-                        subfilterOrValue.subfilterSpec().filter());
+                return matchesPolystringFilter(path, propertyDefinition, subfilterOrValue.subfilterSpec().filter());
             }
-            if (typeClass == null && typeName != null && definition.isSearchable()) {
+            if (typeClass == null && typeName != null && propertyDefinition.isSearchable()) {
                 // is complex type inside property?
 
                 var typeDef = context.findComplexTypeDefinitionByType(typeName);

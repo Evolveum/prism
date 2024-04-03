@@ -376,32 +376,29 @@ public class PrismContainerImpl<C extends Containerable>
      * @param definition the definition to set
      */
     @Override
-    public void setDefinition(PrismContainerDefinition<C> definition) {
+    public void setDefinition(@NotNull PrismContainerDefinition<C> definition) {
         checkMutable();
-        if (definition != null) {
-            for (PrismContainerValue<C> value : getValues()) {
-                // TODO reconsider this - sometimes we want to change CTDs, sometimes not
-                boolean safeToOverwrite =
-                        value.getComplexTypeDefinition() == null
-                        || this.definition == null                                // TODO highly dangerous (the definition might be simply unknown)
-                        || this.definition.getComplexTypeDefinition() == null
-                        || this.definition.getComplexTypeDefinition().getTypeName().equals(value.getComplexTypeDefinition().getTypeName());
-                if (safeToOverwrite) {
-                    ((PrismContainerValueImpl) value).replaceComplexTypeDefinition(definition.getComplexTypeDefinition());
-                }
+        checkDefinition(definition);
+        for (PrismContainerValue<C> value : getValues()) {
+            // TODO reconsider this - sometimes we want to change CTDs, sometimes not
+            boolean safeToOverwrite =
+                    value.getComplexTypeDefinition() == null
+                            || this.definition == null // TODO highly dangerous (the definition might be simply unknown)
+                            || this.definition.getComplexTypeDefinition() == null
+                            || this.definition.getComplexTypeDefinition().getTypeName().equals(value.getComplexTypeDefinition().getTypeName());
+            if (safeToOverwrite) {
+                //noinspection rawtypes
+                ((PrismContainerValueImpl) value).replaceComplexTypeDefinition(definition.getComplexTypeDefinition());
             }
         }
         this.definition = definition;
     }
 
     @Override
-    public void applyDefinition(PrismContainerDefinition<C> definition) throws SchemaException {
+    public void applyDefinition(@NotNull PrismContainerDefinition<C> definition, boolean force) throws SchemaException {
         checkMutable();
-        if (definition == null) {
-            return;
-        }
         this.compileTimeClass = definition.getCompileTimeClass();
-        super.applyDefinition(definition);
+        super.applyDefinition(definition, force);
     }
 
     @Override
@@ -676,13 +673,6 @@ public class PrismContainerImpl<C extends Containerable>
             }
         }
         return true;
-    }
-
-    @Override
-    protected void checkDefinition(PrismContainerDefinition<C> def) {
-        if (def == null) {
-            throw new IllegalArgumentException("Null definition cannot be applied to container "+this);
-        }
     }
 
     @Override

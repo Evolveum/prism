@@ -10,11 +10,15 @@ package com.evolveum.midpoint.prism.schema;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.xml.sax.SAXException;
@@ -61,7 +65,9 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     Collection<Package> getCompileTimePackages();
 
-    ItemDefinition locateItemDefinition(@NotNull QName itemName,
+    ItemDefinition locateItemDefinition(
+            @NotNull QName itemName,
+            @Nullable QName explicitTypeName,
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionResolver);
 
@@ -156,6 +162,18 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     // Takes XSD types into account as well
     <T> Class<T> determineClassForType(QName type);
+
+    default <T> Class<T> determineJavaClassForType(QName type) {
+        Class<?> xsdClass = MiscUtil.resolvePrimitiveIfNecessary(
+                determineClassForType(type));
+        if (PolyStringType.class.equals(xsdClass)) {
+            //noinspection unchecked
+            return (Class<T>) PolyString.class;
+        } else {
+            //noinspection unchecked
+            return (Class<T>) xsdClass;
+        }
+    }
 
     default <T> Class<T> determineClassForTypeRequired(QName type, Class<T> expected) {
         Class<?> clazz = determineClassForTypeRequired(type);

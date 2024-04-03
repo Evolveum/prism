@@ -289,7 +289,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 Class<?> parentClass = parent.getCompileTimeClass();
                 if (parentClass != null) {
                     if (requiredClass != null && !requiredClass.isAssignableFrom(parentClass)) {
-                        // mismatch; but this can occur (see ShadowAttributesType vs ShadowIdentifiersType in ShadowAssociationType)
+                        // mismatch; but this can occur (see ShadowAttributesType vs ShadowIdentifiersType in association value)
                         // but TODO maybe this is only a workaround and the problem is in the schema itself (?)
                         return requiredClass;
                     } else {
@@ -363,7 +363,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             if (definition instanceof RemovedItemDefinition) {
                 throw new SchemaException("No definition for item " + itemName + " in " + getParent());
             }
-            item.applyDefinition(definition, false);
+            if (definition != null) {
+                item.applyDefinitionIfMissing(definition);
+            }
         }
         simpleAdd(item);
     }
@@ -920,7 +922,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     return;
                 } else {
                     if (itemType.isAssignableFrom(item.getClass())) {
-                        itemsIterator.remove();
+                        itemsIterator.remove(); // TODO we should also unset the respective parent
                         removeFromUnqualifiedIfNeeded(itemName);
                     } else {
                         throw new IllegalArgumentException("Attempt to remove item " + subName + " from " + this +
@@ -1209,7 +1211,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
+    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
         checkMutable();
         if (!(definition instanceof PrismContainerDefinition)) {
             throw new IllegalArgumentException("Cannot apply " + definition + " to container " + this);
@@ -1253,7 +1255,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         // We change items during this operation, so we need to create a copy of them.
         ArrayList<Item<?, ?>> existingItems = new ArrayList<>(items.values());
 
-        for (Item item : existingItems) {
+        for (Item<?, ?> item : existingItems) {
             if (item.getDefinition() == null || force) {
                 ItemDefinition<?> itemDefinition = determineItemDefinition(item.getElementName(), complexTypeDefinition);
                 if (itemDefinition == null && item.getDefinition() != null && item.getDefinition().isDynamic()) {
@@ -1266,11 +1268,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 } else if (itemDefinition instanceof RemovedItemDefinition) {
                     // See MID-7939, this seems logical step - if definition was removed (e.g. for
                     // security reasons), let's remove the item too, so it's not available at all.
-                    //noinspection unchecked
                     remove(item);
-                } else {
-                    //noinspection unchecked
-                    item.applyDefinition(itemDefinition, force);
+                } else if (itemDefinition != null) {
+                    //noinspection unchecked,rawtypes
+                    ((Item) item).applyDefinition(itemDefinition, force);
                 }
             } else {
                 // Item has a definition already, no need to apply it
@@ -1323,7 +1324,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 // This allows the caller to treat removed definition differently, if desired. See MID-7939.
                 return (ID) new RemovedItemDefinition<>(itemName);
             }
-            throw new SchemaException("No definition for item " + itemName + " in " + getParent());
+            throw new SchemaException("No definition for item " + itemName + " in " + getParent() + "; type: " + ctd);
         }
     }
 
@@ -1361,21 +1362,22 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope) {
         ItemPath myPath = getPath();
-        if (getDefinition() == null) {
+        if (requireDefinitions && getDefinition() == null) {
             throw new IllegalStateException("Definition-less container value " + this + " (" + myPath + " in " + rootItem + ")");
         }
         for (Item<?, ?> item : items.values()) {
-            if (scope.isThorough()) {
-                if (item == null) {
-                    throw new IllegalStateException("Null item in container value " + this + " (" + myPath + " in " + rootItem + ")");
-                }
-                if (item.getParent() == null) {
-                    throw new IllegalStateException("No parent for item " + item + " in container value " + this + " (" + myPath + " in " + rootItem + ")");
-                }
-                if (item.getParent() != this) {
-                    throw new IllegalStateException("Wrong parent for item " + item + " in container value " + this + " (" + myPath + " in " + rootItem + "), " +
-                            "bad parent: " + item.getParent());
-                }
+            if (item == null) {
+                throw new IllegalStateException(
+                        "Null item in container value %s (%s in %s)".formatted(this, myPath, rootItem));
+            }
+            if (item.getParent() == null) {
+                throw new IllegalStateException(
+                        "No parent for item %s in container value %s (%s in %s)".formatted(item, this, myPath, rootItem));
+            }
+            if (item.getParent() != this) {
+                throw new IllegalStateException(
+                        "Wrong parent for item %s in container value %s (%s in %s), bad parent: %s".formatted(
+                                item, this, myPath, rootItem, item.getParent()));
             }
             item.checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
         }
@@ -1459,10 +1461,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             //noinspection unchecked
             clonedItemDef = (ID) oldItemDef.deepClone(operation);
         }
-        // propagate to items in values
-        //noinspection unchecked
-        ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(operation, clonedItemDef);
-        item.setDefinition(clonedItemDef); // sets CTD in values only if null!
+        if (clonedItemDef != null) {
+            // propagate to items in values
+            //noinspection unchecked
+            ((ItemImpl<?, ID>) item).propagateDeepCloneDefinition(operation, clonedItemDef);
+            item.setDefinition(clonedItemDef); // sets CTD in values only if null!
+        }
     }
 
     @Override
@@ -1946,7 +1950,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
 
         @Override
-        public boolean canBeDefinitionOf(PrismValue value) {
+        public boolean canBeDefinitionOf(@NotNull PrismValue value) {
             throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
         }
 
@@ -1972,6 +1976,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
         @Override
         public @NotNull ItemDefinition<I> clone() {
+            throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
+        }
+
+        @Override
+        public Class<?> getTypeClass() {
             throw new UnsupportedOperationException("Unsupported method called on removed definition for " + itemName);
         }
     }

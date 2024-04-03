@@ -85,8 +85,10 @@ public interface PropertyDelta<T> extends ItemDelta<PrismPropertyValue<T>, Prism
 
 //    boolean isRedundant(PrismObject<? extends Objectable> object, ParameterizedEquivalenceStrategy strategy, MatchingRule<T> matchingRule, boolean assumeMissingItems);
 
-    // convenience method
+    // convenience methods
     void setRealValuesToReplace(T... newValues);
+
+    void setRealValuesToReplace(@NotNull Collection<T> newValues);
 
     void addRealValuesToAdd(T... newValues);
 

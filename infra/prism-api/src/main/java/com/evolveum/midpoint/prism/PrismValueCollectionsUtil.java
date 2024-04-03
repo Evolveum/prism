@@ -77,13 +77,24 @@ public class PrismValueCollectionsUtil {
     }
 
     @SafeVarargs
-    public static <T> PrismPropertyValue<T>[] wrap(PrismContext prismContext, T... realValues) {
+    public static <T> PrismPropertyValue<T>[] wrap(T... realValues) {
         //noinspection unchecked
         return Arrays.stream(realValues)
-                .map(val -> prismContext.itemFactory().createPropertyValue(val))
+                .map(val -> PrismContext.get().itemFactory().createPropertyValue(val))
                 .toArray(PrismPropertyValue[]::new);
     }
 
+    public static <T> @NotNull List<PrismPropertyValue<T>> wrap(@NotNull Collection<T> realValues) {
+        return realValues.stream()
+                .map(val -> PrismContext.get().itemFactory().createPropertyValue(val))
+                .toList();
+    }
+
+    public static <T> @NotNull List<T> unwrap(@NotNull Collection<PrismPropertyValue<T>> values) {
+        return values.stream()
+                .map(val -> val.getRealValue())
+                .toList();
+    }
 
     @NotNull
     public static List<Referencable> asReferencables(@NotNull Collection<PrismReferenceValue> values) {
@@ -226,26 +237,28 @@ public class PrismValueCollectionsUtil {
         return false;
     }
 
-    public static <X> Collection<PrismPropertyValue<X>> toPrismPropertyValues(PrismContext prismContext, X... realValues) {
-        Collection<PrismPropertyValue<X>> pvalues = new ArrayList<>(realValues.length);
+    @SafeVarargs
+    public static <X> Collection<PrismPropertyValue<X>> toPrismPropertyValues(X... realValues) {
+        Collection<PrismPropertyValue<X>> pValues = new ArrayList<>(realValues.length);
         for (X val: realValues) {
-            PrismUtil.recomputeRealValue(val, prismContext);
-            PrismPropertyValue<X> pval = prismContext.itemFactory().createPropertyValue(val);
-            pvalues.add(pval);
+            PrismUtil.recomputeRealValue(val);
+            pValues.add(
+                    PrismContext.get().itemFactory().createPropertyValue(val));
         }
-        return pvalues;
+        return pValues;
     }
 
+    @SuppressWarnings("unchecked")
     public static <O extends Objectable, C extends Containerable> Collection<PrismContainerValue<C>> toPrismContainerValues(
             Class<O> type, ItemPath path, PrismContext prismContext, C... containerValues) throws SchemaException {
-        Collection<PrismContainerValue<C>> pvalues = new ArrayList<>(containerValues.length);
-        for (C val: containerValues) {
+        Collection<PrismContainerValue<C>> prismValues = new ArrayList<>(containerValues.length);
+        for (C val : containerValues) {
             prismContext.adopt(val, type, path);
-            PrismUtil.recomputeRealValue(val, prismContext);
-            PrismContainerValue<C> pval = val.asPrismContainerValue();
-            pvalues.add(pval);
+            //noinspection unchecked
+            prismValues.add(
+                    val.asPrismContainerValue());
         }
-        return pvalues;
+        return prismValues;
     }
 
     // Does no recomputation nor adoption

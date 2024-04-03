@@ -324,16 +324,16 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
-        if (!(definition instanceof PrismReferenceDefinition)) {
-            throw new IllegalArgumentException("Cannot apply "+definition+" to a reference value");
+    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
+        if (!(definition instanceof PrismReferenceDefinition referenceDefinition)) {
+            throw new IllegalArgumentException("Cannot apply " + definition + " to a reference value");
         }
-        applyDefinition((PrismReferenceDefinition)definition, force);
+        applyDefinition(referenceDefinition, force);
     }
 
     @Override
     public void applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException {
-        super.applyDefinition(definition, force);
+        checkMutable();
 
         var defTargetType = definition.getTargetTypeName();
         if (targetType != null && defTargetType != null) {
@@ -367,8 +367,9 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             objectDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(targetTypeName);
         }
         if (objectDefinition == null) {
-            throw new SchemaException("Cannot apply definition to composite object in reference "+getParent()
-                    +": no definition for object type "+targetTypeName);
+            throw SchemaException.of(
+                    "Cannot apply definition to composite object in reference %s: no definition for object type %s",
+                    getParent(), targetTypeName);
         }
         // this should do it
         //noinspection unchecked

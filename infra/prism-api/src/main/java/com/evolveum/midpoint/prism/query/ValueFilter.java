@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism.query;
 
+import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 
@@ -76,6 +77,11 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
      * @param value value, has to be parent-less
      */
     void setValue(V value);
+
+    /**
+     * @param values values to be set, have to be parent-less
+     */
+    void setValues(@NotNull Collection<V> values);
 
     @Nullable
     ExpressionWrapper getExpression();

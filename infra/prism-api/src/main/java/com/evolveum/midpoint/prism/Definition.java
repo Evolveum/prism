@@ -65,22 +65,7 @@ public interface Definition
      */
     boolean isRuntimeSchema();
 
-    /**
-     * Item definition that has this flag set should be ignored by any processing.
-     * The ignored item is still part of the schema. Item instances may appear in
-     * the serialized data formats (e.g. XML) or data store and the parser should
-     * not raise an error if it encounters them. But any high-level processing code
-     * should ignore presence of this item. E.g. it should not be displayed to the user,
-     * should not be present in transformed data structures, etc.
-     *
-     * Note that the same item can be ignored at higher layer (e.g. presentation)
-     * but not ignored at lower layer (e.g. model). This works by presenting different
-     * item definitions for these layers (see LayerRefinedAttributeDefinition).
-     *
-     * Semantics of this flag for complex type definitions is to be defined yet.
-     */
-    // TODO Remove in 4.3, check whether all usages are equivalent to getProcessing() == IGNORE
-    @Deprecated
+    /** Just a shortcut for now. */
     default boolean isIgnored() {
         return getProcessing() == ItemProcessing.IGNORE;
     }
@@ -248,5 +233,11 @@ public interface Definition
     // TODO reconsider/fix this
     default String getMutabilityFlag() {
         return isImmutable() ? "" : "+";
+    }
+
+    default void checkMutableOnExposing() {
+        if (isImmutable()) {
+            throw new IllegalStateException("Definition couldn't be exposed as mutable because it is immutable: " + this);
+        }
     }
 }

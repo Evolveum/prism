@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +36,6 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
      * The list is unmodifiable.
      */
     @Override
-    @SuppressWarnings("unchecked") // temporary workaround
     @NotNull
     List<? extends ItemDefinition<?>> getDefinitions();
 
@@ -87,6 +83,9 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
      */
     @Experimental
     boolean isListMarker();
+
+    /** Type name for items that are not explicitly defined in this CTD. */
+    @Nullable QName getDefaultItemTypeName();
 
     /**
      * When resolving unqualified names for items contained in this CTD, what should be the default namespace
@@ -182,5 +181,15 @@ public interface ComplexTypeDefinition extends TypeDefinition, LocalItemDefiniti
     @Experimental
     default boolean hasOperationalOnlyItems() {
         return false;
+    }
+
+    default List<PrismPropertyDefinition<?>> getPropertyDefinitions() {
+        List<PrismPropertyDefinition<?>> props = new ArrayList<>();
+        for (ItemDefinition<?> def : getDefinitions()) {
+            if (def instanceof PrismPropertyDefinition<?> propertyDefinition) {
+                props.add(propertyDefinition);
+            }
+        }
+        return props;
     }
 }

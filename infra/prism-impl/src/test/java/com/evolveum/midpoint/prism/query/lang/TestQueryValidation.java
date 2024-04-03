@@ -1,26 +1,27 @@
 package com.evolveum.midpoint.prism.query.lang;
 
-import com.evolveum.midpoint.prism.AbstractPrismTest;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismInternalTestUtil;
-import com.evolveum.axiom.lang.antlr.AxiomQueryError;
-import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
-import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
-import com.evolveum.midpoint.prism.util.PrismTestUtil;
-import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.util.exception.SchemaException;
+import static org.testng.AssertJUnit.assertTrue;
+
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
-import static org.testng.AssertJUnit.assertTrue;
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
+import com.evolveum.midpoint.prism.AbstractPrismTest;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismInternalTestUtil;
+import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
+import com.evolveum.midpoint.prism.query.AxiomQueryLangService;
+import com.evolveum.midpoint.prism.util.PrismTestUtil;
+import com.evolveum.midpoint.util.PrettyPrinter;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
  * Created by Dominik.
@@ -31,7 +32,7 @@ public class TestQueryValidation extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
         this.axiomQueryLangService = new AxiomQueryLangServiceImpl(PrismContext.get());
     }
@@ -40,9 +41,9 @@ public class TestQueryValidation extends AbstractPrismTest {
         int errorCount = errorList.size();
         int expectedCount = expectedList.size();
 
-        if (errorCount != expectedCount) return false;
+        if (errorCount != expectedCount) {return false;}
 
-        for(int i = 0; i < errorCount; ++i) {
+        for (int i = 0; i < errorCount; ++i) {
             if (!errorList.get(i).equals(expectedList.get(i))) {
                 return false;
             }
@@ -54,22 +55,22 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testValidateEasyQuery() {
         String query = ". type UserType and givenName equal \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
         Assert.assertEquals(errorList, new ArrayList<>(), "verified query\n");
     }
 
     @Test
     public void testInvalidateBadFilterName() {
         String query = ". type UserType and givenName equal1 \"Jack\" and name = \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
-            new AxiomQueryError(null,
-                null,
-                1, 30, 35,
-                "Filter equal1 is not supported for path givenName",
-                null)
+                new AxiomQueryError(null,
+                        null,
+                        1, 30, 35,
+                        "Filter equal1 is not supported for path givenName",
+                        null)
         );
 
         assertTrue("invalid filter name\n", checkingAxiomQueryErrorList(errorList, expected));
@@ -78,7 +79,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testInvalidateReferencedByFilterName() {
         String query = ". type UserType and givenName referencedBy \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
@@ -95,7 +96,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testInvalidateMatchesFilterName() {
         String query = ". type UserType and givenName matches \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
@@ -112,7 +113,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testInvalidateFilterNameAlias() {
         String query = ". type UserType and activation = \"disabled\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
@@ -129,7 +130,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testInvalidateItemPath() {
         String query = ". type UserType and givenName1 equal \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
@@ -146,7 +147,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     @Test
     public void testInvalidateObjectType() {
         String query = ". type UserType1 and givenName1 equal \"Jack\"";
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(
@@ -182,7 +183,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 + "  and y = 1.0\n"
                 + ")";
 
-        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(query);
+        List<AxiomQueryError> errorList = this.axiomQueryLangService.validate(null, query);
 
         List<AxiomQueryError> expected = new ArrayList<>();
         expected.add(

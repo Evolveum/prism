@@ -28,12 +28,12 @@ public class PrettyPrinter {
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private static String defaultNamespacePrefix = null;
+    private static final Collection<String> DEFAULT_NAMESPACE_PREFIXES = new HashSet<>();
 
     private static final List<Class<?>> PRETTY_PRINTERS = new CopyOnWriteArrayList<>();
 
-    public static void setDefaultNamespacePrefix(String prefix) {
-        defaultNamespacePrefix = prefix;
+    public static void addDefaultNamespacePrefix(String prefix) {
+        DEFAULT_NAMESPACE_PREFIXES.add(prefix);
     }
 
     // Left for random short-term usage in tests, I guess?
@@ -46,8 +46,7 @@ public class PrettyPrinter {
         QName elementName = JAXBUtil.getElementQName(element);
         sb.append(prettyPrint(elementName));
         sb.append(">");
-        if (element instanceof Element) {
-            Element domElement = (Element) element;
+        if (element instanceof Element domElement) {
             // TODO: this is too simplistic, expand later
             sb.append(domElement.getTextContent());
         } else {
@@ -113,11 +112,23 @@ public class PrettyPrinter {
         if (qname.getNamespaceURI() != null) {
             if (qname.getNamespaceURI().equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
                 return "{" + DOMUtil.NS_W3C_XML_SCHEMA_PREFIX + ":}" + qname.getLocalPart();
-            } else if (defaultNamespacePrefix != null && qname.getNamespaceURI().startsWith(defaultNamespacePrefix)) {
-                return "{..." + qname.getNamespaceURI().substring(defaultNamespacePrefix.length()) + "}" + qname.getLocalPart();
+            }
+            var reduced = reduceNamespaceUri(qname.getNamespaceURI());
+            if (reduced != null) {
+                return reduced + qname.getLocalPart();
             }
         }
-        return qnameToString(qname);    // avoiding qname.toString because recursive call to prettyPrint from ItemName.toString
+        // avoiding qname.toString because recursive call to prettyPrint from ItemName.toString
+        return qnameToString(qname);
+    }
+
+    private static String reduceNamespaceUri(String namespaceURI) {
+        for (String defaultNamespacePrefix : DEFAULT_NAMESPACE_PREFIXES) {
+            if (namespaceURI.startsWith(defaultNamespacePrefix)) {
+                return "{..." + namespaceURI.substring(defaultNamespacePrefix.length()) + "}";
+            }
+        }
+        return null;
     }
 
     public static String qnameToString(QName name) {
@@ -136,7 +147,7 @@ public class PrettyPrinter {
             return "null";
         }
         StringBuilder sb = new StringBuilder();
-        if (list.size() > 0) {
+        if (!list.isEmpty()) {
             Element el0 = list.get(0);
             QName elQName;
             if (el0.getPrefix() != null) {
@@ -287,8 +298,7 @@ public class PrettyPrinter {
     }
 
     private static String tryPrettyPrint(Object value) {
-        if (value instanceof Class) {
-            Class<?> c = (Class<?>) value;
+        if (value instanceof Class<?> c) {
             if (c.getPackage().getName().equals("com.evolveum.midpoint.xml.ns._public.common.common_3")) {
                 return c.getSimpleName();
             }
@@ -467,10 +477,4 @@ public class PrettyPrinter {
     public static void registerPrettyPrinter(Class<?> printerClass) {
         PRETTY_PRINTERS.add(printerClass);
     }
-
-    // For diagnostics only
-    public static List<Class<?>> getPrettyPrinters() {
-        return PRETTY_PRINTERS;
-    }
-
 }

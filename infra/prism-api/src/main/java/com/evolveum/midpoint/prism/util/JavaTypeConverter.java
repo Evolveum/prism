@@ -86,30 +86,32 @@ public class JavaTypeConverter {
         }
 
         // int
-        if (expectedType == int.class && rawValue instanceof Integer) {
-            return rawValue;
-        }
-        if (expectedType == Integer.class && rawValue instanceof String) {
-            return Integer.parseInt(((String) rawValue).trim());
-        }
-        if (expectedType == int.class && rawValue instanceof String) {
-            return Integer.parseInt(((String) rawValue).trim());
+        if (expectedType == Integer.class || expectedType == int.class) {
+            if (rawValue instanceof Integer) {
+                return rawValue;
+            }
+            if (rawValue instanceof Number number) {
+                return number.intValue();
+            }
+            if (rawValue instanceof String stringValue) {
+                return Integer.parseInt(stringValue.trim());
+            }
         }
         if (expectedType == String.class && rawValue instanceof Integer) {
             return rawValue.toString();
         }
-        if (expectedType == int.class && rawValue instanceof Long) {
-            return ((Long) rawValue).intValue();
-        }
 
-        if (expectedType == long.class && rawValue instanceof Long) {
-            return (rawValue);
-        }
-        if (expectedType == Long.class && rawValue instanceof String) {
-            return Long.parseLong(((String) rawValue).trim());
-        }
-        if (expectedType == long.class && rawValue instanceof String) {
-            return Long.parseLong(((String) rawValue).trim());
+        // long
+        if (expectedType == Long.class || expectedType == long.class) {
+            if (rawValue instanceof Long) {
+                return rawValue;
+            }
+            if (rawValue instanceof Number number) {
+                return number.longValue();
+            }
+            if (rawValue instanceof String stringValue) {
+                return Long.parseLong(stringValue.trim());
+            }
         }
         if (expectedType == String.class && rawValue instanceof Long) {
             return rawValue.toString();
@@ -230,7 +232,7 @@ public class JavaTypeConverter {
         if (expectedType == String.class && rawValue instanceof XMLGregorianCalendar) {
             return ((XMLGregorianCalendar) rawValue).toXMLFormat();
         }
-        if (expectedType == Long.class && rawValue instanceof XMLGregorianCalendar) {
+        if ((expectedType == Long.class || expectedType == long.class) && rawValue instanceof XMLGregorianCalendar) {
             return XmlTypeConverter.toMillis((XMLGregorianCalendar) rawValue);
         }
 

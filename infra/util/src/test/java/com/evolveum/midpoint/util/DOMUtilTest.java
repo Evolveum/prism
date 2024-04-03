@@ -368,4 +368,52 @@ public class DOMUtilTest extends AbstractUnitTest {
         assertThat(fixed).as("fixed string").isEqualTo("A[INVALID CODE POINT: 6]B[INVALID CODE POINT: 0]C");
     }
 
+    @Test
+    public void testHtmlInScriptValue() {
+        String code = "# comment" + System.lineSeparator()
+                + "   " + System.lineSeparator()
+                + "" + System.lineSeparator()
+                + "<html>" + System.lineSeparator()
+                + "   " + System.lineSeparator()
+                + "#html body" + System.lineSeparator()
+                + "<h1>Title</h1>" + System.lineSeparator()
+                + "" + System.lineSeparator()
+                + "</html>" + System.lineSeparator()
+                + "# end" + System.lineSeparator()
+                + "   ";
+        assertTrue(DOMUtil.containsHTML(code));
+
+        code = "   <html>" + System.lineSeparator()
+                + "   " + System.lineSeparator()
+                + "#html body" + System.lineSeparator()
+                + "<h1>Title</h1>" + System.lineSeparator()
+                + "" + System.lineSeparator()
+                + "</html>  ";
+        assertTrue(DOMUtil.containsHTML(code));
+
+        code = "<html> <h1>Title</h1> </html>";
+        assertTrue(DOMUtil.containsHTML(code));
+
+        code = "# comment" + System.lineSeparator()
+                + "   " + System.lineSeparator()
+                + "" + System.lineSeparator()
+                + "<html>" + System.lineSeparator()
+                + "   " + System.lineSeparator()
+                + "#html body" + System.lineSeparator()
+                + "<h1>Title</h1>" + System.lineSeparator()
+                + "" + System.lineSeparator()
+                + "# end" + System.lineSeparator()
+                + "   ";
+        assertFalse(DOMUtil.containsHTML(code));
+
+        code = "return 'test'";
+        assertFalse(DOMUtil.containsHTML(code));
+
+        code = "  <html> <h1>Title</h1> </html> ";
+        assertTrue(DOMUtil.containsHTML(code));
+
+        code = "<htmlFake> <h1>Title</h1> </html> ";
+        assertFalse(DOMUtil.containsHTML(code));
+    }
+
 }

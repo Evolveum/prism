@@ -15,7 +15,5 @@ public interface ValueBasedDefinitionLookupHelper {
 
     @NotNull Set<ItemPath> valuePaths();
 
-
-    @Nullable
-    public ComplexTypeDefinition findComplexTypeDefinition(QName typeName, Map<ItemPath, PrismValue> hintValues);
+    @Nullable ComplexTypeDefinition findComplexTypeDefinition(QName typeName, Map<ItemPath, PrismValue> hintValues);
 }

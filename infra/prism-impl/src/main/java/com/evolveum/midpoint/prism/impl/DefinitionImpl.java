@@ -296,12 +296,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
         return PrismContext.get();
     }
 
-    @Override
-    public Class getTypeClass() {
-        // This would be perhaps more appropriate on PrismPropertyDefinition, not here
-        return XsdTypeMapper.toJavaTypeIfKnown(getTypeName());
-    }
-
     public <A> A getAnnotation(QName qname, A defaultValue) {
         A rv = getAnnotation(qname);
         return rv != null ? rv : defaultValue;
@@ -453,12 +447,6 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     @NotNull
     @Override
     public abstract Definition clone();
-
-    protected void checkMutableOnExposing() {
-        if (!isMutable()) {
-            throw new IllegalStateException("Definition couldn't be exposed as mutable because it is immutable: " + this);
-        }
-    }
 
     @Override
     public void accept(Visitor<Definition> visitor) {

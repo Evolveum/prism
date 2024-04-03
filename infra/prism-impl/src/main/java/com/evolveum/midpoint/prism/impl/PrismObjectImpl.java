@@ -19,6 +19,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.util.DebugUtil;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +28,6 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -251,11 +251,11 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public void applyDefinition(PrismContainerDefinition<O> definition) throws SchemaException {
-        if (!(definition instanceof PrismObjectDefinition)) {
-            throw new IllegalArgumentException("Cannot apply "+definition+" to object");
-        }
-        super.applyDefinition(definition);
+    protected void checkDefinition(@NotNull PrismContainerDefinition<O> def) {
+        super.checkDefinition(def);
+        MiscUtil.argCheck(
+                def instanceof PrismObjectDefinition,
+                "Cannot apply %s to object, it is not an object definition", def);
     }
 
     @Override

@@ -339,7 +339,7 @@ public class DebugUtil {
             sb.append(" null");
         } else {
             sb.append(" ");
-            sb.append(object.toString());
+            sb.append(object);
         }
     }
 
@@ -384,9 +384,8 @@ public class DebugUtil {
     }
 
     public static void indentDebugDump(StringBuilder sb, int indent) {
-        for(int i = 0; i < indent; i++) {
-            sb.append(DebugDumpable.INDENT_STRING);
-        }
+        sb.append(
+                DebugDumpable.INDENT_STRING.repeat(Math.max(0, indent)));
     }
 
     public static StringBuilder createIndentedStringBuilder(int indent) {

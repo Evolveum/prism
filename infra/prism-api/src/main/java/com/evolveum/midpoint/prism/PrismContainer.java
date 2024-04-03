@@ -18,7 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.xml.namespace.QName;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * <p>
@@ -122,17 +121,6 @@ public interface PrismContainer<C extends Containerable>
      * Remove all empty values
      */
     void trim();
-
-    /**
-     * Sets applicable property container definition.
-     *
-     * @param definition the definition to set
-     */
-    @Override
-    void setDefinition(PrismContainerDefinition<C> definition);
-
-    @Override
-    void applyDefinition(PrismContainerDefinition<C> definition) throws SchemaException;
 
     <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type);
 

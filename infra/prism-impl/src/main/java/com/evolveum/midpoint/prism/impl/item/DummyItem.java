@@ -115,12 +115,8 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         return delegate().getDefinition();
     }
 
-    public final void setDefinition(D definition) {
+    public final void setDefinition(@NotNull D definition) {
         delegate().setDefinition(definition);
-    }
-
-    public final void applyDefinition(D definition) throws SchemaException {
-        delegate().applyDefinition(definition);
     }
 
     public final boolean isEmpty() {
@@ -237,7 +233,7 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
         delegate().recomputeAllValues();
     }
 
-    public final void applyDefinition(D definition, boolean force)
+    public final void applyDefinition(@NotNull D definition, boolean force)
             throws SchemaException {
         delegate().applyDefinition(definition, force);
     }

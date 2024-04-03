@@ -75,7 +75,7 @@ public abstract class PropertyValueFilterImpl<T>
         } else {
             pVal = new PrismPropertyValueImpl<>(value);
         }
-        PrismUtil.recomputePrismPropertyValue(pVal, PrismContext.get());
+        PrismUtil.recomputePrismPropertyValue(pVal);
         pVals.add(pVal);
     }
 

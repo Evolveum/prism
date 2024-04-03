@@ -47,6 +47,8 @@ public interface MutableComplexTypeDefinition extends ComplexTypeDefinition, Mut
 
     void setReferenceMarker(boolean value);
 
+    void setDefaultItemTypeName(QName value);
+
     void setDefaultNamespace(String namespace);
 
     void setIgnoredNamespaces(@NotNull List<String> ignoredNamespaces);

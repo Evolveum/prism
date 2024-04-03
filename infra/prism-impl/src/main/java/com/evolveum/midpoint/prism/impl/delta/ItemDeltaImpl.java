@@ -550,8 +550,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                     + " already has values to add (" + valuesToAdd + "), attempt to set value to replace (" + newValues + ")");
         }
         if (valuesToDelete != null) {
-            throw new IllegalStateException("Delta " + this
-                    + " already has values to delete, attempt to set value to replace");
+            throw new IllegalStateException("Delta " + this + " already has values to delete, attempt to set value to replace");
         }
         if (valuesToReplace == null) {
             valuesToReplace = newValueCollection();
@@ -1347,10 +1346,14 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
      */
     @Override
     public void applyToMatchingPath(@NotNull Item item) throws SchemaException {
-        applyDefinitionAndCheckCompatibility(item);
         if (valuesToReplace != null) {
+            item.clear();
+            // In some cases, the "replace" delta can change the item type and definition. That's why we clear the item first
+            // (to avoid type errors when the definition is applied to existing values).
+            applyDefinitionAndCheckCompatibility(item, true);
             applyValuesToReplace(item);
         } else {
+            applyDefinitionAndCheckCompatibility(item, false);
             applyValuesToDelete(item);
             applyValuesToAdd(item);
         }
@@ -1359,13 +1362,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         cleanupAllTheWayUp(item);
     }
 
-    private void applyDefinitionAndCheckCompatibility(Item item) throws SchemaException {
-        if (item.getDefinition() == null && getDefinition() != null) {
+    private void applyDefinitionAndCheckCompatibility(Item item, boolean alwaysApply) throws SchemaException {
+        if ((alwaysApply || item.getDefinition() == null) && getDefinition() != null) {
             //noinspection unchecked
             item.applyDefinition(getDefinition());
         }
         if (!getItemClass().isAssignableFrom(item.getClass())) {
-            throw new SchemaException("Cannot apply delta " + this + " to " + item + " because the deltas is applicable only to " + getItemClass().getSimpleName());
+            throw new SchemaException(
+                    "Cannot apply delta %s to %s because the deltas is applicable only to %s".formatted(
+                            this, item, getItemClass().getSimpleName()));
         }
     }
 
@@ -1483,7 +1488,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             if (isEmpty()) {
                 return null;
             }
-            itemNew = definition.instantiate(getElementName());
+            //noinspection unchecked
+            itemNew = (Item<V, D>) definition.instantiate(getElementName());
         } else {
             itemNew = itemOld.clone();
         }
@@ -1871,7 +1877,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    public void applyDefinition(D itemDefinition, boolean force) throws SchemaException {
+    public void applyDefinition(@NotNull D itemDefinition, boolean force) throws SchemaException {
         if (this.definition != null && !force) {
             return;
         }
@@ -1881,7 +1887,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         applyDefinitionSet(valuesToDelete, itemDefinition, force);
     }
 
-    private void applyDefinitionSet(Collection<V> set, ItemDefinition itemDefinition, boolean force) throws SchemaException {
+    private void applyDefinitionSet(Collection<V> set, ItemDefinition<?> itemDefinition, boolean force) throws SchemaException {
         if (set == null) {
             return;
         }

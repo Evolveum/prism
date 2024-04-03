@@ -220,7 +220,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         Validate.notNull(itemDefinition);
         Validate.notNull(itemName);
         @SuppressWarnings("unchecked")
-        Item<IV, ID> item = itemDefinition.instantiate();
+        Item<IV, ID> item = (Item<IV, ID>) itemDefinition.instantiate();
         IV newValue = getParsedValue(itemDefinition, itemName);
         if (newValue != null) {
             // TODO: Is clone necessary?
@@ -677,14 +677,17 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
                 }
                 checkPrismContext();
                 var rootNode = getPrismContext().xnodeFactory().root(itemName, node);
-                Item<IV, ItemDefinition<?>> subItem = getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).parseItem();
+                Item<IV, ItemDefinition<?>> subItem =
+                        getPrismContext().parserFor(rootNode).name(itemName).definition(itemDefinition).parseItem();
                 if (!subItem.isEmpty()) {
                     value = subItem.getAnyValue();
                 } else {
                     value = null;
                 }
                 if (value != null && !itemDefinition.canBeDefinitionOf(value)) {
-                    throw new SchemaException("Attempt to parse raw value into " + value + " that does not match provided definition " + itemDefinition);
+                    throw new SchemaException(
+                            "Attempt to parse raw value into %s that does not match provided definition %s".formatted(
+                                    value, itemDefinition));
                 }
                 return new Parsed<>(getPrismContext(), value, itemDefinition.getTypeName());
             }

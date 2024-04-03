@@ -23,7 +23,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public interface ItemDefinitionDelegator<I extends Item<?,?>> extends DefinitionDelegator, ItemDefinition<I> {
+public interface ItemDefinitionDelegator<I extends Item<?,?>>
+        extends DefinitionDelegator, ItemDefinition<I> {
 
     @Override
     ItemDefinition<I> delegate();
@@ -154,7 +155,7 @@ public interface ItemDefinitionDelegator<I extends Item<?,?>> extends Definition
     }
 
     @Override
-    default boolean canBeDefinitionOf(PrismValue pvalue) {
+    default boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         return delegate().canBeDefinitionOf(pvalue);
     }
 

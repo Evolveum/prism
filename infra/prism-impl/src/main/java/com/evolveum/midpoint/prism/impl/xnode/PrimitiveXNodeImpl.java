@@ -34,6 +34,8 @@ import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.evolveum.midpoint.util.MiscUtil.q;
+
 public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, PrimitiveXNode<T> {
 
     //private static final Trace LOGGER = TraceManager.getTrace(PrimitiveXNodeImpl.class);
@@ -157,7 +159,7 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
             return;
         }
 
-        throw new IllegalStateException("Cannot determine type QName for a value of '" + value + "'"); // todo show only class? (security/size reasons)
+        throw new IllegalStateException("Cannot determine type QName for a value of " + q(value)); // todo show only class? (security/size reasons)
     }
 
     private void setValueInternal(T value, @NotNull QName typeQName) {

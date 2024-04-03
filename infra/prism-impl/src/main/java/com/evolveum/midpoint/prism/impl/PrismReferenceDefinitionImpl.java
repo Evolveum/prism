@@ -147,10 +147,7 @@ public class PrismReferenceDefinitionImpl extends ItemDefinitionImpl<PrismRefere
     }
 
     @Override
-    public boolean canBeDefinitionOf(PrismValue pvalue) {
-        if (pvalue == null) {
-            return false;
-        }
+    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         if (!(pvalue instanceof PrismReferenceValue)) {
             return false;
         }

@@ -42,7 +42,7 @@ public class TestPrismContext extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() {
-        PrettyPrinter.setDefaultNamespacePrefix("http://midpoint.evolveum.com/xml/ns");
+        PrettyPrinter.addDefaultNamespacePrefix("http://midpoint.evolveum.com/xml/ns");
     }
 
     @Test

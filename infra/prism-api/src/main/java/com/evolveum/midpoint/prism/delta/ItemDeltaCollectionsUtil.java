@@ -41,7 +41,8 @@ public class ItemDeltaCollectionsUtil {
         return null;
     }
 
-    public static void applyDefinitionIfPresent(Collection<? extends ItemDelta> deltas,
+    public static void applyDefinitionIfPresent(
+            Collection<? extends ItemDelta> deltas,
             PrismObjectDefinition definition, boolean tolerateNoDefinition) throws SchemaException {
         for (ItemDelta itemDelta : deltas) {
             ItemPath path = itemDelta.getPath();

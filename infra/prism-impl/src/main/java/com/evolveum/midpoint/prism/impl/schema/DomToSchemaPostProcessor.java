@@ -226,6 +226,10 @@ class DomToSchemaPostProcessor {
             ctd.setReferenceMarker(true);
         }
 
+        QName defaultItemTypeName = getDefaultItemTypeName(complexType);
+        if (defaultItemTypeName != null) {
+            ctd.setDefaultItemTypeName(defaultItemTypeName);
+        }
         ctd.setDefaultNamespace(getDefaultNamespace(complexType));
         ctd.setIgnoredNamespaces(getIgnoredNamespaces(complexType));
 
@@ -788,6 +792,17 @@ class DomToSchemaPostProcessor {
             return isPropertyContainer(xsType.getBaseType());
         }
         return false;
+    }
+
+    private QName getDefaultItemTypeName(XSType xsType) {
+        Element annoElement = SchemaProcessorUtil.getAnnotationElement(xsType.getAnnotation(), A_DEFAULT_ITEM_TYPE_NAME);
+        if (annoElement != null) {
+            return DOMUtil.getQNameValue(annoElement);
+        }
+        if (xsType.getBaseType() != null && !xsType.getBaseType().equals(xsType)) {
+            return getDefaultItemTypeName(xsType.getBaseType());
+        }
+        return null;
     }
 
     private String getDefaultNamespace(XSType xsType) {

@@ -7,14 +7,19 @@
 package com.evolveum.midpoint.prism.impl.polystring;
 
 import java.text.Normalizer;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
-import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
-import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
+import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringNormalizerConfigurationType;
 
-public abstract class AbstractPolyStringNormalizer implements PolyStringNormalizer, ConfigurableNormalizer {
+public abstract class AbstractConfigurablePolyStringNormalizer
+        extends BaseStringNormalizer
+        implements PolyStringNormalizer, ConfigurableNormalizer {
 
     private static final String WHITESPACE_REGEX = "\\s+";
     private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEX);
@@ -30,27 +35,21 @@ public abstract class AbstractPolyStringNormalizer implements PolyStringNormaliz
         return configuration;
     }
 
-    protected String trim(String s) {
-        return StringUtils.trim(s);
-    }
-
-    /**
-     * Unicode Normalization Form Compatibility Decomposition (NFKD)
-     */
-    protected String nfkd(String s) {
+    /** Unicode Normalization Form Compatibility Decomposition (NFKD) */
+    private @NotNull String nfkd(@NotNull String s) {
         return Normalizer.normalize(s, Normalizer.Form.NFKD);
     }
 
-    protected String replaceAll(String s, Pattern pattern, String replacement) {
+    protected @NotNull String replaceAll(@NotNull String s, Pattern pattern, String replacement) {
         return pattern.matcher(s).replaceAll(replacement);
     }
 
-    protected String removeAll(String s, Pattern pattern) {
+    protected @NotNull String removeAll(@NotNull String s, Pattern pattern) {
         return pattern.matcher(s).replaceAll("");
     }
 
-    // TODO: Should be named keepOnly
-    protected String removeAll(String s, int lowerCode, int upperCode) {
+    @SuppressWarnings("SameParameterValue")
+    @NotNull String keepOnly(@NotNull String s, int lowerCode, int upperCode) {
         StringBuilder out = new StringBuilder(s.length());
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
@@ -61,21 +60,10 @@ public abstract class AbstractPolyStringNormalizer implements PolyStringNormaliz
         return out.toString();
     }
 
-    protected String trimWhitespace(String s) {
+    private @NotNull String trimWhitespace(@NotNull String s) {
         return replaceAll(s, WHITESPACE_PATTERN, " ");
     }
 
-    protected String lowerCase(String s) {
-        return StringUtils.lowerCase(s);
-    }
-
-    protected boolean isBlank(String s) {
-        return StringUtils.isBlank(s);
-    }
-
-    /* (non-Javadoc)
-     * @see com.evolveum.midpoint.prism.polystring.PolyStringNormalizer#normalize(java.lang.String)
-     */
     @Override
     public String normalize(String orig) {
         if (orig == null) {
@@ -88,11 +76,26 @@ public abstract class AbstractPolyStringNormalizer implements PolyStringNormaliz
         return postprocess(s);
     }
 
+    @Override
+    public boolean match(@Nullable String a, @Nullable String b) throws SchemaException {
+        return Objects.equals(
+                normalize(a),
+                normalize(b));
+    }
+
+    @Override
+    public boolean matchRegex(String a, String regex) throws SchemaException {
+        if (a == null) {
+            return false;
+        }
+        return Pattern.matches(regex, normalize(a));
+    }
+
     protected abstract String normalizeCore(String s);
 
-    protected String preprocess(String s) {
+    private @NotNull String preprocess(@NotNull String s) {
         if (configuration == null || !Boolean.FALSE.equals(configuration.isTrim())) {
-            s = trim(s);
+            s = s.trim();
         }
 
         if (configuration == null || !Boolean.FALSE.equals(configuration.isNfkd())) {
@@ -101,16 +104,16 @@ public abstract class AbstractPolyStringNormalizer implements PolyStringNormaliz
         return s;
     }
 
-    protected String postprocess(String s) {
+    protected @NotNull String postprocess(@NotNull String s) {
         if (configuration == null || !Boolean.FALSE.equals(configuration.isTrimWhitespace())) {
             s = trimWhitespace(s);
-            if (isBlank(s)) {
+            if (s.isBlank()) {
                 return "";
             }
         }
 
         if (configuration == null || !Boolean.FALSE.equals(configuration.isLowercase())) {
-            s = lowerCase(s);
+            s = s.toLowerCase();
         }
 
         return s;
@@ -126,5 +129,4 @@ public abstract class AbstractPolyStringNormalizer implements PolyStringNormaliz
         sb.append(")");
         return sb.toString();
     }
-
 }

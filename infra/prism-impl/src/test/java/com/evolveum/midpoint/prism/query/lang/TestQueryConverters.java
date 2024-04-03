@@ -49,7 +49,7 @@ public class TestQueryConverters extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
     }
 

@@ -827,14 +827,18 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public <C extends Containerable> void applyDefinition(PrismContainer<C> container, Class<C> compileTimeClass, boolean force) throws SchemaException {
         //noinspection unchecked
         PrismContainerDefinition<C> definition = determineDefinitionFromClass(compileTimeClass);
-        container.applyDefinition(definition, force);
+        if (definition != null) {
+            container.applyDefinition(definition, force);
+        }
     }
 
     @Override
     public <O extends Objectable> void applyDefinition(ObjectDelta<O> objectDelta, Class<O> compileTimeClass, boolean force) throws SchemaException {
         //noinspection unchecked
         PrismObjectDefinition<O> objectDefinition = determineDefinitionFromClass(compileTimeClass);
-        objectDelta.applyDefinition(objectDefinition, force);
+        if (objectDefinition != null) {
+            objectDelta.applyDefinition(objectDefinition, force);
+        }
     }
 
     @Override
@@ -843,7 +847,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         //noinspection unchecked
         PrismObjectDefinition<O> objectDefinition = determineDefinitionFromClass(compileTimeClass);
         PrismContainerDefinition<C> containerDefinition = objectDefinition.findContainerDefinition(path);
-        prismContainerValue.applyDefinition(containerDefinition, force);
+        if (containerDefinition != null) {
+            prismContainerValue.applyDefinition(containerDefinition, force);
+        }
     }
 
     @Override
@@ -1099,20 +1105,26 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     @Override
-    public ItemDefinition locateItemDefinition(@NotNull QName itemName,
+    public ItemDefinition locateItemDefinition(
+            @NotNull QName itemName,
+            @Nullable QName explicitTypeName,
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionProvider) {
         if (complexTypeDefinition != null) {
-            ItemDefinition def = complexTypeDefinition.findLocalItemDefinition(itemName);
+            ItemDefinition<?> def = complexTypeDefinition.findLocalItemDefinition(itemName);
             if (def != null) {
                 return def;
             }
         }
         // not sure about this: shouldn't extension schemas have xsdAnyMarker set?
         if (complexTypeDefinition == null || complexTypeDefinition.isXsdAnyMarker() || complexTypeDefinition.getExtensionForType() != null) {
-            ItemDefinition def = resolveGlobalItemDefinition(itemName, complexTypeDefinition);
+            ItemDefinition<?> def = resolveGlobalItemDefinition(itemName, complexTypeDefinition);
             if (def != null) {
-                return def;
+                // The definition must not contradict the declared type, like icfs:name (=string) in the case of
+                // normalization-aware repository shadows.
+                if (explicitTypeName == null || isAssignableFrom(def.getTypeName(), explicitTypeName)) {
+                    return def;
+                }
             }
         }
         if (dynamicDefinitionProvider != null) {

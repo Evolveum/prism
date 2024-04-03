@@ -17,9 +17,19 @@ import com.evolveum.axiom.concepts.Lazy;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.impl.delta.PropertyDeltaImpl;
+import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryImpl;
+import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
+import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DisplayableValue;
+
+import com.evolveum.midpoint.util.exception.SchemaException;
+
+import com.evolveum.midpoint.util.exception.SystemException;
+
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,8 +63,9 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Radovan Semancik
  */
-public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProperty<T>> implements PrismPropertyDefinition<T>,
-        MutablePrismPropertyDefinition<T> {
+public class PrismPropertyDefinitionImpl<T>
+        extends ItemDefinitionImpl<PrismProperty<T>>
+        implements PrismPropertyDefinition<T>, MutablePrismPropertyDefinition<T> {
 
     // TODO some documentation
     private static final long serialVersionUID = 7259761997904371009L;
@@ -131,6 +142,12 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     }
 
     @Override
+    public @NotNull MatchingRule<T> getMatchingRule() {
+        return MatchingRuleRegistryImpl.instance()
+                .getMatchingRuleSafe(getMatchingRuleQName(), getTypeName());
+    }
+
+    @Override
     public void setMatchingRuleQName(QName matchingRuleQName) {
         checkMutable();
         this.matchingRuleQName = matchingRuleQName;
@@ -155,20 +172,17 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     }
 
     @Override
-    public boolean canBeDefinitionOf(PrismValue pvalue) {
-        if (pvalue == null) {
-            return false;
-        }
+    public boolean canBeDefinitionOf(@NotNull PrismValue pvalue) {
         if (!(pvalue instanceof PrismPropertyValue<?>)) {
             return false;
         }
         Itemable parent = pvalue.getParent();
         if (parent != null) {
-            if (!(parent instanceof PrismProperty<?>)) {
+            if (!(parent instanceof PrismProperty<?> property)) {
                 return false;
             }
             //noinspection unchecked
-            return canBeDefinitionOf((PrismProperty) parent);
+            return canBeDefinitionOf((PrismProperty<T>) property);
         } else {
             // TODO: maybe look actual value java type?
             return true;
@@ -242,5 +256,10 @@ public class PrismPropertyDefinitionImpl<T> extends ItemDefinitionImpl<PrismProp
     @Override
     public Optional<ComplexTypeDefinition> structuredType() {
         return structuredType.get();
+    }
+
+    @Override
+    public Class<T> getTypeClass() {
+        return PrismContext.get().getSchemaRegistry().determineJavaClassForType(getTypeName());
     }
 }

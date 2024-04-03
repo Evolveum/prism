@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism.match;
 
 import javax.xml.namespace.QName;
 
+import org.jetbrains.annotations.NotNull;
+
+import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 /**
@@ -34,12 +37,16 @@ public interface MatchingRule<T> {
     /**
      * Matches two objects.
      */
-    boolean match(T a, T b) throws SchemaException;
+    default boolean match(T a, T b) throws SchemaException {
+        return getNormalizer().match(a, b);
+    }
 
     /**
      * Matches value against given regex.
      */
-    boolean matchRegex(T a, String regex) throws SchemaException;
+    default boolean matchRegex(T a, String regex) throws SchemaException {
+        return getNormalizer().matchRegex(a, regex);
+    }
 
     /**
      * Returns a normalized version of the value.
@@ -55,5 +62,12 @@ public interface MatchingRule<T> {
      *  But currently, all values used there should be of String type. When introducing other types of attributes,
      *  this question will need to be resolved.)
      */
-    T normalize(T original) throws SchemaException;
+    default T normalize(T original) throws SchemaException {
+        return getNormalizer().normalize(original);
+    }
+
+    /**
+     * Returns the normalizer corresponding to this rule.
+     */
+    @NotNull Normalizer<T> getNormalizer();
 }

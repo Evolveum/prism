@@ -141,6 +141,6 @@ public class TestMatchingRule extends AbstractPrismTest {
     }
 
     private void assertNormalized(MatchingRule<String> rule, String expected, String original) throws SchemaException {
-        assertEquals("Normalized value does not match", expected, rule.normalize(original));
+        assertEquals("Normalized value does not match", expected, rule.getNormalizer().normalize(original));
     }
 }

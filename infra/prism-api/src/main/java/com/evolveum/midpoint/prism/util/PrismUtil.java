@@ -23,12 +23,13 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * TODO clean this up as it is part of prism-api!
@@ -38,55 +39,43 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 public class PrismUtil {
 
     public static <T> void recomputeRealValue(T realValue, PrismContext prismContext) {
+        recomputeRealValue(realValue);
+    }
+
+    public static <T> void recomputeRealValue(T realValue) {
         if (realValue == null) {
             return;
         }
         // TODO: switch to Recomputable interface instead of PolyString
-        if (realValue instanceof PolyString && prismContext != null) {
-            PolyString polyStringVal = (PolyString) realValue;
-            // Always recompute. Recompute is cheap operation and this avoids a lot of bugs
-            polyStringVal.recompute(prismContext.getDefaultPolyStringNormalizer());
+        if (realValue instanceof PolyString polyStringVal && polyStringVal.getNorm() == null) {
+            // Compute only if norm is missing. Otherwise, this could destroy items with non-standard normalizations
+            // (like resource attributes)
+            polyStringVal.recompute(
+                    PrismContext.get().getDefaultPolyStringNormalizer());
         }
     }
 
-    public static <T> void recomputePrismPropertyValue(PrismPropertyValue<T> pValue, PrismContext prismContext) {
-        if (pValue == null) {
-            return;
+    public static <T> void recomputePrismPropertyValue(PrismPropertyValue<T> pValue) {
+        if (pValue != null) {
+            recomputeRealValue(pValue.getValue());
         }
-        recomputeRealValue(pValue.getValue(), prismContext);
     }
 
     public static boolean isEmpty(PolyStringType value) {
         return value == null || StringUtils.isEmpty(value.getOrig()) && StringUtils.isEmpty(value.getNorm());
     }
 
-    public static <T, X> PrismPropertyValue<X> convertPropertyValue(
-            PrismPropertyValue<T> srcVal,
-            PrismPropertyDefinition<T> srcDef,
-            PrismPropertyDefinition<X> targetDef) {
-        if (targetDef.getTypeName().equals(srcDef.getTypeName())) {
+    // TODO find the correct place for this method
+    public static <S, T> PrismPropertyValue<T> convertPropertyValue(
+            @NotNull PrismPropertyValue<S> srcValue, @NotNull PrismPropertyDefinition<T> targetDef) {
+        Class<T> targetClass = targetDef.getTypeClass();
+        S srcRealValue = srcValue.getRealValue();
+        if (targetClass.isInstance(srcRealValue)) {
             //noinspection unchecked
-            return (PrismPropertyValue<X>) srcVal;
+            return (PrismPropertyValue<T>) srcValue;
         } else {
-            Class<X> expectedJavaType = XsdTypeMapper.toJavaType(targetDef.getTypeName());
-            X convertedRealValue = JavaTypeConverter.convert(expectedJavaType, srcVal.getValue());
-            return PrismContext.get().itemFactory().createPropertyValue(convertedRealValue);
-        }
-    }
-
-    public static <T, X> PrismProperty<X> convertProperty(PrismProperty<T> srcProp, PrismPropertyDefinition<X> targetDef)
-            throws SchemaException {
-        if (targetDef.getTypeName().equals(srcProp.getDefinition().getTypeName())) {
-            //noinspection unchecked
-            return (PrismProperty<X>) srcProp;
-        } else {
-            PrismProperty<X> targetProp = targetDef.instantiate();
-            Class<X> expectedJavaType = XsdTypeMapper.toJavaType(targetDef.getTypeName());
-            for (PrismPropertyValue<T> srcPVal : srcProp.getValues()) {
-                X convertedRealValue = JavaTypeConverter.convert(expectedJavaType, srcPVal.getValue());
-                targetProp.add(PrismContext.get().itemFactory().createPropertyValue(convertedRealValue));
-            }
-            return targetProp;
+            return PrismContext.get().itemFactory().createPropertyValue(
+                    JavaTypeConverter.convert(targetClass, srcRealValue));
         }
     }
 

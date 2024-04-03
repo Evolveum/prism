@@ -13,6 +13,7 @@ import static com.evolveum.midpoint.util.Checks.checkSchemaNotNull;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -852,9 +853,13 @@ public class PrismUnmarshaller {
         return SearchFilterType.createFromParsedXNode(xnode, pc, prismContext);
     }
 
-    private ItemDefinition<?> locateItemDefinition(@NotNull QName itemName, @Nullable ComplexTypeDefinition complexTypeDefinition,
+    private ItemDefinition<?> locateItemDefinition(
+            @NotNull QName itemName,
+            @Nullable ComplexTypeDefinition complexTypeDefinition,
             XNode xnode) {
-        return schemaRegistry.locateItemDefinition(itemName, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
+        QName explicitItemType = xnode != null && xnode.isExplicitTypeDeclaration() ? xnode.getTypeQName() : null;
+        return schemaRegistry.locateItemDefinition(
+                itemName, explicitItemType, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
     }
 
     private ItemDefinition<?> createDynamicItemDefinition(QName itemName, XNode node) {
@@ -878,16 +883,21 @@ public class PrismUnmarshaller {
             return null;
         }
 
-        PrismPropertyDefinitionImpl<?> propDef = new PrismPropertyDefinitionImpl<>(itemName, typeName);
-        Integer maxOccurs = node.getMaxOccurs();
-        if (maxOccurs != null) {
-            propDef.setMaxOccurs(maxOccurs);
+        ItemDefinitionImpl<?> itemDef;
+        var typeDefinition = schemaRegistry.findTypeDefinitionByType(typeName);
+        if (typeDefinition instanceof ComplexTypeDefinition ctd && (ctd.isContainerMarker() || ctd.isObjectMarker())) {
+            itemDef = new PrismContainerDefinitionImpl<>(itemName, ctd);
+        } else if (typeDefinition instanceof ComplexTypeDefinition ctd && ctd.isReferenceMarker()) {
+            itemDef = new PrismReferenceDefinitionImpl(itemName, typeName);
         } else {
-            // Make this multivalue by default, this is more "open"
-            propDef.setMaxOccurs(-1);
+            // definition is unknown or it's a property definition
+            itemDef = new PrismPropertyDefinitionImpl<>(itemName, typeName);
         }
-        propDef.setDynamic(true);
-        return propDef;
+
+        // Make this multivalue by default, this is more "open"
+        itemDef.setMaxOccurs(Objects.requireNonNullElse(node.getMaxOccurs(), -1));
+        itemDef.setDynamic(true);
+        return itemDef;
     }
 
     //endregion

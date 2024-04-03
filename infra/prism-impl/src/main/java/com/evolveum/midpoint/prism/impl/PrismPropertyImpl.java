@@ -91,19 +91,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     /**
-     * Sets applicable property definition.
-     *
-     * TODO remove (method in Item is sufficient)
-     *
-     * @param definition the definition to set
-     */
-    @Override
-    public void setDefinition(PrismPropertyDefinition<T> definition) {
-        checkMutable();
-        this.definition = definition;
-    }
-
-    /**
      * Type override, also for compatibility.
      */
     @Override
@@ -111,9 +98,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return (List) getValues();
     }
 
-    @NotNull
     @Override
-    public Collection<T> getRealValues() {
+    public @NotNull Collection<T> getRealValues() {
         Collection<T> realValues = new ArrayList<>(getValues().size());
         for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add(pValue.getValue());
@@ -126,7 +112,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
      */
 
     @Override
-    public <X> Collection<X> getRealValues(Class<X> type) {
+    public <X> @NotNull Collection<X> getRealValues(Class<X> type) {
         Collection<X> realValues = new ArrayList<>(getValues().size());
         for (PrismPropertyValue<T> pValue : getValues()) {
             realValues.add((X) pValue.getValue());
@@ -382,13 +368,6 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     @Override
-    protected void checkDefinition(PrismPropertyDefinition<T> def) {
-        if (def == null) {
-            throw new IllegalArgumentException("Null definition cannot be applied to property " + this);
-        }
-    }
-
-    @Override
     public PrismProperty<T> clone() {
         return cloneComplex(CloneStrategy.LITERAL);
     }
@@ -451,7 +430,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         sb.append(DebugUtil.formatElementName(getElementName())).append(": ");
 
         boolean isMultivalue = true;
-        PrismPropertyDefinition def = getDefinition();
+        PrismPropertyDefinition<T> def = getDefinition();
         if (def != null) {
             isMultivalue = def.isMultiValue();
         }

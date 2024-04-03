@@ -280,12 +280,19 @@ class DomWriter {
             } else {
                 // not ItemType nor QName
                 String value = xprim.getGuessedFormattedValue();
-                String fixedValue = SerializationOptions.isEscapeInvalidCharacters(serializationOptions) ?
-                        DOMUtil.escapeInvalidXmlCharsIfPresent(value) : value;
-                if (asAttribute) {
-                    DOMUtil.setAttributeValue(parentElement, elementOrAttributeName.getLocalPart(), fixedValue);
+
+                if (QNameUtil.match(elementOrAttributeName, DOMUtil.SCRIPT_CODE_ELEMENT_NAME)
+                        && DOMUtil.containsHTML(value)) {
+                    DOMUtil.setElementTextContentWithCDATAPrefix(element, value);
                 } else {
-                    DOMUtil.setElementTextContent(element, fixedValue);
+
+                    String fixedValue = SerializationOptions.isEscapeInvalidCharacters(serializationOptions) ?
+                            DOMUtil.escapeInvalidXmlCharsIfPresent(value) : value;
+                    if (asAttribute) {
+                        DOMUtil.setAttributeValue(parentElement, elementOrAttributeName.getLocalPart(), fixedValue);
+                    } else {
+                        DOMUtil.setElementTextContent(element, fixedValue);
+                    }
                 }
             }
         }

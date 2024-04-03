@@ -54,7 +54,7 @@ public interface PrismProperty<T> extends Item<PrismPropertyValue<T>,PrismProper
      * Type override, also for compatibility.
      */
 
-    <X> Collection<X> getRealValues(Class<X> type);
+    <X> @NotNull Collection<X> getRealValues(Class<X> type);
 
     T getAnyRealValue();
 

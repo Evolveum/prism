@@ -9,12 +9,16 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 import java.util.Map;
 
 import com.evolveum.axiom.concepts.Builder;
+import com.evolveum.midpoint.prism.PrismConstants;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.midpoint.prism.impl.marshaller.QueryConverterImpl;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import com.evolveum.midpoint.prism.query.PrismQuerySerializer;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
 public class PrismQuerySerializerImpl implements PrismQuerySerializer {
 
@@ -56,7 +60,10 @@ public class PrismQuerySerializerImpl implements PrismQuerySerializer {
             return prefixes;
         }
 
-
+        @Override
+        public SearchFilterType toSearchFilterType() {
+            return new SearchFilterType(filterText(), namespaceContext());
+        }
     }
 
 

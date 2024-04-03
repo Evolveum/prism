@@ -13,7 +13,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.google.common.base.Strings;
@@ -139,7 +138,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
      * @param definition the definition to set
      */
     @Override
-    public void setDefinition(D definition) {
+    public void setDefinition(@NotNull D definition) {
         checkMutable();
         checkDefinition(definition);
         this.definition = definition;
@@ -685,17 +684,14 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void applyDefinition(D definition) throws SchemaException {
-        applyDefinition(definition, true);
+    public void applyDefinition(@NotNull D definition, boolean force) throws SchemaException {
+        checkMutable(); // TODO consider if there is real change
+        checkDefinition(definition);
+        this.definition = definition;
+        applyDefinitionToValues(definition, force);
     }
 
-    @Override
-    public void applyDefinition(D definition, boolean force) throws SchemaException {
-        checkMutable();                    // TODO consider if there is real change
-        if (definition != null) {
-            checkDefinition(definition);
-        }
-        this.definition = definition;
+    protected void applyDefinitionToValues(@NotNull D definition, boolean force) throws SchemaException {
         for (PrismValue pval : getValues()) {
             pval.applyDefinition(definition, force);
         }
@@ -716,8 +712,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     protected void copyValues(CloneStrategy strategy, ItemImpl clone) {
         clone.elementName = this.elementName;
         clone.definition = this.definition;
-        // Do not clone parent so the cloned item can be safely placed to
-        // another item
+        // Do not clone parent so the cloned item can be safely placed to another item
         clone.parent = null;
         clone.userData = MiscUtil.cloneMap(this.userData);
         clone.incomplete = this.incomplete;
@@ -758,33 +753,47 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     public void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope) {
         ItemPath path = getPath();
         if (elementName == null) {
-            throw new IllegalStateException("Item " + this + " has no name (" + path + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "Item %s has no name (%s in %s)".formatted(this, path, rootItem));
         }
 
         if (definition != null) {
             checkDefinition(definition);
         } else if (requireDefinitions && !isRaw()) {
-            throw new IllegalStateException("No definition in item " + this + " (" + path + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "No definition in item %s (%s in %s)".formatted(this, path, rootItem));
         }
         for (V val : values) {
             if (prohibitRaw && val.isRaw()) {
-                throw new IllegalStateException("Raw value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Raw value %s in item %s (%s in %s)".formatted(val, this, path, rootItem));
             }
             if (val == null) {
-                throw new IllegalStateException("Null value in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Null value in item %s (%s in %s)".formatted(this, path, rootItem));
             }
             if (val.getParent() == null) {
-                throw new IllegalStateException("Null parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "Null parent for value %s in item %s (%s in %s)".formatted(val, this, path, rootItem));
             }
             if (val.getParent() != this) {
-                throw new IllegalStateException("Wrong parent for value " + val + " in item " + this + " (" + path + " in " + rootItem + "), " +
-                        "bad parent: " + val.getParent());
+                throw new IllegalStateException(
+                        "Wrong parent for value %s in item %s (%s in %s), bad parent: %s".formatted(
+                                val, this, path, rootItem, val.getParent()));
             }
             val.checkConsistenceInternal(rootItem, requireDefinitions, prohibitRaw, scope);
         }
     }
 
-    protected abstract void checkDefinition(D def);
+    /**
+     * This is a separate method, as it is used at various places, e.g.
+     *
+     * - in {@link #applyDefinition(ItemDefinition, boolean)}
+     * - in {@link #setDefinition(ItemDefinition)}
+     * - when checking the consistence
+     */
+    protected void checkDefinition(@NotNull D def) {
+    }
 
     @Override
     public void assertDefinitions() throws SchemaException {

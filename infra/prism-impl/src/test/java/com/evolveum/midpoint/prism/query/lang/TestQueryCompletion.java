@@ -29,7 +29,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.setDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
+        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
         axiomQueryLangServiceImpl = new AxiomQueryLangServiceImpl(PrismContext.get());
         schemaRegistry = PrismContext.get().getSchemaRegistry();
@@ -40,7 +40,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testQueryCompletionDot() {
         String query = ". ";
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(null, query);
         Map<String, String> expected = new HashMap<>();
         expected.put("isRoot", null);
         expected.put("inOrg", null);
@@ -56,7 +56,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     public void testQueryCompletionTypesOfUserType() {
         String query = ". type ";
         TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName("UserType"));
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(null, query);
         List<String> objectTypes = schemaRegistry.getAllSubTypesByTypeDefinition(Collections.singletonList(typeDefinition)).stream().map(item -> item.getTypeName().getLocalPart()).sorted().toList();
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), objectTypes);
     }
@@ -68,7 +68,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         List<String> itemPaths = new ArrayList<>(objectDefinition.getItemNames().stream().map(QName::getLocalPart).toList());
         itemPaths.add(".");
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(null, query);
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), itemPaths.stream().sorted().toList());
     }
 
@@ -99,14 +99,14 @@ public class TestQueryCompletion extends AbstractPrismTest {
         expected.add("startsWith");
         expected.add("not");
 
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(null, query);
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), expected.stream().sorted().toList());
     }
 
     @Test
     public void testQueryCompletionBaseSubFilter() {
         String query = ". type UserType and givenName equal \"Jack\" ";
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(query);
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(null, query);
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), List.of("and", "or"));
     }
 

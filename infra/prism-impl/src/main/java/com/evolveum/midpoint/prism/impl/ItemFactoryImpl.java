@@ -154,16 +154,20 @@ public class ItemFactoryImpl implements ItemFactory {
     public <V extends PrismValue,D extends ItemDefinition<?>> Item<V,D> createDummyItem(Item<V,D> itemOld, D definition, ItemPath path) throws SchemaException {
         Item<V,D> itemMid;
         if (itemOld == null) {
-            itemMid = definition.instantiate();
+            //noinspection unchecked
+            itemMid = (Item<V, D>) definition.instantiate();
         } else {
             itemMid = itemOld.clone();
         }
-        if (itemMid instanceof PrismProperty<?>) {
-            return (Item<V,D>) new DummyPropertyImpl<>((PrismProperty<?>)itemMid, path);
-        } else if (itemMid instanceof PrismReference) {
-            return (Item<V,D>) new DummyReferenceImpl((PrismReference)itemMid, path);
-        } else if (itemMid instanceof PrismContainer<?>) {
-            return (Item<V,D>) new DummyContainerImpl<>((PrismContainer<?>)itemMid, path);
+        if (itemMid instanceof PrismProperty<?> property) {
+            //noinspection unchecked
+            return (Item<V,D>) new DummyPropertyImpl<>(property, path);
+        } else if (itemMid instanceof PrismReference reference) {
+            //noinspection unchecked
+            return (Item<V,D>) new DummyReferenceImpl(reference, path);
+        } else if (itemMid instanceof PrismContainer<?> container) {
+            //noinspection unchecked
+            return (Item<V,D>) new DummyContainerImpl<>(container, path);
         } else {
             throw new IllegalStateException("Unknown type "+itemMid.getClass());
         }

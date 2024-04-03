@@ -495,18 +495,6 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return outputSet;
     }
 
-    public void applyDefinition(D def, boolean force) throws SchemaException {
-        if (itemNew != null) {
-            itemNew.applyDefinition(def, force);
-        }
-        if (itemOld != null) {
-            itemOld.applyDefinition(def, force);
-        }
-        if (delta != null) {
-            delta.applyDefinition(def, force);
-        }
-    }
-
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public ItemDeltaItem<V,D> clone() {

@@ -9,16 +9,20 @@ package com.evolveum.midpoint.prism.impl;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
+import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
+
+import com.evolveum.midpoint.util.*;
 
 import com.google.common.primitives.Primitives;
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,21 +39,18 @@ import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.util.PrismPrettyPrinter;
 import com.evolveum.midpoint.prism.util.PrismUtil;
 import com.evolveum.midpoint.prism.xnode.XNode;
-import com.evolveum.midpoint.util.DOMUtil;
-import com.evolveum.midpoint.util.DebugDumpable;
-import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import com.evolveum.prism.xml.ns._public.types_3.SchemaDefinitionType;
+
+import static com.evolveum.midpoint.util.MiscUtil.q;
 
 /**
  * @author lazyman
@@ -192,11 +193,13 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public void applyDefinition(ItemDefinition definition) throws SchemaException {
-        PrismPropertyDefinition propertyDefinition = (PrismPropertyDefinition) definition;
-        if (propertyDefinition != null && !propertyDefinition.isAnyType()) {
+    public void applyDefinition(@NotNull ItemDefinition definition, boolean force) throws SchemaException {
+        // "force" is currently ignored (this is as it was before)
+        PrismPropertyDefinition<?> propertyDefinition = (PrismPropertyDefinition<?>) definition;
+        if (!propertyDefinition.isAnyType()) {
             if (rawElement != null) {
-                T maybeValue = (T) parseRawElementToNewRealValue(this, propertyDefinition);
+                //noinspection unchecked
+                T maybeValue = parseRawElementToNewRealValue(this, (PrismPropertyDefinition<T>) propertyDefinition);
                 if (maybeValue != null) {
                     setValue(maybeValue);
                 } else {
@@ -207,29 +210,39 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 rawElement = null;
             }
             if (value != null && propertyDefinition.getTypeClass() != null) {
-                var type = definition.getTypeClass();
+                var type = propertyDefinition.getTypeClass();
                 if (PolyStringType.class.equals(type)) {
                     type = PolyString.class;
                 }
                 if (type.isPrimitive()) {
                     type = Primitives.wrap(type);
                 }
-                if (!type.isInstance(value)) {
+                // TEMPORARY HACKS FIXME as part of MID-2119
+                if (PolyString.class.equals(type) && value instanceof String) {
+                    //noinspection unchecked
+                    value = (T) propertyDefinition.adoptRealValues(List.of(value)).get(0);
+                } else if (String.class.equals(type) && value instanceof PolyString polyString) {
+                    //noinspection unchecked
+                    value = (T) polyString.getOrig();
+                } else if (PolyString.class.equals(type) && value instanceof Map<?, ?> map) {
+                    // HACK because of polystring attributes and new repo; FIXME as part of MID-2119
+                    //noinspection unchecked
+                    value = (T) new PolyString((String) map.get("o"), (String) map.get("n"));
+                } else if (!type.isInstance(value)) {
                     // Here if the schema is runtime and type is string, type was lost somewhere along the way.
-                    if (XmlTypeConverter.canConvert(type) && propertyDefinition.isRuntimeSchema() && value instanceof String) {
-                        value = (T) XmlTypeConverter.toJavaValue((String) value, type);
-
+                    if (XmlTypeConverter.canConvert(type)
+                            && propertyDefinition.isRuntimeSchema()
+                            && value instanceof String stringValue) {
+                        //noinspection unchecked
+                        value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
                     } else {
-                        throw new SchemaException("Incorrect value type. Expected " + definition.getTypeName() + " for property " + definition.getItemName());
+                        throw new SchemaException(
+                                "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(
+                                        definition.getTypeName(), type, definition.getItemName(), value.getClass()));
                     }
                 }
             }
         }
-    }
-
-    @Override
-    public void applyDefinition(ItemDefinition definition, boolean force) throws SchemaException {
-        applyDefinition(definition);
     }
 
     @Override
@@ -256,7 +269,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         if (realValue == null) {
             return;
         }
-        checkMutable();            // TODO reconsider this
+        checkMutable(); // TODO reconsider this
         PrismUtil.recomputeRealValue(realValue, prismContext);
     }
 
@@ -310,39 +323,73 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
         ItemPath myPath = getPath();
         if (prohibitRaw && rawElement != null) {
-            throw new IllegalStateException("Raw element in property value " + this + " (" + myPath + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "Raw element in property value %s (%s in %s)".formatted(this, myPath, rootItem));
         }
         if (value == null && rawElement == null && expression == null) {
-            throw new IllegalStateException("Neither value, expression nor raw element specified in property value " + this + " (" + myPath + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "Neither value, expression nor raw element specified in property value %s (%s in %s)".formatted(
+                            this, myPath, rootItem));
         }
         if (value != null && rawElement != null) {
-            throw new IllegalStateException("Both value and raw element specified in property value " + this + " (" + myPath + " in " + rootItem + ")");
+            throw new IllegalStateException(
+                    "Both value and raw element specified in property value %s (%s in %s)".formatted(
+                            this, myPath, rootItem));
         }
         if (value != null) {
-            if (value instanceof Recomputable) {
+            if (value instanceof Recomputable recomputable) {
                 try {
-                    ((Recomputable) value).checkConsistence();
+                    recomputable.checkConsistence();
                 } catch (IllegalStateException e) {
-                    throw new IllegalStateException(e.getMessage() + " in property value " + this + " (" + myPath + " in " + rootItem + ")", e);
+                    throw new IllegalStateException(
+                            "%s in property value %s (%s in %s)".formatted(
+                                    e.getMessage(), this, myPath, rootItem),
+                            e);
                 }
             }
             if (value instanceof PolyStringType) {
-                throw new IllegalStateException("PolyStringType found in property value " + this + " (" + myPath + " in " + rootItem + ")");
+                throw new IllegalStateException(
+                        "PolyStringType found in property value %s (%s in %s)".formatted(this, myPath, rootItem));
             }
             if (value instanceof ProtectedStringType) {
                 if (((ProtectedStringType) value).isEmpty()) {
-                    throw new IllegalStateException("Empty ProtectedStringType found in property value " + this + " (" + myPath + " in " + rootItem + ")");
+                    throw new IllegalStateException(
+                            "Empty ProtectedStringType found in property value %s (%s in %s)".formatted(
+                                    this, myPath, rootItem));
                 }
             }
-            PrismContext prismContext = getPrismContext();
-            if (value instanceof PolyString && prismContext != null) {
-                PolyString poly = (PolyString) value;
-                String orig = poly.getOrig();
-                String norm = poly.getNorm();
-                PolyStringNormalizer polyStringNormalizer = prismContext.getDefaultPolyStringNormalizer();
-                String expectedNorm = polyStringNormalizer.normalize(orig);
-                if (!Objects.equals(norm, expectedNorm)) {
-                    throw new IllegalStateException("PolyString has inconsistent orig (" + orig + ") and norm (" + norm + ") in property value " + this + " (" + myPath + " in " + rootItem + ")");
+            if (value instanceof PolyString poly) {
+                ItemDefinition<?> definition = getDefinition();
+                MiscUtil.stateCheck(definition == null
+                                || definition instanceof PrismPropertyDefinition<?> prismPropertyDefinition,
+                        "Definition is not a property definition: %s in %s", definition, this);
+                PrismPropertyDefinition<?> propDef = (PrismPropertyDefinition<?>) definition;
+
+                // We allow 'null' norm values; these are probably not normalized yet.
+                // We skip dynamic definitions, unless we know they are "custom polystring", i.e. carrying the correct normalizer
+                if (poly.getNorm() != null
+                        && propDef != null
+                        && (!propDef.isDynamic() || propDef.isCustomPolyString())) {
+
+                    // The normalizer must be String-based one. If not, the normalizing method will throw an exception,
+                    // which is a desired behavior here.
+                    Normalizer<String> normalizer = propDef.getStringNormalizerForPolyStringProperty();
+
+                    String orig = poly.getOrig();
+                    String norm = poly.getNorm();
+                    String expectedNorm;
+                    try {
+                        expectedNorm = normalizer.normalize(orig);
+                    } catch (SchemaException e) {
+                        throw new IllegalStateException(
+                                "Exception during a normalization while checking " + this + ": " + e.getMessage(), e);
+                    }
+                    if (!Objects.equals(norm, expectedNorm)) {
+                        throw new IllegalStateException(
+                                String.format("PolyString has inconsistent orig (%s) and norm (%s, should be %s) "
+                                                + "in %s (%s in %s); normalizer is: %s",
+                                        q(orig), q(norm), q(expectedNorm), this, myPath, rootItem, normalizer));
+                    }
                 }
             }
         }
@@ -380,35 +427,35 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
      */
     private PrismPropertyValue<T> parseRawElementToNewValue(
             PrismPropertyValue<T> origValue, PrismPropertyValue<T> definitionSource) throws SchemaException {
-        if (definitionSource.getParent() != null && definitionSource.getParent().getDefinition() != null) {
-            //noinspection unchecked,rawtypes
-            T parsedRealValue = (T) parseRawElementToNewRealValue(origValue,
-                    (PrismPropertyDefinition) definitionSource.getParent().getDefinition());
-            PrismPropertyValue<T> newPVal = new PrismPropertyValueImpl<>(parsedRealValue);
-            return newPVal;
-        } else if (definitionSource.getRealClass() != null && definitionSource.getPrismContext() != null) {
-            T parsedRealValue = parseRawElementToNewRealValue(origValue, (Class<T>) definitionSource.getRealClass(), definitionSource.getPrismContext());
-            PrismPropertyValue<T> newPVal = new PrismPropertyValueImpl<>(parsedRealValue);
-            return newPVal;
+        ItemDefinition<?> definition = definitionSource.getParent() != null ? definitionSource.getParent().getDefinition() : null;
+        if (definition != null) {
+            //noinspection unchecked
+            return new PrismPropertyValueImpl<>(
+                    parseRawElementToNewRealValue(origValue, (PrismPropertyDefinition<T>) definition));
+        } else if (definitionSource.getRealClass() != null) {
+            //noinspection unchecked
+            return new PrismPropertyValueImpl<>(
+                    parseRawElementToNewRealValue(origValue, (Class<T>) definitionSource.getRealClass()));
         } else {
-            throw new IllegalArgumentException("Attempt to use property " + origValue.getParent() +
-                    " values in a raw parsing state (raw elements) with parsed value that has no definition nor class with prism context");
+            throw new IllegalArgumentException(
+                    "Attempt to use property " + origValue.getParent() + " values in a raw parsing state (raw elements)"
+                            + " with parsed value that has no definition nor class with prism context");
         }
     }
 
     private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, PrismPropertyDefinition<T> definition)
             throws SchemaException {
-        PrismContext prismCtx = definition.getPrismContext() != null ? definition.getPrismContext() : getPrismContext();
-        if (prismCtx == null) {
-            throw new SchemaException("Unexpected null prism context.");
-        }
-        T value = prismCtx.parserFor(prismPropertyValue.getRawElement().toRootXNode()).definition(definition).parseRealValue();
-        return value;
+        return PrismContext.get()
+                .parserFor(prismPropertyValue.getRawElement().toRootXNode())
+                .definition(definition)
+                .parseRealValue();
     }
 
-    private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, Class<T> clazz, PrismContext prismContext)
+    private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, Class<T> clazz)
             throws SchemaException {
-        return prismContext.parserFor(prismPropertyValue.getRawElement().toRootXNode()).parseRealValue(clazz);
+        return PrismContext.get()
+                .parserFor(prismPropertyValue.getRawElement().toRootXNode())
+                .parseRealValue(clazz);
     }
 
     @Override
@@ -417,7 +464,10 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public boolean equals(PrismPropertyValue<?> other, @NotNull ParameterizedEquivalenceStrategy strategy, @Nullable MatchingRule<T> matchingRule) {
+    public boolean equals(
+            PrismPropertyValue<?> other,
+            @NotNull ParameterizedEquivalenceStrategy strategy,
+            @Nullable MatchingRule<T> matchingRule) {
         if (!super.equals(other, strategy)) {
             return false;
         }
@@ -547,11 +597,11 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             if (detailedDump) {
                 sb.append(" ").append(value.getClass().getSimpleName()).append(":");
             }
-            if (value instanceof DebugDumpable) {
+            if (value instanceof DebugDumpable dumpable) {
                 if (wasIndent) {
                     sb.append("\n");
                 }
-                sb.append(((DebugDumpable) value).debugDump(indent + 1));
+                sb.append(dumpable.debugDump(indent + 1));
             } else {
                 if (!wasIndent) {
                     DebugUtil.indentDebugDump(sb, indent);
@@ -638,25 +688,10 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     private String toHumanReadableStringInternal() {
         if (value == null && expression != null) {
             return ("expression(" + expression + ")");
-        } else if (value instanceof PolyString) {
+        } else if (value instanceof PolyString ps) {
             // We intentionally do not put this code into PrettyPrinter, to avoid unwanted side effects
             // (displaying the aux information in user-visible context). But for e.g. deltas we need this information.
-            PolyString ps = (PolyString) this.value;
-            StringBuilder sb = new StringBuilder();
-            if (MapUtils.isNotEmpty(ps.getLang()) || ps.getTranslation() != null && StringUtils.isNotEmpty(ps.getTranslation().getKey())) {
-                sb.append("orig=").append(ps.getOrig());
-            } else {
-                sb.append(ps.getOrig());
-            }
-            if (ps.getTranslation() != null) {
-                sb.append(", translation.key=").append(ps.getTranslation().getKey());
-            }
-            if (MapUtils.isNotEmpty(ps.getLang())) {
-                sb.append("; lang:");
-                ps.getLang().keySet().forEach(langKey ->
-                        sb.append(" ").append(langKey).append("=").append(ps.getLang().get(langKey)).append(","));
-            }
-            return sb.toString();
+            return ps.shortDump();
         } else {
             return PrettyPrinter.prettyPrint(value);
         }

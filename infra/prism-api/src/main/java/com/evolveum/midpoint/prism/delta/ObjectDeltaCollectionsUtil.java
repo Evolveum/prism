@@ -50,6 +50,7 @@ public class ObjectDeltaCollectionsUtil {
      *
      * Union works on UNORDERED deltas.
      */
+    @SafeVarargs
     public static <T extends Objectable> ObjectDelta<T> union(ObjectDelta<T>... deltas) throws SchemaException {
         List<ObjectDelta<T>> modifyDeltas = new ArrayList<>(deltas.length);
         ObjectDelta<T> addDelta = null;
