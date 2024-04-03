@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -30,7 +31,7 @@ public interface EnumerationTypeDefinition extends SimpleTypeDefinition {
      * Definition of enumeration value
      *
      */
-    interface ValueDefinition {
+    interface ValueDefinition extends Serializable {
 
         String getValue();
         Optional<String> getDocumentation();
