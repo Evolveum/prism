@@ -7,14 +7,13 @@
 
 package com.evolveum.midpoint.prism.impl.binding;
 
+import com.evolveum.midpoint.prism.*;
+
+import com.evolveum.midpoint.prism.impl.PrismContainerImpl;
+
 import jakarta.xml.bind.annotation.XmlAttribute;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.Objectable;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.PrismObjectValue;
 import com.evolveum.midpoint.prism.impl.PrismObjectImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
@@ -33,15 +32,13 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
 
     @SuppressWarnings("rawtypes")
     public PrismObject asPrismContainer() {
-        if (value instanceof PrismObjectValue) {
-            var objVal = (PrismObjectValue) value;
+        if (value instanceof PrismObjectValue objVal) {
             var parent = value.getParent();
             if (parent instanceof PrismObject) {
                 return (PrismObject) parent;
             }
             if (parent == null) {
-                var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), objVal);
-                return object;
+                return new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), objVal);
             }
 
         }
@@ -72,7 +69,33 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     public void setupContainerValue(PrismContainerValue value) {
         this.value = value;
         if (!isContainerValueOnly()) {
+            copyDefinitionFromValue(value);
             PrismForJAXBUtil.setupContainerValue(asPrismContainer(), value);
+        }
+    }
+
+    // FIXME dirty hack to copy the customized definition
+    private void copyDefinitionFromValue(PrismContainerValue value) {
+        if (value == null) {
+            return;
+        }
+        var parent = value.getParent();
+        if (!(parent instanceof PrismObject<?> prismObject)) {
+            return;
+        }
+        var parentDef = parent.getDefinition();
+        if (parentDef == null) {
+            return;
+        }
+        var parentCtd = parentDef.getComplexTypeDefinition();
+        ComplexTypeDefinition valueCtd = value.getComplexTypeDefinition();
+        if (valueCtd == null || parentCtd != valueCtd) {
+            var parentDefClone = parentDef.clone();
+            parentDefClone.mutator().setComplexTypeDefinition(valueCtd);
+            if (parentDef.isImmutable()) {
+                parentDefClone.freeze();
+            }
+            ((PrismContainerImpl) prismObject).setDefinitionHack(parentDefClone);
         }
     }
 

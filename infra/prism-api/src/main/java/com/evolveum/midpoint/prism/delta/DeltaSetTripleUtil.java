@@ -9,8 +9,6 @@ package com.evolveum.midpoint.prism.delta;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismValue;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.path.PathKeyedMap;
 import com.evolveum.prism.xml.ns._public.types_3.DeltaSetTripleType;
 
 import java.util.Collection;
@@ -59,18 +57,6 @@ public class DeltaSetTripleUtil {
         PrismValueDeltaSetTriple<V> triple = PrismContext.get().deltaFactory().createPrismValueDeltaSetTriple();
         triple.addAllToZeroSet(values);
         return triple;
-    }
-
-    public static <T> void putIntoOutputTripleMap(PathKeyedMap<DeltaSetTriple<T>> outputTripleMap,
-            ItemPath outputPath, DeltaSetTriple<T> outputTriple) {
-        if (outputTriple != null) {
-            DeltaSetTriple<T> mapTriple = outputTripleMap.get(outputPath);
-            if (mapTriple == null) {
-                outputTripleMap.put(outputPath, outputTriple);
-            } else {
-                mapTriple.merge(outputTriple);
-            }
-        }
     }
 
     public static boolean isEmpty(DeltaSetTripleType triple) {

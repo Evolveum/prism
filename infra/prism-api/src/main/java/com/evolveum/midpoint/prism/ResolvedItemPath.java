@@ -38,10 +38,10 @@ public class ResolvedItemPath<ID extends ItemDefinition<?>> implements Serializa
 
     /** Resolves the path against a container definition. The path should be "names-only". */
     public static <ID extends ItemDefinition<?>> ResolvedItemPath<ID> create(
-            @NotNull PrismContainerDefinition<?> rootDefinition, @NotNull ItemPath rawItemPath) {
+            @NotNull ComplexTypeDefinition rootDefinition, @NotNull ItemPath rawItemPath) {
         ItemPath resolvedPath = ItemPath.EMPTY_PATH;
         ItemPath remainderPath = rawItemPath.namedSegmentsOnly();
-        PrismContainerDefinition<?> currentDefinition = rootDefinition;
+        ComplexTypeDefinition currentDefinition = rootDefinition;
         for (;;) {
             if (remainderPath.isEmpty()) {
                 //noinspection unchecked
@@ -54,11 +54,13 @@ public class ResolvedItemPath<ID extends ItemDefinition<?>> implements Serializa
             }
             resolvedPath = resolvedPath.append(childDefinition.getItemName());
             remainderPath = remainderPath.rest();
-            if (!(childDefinition instanceof PrismContainerDefinition<?> childPcd)) {
+            var childCtd = childDefinition instanceof PrismContainerDefinition<?> childPcd ?
+                    childPcd.getComplexTypeDefinition() : null;
+            if (childCtd == null) {
                 //noinspection unchecked
                 return new ResolvedItemPath<>(resolvedPath, remainderPath, (ID) childDefinition);
             }
-            currentDefinition = childPcd;
+            currentDefinition = childCtd;
         }
     }
 

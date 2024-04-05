@@ -1510,6 +1510,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
         wasIndent = dumpIdentifiers(sb, indent, wasIndent, multivalue);
         appendOriginDump(sb);
+        wasIndent = appendExtraHeaderDump(sb, indent, wasIndent);
         Collection<Item<?, ?>> items = getItems();
         if (items.isEmpty()) {
             if (wasIndent) {
@@ -1531,6 +1532,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             }
         }
         return sb.toString();
+    }
+
+    protected boolean appendExtraHeaderDump(StringBuilder sb, int indent, boolean wasIndent) {
+        return wasIndent; // for extension in subclasses
     }
 
     // TODO fix this mess

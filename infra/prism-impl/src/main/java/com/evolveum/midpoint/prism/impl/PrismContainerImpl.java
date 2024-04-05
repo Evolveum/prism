@@ -29,6 +29,8 @@ import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * <p>
  * Property container groups properties into logical blocks.The reason for
@@ -62,7 +64,11 @@ public class PrismContainerImpl<C extends Containerable>
         super(name);
     }
 
-    public PrismContainerImpl(QName name, Class<C> compileTimeClass) {
+    /**
+     * The `definition` parameter is here to preserve the definition if already present for a value (when instantiating from it).
+     * Useful for dynamic definitions of midPoint shadows, for example.
+     */
+    public PrismContainerImpl(QName name, @NotNull Class<C> compileTimeClass, @Nullable PrismContainerDefinition<C> definition) {
         super(name);
         if (Modifier.isAbstract(compileTimeClass.getModifiers())) {
             throw new IllegalArgumentException(
@@ -70,12 +76,14 @@ public class PrismContainerImpl<C extends Containerable>
                             compileTimeClass.getSimpleName(), name));
         }
         this.compileTimeClass = compileTimeClass;
-        try {
-            // Here the container gets a definition.
-            PrismContext.get().adopt(this);
-        } catch (SchemaException e) {
-            throw SystemException.unexpected(e, " while instantiating a PrismContainer with name %s and compile-time class %s"
-                    .formatted(name, compileTimeClass));
+        if (definition == null) {
+            try {
+                // Here the container gets a definition.
+                PrismContext.get().adopt(this);
+            } catch (SchemaException e) {
+                throw SystemException.unexpected(e, " while instantiating a PrismContainer with name %s and compile-time class %s"
+                        .formatted(name, compileTimeClass));
+            }
         }
     }
 
@@ -384,6 +392,13 @@ public class PrismContainerImpl<C extends Containerable>
                 ((PrismContainerValueImpl) value).replaceComplexTypeDefinition(definition.getComplexTypeDefinition());
             }
         }
+        this.definition = definition;
+    }
+
+    // FIXME
+    public void setDefinitionHack(@NotNull PrismContainerDefinition<C> definition) {
+        checkMutable();
+        checkDefinition(definition);
         this.definition = definition;
     }
 

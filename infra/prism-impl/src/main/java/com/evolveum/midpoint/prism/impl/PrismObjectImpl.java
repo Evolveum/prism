@@ -56,15 +56,15 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     @Serial private static final long serialVersionUID = 7321429132391159949L;
 
     public PrismObjectImpl(QName name, Class<O> compileTimeClass) {
-        super(name, compileTimeClass);
+        super(name, compileTimeClass, null);
     }
 
     public PrismObjectImpl(QName name, PrismObjectDefinition<O> definition) {
         super(name, definition);
     }
 
-    public PrismObjectImpl(QName name, Class<O> compileTimeClass, PrismObjectValue<O> value) {
-        super(name, compileTimeClass);
+    public PrismObjectImpl(QName name, @NotNull Class<O> compileTimeClass, @NotNull PrismObjectValue<O> value) {
+        super(name, compileTimeClass, value.getDefinition());
         try {
             addIgnoringEquivalents(value);
         } catch (SchemaException e) {
