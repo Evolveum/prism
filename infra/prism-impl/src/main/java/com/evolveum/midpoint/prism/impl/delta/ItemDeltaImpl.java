@@ -1864,7 +1864,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         if (set == null) {
             return;
         }
-        for (V val : set) {
+        for (V val : List.copyOf(set)) {
             //noinspection unchecked
             V newVal = (V) val.applyDefinition(itemDefinition, force);
             if (newVal != val) {

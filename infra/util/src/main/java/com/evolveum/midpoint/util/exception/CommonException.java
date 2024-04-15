@@ -153,6 +153,6 @@ public abstract class CommonException extends Exception {
     }
 
     public enum Severity {
-        FATAL_ERROR, PARTIAL_ERROR, WARNING, HANDLED_ERROR, SUCCESS
+        FATAL_ERROR, PARTIAL_ERROR, WARNING, HANDLED_ERROR, SUCCESS, NOT_APPLICABLE
     }
 }
