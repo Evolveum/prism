@@ -119,15 +119,15 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
         this.isDeclaredByDefault = isDeclaredByDefault;
     }
 
-    @Override
-    public PrismSchema getSchema() {
-        return schema;
-    }
+//    @Override
+//    public PrismSchema getSchema() {
+//        return schema;
+//    }
 
-    public void setSchema(PrismSchema schema) {
-        checkMutable();
-        this.schema = schema;
-    }
+//    public void setSchema(PrismSchema schema) {
+//        checkMutable();
+//        this.schema = schema;
+//    }
 
     @Override
     public Package getCompileTimeClassesPackage() {

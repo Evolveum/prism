@@ -691,10 +691,10 @@ public class ComplexTypeDefinitionImpl extends TypeDefinitionImpl implements Mut
         strictAnyMarker = marker;
     }
 
-    @Override
-    protected boolean skipFreeze() {
-        return extensionForType != null || typeName.getLocalPart().equals("ExtensionType");
-    }
+//    @Override
+//    protected boolean skipFreeze() {
+//        return extensionForType != null || typeName.getLocalPart().equals("ExtensionType");
+//    }
 
     public Class<?> getTypeClass() {
         return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());

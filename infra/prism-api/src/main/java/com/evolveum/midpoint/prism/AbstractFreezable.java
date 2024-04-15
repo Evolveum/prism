@@ -10,9 +10,9 @@ public abstract class AbstractFreezable implements Freezable {
 
     @Override
     public final void freeze() {
-        if (skipFreeze()) {
-            return;
-        }
+//        if (skipFreeze()) {
+//            return;
+//        }
         if (!frozen) {
             performFreeze();
             this.frozen = true;
@@ -29,9 +29,9 @@ public abstract class AbstractFreezable implements Freezable {
         }
     }
 
-    protected boolean skipFreeze() {
-        return false;
-    }
+//    protected boolean skipFreeze() {
+//        return false;
+//    }
 
     protected void performFreeze() {
         // Intentional NOOP, for overriding

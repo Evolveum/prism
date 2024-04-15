@@ -45,7 +45,7 @@ public interface SchemaDescription extends DebugDumpable, Freezable {
 
     boolean isPrismSchema();
 
-    PrismSchema getSchema();
+//    PrismSchema getSchema();
 
     Package getCompileTimeClassesPackage();
 

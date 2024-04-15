@@ -146,7 +146,7 @@ public interface SchemaRegistry extends PrismContextSensitive, DebugDumpable, Gl
 
     SchemaDescription findSchemaDescriptionByNamespace(String namespaceURI);
 
-    PrismSchema findSchemaByPrefix(String prefix);
+//    PrismSchema findSchemaByPrefix(String prefix);
 
     SchemaDescription findSchemaDescriptionByPrefix(String prefix);
 

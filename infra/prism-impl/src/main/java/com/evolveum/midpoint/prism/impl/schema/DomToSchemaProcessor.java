@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -35,6 +36,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -84,19 +86,39 @@ class DomToSchemaProcessor {
      * Parses several schemas, referenced by a wrapper schema.
      * Provided to allow circular references (e.g. common-3 -> scripting-3 -> common-3).
      */
-    void parseSchemas(List<SchemaDescription> schemaDescriptions, Element wrapper,
+//    void parseSchemas(List<SchemaDescription> schemaDescriptions, Element wrapper,
+//            boolean allowDelayedItemDefinitions, String shortDescription) throws SchemaException {
+//        this.shortDescription = shortDescription;
+//        XSSchemaSet xsSchemaSet = parseSchema(wrapper);
+//        if (xsSchemaSet == null) {
+//            return;
+//        }
+//        for (SchemaDescription schemaDescription : schemaDescriptions) {
+//            DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet, prismContext);
+//            PrismSchemaImpl prismSchema = (PrismSchemaImpl) schemaDescription.getSchema();
+//            boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
+//            String schemaShortDescription = schemaDescription.getSourceDescription() + " in " + shortDescription;
+//            postProcessor.postprocessSchema(prismSchema, isRuntime, allowDelayedItemDefinitions, schemaShortDescription);
+//        }
+//    }
+
+    /**
+     * Parses several schemas, referenced by a wrapper schema.
+     * Provided to allow circular references (e.g. common-3 -> scripting-3 -> common-3).
+     */
+    void parseSchemas2(Collection<PrismSchemaImpl> schemaDescriptions, Element wrapper,
             boolean allowDelayedItemDefinitions, String shortDescription) throws SchemaException {
         this.shortDescription = shortDescription;
         XSSchemaSet xsSchemaSet = parseSchema(wrapper);
         if (xsSchemaSet == null) {
             return;
         }
-        for (SchemaDescription schemaDescription : schemaDescriptions) {
+        for (PrismSchemaImpl prismSchema : schemaDescriptions) {
             DomToSchemaPostProcessor postProcessor = new DomToSchemaPostProcessor(xsSchemaSet, prismContext);
-            PrismSchemaImpl prismSchema = (PrismSchemaImpl) schemaDescription.getSchema();
-            boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
-            String schemaShortDescription = schemaDescription.getSourceDescription() + " in " + shortDescription;
-            postProcessor.postprocessSchema(prismSchema, isRuntime, allowDelayedItemDefinitions, schemaShortDescription);
+//            PrismSchemaImpl prismSchema = (PrismSchemaImpl) schemaDescription.getSchema();
+//            boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
+            String schemaShortDescription = prismSchema.getSourceDescription() + " in " + shortDescription;
+            postProcessor.postprocessSchema(prismSchema, prismSchema.isRuntime(), allowDelayedItemDefinitions, schemaShortDescription);
         }
     }
 

@@ -92,4 +92,10 @@ public interface PrismSchema
     }
 
     Multimap<QName, ItemDefinition<?>> getSubstitutions();
+
+    boolean isRuntime();
+
+    String getSourceDescription();
 }
+
+

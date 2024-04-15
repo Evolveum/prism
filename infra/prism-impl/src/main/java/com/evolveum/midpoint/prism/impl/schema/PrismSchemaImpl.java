@@ -105,10 +105,22 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
      */
     private final Map<Class<?>, List<ItemDefinition<?>>> itemDefinitionsByCompileTimeClassMap = new ConcurrentHashMap<>();
 
+    //TODO PoC
+    private boolean runtime;
+    private String sourceDescription;
+    private Package compileTimePackage;
+
     public PrismSchemaImpl(@NotNull String namespace) {
         argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
         this.namespace = namespace;
         this.prismContext = PrismContext.get();
+    }
+
+    public PrismSchemaImpl(@NotNull String namespace, @Nullable Package compileTimePackage) {
+        argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
+        this.namespace = namespace;
+        this.prismContext = PrismContext.get();
+        this.compileTimePackage = compileTimePackage;
     }
 
     private void invalidateCaches() {
@@ -251,11 +263,18 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     }
 
     // main entry point for parsing standard prism schemas
-    static void parseSchemas(Element wrapperElement, XmlEntityResolver resolver,
-            List<SchemaDescription> schemaDescriptions,
+//    static void parseSchemas(Element wrapperElement, XmlEntityResolver resolver,
+//            List<SchemaDescription> schemaDescriptions,
+//            boolean allowDelayedItemDefinitions, PrismContext prismContext) throws SchemaException {
+//        DomToSchemaProcessor processor = new DomToSchemaProcessor(resolver, prismContext);
+//        processor.parseSchemas(schemaDescriptions, wrapperElement, allowDelayedItemDefinitions, "multiple schemas");
+//    }
+
+    static void parseSchemas2(Element wrapperElement, XmlEntityResolver resolver,
+            Collection<PrismSchemaImpl> schemaDescriptions,
             boolean allowDelayedItemDefinitions, PrismContext prismContext) throws SchemaException {
         DomToSchemaProcessor processor = new DomToSchemaProcessor(resolver, prismContext);
-        processor.parseSchemas(schemaDescriptions, wrapperElement, allowDelayedItemDefinitions, "multiple schemas");
+        processor.parseSchemas2(schemaDescriptions, wrapperElement, allowDelayedItemDefinitions, "multiple schemas");
     }
 
     // used for connector and resource schemas
@@ -608,5 +627,27 @@ public class PrismSchemaImpl extends AbstractFreezable implements MutablePrismSc
     protected void assertNoDelayedDefinitionsOnClone() {
         stateCheck(delayedItemDefinitions.isEmpty(),
                 "Cannot clone schema with delayed definitions: %s (%s)", delayedItemDefinitions.size(), this);
+    }
+
+    public void setRuntime(boolean runtime) {
+        this.runtime = runtime;
+    }
+
+    @Override
+    public boolean isRuntime() {
+        return runtime;
+    }
+
+    @Override
+    public String getSourceDescription() {
+        return sourceDescription;
+    }
+
+    public void setSourceDescription(String sourceDescription) {
+        this.sourceDescription = sourceDescription;
+    }
+
+    public Package getCompileTimePackage() {
+        return compileTimePackage;
     }
 }

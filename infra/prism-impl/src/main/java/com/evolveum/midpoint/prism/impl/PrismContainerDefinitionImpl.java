@@ -570,9 +570,9 @@ public class PrismContainerDefinitionImpl<C extends Containerable> extends ItemD
         super.performFreeze();
     }
 
-    @Override
-    protected boolean skipFreeze() {
-        return itemName.getLocalPart().equals(PrismConstants.EXTENSION_LOCAL_NAME);
-
-    }
+//    @Override
+//    protected boolean skipFreeze() {
+//        return itemName.getLocalPart().equals(PrismConstants.EXTENSION_LOCAL_NAME);
+//
+//    }
 }
