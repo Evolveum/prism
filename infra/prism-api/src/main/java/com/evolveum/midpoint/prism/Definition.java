@@ -11,18 +11,17 @@ import java.io.Serializable;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
-
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKey;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Common interface to access all definitions.
@@ -57,7 +56,8 @@ public interface Definition
      *
      * @return the type name
      */
-    @NotNull QName getTypeName();
+    @NotNull
+    QName getTypeName();
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -211,23 +211,31 @@ public interface Definition
      *
      * Nullable by design, to avoid creating lots of empty maps.
      */
-    @Nullable Map<QName, Object> getAnnotations();
+    @Nullable
+    Map<QName, Object> getAnnotations();
 
-    @Nullable List<SchemaMigration> getSchemaMigrations();
+    @Nullable
+    List<SchemaMigration> getSchemaMigrations();
 
     @Experimental
     List<ItemDiagramSpecification> getDiagrams();
 
     @Nullable
-    String getMerger();
+    String getMergerIdentifier();
 
     @Nullable
-    List<QName> getNaturalKey();
+    ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker);
+
+    @Nullable
+    List<QName> getNaturalKeyConstituents();
+
+    @Nullable
+    NaturalKey getNaturalKeyInstance();
 
     @NotNull
     Definition clone();
 
-    default String debugDump(int indent, IdentityHashMap<Definition,Object> seen) {
+    default String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
         return debugDump(indent);
     }
 

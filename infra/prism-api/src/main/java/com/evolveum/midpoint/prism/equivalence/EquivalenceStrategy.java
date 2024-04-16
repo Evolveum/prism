@@ -59,7 +59,7 @@ public interface EquivalenceStrategy {
     /**
      * As {@link #REAL_VALUE} but taking different PCV IDs into account (if both are present).
      *
-     * Currently this is the default for delta application. See {@link ParameterizedEquivalenceStrategy#FOR_DELTA_ADD_APPLICATION}
+     * Currently, this is the default for delta application. See {@link ParameterizedEquivalenceStrategy#FOR_DELTA_ADD_APPLICATION}
      * and {@link ParameterizedEquivalenceStrategy#FOR_DELTA_DELETE_APPLICATION}.
      *
      * It is not quite clear if this strategy is well-formed. Often we want to differentiate PCV IDs
@@ -67,6 +67,12 @@ public interface EquivalenceStrategy {
      * has to be sorted out.
      */
     ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIds();
+
+    /**
+     * Same as {@link #REAL_VALUE_CONSIDER_DIFFERENT_IDS} but also takes natural keys into account.
+     */
+    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIds();
+
 
     /**
      * This is something between {@link #DATA} and {@link #REAL_VALUE}: ignores

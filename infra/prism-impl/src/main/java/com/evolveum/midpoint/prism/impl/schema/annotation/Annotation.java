@@ -91,7 +91,7 @@ public enum Annotation {
     IGNORE(new IgnoreProcessor()),
 
     MERGER(new AnnotationProcessor<>(
-            A_MERGER, String.class, MutableDefinition::setMerger)),
+            A_MERGER, String.class, MutableDefinition::setMergerIdentifier)),
 
     NATURAL_KEY(new AnnotationProcessor<>(
             A_NATURAL_KEY, List.class, null) {
@@ -102,7 +102,7 @@ public enum Annotation {
                     .map(DOMUtil::getQNameValue)
                     .toList();
 
-            definition.setNaturalKey(naturalKey);
+            definition.setNaturalKeyConstituents(naturalKey);
 
             definition.setAnnotation(name, naturalKey);
         }

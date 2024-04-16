@@ -10,6 +10,8 @@ package com.evolveum.midpoint.prism.impl;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKey;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -378,12 +380,22 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
-    public @Nullable String getMerger() {
+    public @Nullable String getMergerIdentifier() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public @Nullable List<QName> getNaturalKey() {
+    public @Nullable List<QName> getNaturalKeyConstituents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @Nullable NaturalKey getNaturalKeyInstance() {
         throw new UnsupportedOperationException();
     }
 }

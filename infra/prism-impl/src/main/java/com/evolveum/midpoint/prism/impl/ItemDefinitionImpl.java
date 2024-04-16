@@ -11,6 +11,8 @@ import java.io.Serial;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -18,6 +20,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstract item definition in the schema.
@@ -496,5 +500,10 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     protected Object writeReplace() {
         return useSerializationProxy(serializationProxy != null) ? serializationProxy : this;
+    }
+
+    @Override
+    public @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        return getPrismContext().itemMergerFactory().createMerger(this, strategy, originMarker);
     }
 }

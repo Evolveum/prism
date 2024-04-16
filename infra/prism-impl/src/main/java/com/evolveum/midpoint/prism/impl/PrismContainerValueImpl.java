@@ -12,9 +12,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKey;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -1474,11 +1478,48 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return other instanceof PrismContainerValue<?> && equals((PrismContainerValue<?>) other, strategy);
     }
 
+    private boolean equalNaturalKeys(PrismContainerValue<C> other) {
+        Definition def = findDefinition(other);
+        if (def == null) {
+            return false;
+        }
+
+        NaturalKey key = def.getNaturalKeyInstance();
+        if (key != null && key.valuesMatch(this, other)) {
+            return true;
+        }
+
+        if (def.getMergerIdentifier() != null) {
+            ItemMerger merger = def.getMergerInstance(MergeStrategy.FULL, null);
+            if (merger != null) {
+                NaturalKey k = merger.getNaturalKey();
+                if (k != null && k.valuesMatch(this, other)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private Definition findDefinition(PrismContainerValue<C> other) {
+        PrismContainerDefinition def = getDefinition();
+        if (def != null) {
+            return def;
+        }
+
+        return other.getDefinition();
+    }
+
     private boolean equals(@NotNull PrismContainerValue<?> other, ParameterizedEquivalenceStrategy strategy) {
         if (!super.equals(other, strategy)) {
             return false;
         }
-        if (strategy.isConsideringContainerIds()) {
+        if (strategy.isConsideringNaturalKeys()) {
+            if (equalNaturalKeys((PrismContainerValue<C>) other)) {
+                return true;
+            }
+        } else if (strategy.isConsideringContainerIds()) {
             if (!Objects.equals(id, other.getId())) {
                 return false;
             }

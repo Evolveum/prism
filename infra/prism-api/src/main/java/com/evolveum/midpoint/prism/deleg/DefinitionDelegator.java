@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKey;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -128,14 +131,14 @@ public interface DefinitionDelegator extends Definition {
 
     @Override
     @Nullable
-    default String getMerger() {
-        return delegate().getMerger();
+    default String getMergerIdentifier() {
+        return delegate().getMergerIdentifier();
     }
 
     @Override
     @Nullable
-    default List<QName> getNaturalKey() {
-        return delegate().getNaturalKey();
+    default List<QName> getNaturalKeyConstituents() {
+        return delegate().getNaturalKeyConstituents();
     }
 
     @Override
@@ -206,5 +209,14 @@ public interface DefinitionDelegator extends Definition {
     @Override
     default String getMutabilityFlag() {
         return delegate().getMutabilityFlag();
+    }
+
+    @Override
+    default @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        return delegate().getMergerInstance(strategy, originMarker);
+    }
+    @Override
+    default @Nullable NaturalKey getNaturalKeyInstance() {
+        return delegate().getNaturalKeyInstance();
     }
 }

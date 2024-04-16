@@ -11,14 +11,16 @@ import java.util.*;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.impl.key.NaturalKeyImpl;
+import com.evolveum.midpoint.prism.key.NaturalKey;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstract definition in the schema.
@@ -63,8 +65,8 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
-    private String merger;
-    private List<QName> naturalKey;
+    private String mergerIdentifier;
+    private List<QName> naturalKeyConstituents;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -96,25 +98,36 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
-    public @Nullable String getMerger() {
-        return merger;
+    public @Nullable String getMergerIdentifier() {
+        return mergerIdentifier;
     }
 
     @Override
-    public @Nullable List<QName> getNaturalKey() {
-        return naturalKey;
+    public @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        return null;
     }
 
     @Override
-    public void setMerger(String merger) {
+    public @Nullable List<QName> getNaturalKeyConstituents() {
+        return naturalKeyConstituents;
+    }
+
+    @Override
+    public @Nullable NaturalKey getNaturalKeyInstance() {
+        // todo how to create proper NaturalKey instance, implementations could be outside of prism api/impl
+        return naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty() ? NaturalKeyImpl.of(naturalKeyConstituents) : null;
+    }
+
+    @Override
+    public void setMergerIdentifier(String mergerIdentifier) {
         checkMutable();
-        this.merger = merger;
+        this.mergerIdentifier = mergerIdentifier;
     }
 
     @Override
-    public void setNaturalKey(List<QName> naturalKey) {
+    public void setNaturalKeyConstituents(List<QName> naturalKeyConstituents) {
         checkMutable();
-        this.naturalKey = naturalKey;
+        this.naturalKeyConstituents = naturalKeyConstituents;
     }
 
     @Override

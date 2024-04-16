@@ -100,6 +100,8 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull private final ItemPathSerializer itemPathSerializer;
     @NotNull private final SchemaFactory schemaFactory;
 
+    @NotNull private ItemMergerFactory itemMergerFactory;
+
     @Experimental private ValueMetadataFactory valueMetadataFactory;
     @Experimental private EquivalenceStrategy provenanceEquivalenceStrategy;
 
@@ -157,6 +159,7 @@ public final class PrismContextImpl implements PrismContext {
         this.itemPathSerializer = new ItemPathSerializerImpl();
         this.schemaFactory = new SchemaFactoryImpl(this);
         this.defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
+        this.itemMergerFactory = new ItemMergerFactoryImpl();
 
         try {
             configurePolyStringNormalizer(null);
@@ -785,5 +788,14 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public Collection<ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupsForType(QName typeName) {
         return valueBasedDefinitionLookupHelpers.get(typeName);
+    }
+
+    @Override
+    public @NotNull ItemMergerFactory itemMergerFactory() {
+        return itemMergerFactory;
+    }
+
+    public void setItemMergerFactory(@NotNull ItemMergerFactory itemMergerFactory) {
+        this.itemMergerFactory = itemMergerFactory;
     }
 }

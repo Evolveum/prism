@@ -49,9 +49,9 @@ public interface MutableDefinition extends Definition {
 
     void addDiagram(ItemDiagramSpecification diagram);
 
-    void setMerger(String merger);
+    void setMergerIdentifier(String mergerIdentifier);
 
-    void setNaturalKey(List<QName> naturalKey);
+    void setNaturalKeyConstituents(List<QName> naturalKeyConstituents);
 
     /**
      * A variant of {@link MutableDefinition} that does not allow any modifications. Useful for implementations that want
@@ -100,11 +100,12 @@ public interface MutableDefinition extends Definition {
         }
 
         @Override
-        default void setMerger(String merger) {
+        default void setMergerIdentifier(String mergerIdentifier) {
             throw new UnsupportedOperationException();
         }
+
         @Override
-        default void setNaturalKey(List<QName> naturalKey) {
+        default void setNaturalKeyConstituents(List<QName> naturalKeyConstituents) {
             throw new UnsupportedOperationException();
         }
 
