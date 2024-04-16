@@ -121,103 +121,103 @@ public class PrismInternalTestUtil implements PrismContextFactory {
     public static final String NS_WEAPONS_PREFIX = "w";
 
     // FOO schema
-    public static final ItemName USER_QNAME = new ItemName(NS_FOO,"user");
-    public static final ItemName USER_TYPE_QNAME = new ItemName(NS_FOO,"UserType");
-    public static final ItemName OBJECT_TYPE_QNAME = new ItemName(NS_FOO,"ObjectType");
+    public static final ItemName USER_QNAME = ItemName.from(NS_FOO,"user");
+    public static final ItemName USER_TYPE_QNAME = ItemName.from(NS_FOO,"UserType");
+    public static final ItemName OBJECT_TYPE_QNAME = ItemName.from(NS_FOO,"ObjectType");
 
-    public static final ItemName OBJECT_REFERENCE_TYPE_QNAME = new ItemName(NS_FOO, "ObjectReferenceType");
+    public static final ItemName OBJECT_REFERENCE_TYPE_QNAME = ItemName.from(NS_FOO, "ObjectReferenceType");
 
-    public static final ItemName USER_EXTENSION_QNAME = new ItemName(NS_FOO,"extension");
-    public static final ItemName USER_PARENT_ORG_QNAME = new ItemName(NS_FOO,"parentOrg");
-    public static final ItemName USER_PARENT_ORG_REF_QNAME = new ItemName(NS_FOO,"parentOrgRef");
+    public static final ItemName USER_EXTENSION_QNAME = ItemName.from(NS_FOO,"extension");
+    public static final ItemName USER_PARENT_ORG_QNAME = ItemName.from(NS_FOO,"parentOrg");
+    public static final ItemName USER_PARENT_ORG_REF_QNAME = ItemName.from(NS_FOO,"parentOrgRef");
 
-    public static final ItemName USER_NAME_QNAME = new ItemName(NS_FOO,"name");
-    public static final ItemName USER_FULLNAME_QNAME = new ItemName(NS_FOO,"fullName");
-    public static final ItemName USER_GIVENNAME_QNAME = new ItemName(NS_FOO,"givenName");
-    public static final ItemName USER_FAMILYNAME_QNAME = new ItemName(NS_FOO,"familyName");
-    public static final ItemName USER_ADDITIONALNAMES_QNAME = new ItemName(NS_FOO,"additionalNames");
-    public static final ItemName USER_POLYNAME_QNAME = new ItemName(NS_FOO,"polyName");
-    public static final ItemName USER_LOCALITY_QNAME = new ItemName(NS_FOO,"locality");
+    public static final ItemName USER_NAME_QNAME = ItemName.from(NS_FOO,"name");
+    public static final ItemName USER_FULLNAME_QNAME = ItemName.from(NS_FOO,"fullName");
+    public static final ItemName USER_GIVENNAME_QNAME = ItemName.from(NS_FOO,"givenName");
+    public static final ItemName USER_FAMILYNAME_QNAME = ItemName.from(NS_FOO,"familyName");
+    public static final ItemName USER_ADDITIONALNAMES_QNAME = ItemName.from(NS_FOO,"additionalNames");
+    public static final ItemName USER_POLYNAME_QNAME = ItemName.from(NS_FOO,"polyName");
+    public static final ItemName USER_LOCALITY_QNAME = ItemName.from(NS_FOO,"locality");
 
-    public static final ItemName USER_ACTIVATION_QNAME = new ItemName(NS_FOO,"activation");
-    public static final ItemName USER_ENABLED_QNAME = new ItemName(NS_FOO,"enabled");
+    public static final ItemName USER_ACTIVATION_QNAME = ItemName.from(NS_FOO,"activation");
+    public static final ItemName USER_ENABLED_QNAME = ItemName.from(NS_FOO,"enabled");
     public static final ItemPath USER_ENABLED_PATH = ItemPath.create(USER_ACTIVATION_QNAME, USER_ENABLED_QNAME);
-    public static final ItemName USER_VALID_FROM_QNAME = new ItemName(NS_FOO,"validFrom");
+    public static final ItemName USER_VALID_FROM_QNAME = ItemName.from(NS_FOO,"validFrom");
     public static final ItemPath USER_VALID_FROM_PATH = ItemPath.create(USER_ACTIVATION_QNAME, USER_VALID_FROM_QNAME);
-    public static final ItemName USER_VALID_TO_QNAME = new ItemName(NS_FOO,"validTo");
-    public static final ItemName ACTIVATION_TYPE_QNAME = new ItemName(NS_FOO,"ActivationType");
+    public static final ItemName USER_VALID_TO_QNAME = ItemName.from(NS_FOO,"validTo");
+    public static final ItemName ACTIVATION_TYPE_QNAME = ItemName.from(NS_FOO,"ActivationType");
 
-    public static final ItemName USER_ASSIGNMENT_QNAME = new ItemName(NS_FOO,"assignment");
-    public static final ItemName USER_DESCRIPTION_QNAME = new ItemName(NS_FOO,"description");
+    public static final ItemName USER_ASSIGNMENT_QNAME = ItemName.from(NS_FOO,"assignment");
+    public static final ItemName USER_DESCRIPTION_QNAME = ItemName.from(NS_FOO,"description");
     public static final ItemPath USER_ASSIGNMENT_DESCRIPTION_PATH = ItemPath.create(USER_ASSIGNMENT_QNAME, USER_DESCRIPTION_QNAME);
-    public static final ItemName ASSIGNMENT_TYPE_QNAME = new ItemName(NS_FOO,"AssignmentType");
-    public static final ItemName USER_ACCOUNT_CONSTRUCTION_QNAME = new ItemName(NS_FOO,"accountConstruction");
+    public static final ItemName ASSIGNMENT_TYPE_QNAME = ItemName.from(NS_FOO,"AssignmentType");
+    public static final ItemName USER_ACCOUNT_CONSTRUCTION_QNAME = ItemName.from(NS_FOO,"accountConstruction");
 
-    private static final ItemName FOO_VALUE_METADATA_TYPE_QNAME = new ItemName(NS_FOO, "FooValueMetadataType");
+    private static final ItemName FOO_VALUE_METADATA_TYPE_QNAME = ItemName.from(NS_FOO, "FooValueMetadataType");
 
     public static final Long USER_ASSIGNMENT_1_ID = 1111L;
     public static final Long USER_ASSIGNMENT_2_ID = 1112L;
     public static final Long USER_ASSIGNMENT_3_ID = 1113L;
 
-    public static final ItemName ACCOUNT_CONSTRUCTION_TYPE_QNAME = new ItemName(NS_FOO,"AccountConstructionType");
+    public static final ItemName ACCOUNT_CONSTRUCTION_TYPE_QNAME = ItemName.from(NS_FOO,"AccountConstructionType");
 
-    public static final ItemName USER_ACCOUNTREF_QNAME = new ItemName(NS_FOO,"accountRef");
-    public static final ItemName USER_ACCOUNT_QNAME = new ItemName(NS_FOO,"account");
+    public static final ItemName USER_ACCOUNTREF_QNAME = ItemName.from(NS_FOO,"accountRef");
+    public static final ItemName USER_ACCOUNT_QNAME = ItemName.from(NS_FOO,"account");
 
-    public static final ItemName ACCOUNT_TYPE_QNAME = new ItemName(NS_FOO,"AccountType");
+    public static final ItemName ACCOUNT_TYPE_QNAME = ItemName.from(NS_FOO,"AccountType");
 
-    public static final ItemName ACCOUNT_NAME_QNAME = new ItemName(NS_FOO,"name");
-    public static final ItemName ACCOUNT_DESCRIPTION_QNAME = new ItemName(NS_FOO,"description");
-    public static final ItemName ACCOUNT_ATTRIBUTES_QNAME = new ItemName(NS_FOO,"attributes");
+    public static final ItemName ACCOUNT_NAME_QNAME = ItemName.from(NS_FOO,"name");
+    public static final ItemName ACCOUNT_DESCRIPTION_QNAME = ItemName.from(NS_FOO,"description");
+    public static final ItemName ACCOUNT_ATTRIBUTES_QNAME = ItemName.from(NS_FOO,"attributes");
 
-    public static final ItemName ATTRIBUTES_TYPE_QNAME = new ItemName(NS_FOO,"AttributesType");
+    public static final ItemName ATTRIBUTES_TYPE_QNAME = ItemName.from(NS_FOO,"AttributesType");
 
-    public static final ItemName DUMMY_PROTECTED_STRING_TYPE = new ItemName(NS_FOO, "DummyProtectedStringType");
+    public static final ItemName DUMMY_PROTECTED_STRING_TYPE = ItemName.from(NS_FOO, "DummyProtectedStringType");
 
-    public static final ItemName RESOURCE_QNAME = new ItemName(NS_FOO,"resource");
-    public static final ItemName RESOURCE_TYPE_QNAME = new ItemName(NS_FOO,"ResourceType");
+    public static final ItemName RESOURCE_QNAME = ItemName.from(NS_FOO,"resource");
+    public static final ItemName RESOURCE_TYPE_QNAME = ItemName.from(NS_FOO,"ResourceType");
 
     // extension.xsd
-    public static final ItemName EXTENSION_STRING_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "stringType");
-    public static final ItemName EXTENSION_SINGLE_STRING_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "singleStringType");
-    public static final ItemName EXTENSION_DOUBLE_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "doubleType");
-    public static final ItemName EXTENSION_INT_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "intType");
-    public static final ItemName EXTENSION_INTEGER_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "integerType");
-    public static final ItemName EXTENSION_LONG_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "longType");
-    public static final ItemName EXTENSION_DATE_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "dateType");
-    public static final ItemName EXTENSION_DURATION_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "durationType");
-    public static final ItemName EXTENSION_LOCATIONS_ELEMENT = new ItemName(NS_EXTENSION, "locations");
-    public static final ItemName EXTENSION_LOCATIONS_TYPE_QNAME = new ItemName(NS_EXTENSION, "LocationsType");
-    public static final ItemName EXTENSION_IGNORED_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "ignoredType");
-    public static final ItemName EXTENSION_INDEXED_STRING_TYPE_ELEMENT = new ItemName(NS_EXTENSION, "indexedString");
-    public static final ItemName EXTENSION_BLADE_TYPE_QNAME = new ItemName(NS_EXTENSION, "BladeType");
-    public static final ItemName EXTENSION_MELEE_CONTEXT_ELEMENT = new ItemName(NS_EXTENSION, "meleeContext");
-    public static final ItemName EXTENSION_MELEE_CONTEXT_TYPE_QNAME = new ItemName(NS_EXTENSION, "MeleeContextType");
-    public static final ItemName EXTENSION_MELEE_CONTEXT_OPPONENT_REF_ELEMENT = new ItemName(NS_EXTENSION, "opponentRef");
-    public static final ItemName EXTENSION_MELEE_CONTEXT_OPPONENT_ELEMENT = new ItemName(NS_EXTENSION, "opponent");
+    public static final ItemName EXTENSION_STRING_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "stringType");
+    public static final ItemName EXTENSION_SINGLE_STRING_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "singleStringType");
+    public static final ItemName EXTENSION_DOUBLE_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "doubleType");
+    public static final ItemName EXTENSION_INT_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "intType");
+    public static final ItemName EXTENSION_INTEGER_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "integerType");
+    public static final ItemName EXTENSION_LONG_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "longType");
+    public static final ItemName EXTENSION_DATE_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "dateType");
+    public static final ItemName EXTENSION_DURATION_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "durationType");
+    public static final ItemName EXTENSION_LOCATIONS_ELEMENT = ItemName.from(NS_EXTENSION, "locations");
+    public static final ItemName EXTENSION_LOCATIONS_TYPE_QNAME = ItemName.from(NS_EXTENSION, "LocationsType");
+    public static final ItemName EXTENSION_IGNORED_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "ignoredType");
+    public static final ItemName EXTENSION_INDEXED_STRING_TYPE_ELEMENT = ItemName.from(NS_EXTENSION, "indexedString");
+    public static final ItemName EXTENSION_BLADE_TYPE_QNAME = ItemName.from(NS_EXTENSION, "BladeType");
+    public static final ItemName EXTENSION_MELEE_CONTEXT_ELEMENT = ItemName.from(NS_EXTENSION, "meleeContext");
+    public static final ItemName EXTENSION_MELEE_CONTEXT_TYPE_QNAME = ItemName.from(NS_EXTENSION, "MeleeContextType");
+    public static final ItemName EXTENSION_MELEE_CONTEXT_OPPONENT_REF_ELEMENT = ItemName.from(NS_EXTENSION, "opponentRef");
+    public static final ItemName EXTENSION_MELEE_CONTEXT_OPPONENT_ELEMENT = ItemName.from(NS_EXTENSION, "opponent");
 
     // extension-secondary.xsd
-    public static final ItemName EXTENSION_SECONDARY_STRING_TYPE_ELEMENT = new ItemName(NS_EXTENSION_SECONDARY, "stringType");
-    public static final ItemName EXTENSION_SECONDARY_SECONDARY_STRING_TYPE_ELEMENT = new ItemName(NS_EXTENSION_SECONDARY, "secondaryStringType");
+    public static final ItemName EXTENSION_SECONDARY_STRING_TYPE_ELEMENT = ItemName.from(NS_EXTENSION_SECONDARY, "stringType");
+    public static final ItemName EXTENSION_SECONDARY_SECONDARY_STRING_TYPE_ELEMENT = ItemName.from(NS_EXTENSION_SECONDARY, "secondaryStringType");
 
     // These are NOT in the extension.xsd but are used as dynamic elements
-    public static final ItemName EXTENSION_BAR_ELEMENT = new ItemName(NS_EXTENSION, "bar");
-    public static final ItemName EXTENSION_FOOBAR_ELEMENT = new ItemName(NS_EXTENSION, "foobar");
-    public static final ItemName EXTENSION_NUM_ELEMENT = new ItemName(NS_EXTENSION, "num");
-    public static final ItemName EXTENSION_DATETIME_ELEMENT = new ItemName(NS_EXTENSION, "dateTime");
-    public static final ItemName EXTENSION_MULTI_ELEMENT = new ItemName(NS_EXTENSION, "multi");
+    public static final ItemName EXTENSION_BAR_ELEMENT = ItemName.from(NS_EXTENSION, "bar");
+    public static final ItemName EXTENSION_FOOBAR_ELEMENT = ItemName.from(NS_EXTENSION, "foobar");
+    public static final ItemName EXTENSION_NUM_ELEMENT = ItemName.from(NS_EXTENSION, "num");
+    public static final ItemName EXTENSION_DATETIME_ELEMENT = ItemName.from(NS_EXTENSION, "dateTime");
+    public static final ItemName EXTENSION_MULTI_ELEMENT = ItemName.from(NS_EXTENSION, "multi");
 
     // Definitions used in schema-extra/extension/user.xsd
     // this is loaded as an extra schema, it is not part of usual tests. Mind the namespace that is
     // different from the previous elements
-    public static final ItemName USER_EXT_BAR_ELEMENT = new ItemName(NS_USER_EXT, "bar");
-    public static final ItemName USER_EXT_FOOBAR_ELEMENT = new ItemName(NS_USER_EXT, "foobar");
-    public static final ItemName USER_EXT_NUM_ELEMENT = new ItemName(NS_USER_EXT, "num");
-    public static final ItemName USER_EXT_MULTI_ELEMENT = new ItemName(NS_USER_EXT, "multi");
+    public static final ItemName USER_EXT_BAR_ELEMENT = ItemName.from(NS_USER_EXT, "bar");
+    public static final ItemName USER_EXT_FOOBAR_ELEMENT = ItemName.from(NS_USER_EXT, "foobar");
+    public static final ItemName USER_EXT_NUM_ELEMENT = ItemName.from(NS_USER_EXT, "num");
+    public static final ItemName USER_EXT_MULTI_ELEMENT = ItemName.from(NS_USER_EXT, "multi");
 
-    public static final ItemName USER_ADHOC_BOTTLES_ELEMENT = new ItemName(NS_ADHOC, "bottles");
+    public static final ItemName USER_ADHOC_BOTTLES_ELEMENT = ItemName.from(NS_ADHOC, "bottles");
 
-    public static final ItemName WEAPONS_WEAPON_BRAND_TYPE_QNAME = new ItemName(NS_WEAPONS, "WeaponBrandType");
+    public static final ItemName WEAPONS_WEAPON_BRAND_TYPE_QNAME = ItemName.from(NS_WEAPONS, "WeaponBrandType");
 
     public static final String KEYSTORE_PATH = "src/test/resources/keystore.jceks";
     public static final String KEYSTORE_PASSWORD = "changeit";
@@ -358,7 +358,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         assertNotNull("Property "+USER_VALID_FROM_PATH+" not found", validFromProperty);
         PrismAsserts.assertPropertyValue(validFromProperty, USER_JACK_VALID_FROM);
 
-        ItemName actName = new ItemName(NS_FOO,"activation");
+        ItemName actName = ItemName.from(NS_FOO,"activation");
         // Use path
         PrismContainer<ActivationType> actContainer1 = user.findContainer(actName);
         assertContainerDefinition(actContainer1, "activation", ACTIVATION_TYPE_QNAME, 0, 1);
@@ -371,14 +371,14 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         // Compare
         assertEquals("Eh?",actContainer1,actContainer2);
 
-        PrismProperty<Boolean> enabledProperty2 = actContainer1.findProperty(new ItemName(NS_FOO,"enabled"));
+        PrismProperty<Boolean> enabledProperty2 = actContainer1.findProperty(ItemName.from(NS_FOO,"enabled"));
         assertNotNull("Property enabled not found", enabledProperty2);
         PrismAsserts.assertPropertyValue(enabledProperty2, true);
         assertEquals("Eh?",enabledProperty1,enabledProperty2);
 
-        ItemName assName = new ItemName(NS_FOO,"assignment");
-        ItemName descriptionName = new ItemName(NS_FOO,"description");
-        ItemName accountConstructionName = new ItemName(NS_FOO,"accountConstruction");
+        ItemName assName = ItemName.from(NS_FOO,"assignment");
+        ItemName descriptionName = ItemName.from(NS_FOO,"description");
+        ItemName accountConstructionName = ItemName.from(NS_FOO,"accountConstruction");
         PrismContainer<AssignmentType> assContainer = user.findContainer(assName);
         if (withIncomplete) {
             assertTrue("Assignment is not incomplete", assContainer.isIncomplete());
@@ -414,7 +414,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
         assertNotNull("Value #2 has no XNode present", value2.getXnode());
         PrismValue prismValue2 = value2.getParsedValue(user.getDefinition(), user.getDefinition().getItemName());
         PrismContainerValue<UserType> prismUserValue2 = (PrismContainerValue<UserType>) prismValue2;
-        assertEquals("Wrong value #2", "Nobody", prismUserValue2.findProperty(new ItemName(NS_FOO, "fullName")).getRealValue());
+        assertEquals("Wrong value #2", "Nobody", prismUserValue2.findProperty(ItemName.from(NS_FOO, "fullName")).getRealValue());
 
         PrismReference accountRef = user.findReference(USER_ACCOUNTREF_QNAME);
         if (withIncomplete) {
@@ -433,7 +433,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
     }
 
     private static void assertJackPolyName(PrismObject<UserType> user, boolean expectFullPolyName) {
-        ItemName propQName = new ItemName(NS_FOO, "polyName");
+        ItemName propQName = ItemName.from(NS_FOO, "polyName");
         PrismProperty<PolyString> polyNameProp = user.findProperty(propQName);
         assertJackPolyName(polyNameProp, user, expectFullPolyName);
     }
@@ -509,7 +509,7 @@ public class PrismInternalTestUtil implements PrismContextFactory {
     }
 
     public static void assertPropertyValue(PrismContainer<?> container, String propName, Object propValue) {
-        ItemName propQName = new ItemName(NS_FOO, propName);
+        ItemName propQName = ItemName.from(NS_FOO, propName);
         PrismAsserts.assertPropertyValue(container, propQName, propValue);
     }
 

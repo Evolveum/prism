@@ -263,7 +263,7 @@ class DomToSchemaPostProcessor {
         for (XSAttributeUse attributeUse : complexType.getAttributeUses()) {
 
             var attributeDecl = attributeUse.getDecl();
-            ItemName name = new ItemName(ctd.getTypeName().getNamespaceURI(), attributeDecl.getName());
+            ItemName name = ItemName.from(ctd.getTypeName().getNamespaceURI(), attributeDecl.getName());
             QName type = getType(attributeDecl.getType());
             var attributeDef = getDefinitionFactory().createPropertyDefinition(
                     name, type, null, prismContext, null,  null);

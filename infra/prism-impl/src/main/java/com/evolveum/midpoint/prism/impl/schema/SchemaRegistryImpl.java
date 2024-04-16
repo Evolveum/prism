@@ -730,7 +730,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             ComplexTypeDefinition extensionCtd = entry.getValue();
             ComplexTypeDefinition primaryCtd = findComplexTypeDefinitionByType(typeQName);
             PrismContainerDefinition extensionContainer = primaryCtd.findContainerDefinition(
-                    new ItemName(primaryCtd.getTypeName().getNamespaceURI(), PrismConstants.EXTENSION_LOCAL_NAME));
+                    ItemName.from(primaryCtd.getTypeName().getNamespaceURI(), PrismConstants.EXTENSION_LOCAL_NAME));
             if (extensionContainer == null) {
                 throw new SchemaException("Attempt to extend type " + typeQName + " with " + extensionCtd.getTypeClass() + " but the original type does not have extension container");
             }

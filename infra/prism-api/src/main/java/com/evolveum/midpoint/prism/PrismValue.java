@@ -36,6 +36,7 @@ import java.util.Optional;
 public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, PrismContextSensitive, MidpointOriginMetadata {      // todo ShortDumpable?
 
     @VisibleForTesting
+    @Deprecated
     void setPrismContext(PrismContext prismContext);
 
     Map<String, Object> getUserData();
@@ -92,6 +93,7 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
      * Sets metadata for this value.
      */
     @Experimental
+    @Deprecated
     void setValueMetadata(PrismContainer<?> valueMetadata);
 
     /**
