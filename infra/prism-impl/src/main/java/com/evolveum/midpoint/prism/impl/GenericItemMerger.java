@@ -86,6 +86,11 @@ public class GenericItemMerger extends BaseItemMerger<Item<?, ?>> {
         this(originMarker, naturalKey, new PathKeyedMap<>(), MergeStrategy.OVERLAY);
     }
 
+    @Override
+    public NaturalKey getNaturalKey() {
+        return naturalKey;
+    }
+
     public void mergeContainerValues(@NotNull PrismContainerValue<?> targetPcv, @NotNull PrismContainerValue<?> sourcePcv)
             throws ConfigurationException, SchemaException {
         for (QName qName : determineItemNames(targetPcv, sourcePcv)) {

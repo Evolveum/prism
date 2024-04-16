@@ -10,17 +10,15 @@ package com.evolveum.midpoint.prism.impl.key;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.evolveum.midpoint.prism.key.NaturalKey;
-import com.evolveum.midpoint.prism.path.UniformItemPath;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismProperty;
+import com.evolveum.midpoint.prism.key.NaturalKey;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.util.MiscUtil;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -48,9 +46,14 @@ public class ItemPathNaturalKeyImpl implements NaturalKey {
 
     @Override
     public boolean valuesMatch(PrismContainerValue<?> targetValue, PrismContainerValue<?> sourceValue) {
-        return getItemPath(targetValue)
-                .equivalent(
-                        getItemPath(sourceValue));
+        ItemPath targetPath = getItemPath(targetValue);
+        ItemPath sourcePath = getItemPath(sourceValue);
+
+        if (targetPath == null || sourcePath == null) {
+            return false;
+        }
+
+        return targetPath.equivalent(sourcePath);
     }
 
     /**
@@ -65,6 +68,10 @@ public class ItemPathNaturalKeyImpl implements NaturalKey {
     public void mergeMatchingKeys(PrismContainerValue<?> targetValue, PrismContainerValue<?> sourceValue) {
         ItemPath targetPath = getItemPath(targetValue);
         ItemPath sourcePath = getItemPath(sourceValue);
+
+        if (targetPath == null || sourcePath == null) {
+            return;
+        }
 
         assert targetPath.equivalent(sourcePath);
 
@@ -102,16 +109,16 @@ public class ItemPathNaturalKeyImpl implements NaturalKey {
         }
     }
 
-    private @NotNull ItemPath getItemPath(PrismContainerValue<?> containerValue) {
-        PrismProperty<ItemPathType> property =
-                MiscUtil.requireNonNull(
-                        containerValue.findProperty(keyItemName),
-                        () -> new SystemException("No '" + keyItemName + "' in " + containerValue));
+    private ItemPath getItemPath(PrismContainerValue<?> containerValue) {
+        PrismProperty<ItemPathType> property = containerValue.findProperty(keyItemName);
+        if (property == null) {
+            return null;
+        }
+
         try {
-            ItemPathType itemPathType = MiscUtil.requireNonNull(
-                    property.getRealValue(ItemPathType.class),
-                    () -> new SystemException("No '" + keyItemName + "' in " + containerValue));
-            return itemPathType.getItemPath();
+            ItemPathType itemPathType = property.getRealValue(ItemPathType.class);
+
+            return itemPathType != null ? itemPathType.getItemPath() : null;
         } catch (RuntimeException e) {
             throw new SystemException("Couldn't get '" + keyItemName + "' from " + containerValue, e);
         }
