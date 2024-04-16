@@ -395,7 +395,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         while (valuesIterator.hasNext()) {
             V existingValue = valuesIterator.next();
             if (existingValue.equals(valueToRemove, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS)
-                    || toDelete && existingValue.representsSameValue(valueToRemove, false)) {        // the same algorithm as when deleting the item value
+                    || toDelete
+                    && existingValue.representsSameValue(valueToRemove, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS,false)) {        // the same algorithm as when deleting the item value
                 valuesIterator.remove();
                 removed = true;
             }
@@ -1988,7 +1989,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                             // The problem is if one side has content with ID, and the other has the same content without ID.
                             // This might have the same or different effect, depending on the content it is applied to.
                             // See MID-3828
-                            return v1.equals(v2, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS) || v1.representsSameValue(v2, false);
+                            return v1.equals(v2, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS)
+                                    || v1.representsSameValue(v2, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
                         }
                     } else {
                         return false;

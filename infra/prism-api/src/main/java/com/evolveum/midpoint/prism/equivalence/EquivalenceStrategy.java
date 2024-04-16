@@ -71,7 +71,7 @@ public interface EquivalenceStrategy {
     /**
      * Same as {@link #REAL_VALUE_CONSIDER_DIFFERENT_IDS} but also takes natural keys into account.
      */
-    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIds();
+    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIdsAndNaturalKeys();
 
 
     /**

@@ -143,7 +143,7 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
      *            multi-valued containers. But can cause problems when we want to be sure we are removing the correct
      *            value.
      */
-    boolean representsSameValue(PrismValue other, boolean lax);
+    boolean representsSameValue(PrismValue other, EquivalenceStrategy strategy, boolean lax);
 
     /** Currently doing nothing. */
     void normalize();
