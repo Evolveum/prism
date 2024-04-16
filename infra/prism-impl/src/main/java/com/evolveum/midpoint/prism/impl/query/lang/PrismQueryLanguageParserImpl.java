@@ -467,6 +467,17 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+
+                    if (subfilterOrValue.expression() != null) {
+                        var expression = parseExpression(subfilterOrValue.expression());
+                        return InOidFilterImpl.createInOid(false, expression);
+                    }
+                    if (isVariablePath(subfilterOrValue.singleValue())) {
+                        var rightPath = path(context.itemDef(), subfilterOrValue.singleValue().path());
+                        var expression = parseExpression(rightPath);
+                        return InOidFilterImpl.createInOid(false, expression);
+                    }
+
                     return InOidFilterImpl.createInOid(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
             })
@@ -475,6 +486,18 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                 @Override
                 protected ObjectFilter create(QueryParsingContext.Local context, QName matchingRule,
                         SubfilterOrValueContext subfilterOrValue) throws SchemaException {
+
+                    if (subfilterOrValue.expression() != null) {
+                        var expression = parseExpression(subfilterOrValue.expression());
+                        return InOidFilterImpl.createInOid(true, expression);
+                    }
+                    if (isVariablePath(subfilterOrValue.singleValue())) {
+                        var rightPath = path(context.itemDef(), subfilterOrValue.singleValue().path());
+                        var expression = parseExpression(rightPath);
+                        return InOidFilterImpl.createInOid(true, expression);
+                    }
+
+
                     return InOidFilterImpl.createOwnerHasOidIn(requireLiterals(String.class, filterName, subfilterOrValue));
                 }
             })

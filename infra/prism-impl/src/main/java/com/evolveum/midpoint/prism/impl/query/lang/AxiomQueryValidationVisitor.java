@@ -9,6 +9,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
@@ -24,8 +25,16 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
     private TypeDefinition typeDefinition;
     private ItemDefinition<?> itemDefinition;
 
-    public AxiomQueryValidationVisitor(PrismContext prismContext) {
+    public AxiomQueryValidationVisitor(@Nullable ItemDefinition<?> rootItem, PrismContext prismContext) {
         schemaRegistry = prismContext.getSchemaRegistry();
+        if (rootItem != null) {
+            itemDefinition = rootItem;
+        }
+        if (itemDefinition != null && itemDefinition.getTypeName() != null) {
+
+
+            typeDefinition = schemaRegistry.findTypeDefinitionByType(itemDefinition.getTypeName());
+        }
     }
 
     @Override
