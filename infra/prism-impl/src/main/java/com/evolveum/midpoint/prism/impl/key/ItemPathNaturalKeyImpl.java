@@ -49,6 +49,10 @@ public class ItemPathNaturalKeyImpl implements NaturalKey {
         ItemPath targetPath = getItemPath(targetValue);
         ItemPath sourcePath = getItemPath(sourceValue);
 
+        if (targetPath == null && sourcePath == null) {
+            return true;
+        }
+
         if (targetPath == null || sourcePath == null) {
             return false;
         }
