@@ -258,7 +258,7 @@ public class JavaTypeConverter {
             return rawValue;
         }
         if (expectedType == QName.class && rawValue instanceof String) {
-            return QNameUtil.uriToQName(((String) rawValue).trim());
+            return QNameUtil.uriToQName(((String) rawValue).trim(), true);
         }
 
         if (failIfImpossible) {
