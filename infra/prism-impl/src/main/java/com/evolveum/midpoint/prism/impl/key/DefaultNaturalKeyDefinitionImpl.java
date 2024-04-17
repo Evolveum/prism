@@ -11,7 +11,7 @@ import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import org.jetbrains.annotations.NotNull;
@@ -21,21 +21,21 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * A {@link NaturalKey} implementation that uses a simple list of constituent items to compare container values.
+ * A {@link NaturalKeyDefinition} implementation that uses a simple list of constituent items to compare container values.
  *
  * No specific key merging is provided.
  */
-public class DefaultNaturalKeyImpl implements NaturalKey {
+public class DefaultNaturalKeyDefinitionImpl implements NaturalKeyDefinition {
 
     /** Items that constitute the natural key. */
     @NotNull private final Collection<QName> constituents;
 
-    private DefaultNaturalKeyImpl(@NotNull Collection<QName> constituents) {
+    private DefaultNaturalKeyDefinitionImpl(@NotNull Collection<QName> constituents) {
         this.constituents = constituents;
     }
 
-    public static DefaultNaturalKeyImpl of(QName... constituents) {
-        return new DefaultNaturalKeyImpl(List.of(constituents));
+    public static DefaultNaturalKeyDefinitionImpl of(QName... constituents) {
+        return new DefaultNaturalKeyDefinitionImpl(List.of(constituents));
     }
 
     @Override

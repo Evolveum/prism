@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.PathKeyedMap;
@@ -49,14 +49,14 @@ public class GenericItemMerger extends BaseItemMerger<Item<?, ?>> {
     private static final Trace LOGGER = TraceManager.getTrace(GenericItemMerger.class);
 
     /** Natural key for the current item. If null, there's no natural key defined. */
-    @Nullable private final NaturalKey naturalKey;
+    @Nullable private final NaturalKeyDefinition naturalKey;
 
     /** Mergers to be used for child items. */
     @NotNull private final PathKeyedMap<ItemMerger> childrenMergers;
 
     private GenericItemMerger(
             @Nullable OriginMarker originMarker,
-            @Nullable NaturalKey naturalKey,
+            @Nullable NaturalKeyDefinition naturalKey,
             @NotNull PathKeyedMap<ItemMerger> childrenMergers,
             @NotNull MergeStrategy strategy) {
         super(originMarker);
@@ -82,12 +82,12 @@ public class GenericItemMerger extends BaseItemMerger<Item<?, ?>> {
     @SuppressWarnings("WeakerAccess")
     public GenericItemMerger(
             @Nullable OriginMarker originMarker,
-            NaturalKey naturalKey) {
+            NaturalKeyDefinition naturalKey) {
         this(originMarker, naturalKey, new PathKeyedMap<>(), MergeStrategy.OVERLAY);
     }
 
     @Override
-    public NaturalKey getNaturalKey() {
+    public NaturalKeyDefinition getNaturalKey() {
         return naturalKey;
     }
 

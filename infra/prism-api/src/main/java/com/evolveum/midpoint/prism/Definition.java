@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -230,7 +230,7 @@ public interface Definition
     List<QName> getNaturalKeyConstituents();
 
     @Nullable
-    NaturalKey getNaturalKeyInstance();
+    NaturalKeyDefinition getNaturalKeyInstance();
 
     @NotNull
     Definition clone();

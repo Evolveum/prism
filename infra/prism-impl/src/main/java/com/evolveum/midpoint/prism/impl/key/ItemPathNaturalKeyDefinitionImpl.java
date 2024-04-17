@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismProperty;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
@@ -32,16 +32,16 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
  * 1. the type of the key item is {@link ItemPathType}
  * 2. each container value to be merged must have the key value specified
  */
-public class ItemPathNaturalKeyImpl implements NaturalKey {
+public class ItemPathNaturalKeyDefinitionImpl implements NaturalKeyDefinition {
 
     @NotNull private final ItemName keyItemName;
 
-    private ItemPathNaturalKeyImpl(@NotNull ItemName keyItemName) {
+    private ItemPathNaturalKeyDefinitionImpl(@NotNull ItemName keyItemName) {
         this.keyItemName = keyItemName;
     }
 
-    public static ItemPathNaturalKeyImpl of(@NotNull ItemName itemName) {
-        return new ItemPathNaturalKeyImpl(itemName);
+    public static ItemPathNaturalKeyDefinitionImpl of(@NotNull ItemName itemName) {
+        return new ItemPathNaturalKeyDefinitionImpl(itemName);
     }
 
     @Override

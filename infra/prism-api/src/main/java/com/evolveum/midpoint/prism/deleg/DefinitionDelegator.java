@@ -13,7 +13,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -216,7 +216,7 @@ public interface DefinitionDelegator extends Definition {
         return delegate().getMergerInstance(strategy, originMarker);
     }
     @Override
-    default @Nullable NaturalKey getNaturalKeyInstance() {
+    default @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         return delegate().getNaturalKeyInstance();
     }
 }

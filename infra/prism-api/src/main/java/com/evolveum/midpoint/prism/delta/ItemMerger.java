@@ -10,14 +10,14 @@ package com.evolveum.midpoint.prism.delta;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.exception.ConfigurationException;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface ItemMerger {
 
-    NaturalKey getNaturalKey();
+    NaturalKeyDefinition getNaturalKey();
 
     /**
      * Merges all data about specific item (named `itemName`) from `source` container value to `target` one, according

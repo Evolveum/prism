@@ -12,7 +12,7 @@ import java.util.Arrays;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -126,7 +126,7 @@ public abstract class BaseItemMerger<T extends Item<?, ?>> implements ItemMerger
             throws ConfigurationException, SchemaException;
 
     @Override
-    public NaturalKey getNaturalKey() {
+    public NaturalKeyDefinition getNaturalKey() {
         throw new UnsupportedOperationException("not implemented yet");
     }
 }

@@ -18,8 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.impl.key.NaturalKeyImpl;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -111,7 +111,7 @@ public class ItemMergerFactoryImpl implements ItemMergerFactory {
         // try to use a:naturalKey annotation
         List<QName> identifiers = def.getNaturalKeyConstituents();
         if (identifiers != null && !identifiers.isEmpty()) {
-            NaturalKey key = NaturalKeyImpl.of(identifiers.toArray(new QName[0]));
+            NaturalKeyDefinition key = NaturalKeyDefinitionImpl.of(identifiers.toArray(new QName[0]));
 
             LOGGER.trace("Using generic item merger for {} (value class {}) with key {}", itemName, valueClass, key);
             return new GenericItemMerger(originMarker, key);

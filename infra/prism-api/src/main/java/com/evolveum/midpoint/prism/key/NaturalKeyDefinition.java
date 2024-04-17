@@ -21,7 +21,7 @@ import com.evolveum.midpoint.prism.PrismContainerValue;
  *
  * (See also the description in {@link GenericItemMerger}, where this class is primarily used.)
  */
-public interface NaturalKey {
+public interface NaturalKeyDefinition {
 
     /**
      * Returns `true` if the target and source container values match on their natural key.

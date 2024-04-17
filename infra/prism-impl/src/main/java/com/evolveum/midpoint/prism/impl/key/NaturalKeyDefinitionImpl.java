@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,26 +25,26 @@ import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
-public class NaturalKeyImpl implements NaturalKey {
+public class NaturalKeyDefinitionImpl implements NaturalKeyDefinition {
 
-    private static final Function<QName, NaturalKey> DEFAULT_CONSTITUENT_HANDLER = (constituent) -> DefaultNaturalKeyImpl.of(constituent);
+    private static final Function<QName, NaturalKeyDefinition> DEFAULT_CONSTITUENT_HANDLER = (constituent) -> DefaultNaturalKeyDefinitionImpl.of(constituent);
 
-    private static final @NotNull Map<Class<?>, Function<QName, NaturalKey>> CONSTITUENT_HANDLERS = Map.ofEntries(
-            entry(ItemPathType.class, (constituent) -> ItemPathNaturalKeyImpl.of(new ItemName(constituent)))
+    private static final @NotNull Map<Class<?>, Function<QName, NaturalKeyDefinition>> CONSTITUENT_HANDLERS = Map.ofEntries(
+            entry(ItemPathType.class, (constituent) -> ItemPathNaturalKeyDefinitionImpl.of(new ItemName(constituent)))
     );
 
     @NotNull private final Collection<QName> constituents;
 
-    private NaturalKeyImpl(@NotNull Collection<QName> constituents) {
+    private NaturalKeyDefinitionImpl(@NotNull Collection<QName> constituents) {
         this.constituents = constituents;
     }
 
-    public static NaturalKeyImpl of(Collection<QName> constituents) {
-        return new NaturalKeyImpl(constituents);
+    public static NaturalKeyDefinitionImpl of(Collection<QName> constituents) {
+        return new NaturalKeyDefinitionImpl(constituents);
     }
 
-    public static NaturalKeyImpl of(QName... constituents) {
-        return new NaturalKeyImpl(List.of(constituents));
+    public static NaturalKeyDefinitionImpl of(QName... constituents) {
+        return new NaturalKeyDefinitionImpl(List.of(constituents));
     }
 
     @Override
@@ -55,7 +55,7 @@ public class NaturalKeyImpl implements NaturalKey {
             ItemDefinition<?> itemDefinition = targetDef.findItemDefinition(ItemName.fromQName(constituent));
             Class<?> itemType = itemDefinition.getTypeClass();
 
-            NaturalKey handler = CONSTITUENT_HANDLERS
+            NaturalKeyDefinition handler = CONSTITUENT_HANDLERS
                     .getOrDefault(itemType, DEFAULT_CONSTITUENT_HANDLER)
                     .apply(constituent);
 
@@ -75,7 +75,7 @@ public class NaturalKeyImpl implements NaturalKey {
             ItemDefinition<?> itemDefinition = targetDef.findItemDefinition(ItemName.fromQName(constituent));
             Class<?> itemType = itemDefinition.getTypeClass();
 
-            NaturalKey handler = CONSTITUENT_HANDLERS
+            NaturalKeyDefinition handler = CONSTITUENT_HANDLERS
                     .getOrDefault(itemType, DEFAULT_CONSTITUENT_HANDLER)
                     .apply(constituent);
 

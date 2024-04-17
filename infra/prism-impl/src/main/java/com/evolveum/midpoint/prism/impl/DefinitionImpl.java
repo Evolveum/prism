@@ -16,8 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.impl.key.NaturalKeyImpl;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -113,9 +113,9 @@ public abstract class DefinitionImpl extends AbstractFreezable implements Mutabl
     }
 
     @Override
-    public @Nullable NaturalKey getNaturalKeyInstance() {
+    public @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         // todo how to create proper NaturalKey instance, implementations could be outside of prism api/impl
-        return naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty() ? NaturalKeyImpl.of(naturalKeyConstituents) : null;
+        return naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty() ? NaturalKeyDefinitionImpl.of(naturalKeyConstituents) : null;
     }
 
     @Override

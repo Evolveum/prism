@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.delta.ItemMerger;
-import com.evolveum.midpoint.prism.key.NaturalKey;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1073,7 +1073,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             return false;
         }
 
-        NaturalKey key = def.getNaturalKeyInstance();
+        NaturalKeyDefinition key = def.getNaturalKeyInstance();
         if (key != null && key.valuesMatch(this, other)) {
             return true;
         }
@@ -1081,7 +1081,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (def.getMergerIdentifier() != null) {
             ItemMerger merger = def.getMergerInstance(MergeStrategy.FULL, null);
             if (merger != null) {
-                NaturalKey k = merger.getNaturalKey();
+                NaturalKeyDefinition k = merger.getNaturalKey();
                 if (k != null && k.valuesMatch(this, other)) {
                     return true;
                 }
