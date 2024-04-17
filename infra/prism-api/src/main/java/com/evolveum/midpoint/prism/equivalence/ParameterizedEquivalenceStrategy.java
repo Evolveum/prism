@@ -177,7 +177,7 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         putIntoNiceNames(ignoreMetadata(), "IGNORE_METADATA");
         putIntoNiceNames(realValue(), "REAL_VALUE");
         putIntoNiceNames(realValueConsiderDifferentIds(), "REAL_VALUE_CONSIDER_DIFFERENT_IDS");
-        putIntoNiceNames(realValueConsiderDifferentIds(), "REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS");
+        putIntoNiceNames(realValueConsiderDifferentIdsAndNaturalKeys(), "REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS");
     }
 
     private static void putIntoNiceNames(ParameterizedEquivalenceStrategy strategy, String name) {
