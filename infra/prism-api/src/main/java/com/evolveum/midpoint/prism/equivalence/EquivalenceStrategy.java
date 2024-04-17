@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.equivalence;
 
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 import java.util.Comparator;
 
@@ -70,8 +71,14 @@ public interface EquivalenceStrategy {
 
     /**
      * Same as {@link #REAL_VALUE_CONSIDER_DIFFERENT_IDS} but also takes natural keys into account.
+     * However, natural keys can be considered only if there are PCV ids present in first value.
+     * This is to avoid item paths with null segments or natural keys being added to item path.
+     *
+     * This is a bit experimental.
      */
-    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIdsAndNaturalKeys();
+    @Experimental
+    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS =
+            ParameterizedEquivalenceStrategy.realValueConsiderDifferentIdsAndNaturalKeys();
 
 
     /**
