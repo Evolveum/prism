@@ -10,7 +10,6 @@ package com.evolveum.midpoint.prism.impl.schema;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.schema.SchemaBuilder;
-import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -78,11 +77,11 @@ class SchemaDomParser {
      * Provided to allow circular references (e.g. common-3 -> scripting-3 -> common-3).
      */
     void parseSchemas(
-            Collection<SchemaDescription> schemaDescriptions, Element wrapper) throws SchemaException {
+            Collection<PrismSchemaImpl> schemas, Element wrapper) throws SchemaException {
         XSSchemaSet xsSchemaSet = parseSchemaToXsom(wrapper);
         if (xsSchemaSet != null) {
-            var builders = schemaDescriptions.stream()
-                    .map(sd -> sd.getSchema().builder())
+            var builders = schemas.stream()
+                    .map(sd -> sd.builder())
                     .toList();
             new SchemaXsomParser(
                     xsSchemaSet,

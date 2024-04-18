@@ -35,7 +35,6 @@ import com.evolveum.midpoint.prism.polystring.PolyStringNormalizer;
 import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntry;
 import com.evolveum.midpoint.prism.query.builder.S_FilterEntryOrEmpty;
-import com.evolveum.midpoint.prism.schema.SchemaFactory;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
@@ -59,6 +58,7 @@ public interface PrismContext extends ProtectorCreator {
      * Initializes the prism context, e.g. loads and parses all the schemas.
      */
     void initialize() throws SchemaException, SAXException, IOException;
+    void reload() throws SchemaException;
 
     void configurePolyStringNormalizer(PolyStringNormalizerConfigurationType configuration) throws ClassNotFoundException, InstantiationException, IllegalAccessException;
 
@@ -433,9 +433,6 @@ public interface PrismContext extends ProtectorCreator {
     @Experimental
     void setExtraValidation(boolean value);
 
-    @NotNull
-    SchemaFactory schemaFactory();
-
     @Experimental
     void setValueMetadataFactory(ValueMetadataFactory factory);
 
@@ -460,6 +457,9 @@ public interface PrismContext extends ProtectorCreator {
     PrismQueryLanguageParser createQueryParser(Map<String, String> prefixToNamespace);
 
     PrismQuerySerializer querySerializer();
+
+    @NotNull
+    ItemMergerFactory itemMergerFactory();
 
     static PrismContext get() {
         return PrismService.get().prismContext();

@@ -50,6 +50,8 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     String getDefaultNamespace();
 
+    void reload() throws SchemaException;
+
     void initialize() throws SAXException, IOException, SchemaException;
 
     javax.xml.validation.Schema getJavaxSchema();
@@ -147,13 +149,9 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     SchemaDescription findSchemaDescriptionByNamespace(String namespaceURI);
 
-    PrismSchema findSchemaByPrefix(String prefix);
-
     SchemaDescription findSchemaDescriptionByPrefix(String prefix);
 
     PrismObjectDefinition determineDefinitionFromClass(Class type);
-
-//    boolean hasImplicitTypeDefinitionOld(QName elementName, QName typeName);
 
     @NotNull PrismContainerDefinition<?> getValueMetadataDefinition();
 

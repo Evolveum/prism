@@ -46,7 +46,6 @@ import com.evolveum.midpoint.prism.impl.query.QueryFactoryImpl;
 import com.evolveum.midpoint.prism.impl.query.builder.QueryBuilder;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQueryLanguageParserImpl;
 import com.evolveum.midpoint.prism.impl.query.lang.PrismQuerySerializerImpl;
-import com.evolveum.midpoint.prism.impl.schema.SchemaFactoryImpl;
 import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeFactoryImpl;
 import com.evolveum.midpoint.prism.marshaller.JaxbDomHack;
@@ -96,7 +95,8 @@ public final class PrismContextImpl implements PrismContext {
     @NotNull private final DefinitionFactoryImpl definitionFactory;
     @NotNull private final ItemPathParser itemPathParser;
     @NotNull private final ItemPathSerializer itemPathSerializer;
-    @NotNull private final SchemaFactory schemaFactory;
+
+    @NotNull private ItemMergerFactory itemMergerFactory;
 
     @Experimental private ValueMetadataFactory valueMetadataFactory;
     @Experimental private EquivalenceStrategy provenanceEquivalenceStrategy;
@@ -135,7 +135,6 @@ public final class PrismContextImpl implements PrismContext {
     private PrismContextImpl(@NotNull SchemaRegistryImpl schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
         schemaRegistry.setPrismContext(this);
-        this.schemaFactory = new SchemaFactoryImpl(this);
         this.definitionFactory = new DefinitionFactoryImpl();
         this.queryConverter = new QueryConverterImpl(this);
         this.lexicalProcessorRegistry = new LexicalProcessorRegistry(schemaRegistry);
@@ -153,6 +152,7 @@ public final class PrismContextImpl implements PrismContext {
         this.itemPathParser = new ItemPathParserImpl(this);
         this.itemPathSerializer = new ItemPathSerializerImpl();
         this.defaultPolyStringNormalizer = new AlphanumericPolyStringNormalizer();
+        this.itemMergerFactory = new ItemMergerFactoryImpl();
 
         try {
             configurePolyStringNormalizer(null);
@@ -171,6 +171,11 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public void initialize() throws SchemaException, SAXException, IOException {
         schemaRegistry.initialize();
+    }
+
+    @Override
+    public void reload() throws SchemaException {
+        schemaRegistry.reload();
     }
 
     @Override
@@ -724,12 +729,6 @@ public final class PrismContextImpl implements PrismContext {
         PrismContextImpl.extraValidation = value;
     }
 
-    @NotNull
-    @Override
-    public SchemaFactory schemaFactory() {
-        return schemaFactory;
-    }
-
     @Override
     public void setValueMetadataFactory(ValueMetadataFactory valueMetadataFactory) {
         this.valueMetadataFactory = valueMetadataFactory;
@@ -772,5 +771,14 @@ public final class PrismContextImpl implements PrismContext {
     @Override
     public Collection<ValueBasedDefinitionLookupHelper> valueBasedDefinitionLookupsForType(QName typeName) {
         return valueBasedDefinitionLookupHelpers.get(typeName);
+    }
+
+    @Override
+    public @NotNull ItemMergerFactory itemMergerFactory() {
+        return itemMergerFactory;
+    }
+
+    public void setItemMergerFactory(@NotNull ItemMergerFactory itemMergerFactory) {
+        this.itemMergerFactory = itemMergerFactory;
     }
 }

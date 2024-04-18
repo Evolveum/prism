@@ -454,6 +454,17 @@ public class DefinitionFeatures {
                 }
             };
         }
+
+        @SuppressWarnings("SameParameterValue")
+        public static DefinitionFeatureParser<QNameList, Object> qNameList(@NotNull QName name) {
+            return new DefinitionFeatureParser<>() {
+                @Override
+                public @Nullable QNameList getValue(@Nullable Object annotation) {
+                    return QNameList.wrap(
+                            SchemaProcessorUtil.getAnnotationQNameList(annotation, name));
+                }
+            };
+        }
     }
 
     public static class XsdSerializers {

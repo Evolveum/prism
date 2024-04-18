@@ -968,6 +968,22 @@
         </xsd:restriction>
     </xsd:simpleType>
 
+    <xsd:element name="merger" type="xsd:string">
+        <xsd:annotation>
+            <xsd:documentation>
+                Identifier of the implementation strategy that should be used to merge two items of the same type.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="naturalKey" type="xsd:QName">
+        <xsd:annotation>
+            <xsd:documentation>
+                Identifier(s) of the item that has to be used to decide whether two items represent the same object.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
 </xsd:schema>
 
 

@@ -22,8 +22,8 @@ import java.util.Objects;
  *
  *     L = literalDomComparison
  *
- *         Compares DOM nodes literally. Currently this means that the comparison considers namespace prefixes.
- *         Also (a bit unrelated to DOM): when comparing relations, treats "null" and "org:default" relations as different.
+ *         Compares DOM nodes literally. Currently, this means that the comparison considers namespace prefixes.
+ *         Also, (a bit unrelated to DOM): when comparing relations, treats "null" and "org:default" relations as different.
  *
  *     E = consideringElementNames
  *
@@ -64,15 +64,19 @@ import java.util.Objects;
  *         When comparing prism values, should we take into account value metadata? If yes, we apply the same strategy to them
  *         as was used for data comparison.
  *
+ *     n = consideringNaturalKeys
+ *
+ *          When comparing prism values, should we take into account natural keys?
+ *
  *
  *  Summary of individual strategies:
  *
- *     LITERAL                                  L E O I i F r M
- *     DATA                                     - E O I i F r M
- *     IGNORE_METADATA                          - E - - - F r -
- *     REAL_VALUE_CONSIDER_DIFFERENT_IDS        - - - - i - - -
- *     REAL_VALUE                               - - - - - - - -
- *
+ *     LITERAL                                          L E O I i F r M -
+ *     DATA                                             - E O I i F r M -
+ *     IGNORE_METADATA                                  - E - - - F r - -
+ *     REAL_VALUE_CONSIDER_DIFFERENT_IDS                - - - - i - - - -
+ *     REAL_VALUE                                       - - - - - - - - -
+ *     REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS   - - - - i - - - n
  *
  *  Open questions
  *  ==============
@@ -142,6 +146,13 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         return realValueConsiderDifferentIds;
     }
 
+    @Experimental
+    static ParameterizedEquivalenceStrategy realValueConsiderDifferentIdsAndNaturalKeys() {
+        ParameterizedEquivalenceStrategy strategy = realValueConsiderDifferentIds();
+        strategy.consideringNaturalKeys = true;
+        return strategy;
+    }
+
     static ParameterizedEquivalenceStrategy realValue() {
         ParameterizedEquivalenceStrategy realValue = new ParameterizedEquivalenceStrategy();
         realValue.literalDomComparison = false;
@@ -166,6 +177,7 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         putIntoNiceNames(ignoreMetadata(), "IGNORE_METADATA");
         putIntoNiceNames(realValue(), "REAL_VALUE");
         putIntoNiceNames(realValueConsiderDifferentIds(), "REAL_VALUE_CONSIDER_DIFFERENT_IDS");
+        putIntoNiceNames(realValueConsiderDifferentIdsAndNaturalKeys(), "REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS");
     }
 
     private static void putIntoNiceNames(ParameterizedEquivalenceStrategy strategy, String name) {
@@ -195,7 +207,9 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
      */
     private boolean hashRuntimeSchemaItems;                 // R
 
-    private boolean consideringValueMetadata;                   // M
+    private boolean consideringValueMetadata;               // M
+
+    private boolean consideringNaturalKeys;                 // n
 
     public static ParameterizedEquivalenceStrategy getLiteral() {
         return LITERAL;
@@ -211,7 +225,8 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
                 (consideringReferenceFilters ? "F" : "-") +
                 (consideringReferenceOptions ? "r" : "-") +
                 (hashRuntimeSchemaItems ? "R" : "-") +
-                (consideringValueMetadata ? "M" : "-");
+                (consideringValueMetadata ? "M" : "-") +
+                (consideringNaturalKeys ? "n" : "-");
     }
 
     @Override
@@ -310,6 +325,14 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         this.consideringValueMetadata = consideringValueMetadata;
     }
 
+    public boolean isConsideringNaturalKeys() {
+        return consideringNaturalKeys;
+    }
+
+    public void setConsideringNaturalKeys(boolean consideringNaturalKeys) {
+        this.consideringNaturalKeys = consideringNaturalKeys;
+    }
+
     @Override
     public String toString() {
         String desc = getDescription();
@@ -350,7 +373,8 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
                 consideringReferenceOptions == that.consideringReferenceOptions &&
                 consideringElementNames == that.consideringElementNames &&
                 hashRuntimeSchemaItems == that.hashRuntimeSchemaItems &&
-                consideringValueMetadata == that.consideringValueMetadata;
+                consideringValueMetadata == that.consideringValueMetadata &&
+                consideringNaturalKeys == that.consideringNaturalKeys;
     }
 
     @Override
@@ -358,6 +382,6 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         return Objects
                 .hash(literalDomComparison, consideringOperationalData, consideringContainerIds, consideringDifferentContainerIds,
                         consideringReferenceFilters, consideringReferenceOptions, consideringElementNames, hashRuntimeSchemaItems,
-                        consideringValueMetadata);
+                        consideringValueMetadata, consideringNaturalKeys);
     }
 }

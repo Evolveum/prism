@@ -96,6 +96,12 @@ public class SchemaProcessorUtil {
         return DOMUtil.getQNameValue(element);
     }
 
+    public static @NotNull List<QName> getAnnotationQNameList(Object object, QName qname) {
+        return getAnnotationElements(object, qname).stream()
+                .map(DOMUtil::getQNameValue)
+                .toList();
+    }
+
     public static <T> T getAnnotationConverted(Object source, QName qname, Class<T> type) throws SchemaException {
         return convert(type, getAnnotationElement(source, qname));
     }

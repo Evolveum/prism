@@ -185,6 +185,9 @@ class SchemaXsomParser {
         DF_REFERENCE_MARKER.parse(ctdBuilder, sourceComplexType);
         DF_LIST_MARKER.parse(ctdBuilder, sourceComplexType);
 
+        MERGER.parseIfApplicable(ctdBuilder, sourceComplexType.getAnnotation());
+        NATURAL_KEY.parseIfApplicable(ctdBuilder, sourceComplexType.getAnnotation());
+
         DF_SCHEMA_MIGRATIONS.parse(ctdBuilder, sourceComplexType);
         DF_DIAGRAMS.parse(ctdBuilder, sourceComplexType);
 

@@ -9,12 +9,15 @@ package com.evolveum.midpoint.prism;
 
 import java.io.Serializable;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -114,9 +117,17 @@ public interface Definition
      */
     @Nullable Map<QName, Object> getAnnotations();
 
+    @Nullable String getMergerIdentifier();
+
+    @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker);
+
+    @Nullable List<QName> getNaturalKeyConstituents();
+
+    @Nullable NaturalKeyDefinition getNaturalKeyInstance();
+
     @NotNull Definition clone();
 
-    default String debugDump(int indent, IdentityHashMap<Definition,Object> seen) {
+    default String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
         return debugDump(indent);
     }
 
@@ -146,6 +157,10 @@ public interface Definition
         void setOptionalCleanup(boolean optionalCleanup);
 
         void setRuntimeSchema(boolean value);
+
+        void setMergerIdentifier(String value);
+
+        void setNaturalKeyConstituents(List<QName> naturalKeyConstituents);
 
         <A> void setAnnotation(QName qname, A value);
     }

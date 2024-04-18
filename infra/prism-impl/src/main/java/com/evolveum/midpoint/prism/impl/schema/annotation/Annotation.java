@@ -10,21 +10,20 @@ package com.evolveum.midpoint.prism.impl.schema.annotation;
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.XsomParsers.DF_DOCUMENTATION_PARSER;
 
+import java.util.Collection;
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.path.ItemPath;
-
-import com.evolveum.midpoint.util.MiscUtil;
 
 import com.sun.xml.xsom.XSAnnotation;
 
+import com.evolveum.midpoint.prism.Definition.DefinitionMutator;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.XsomParsers;
+import com.evolveum.midpoint.prism.impl.schema.features.QNameList;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import java.util.Collection;
 
 /**
  * A specialization of a {@link DefinitionFeature}, such that:
@@ -73,7 +72,7 @@ public enum Annotation {
             XsomParsers.DF_ALWAYS_USE_FOR_EQUALS_PARSER)),
 
     DEPRECATED(AnnotationBasedFeature.forBooleanMark(
-            A_DEPRECATED, Definition.DefinitionMutator.class, Definition.DefinitionMutator::setDeprecated)),
+            A_DEPRECATED, DefinitionMutator.class, DefinitionMutator::setDeprecated)),
 
     DEPRECATED_SINCE(AnnotationBasedFeature.forString(
             A_DEPRECATED_SINCE, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setDeprecatedSince)),
@@ -124,7 +123,7 @@ public enum Annotation {
             A_OPERATIONAL, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setOperational)),
 
     OPTIONAL_CLEANUP(AnnotationBasedFeature.forBooleanMark(
-            A_OPTIONAL_CLEANUP, Definition.DefinitionMutator.class, Definition.DefinitionMutator::setOptionalCleanup)),
+            A_OPTIONAL_CLEANUP, DefinitionMutator.class, DefinitionMutator::setOptionalCleanup)),
 
     PLANNED_REMOVAL(AnnotationBasedFeature.forString(
             A_PLANNED_REMOVAL, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setPlannedRemoval)),
@@ -142,7 +141,15 @@ public enum Annotation {
             A_REMOVED_SINCE, PrismLifecycleDefinition.Mutable.class, PrismLifecycleDefinition.Mutable::setRemovedSince)),
 
     SEARCHABLE(AnnotationBasedFeature.forBooleanMark(
-            A_SEARCHABLE, PrismItemStorageDefinition.Mutable.class, PrismItemStorageDefinition.Mutable::setSearchable));
+            A_SEARCHABLE, PrismItemStorageDefinition.Mutable.class, PrismItemStorageDefinition.Mutable::setSearchable)),
+
+    MERGER(AnnotationBasedFeature.forString(
+            A_MERGER, DefinitionMutator.class, DefinitionMutator::setMergerIdentifier)),
+
+    NATURAL_KEY(AnnotationBasedFeature.custom(
+            A_NATURAL_KEY, QNameList.class,
+            DefinitionMutator.class, (def, qNameList) -> def.setNaturalKeyConstituents(QNameList.unwrap(qNameList)),
+            XsomParsers.qNameList(A_NATURAL_KEY).restrictToSource(XSAnnotation.class)));
 
     /** This is the object that does all the work. */
     private final AnnotationBasedFeature<?, ?> definitionFeature;

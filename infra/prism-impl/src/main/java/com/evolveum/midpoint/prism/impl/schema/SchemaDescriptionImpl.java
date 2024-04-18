@@ -7,7 +7,6 @@
 package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -37,7 +36,6 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
     private boolean isPrismSchema = false;
     private boolean isDefault = false;
     private boolean isDeclaredByDefault = false;
-    private PrismSchema schema;
     private Package compileTimeClassesPackage;
     private boolean registered;
 
@@ -120,16 +118,6 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
     }
 
     @Override
-    public PrismSchema getSchema() {
-        return schema;
-    }
-
-    public void setSchema(PrismSchema schema) {
-        checkMutable();
-        this.schema = schema;
-    }
-
-    @Override
     public Package getCompileTimeClassesPackage() {
         return compileTimeClassesPackage;
     }
@@ -192,19 +180,7 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
         sb.append(path);
-        if (schema != null) {
-            sb.append(" ");
-            sb.append(schema);
-        }
         return sb.toString();
-    }
-
-
-    @Override
-    protected void performFreeze() {
-        if (schema != null) {
-            schema.freeze();
-        }
     }
 
     @Override public String toString() {
@@ -212,8 +188,6 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
                 "sourceDescription='" + sourceDescription + '\'' +
                 ", usualPrefix='" + usualPrefix + '\'' +
                 ", namespace='" + namespace + '\'' +
-                ", schema=" + schema +
-                ", runtime=" + isRuntime() +
                 '}';
     }
 

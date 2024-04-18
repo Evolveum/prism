@@ -47,20 +47,14 @@ public interface PrismSchema
      */
     @NotNull Collection<Definition> getDefinitions();
 
+    /** Just a convenience method. Useful for diagnostics & tests. */
     default int size() {
         return getDefinitions().size();
     }
 
+    /** Just a convenience method. Primarily for tests. */
     default boolean isEmpty() {
         return getDefinitions().isEmpty();
-    }
-
-    static boolean isNullOrEmpty(PrismSchema schema) {
-        return schema == null || schema.isEmpty();
-    }
-
-    static boolean isNotEmpty(PrismSchema schema) {
-        return !isNullOrEmpty(schema);
     }
 
     /**
@@ -81,6 +75,10 @@ public interface PrismSchema
 
     Multimap<QName, ItemDefinition<?>> getSubstitutions();
 
+    boolean isRuntime();
+
+    String getSourceDescription();
+
     PrismSchemaMutator mutator();
 
     SchemaBuilder builder();
@@ -90,6 +88,5 @@ public interface PrismSchema
 
         /** Adds any definition (item or type). */
         void add(@NotNull Definition def);
-
     }
 }

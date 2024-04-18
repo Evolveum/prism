@@ -12,9 +12,13 @@ import java.util.*;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 
@@ -65,6 +69,8 @@ public abstract class DefinitionImpl
     private Map<QName, Object> annotations;
     private List<SchemaMigration> schemaMigrations = null;
     private List<ItemDiagramSpecification> diagrams = null;
+    private String mergerIdentifier;
+    private List<QName> naturalKeyConstituents;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -87,6 +93,39 @@ public abstract class DefinitionImpl
     @NotNull
     public QName getTypeName() {
         return typeName;
+    }
+
+    @Override
+    public @Nullable String getMergerIdentifier() {
+        return mergerIdentifier;
+    }
+
+    @Override
+    public @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        return null;
+    }
+
+    @Override
+    public @Nullable List<QName> getNaturalKeyConstituents() {
+        return naturalKeyConstituents;
+    }
+
+    @Override
+    public @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
+        // todo how to create proper NaturalKey instance, implementations could be outside of prism api/impl
+        return naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty() ? NaturalKeyDefinitionImpl.of(naturalKeyConstituents) : null;
+    }
+
+    @Override
+    public void setMergerIdentifier(String mergerIdentifier) {
+        checkMutable();
+        this.mergerIdentifier = mergerIdentifier;
+    }
+
+    @Override
+    public void setNaturalKeyConstituents(List<QName> naturalKeyConstituents) {
+        checkMutable();
+        this.naturalKeyConstituents = naturalKeyConstituents;
     }
 
     @Override

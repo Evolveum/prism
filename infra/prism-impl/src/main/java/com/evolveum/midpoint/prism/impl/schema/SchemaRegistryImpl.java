@@ -109,6 +109,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     /** Map for fast lookup of schema descriptions by class or package. */
     private final Map<Package, SchemaDescriptionImpl> schemaDescriptionMap = new HashMap<>();
 
+    private final Collection<PrismSchemaImpl> parsedPrismSchemas = new ArrayList<>();
+
     /**
      * Schema descriptions for a given namespace.
      * In case of extension schemas there can be more schema descriptions with the same namespace!
@@ -121,6 +123,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      * Value is (merged) extension complex type definition.
      */
     private final Map<QName, ComplexTypeDefinition> extensionSchemas = new HashMap<>();
+
+    private final Map<QName, ComplexTypeDefinition> dbExtensionSchemas = new HashMap<>();
 
     /**
      * Was the schema registry initialized?
@@ -473,6 +477,16 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         registerSchemaDescription(desc);
     }
 
+    public void reload() throws SchemaException {
+        try {
+            parsedPrismSchemas.clear();
+            initialize();
+        } catch (SAXException | IOException e) {
+            throw new SchemaException(e.getMessage(), e);
+        }
+//        applySchemaExtensions(dbExtensionSchemas);
+    }
+
     /**
      * This can be used to read additional schemas even after the registry was initialized.
      */
@@ -501,14 +515,14 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             LOGGER.trace("parseJavaxSchema() done in {} ms", javaxSchemasDone - prismSchemasDone);
 
             parseAdditionalSchemas();
-            schemaDescriptions.forEach(Freezable::freeze);
+
+            parsedPrismSchemas.forEach(Freezable::freeze);
 
             invalidateCaches();
             staticNamespaceContext = staticPrefixes.build();
             initialized = true;
         } catch (SAXException ex) {
-            if (ex instanceof SAXParseException) {
-                SAXParseException sex = (SAXParseException) ex;
+            if (ex instanceof SAXParseException sex) {
                 throw new SchemaException("Error parsing schema " + sex.getSystemId() + " line " + sex.getLineNumber() + ": " + sex.getMessage(), sex);
             }
             throw ex;
@@ -542,21 +556,16 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     private void parsePrismSchemas() throws SchemaException {
         parsePrismSchemas(schemaDescriptions);
         applyAugmentations();
-        for (SchemaDescription schemaDescription : schemaDescriptions) {
-            if (schemaDescription.getSchema() != null) {
-                PrismSchemaImpl schema = (PrismSchemaImpl) schemaDescription.getSchema();
-                resolveMissingTypeDefinitionsInGlobalItemDefinitions(schema);
-                processTypes(schema);
-            }
+        for (PrismSchemaImpl schema : parsedPrismSchemas) {
+            resolveMissingTypeDefinitionsInGlobalItemDefinitions(schema);
+            processTypes(schema);
         }
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("====================================== Dumping prism schemas ======================================\n");
-            for (SchemaDescription schemaDescription : schemaDescriptions) {
+            for (PrismSchemaImpl prismSchema : parsedPrismSchemas) {
                 LOGGER.trace("************************************************************* {} (in {})",
-                        schemaDescription.getNamespace(), schemaDescription.getPath());
-                if (schemaDescription.getSchema() != null) {
-                    LOGGER.trace("{}", schemaDescription.getSchema().debugDump());
-                }
+                        prismSchema.getNamespace(), prismSchema.getSourceDescription());
+                LOGGER.trace("{}", prismSchema.debugDump());
             }
         }
     }
@@ -625,14 +634,14 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         long started = System.currentTimeMillis();
         LOGGER.trace("Parsing schema {}, namespace: {}, isRuntime: {}",
                 schemaDescription.getSourceDescription(), namespace, isRuntime);
-        PrismSchema schema = SchemaParsingUtil.createAndParse(
+        PrismSchemaImpl schema = SchemaParsingUtil.createAndParse(
                 domElement, isRuntime, schemaDescription.getSourceDescription(), allowDelayedItemDefinitions);
         if (StringUtils.isEmpty(namespace)) {
             namespace = schema.getNamespace();
         }
         LOGGER.trace("Parsed schema {}, namespace: {}, isRuntime: {} in {} ms",
                 schemaDescription.getSourceDescription(), namespace, isRuntime, System.currentTimeMillis() - started);
-        schemaDescription.setSchema(schema);
+        parsedPrismSchemas.add(schema);
         detectAugmentations(schema);
     }
 
@@ -654,16 +663,17 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
                 .collect(Collectors.toList());
         LOGGER.trace("Fragmented namespaces: {}", fragmentedNamespaces);
 
-        List<SchemaDescription> wrappedDescriptions = new ArrayList<>();
+        List<PrismSchemaImpl> wrappedSchemas = new ArrayList<>();
         for (SchemaDescriptionImpl description : prismSchemaDescriptions) {
             String namespace = description.getNamespace();
             if (!fragmentedNamespaces.contains(namespace)) {
                 Element importElement = DOMUtil.createSubElement(schemaElement, DOMUtil.XSD_IMPORT_ELEMENT);
                 importElement.setAttribute(DOMUtil.XSD_ATTR_NAMESPACE.getLocalPart(), namespace);
-                PrismSchemaImpl schema = new PrismSchemaImpl(namespace);
-                schema.setRuntime(description.isRuntime());
-                description.setSchema(schema);
-                wrappedDescriptions.add(description);
+                PrismSchemaImpl schema = new PrismSchemaImpl(namespace, description.getCompileTimeClassesPackage());
+                schema.setRuntime(description.getCompileTimeClassesPackage() == null);
+                schema.setSourceDescription(description.getSourceDescription());
+                parsedPrismSchemas.add(schema);
+                wrappedSchemas.add(schema);
             }
         }
         if (LOGGER.isTraceEnabled()) {
@@ -671,13 +681,13 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
 
         long started = System.currentTimeMillis();
-        LOGGER.trace("Parsing {} schemas wrapped in single XSD", wrappedDescriptions.size());
-        SchemaParsingUtil.parseSchemas(schemaElement, wrappedDescriptions);
+        LOGGER.trace("Parsing {} schemas wrapped in single XSD", wrappedSchemas.size());
+        SchemaParsingUtil.parseSchemas(schemaElement, wrappedSchemas);
         LOGGER.trace("Parsed {} schemas in {} ms",
-                wrappedDescriptions.size(), System.currentTimeMillis() - started);
+                wrappedSchemas.size(), System.currentTimeMillis() - started);
 
-        for (SchemaDescription description : wrappedDescriptions) {
-            detectAugmentations(description.getSchema());
+        for (PrismSchemaImpl parsedSchema : parsedPrismSchemas) {
+            detectAugmentations(parsedSchema);
         }
 
         for (String namespace : fragmentedNamespaces) {
@@ -715,10 +725,11 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     private void applyAugmentations() throws SchemaException {
         //applySubstitutions();
-        applySchemaExtensions();
+        applySchemaExtensions(extensionSchemas);
+        applySchemaExtensions(dbExtensionSchemas);
     }
 
-    private void applySchemaExtensions() throws SchemaException {
+    private void applySchemaExtensions(Map<QName, ComplexTypeDefinition> extensionSchemas) throws SchemaException {
         for (Entry<QName, ComplexTypeDefinition> entry : extensionSchemas.entrySet()) {
             QName typeQName = entry.getKey();
             ComplexTypeDefinition extensionCtd = entry.getValue();
@@ -1150,9 +1161,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public QName resolveUnqualifiedTypeName(QName type) throws SchemaException {
         QName typeFound = null;
-        for (SchemaDescription desc : schemaDescriptions) {
+        for (PrismSchemaImpl desc : parsedPrismSchemas) {
             QName typeInSchema = new QName(desc.getNamespace(), type.getLocalPart());
-            if (desc.getSchema() != null && desc.getSchema().findComplexTypeDefinitionByType(typeInSchema) != null) {
+            if (desc.findComplexTypeDefinitionByType(typeInSchema) != null) {
                 if (typeFound != null) {
                     throw new SchemaException("Ambiguous type name: " + type);
                 } else {
@@ -1237,11 +1248,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     private <TD extends TypeDefinition> TD resolveGlobalTypeDefinitionWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
         TD found = null;
-        for (SchemaDescription schemaDescription : parsedSchemas.values()) {
-            PrismSchema schema = schemaDescription.getSchema();
-            if (schema == null) {       // is this possible?
-                continue;
-            }
+        for (PrismSchemaImpl schema : parsedPrismSchemas) {
             TD def = schema.findTypeDefinitionByType(new QName(schema.getNamespace(), typeLocalName), definitionClass);
             if (def != null) {
                 if (found != null) {
@@ -1257,11 +1264,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @NotNull
     private <TD extends TypeDefinition> Collection<TD> resolveGlobalTypeDefinitionsWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
         List<TD> rv = new ArrayList<>();
-        for (SchemaDescription schemaDescription : parsedSchemas.values()) {
-            PrismSchema schema = schemaDescription.getSchema();
-            if (schema != null) {
-                rv.addAll(schema.findTypeDefinitionsByType(new QName(schema.getNamespace(), typeLocalName), definitionClass));
-            }
+        for (PrismSchemaImpl schema : parsedPrismSchemas) {
+            rv.addAll(schema.findTypeDefinitionsByType(new QName(schema.getNamespace(), typeLocalName), definitionClass));
         }
         return rv;
     }
@@ -1299,11 +1303,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @NotNull
     private <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass, @Nullable List<String> ignoredNamespaces) {
         List<ID> found = new ArrayList<>();
-        for (SchemaDescription schemaDescription : parsedSchemas.values()) {
-            PrismSchema schema = schemaDescription.getSchema();
-            if (schema == null) {       // is this possible?
-                continue;
-            }
+        for (PrismSchemaImpl schema : parsedPrismSchemas) {
             if (namespaceMatches(schema.getNamespace(), ignoredNamespaces)) {
                 continue;
             }
@@ -1322,9 +1322,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     @Override
     public PrismSchema getPrismSchema(String namespace) {
-        List<PrismSchema> schemas = parsedSchemas.get(namespace).stream()
-                .map(s -> s.getSchema())
-                .filter(schema -> schema != null)
+        List<PrismSchema> schemas = parsedPrismSchemas.stream()
+                .filter(s -> namespace.equals(s.getNamespace()))
                 .collect(Collectors.toList());
         if (schemas.size() > 1) {
             throw new IllegalStateException("More than one prism schema for namespace " + namespace);
@@ -1337,10 +1336,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     @Override
     public Collection<PrismSchema> getSchemas() {
-        return parsedSchemas.values().stream()
-                .map(s -> s.getSchema())
-                .filter(schema -> schema != null)
-                .collect(Collectors.toList());
+        return (Collection) parsedPrismSchemas; //TODO
     }
 
     @Override
@@ -1350,21 +1346,26 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     @Override
     public PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass) {
-        Package compileTimePackage = compileTimeClass.getPackage();
-        if (compileTimePackage == null) {
-            return null; // e.g. for arrays
-        }
-        var schemaDescription = schemaDescriptionMap.get(compileTimePackage);
-        return schemaDescription != null ? schemaDescription.getSchema() : null;
+        // FIXME migrate to map!
+        List<PrismSchemaImpl> foundSchemas = parsedPrismSchemas.stream()
+                .filter(schema -> schema.getCompileTimePackage() == compileTimeClass.getPackage())
+                .toList();
+
+        //todo
+        return !foundSchemas.isEmpty() ? foundSchemas.iterator().next() : null;
+//        Package compileTimePackage = compileTimeClass.getPackage();
+//        if (compileTimePackage == null) {
+//            return null; // e.g. for arrays
+//        }
+//        var schemaDescription = schemaDescriptionMap.get(compileTimePackage);
+//        return schemaDescription != null ? schemaDescription.getSchema() : null;
     }
 
     @Override
     public PrismSchema findSchemaByNamespace(String namespaceURI) {
-        SchemaDescription desc = findSchemaDescriptionByNamespace(namespaceURI);
-        if (desc == null) {
-            return null;
-        }
-        return desc.getSchema();
+        return parsedPrismSchemas.stream()
+                .filter(schema -> namespaceURI.equals(schema.getNamespace()))
+                .findFirst().orElse(null);
     }
 
     @Override
@@ -1375,15 +1376,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             }
         }
         return null;
-    }
-
-    @Override
-    public PrismSchema findSchemaByPrefix(String prefix) {
-        SchemaDescription desc = findSchemaDescriptionByPrefix(prefix);
-        if (desc == null) {
-            return null;
-        }
-        return desc.getSchema();
     }
 
     @Override
@@ -1820,6 +1812,11 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return ret;
     }
 
+    public void registerDbSchemaExtensions(Map<QName, ComplexTypeDefinition> dbExtensionSchemas) {
+        this.dbExtensionSchemas.clear();
+        this.dbExtensionSchemas.putAll(dbExtensionSchemas);
+    }
+
     public void registerStaticNamespace(String ns, String prefix, boolean declaredByDefault) {
         staticPrefixes.addPrefix(prefix, ns);
         getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
@@ -1870,4 +1867,3 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return subTypesAll;
     }
 }
-

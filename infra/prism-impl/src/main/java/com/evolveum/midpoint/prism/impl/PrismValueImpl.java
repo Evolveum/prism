@@ -177,7 +177,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     public abstract void checkConsistenceInternal(Itemable rootItem, boolean requireDefinitions, boolean prohibitRaw, ConsistencyCheckScope scope);
 
     @Override
-    public boolean representsSameValue(PrismValue other, boolean lax) {
+    public boolean representsSameValue(PrismValue other, EquivalenceStrategy strategy, boolean lax) {
         return false;
     }
 

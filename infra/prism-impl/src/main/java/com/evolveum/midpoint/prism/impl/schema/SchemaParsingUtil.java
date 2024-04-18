@@ -45,7 +45,7 @@ public class SchemaParsingUtil {
         }
     }
 
-    static PrismSchema createAndParse(
+    static PrismSchemaImpl createAndParse(
             @NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription, boolean allowDelayedItemDefinitions)
             throws SchemaException {
         // TODO why not synchronizing here?
@@ -56,10 +56,10 @@ public class SchemaParsingUtil {
 
     // main entry point for parsing standard prism schemas
     static void parseSchemas(
-            Element sourceWrappingElement, List<SchemaDescription> schemaDescriptions)
+            Element sourceWrappingElement, List<PrismSchemaImpl> schemas)
             throws SchemaException {
         new SchemaDomParser()
-                .parseSchemas(schemaDescriptions, sourceWrappingElement);
+                .parseSchemas(schemas, sourceWrappingElement);
     }
 
     public static void parse(

@@ -707,7 +707,11 @@ public class ComplexTypeDefinitionImpl
         strictAnyMarker = marker;
     }
 
-    @Override
+//    @Override
+//    protected boolean skipFreeze() {
+//        return extensionForType != null || typeName.getLocalPart().equals("ExtensionType");
+//    }
+
     public Class<?> getTypeClass() {
         return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());
     }

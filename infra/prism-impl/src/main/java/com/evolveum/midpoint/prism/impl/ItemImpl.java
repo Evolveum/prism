@@ -475,7 +475,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         Iterator<V> iterator = values.iterator();
         while (iterator.hasNext()) {
             V val = iterator.next();
-            if (val.representsSameValue(value, false) || val.equals(value, strategy)) {
+            if (val.representsSameValue(value, strategy, false) || val.equals(value, strategy)) {
                 iterator.remove();
                 valueRemoved(val);
                 val.setParent(null);
@@ -575,7 +575,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
                 boolean found = false;
                 while (iterator.hasNext()) {
                     PrismValueImpl otherValue = (PrismValueImpl) iterator.next();
-                    if (!rootValuesOnly && thisValue.representsSameValue(otherValue, true)) {
+                    if (!rootValuesOnly && thisValue.representsSameValue(otherValue, strategy, true)) {
                         found = true;
                         // Matching IDs, look inside to figure out internal deltas
                         boolean different =

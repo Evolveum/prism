@@ -108,9 +108,19 @@ public class PrismSchemaImpl
      */
     private final Map<Class<?>, List<ItemDefinition<?>>> itemDefinitionsByCompileTimeClassMap = new ConcurrentHashMap<>();
 
+    //TODO PoC
+    private String sourceDescription;
+    private Package compileTimePackage;
+
     public PrismSchemaImpl(@NotNull String namespace) {
         argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
         this.namespace = namespace;
+    }
+
+    public PrismSchemaImpl(@NotNull String namespace, @Nullable Package compileTimePackage) {
+        argCheck(StringUtils.isNotEmpty(namespace), "Namespace can't be null or empty.");
+        this.namespace = namespace;
+        this.compileTimePackage = compileTimePackage;
     }
 
     private void invalidateCaches() {
@@ -261,9 +271,6 @@ public class PrismSchemaImpl
     //endregion
 
     //region XSD parsing and serialization
-
-    // used for connector schemas
-
     @Override
     public @NotNull Document serializeToXsd() throws SchemaException {
         return new SchemaDomSerializer(this).serializeSchema();
@@ -506,7 +513,7 @@ public class PrismSchemaImpl
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     public PrismSchemaImpl clone() {
-        PrismSchemaImpl clone = new PrismSchemaImpl(namespace);
+        PrismSchemaImpl clone = new PrismSchemaImpl(namespace, compileTimePackage);
         copyContent(clone);
         return clone;
     }
@@ -543,5 +550,18 @@ public class PrismSchemaImpl
     public void setRuntime(boolean runtime) {
         checkMutable();
         isRuntime = runtime;
+    }
+
+    @Override
+    public String getSourceDescription() {
+        return sourceDescription;
+    }
+
+    public void setSourceDescription(String sourceDescription) {
+        this.sourceDescription = sourceDescription;
+    }
+
+    public Package getCompileTimePackage() {
+        return compileTimePackage;
     }
 }
