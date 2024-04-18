@@ -22,10 +22,11 @@ public interface DefinitionFeatureSerializer<V> {
 
     void serialize(@NotNull V value, @NotNull SerializationTarget target);
 
-    /** Interface through which we put information into DOM. Currently implemented only for "appInfo" annotation creation. */
+    /** Interface through which we put information into DOM. */
     interface SerializationTarget {
         void addAnnotation(QName name, Boolean value);
         void addAnnotation(QName name, String value);
         void addAnnotation(QName qname, QName value);
+        void addRefAnnotation(QName qname, QName value);
     }
 }

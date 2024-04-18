@@ -283,7 +283,7 @@ class SchemaXsomParser {
     private SimpleTypeDefinitionImpl createSimpleTypeDefinitionBuilder(QName typeName, XSSimpleType simpleType) {
         XSType baseType = simpleType.getBaseType();
         QName baseTypeName = baseType != null ? new QName(baseType.getTargetNamespace(), baseType.getName()) : null;
-        var enumerationValues = XsomParsers.DF_ENUMERATION_VALUES_PROCESSOR.getValue(simpleType);
+        var enumerationValues = XsomParsers.DF_ENUMERATION_VALUES_PARSER.getValue(simpleType);
         if (enumerationValues != null) {
             return new EnumerationTypeDefinitionImpl(typeName, baseTypeName, enumerationValues);
         } else {

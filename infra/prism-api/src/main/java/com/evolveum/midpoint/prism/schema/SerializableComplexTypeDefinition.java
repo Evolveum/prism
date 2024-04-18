@@ -24,6 +24,7 @@ public interface SerializableComplexTypeDefinition extends SerializableDefinitio
 
     @NotNull QName getTypeName();
     @Nullable QName getSuperType();
+    @Nullable QName getExtensionForType();
     @NotNull Collection<? extends SerializableItemDefinition> getDefinitionsToSerialize();
     boolean isXsdAnyMarker();
     boolean isObjectMarker();

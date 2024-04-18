@@ -29,6 +29,7 @@ import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
 import com.evolveum.midpoint.prism.impl.schema.annotation.AlwaysUseForEquals;
 import com.evolveum.midpoint.prism.impl.schema.features.SchemaMigrationXsomParser.SchemaMigrations;
 import com.evolveum.midpoint.prism.schema.DefinitionFeatureSerializer;
+import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.MiscUtil;
@@ -129,7 +130,10 @@ public class DefinitionFeatures {
                     QName.class,
                     ComplexTypeDefinitionLikeBuilder.class,
                     ComplexTypeDefinitionLikeBuilder::setExtensionForType,
-                    XsomParsers.DF_EXTENSION_REF_PROCESSOR);
+                    XsomParsers.DF_EXTENSION_REF_PARSER,
+                    SerializableComplexTypeDefinition.class,
+                    SerializableComplexTypeDefinition::getExtensionForType,
+                    XsdSerializers.qNameRef(A_EXTENSION));
 
     public static final DefinitionFeature<Boolean, ComplexTypeDefinitionLikeBuilder, Object, ?> DF_CONTAINER_MARKER =
             DefinitionFeature.of(
@@ -256,7 +260,7 @@ public class DefinitionFeatures {
                     }
                 };
 
-        public static final DefinitionFeatureParser<QName, XSType> DF_EXTENSION_REF_PROCESSOR =
+        public static final DefinitionFeatureParser<QName, XSType> DF_EXTENSION_REF_PARSER =
                 new DefinitionFeatureParser<>() {
                     @Override
                     public @Nullable QName getValue(@Nullable XSType sourceComplexType) throws SchemaException {
@@ -264,15 +268,15 @@ public class DefinitionFeatures {
                         if (extensionAnnotationElement == null) {
                             return null;
                         }
-                        QName extendedTypeName = DOMUtil.getQNameAttribute(extensionAnnotationElement, A_EXTENSION_REF.getLocalPart());
+                        QName extendedTypeName = DOMUtil.getQNameAttribute(extensionAnnotationElement, A_REF.getLocalPart());
                         if (extendedTypeName != null) {
                             return extendedTypeName;
                         }
                         throw new SchemaException(
                                 "The %s annotation on %s complex type (%s) does not have %s attribute".formatted(
                                         A_EXTENSION, sourceComplexType.getName(), sourceComplexType.getTargetNamespace(),
-                                        A_EXTENSION_REF.getLocalPart()),
-                                A_EXTENSION_REF);
+                                        A_REF.getLocalPart()),
+                                A_REF);
                     }
                 };
         public static final DefinitionFeatureParser.Marker<Object> DF_CONTAINER_MARKER_PROCESSOR = markerInherited(A_CONTAINER);
@@ -281,7 +285,7 @@ public class DefinitionFeatures {
         public static final DefinitionFeatureParser.Marker<Object> DF_EMBEDDED_OBJECT_MARKER_PROCESSOR = marker(A_EMBEDDED_OBJECT);
         public static final DefinitionFeatureParser.Marker<Object> DF_COMPOSITE_MARKER_PROCESSOR = marker(A_COMPOSITE);
         public static final DefinitionFeatureParser.Marker<Object> DF_DEPRECATED = marker(A_DEPRECATED);
-        public static final EnumerationValuesXsomParser DF_ENUMERATION_VALUES_PROCESSOR = new EnumerationValuesXsomParser();
+        public static final EnumerationValuesXsomParser DF_ENUMERATION_VALUES_PARSER = new EnumerationValuesXsomParser();
         public static final EnumerationValuesInfoXsomParser DF_ENUMERATION_VALUES_INFO_PROCESSOR = new EnumerationValuesInfoXsomParser();
         public static final AccessXsomProcessor DF_ACCESS_PROCESSOR = new AccessXsomProcessor();
         public static final DefinitionFeatureParser<QName, Object> DF_TYPE_OVERRIDE_PROCESSOR = qName(A_TYPE);
@@ -479,6 +483,11 @@ public class DefinitionFeatures {
 
         public static @NotNull DefinitionFeatureSerializer<QName> qName(@NotNull QName annotationName) {
             return (value, target) -> target.addAnnotation(annotationName, value);
+        }
+
+        /** This is perhaps a legacy format, abandoned for several uses, but kept e.g. for "extension for type". */
+        public static @NotNull DefinitionFeatureSerializer<QName> qNameRef(@NotNull QName annotationName) {
+            return (value, target) -> target.addRefAnnotation(annotationName, value);
         }
 
         public static <E extends Enum<E>> @NotNull DefinitionFeatureSerializer<E> enumBased(

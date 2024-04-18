@@ -26,7 +26,7 @@ import com.evolveum.midpoint.util.MiscUtil;
 public class EnumerationValuesXsomParser
         implements DefinitionFeatureParser<List<EnumerationTypeDefinition.ValueDefinition>, XSSimpleType> {
 
-    private static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
+    public static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
     private static final QName TYPESAFE_ENUM_MEMBER_LEGACY = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
 
     @Override

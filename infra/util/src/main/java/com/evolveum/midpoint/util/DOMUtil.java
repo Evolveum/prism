@@ -587,9 +587,7 @@ public class DOMUtil {
 
     public static void setQNameAttribute(
             Element element, String attributeName, QName attributeValue) {
-        Document doc = element.getOwnerDocument();
-        Attr attr = doc.createAttribute(attributeName);
-        setQNameAttribute(element, attr, attributeValue, element);
+        setQNameAttribute(element, attributeName, attributeValue, element);
     }
 
     public static void setQNameAttribute(

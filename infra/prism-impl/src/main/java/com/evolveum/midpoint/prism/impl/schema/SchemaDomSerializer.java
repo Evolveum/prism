@@ -7,12 +7,15 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
+import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_EXTENSION_REF;
+
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_ACCESS;
 import static com.evolveum.midpoint.util.MiscUtil.argNonNull;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.namespace.QName;
@@ -20,7 +23,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.evolveum.midpoint.prism.EnumerationTypeDefinition;
 import com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures;
+import com.evolveum.midpoint.prism.impl.schema.features.EnumerationValuesInfoXsomParser;
+import com.evolveum.midpoint.prism.impl.schema.features.EnumerationValuesXsomParser;
+
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -123,6 +130,8 @@ public class SchemaDomSerializer {
             for (var definition : schema.getDefinitionsToSerialize()) {
                 if (definition instanceof SerializableComplexTypeDefinition ctd) {
                     serializeComplexTypeDefinition(ctd, documentRootElement);
+                } else if (definition instanceof EnumerationTypeDefinition etd) {
+                    serializeEnumerationTypeDefinition(etd, document.getDocumentElement());
                 }
             }
 
@@ -133,7 +142,8 @@ public class SchemaDomSerializer {
                 } else if (definition instanceof SerializablePropertyDefinition ppd) {
                     // Add top-level property definition. It will create <element> XSD definition
                     serializePropertyDefinition(ppd, documentRootElement);
-                } else if (definition instanceof SerializableComplexTypeDefinition) {
+                } else if (definition instanceof SerializableComplexTypeDefinition
+                        || definition instanceof EnumerationTypeDefinition) {
                     // Skip this. Already processed above.
                 } else {
                     throw new IllegalArgumentException("Encountered unsupported definition in schema: " + definition);
@@ -358,11 +368,62 @@ public class SchemaDomSerializer {
             addAnnotation(A_CONTAINER, true, appInfo.appInfoElement);
         }
 
+        DF_EXTENSION_REF.serialize(ctd, appInfo);
+
         addCommonDefinitionAnnotations(ctd, appInfo);
 
         addExtraFeatures(ctd, appInfo);
 
         appInfo.removeIfNotNeeded();
+    }
+
+    /** TODO reconcile with (move to) {@link EnumerationValuesXsomParser} and {@link EnumerationValuesInfoXsomParser} one day */
+    private void serializeEnumerationTypeDefinition(EnumerationTypeDefinition definition, Element parent) {
+        if (definition == null) {
+            // Nothing to do
+            return;
+        }
+
+        Element simpleType = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "simpleType"));
+        parent.appendChild(simpleType);
+        // "typeName" should be used instead of "name" when defining a XSD type
+        setAttribute(simpleType, "name", definition.getTypeName().getLocalPart());
+
+        var appInfo = createAppInfoAnnotationsTarget(simpleType);
+        addCommonDefinitionAnnotations(definition, appInfo);
+        appInfo.removeIfNotNeeded();
+
+        Element restriction = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "restriction"));
+        setAttribute(restriction, "base", definition.getBaseTypeName());
+        simpleType.appendChild(restriction);
+
+        Collection<EnumerationTypeDefinition.ValueDefinition> valueDefinitions = definition.getValues();
+        for (EnumerationTypeDefinition.ValueDefinition valueDefinition : valueDefinitions) {
+            restriction.appendChild(createValueDefinitionChild(valueDefinition));
+        }
+    }
+
+    private Element createValueDefinitionChild(EnumerationTypeDefinition.ValueDefinition valueDefinition) {
+        Element enumeration = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "enumeration"));
+        setAttribute(enumeration, "value", valueDefinition.getValue());
+        Element annotation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"));
+        enumeration.appendChild(annotation);
+
+        if (valueDefinition.getDocumentation().isPresent()) {
+            Element documentation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "documentation"));
+            documentation.setTextContent(valueDefinition.getDocumentation().get());
+            annotation.appendChild(documentation);
+        }
+
+        Element appinfo = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"));
+        annotation.appendChild(appinfo);
+        if (valueDefinition.getConstantName().isPresent()) {
+            Element typeSafeEnum = createElement(EnumerationValuesXsomParser.TYPESAFE_ENUM_MEMBER);
+            setAttribute(typeSafeEnum, "name", valueDefinition.getConstantName().get());
+            appinfo.appendChild(typeSafeEnum);
+        }
+
+        return enumeration;
     }
 
     private static void addExtraFeatures(SerializableDefinition definition, AppInfoSerializationTarget appInfo) {
@@ -491,6 +552,10 @@ public class SchemaDomSerializer {
         DOMUtil.setQNameAttribute(element, attrName, attrValue, documentRootElement);
     }
 
+    private void setAttribute(Element element, String attrName, String attrValue) {
+        DOMUtil.setAttributeValue(element, attrName, attrValue);
+    }
+
     /**
      * Set attribute in the DOM element to a QName value. This will make sure that the
      * appropriate namespace definition for the QName exists.
@@ -553,6 +618,7 @@ public class SchemaDomSerializer {
             SchemaDomSerializer schemaSerializer)
             implements SerializationTarget {
 
+        @Override
         public void addAnnotation(QName qname, Boolean value) {
             if (value != null) {
                 addNewElement(qname)
@@ -560,6 +626,7 @@ public class SchemaDomSerializer {
             }
         }
 
+        @Override
         public void addAnnotation(QName qname, String value) {
             if (value != null) {
                 addNewElement(qname)
@@ -567,10 +634,21 @@ public class SchemaDomSerializer {
             }
         }
 
+        @Override
         public void addAnnotation(QName qname, QName value) {
             if (value != null) {
                 DOMUtil.setQNameValue(
                         addNewElement(qname),
+                        value);
+            }
+        }
+
+        @Override
+        public void addRefAnnotation(QName qname, QName value) {
+            if (value != null) {
+                DOMUtil.setQNameAttribute(
+                        addNewElement(qname),
+                        A_REF.getLocalPart(),
                         value);
             }
         }

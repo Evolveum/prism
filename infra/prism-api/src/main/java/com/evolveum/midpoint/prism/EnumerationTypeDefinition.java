@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.schema.SerializableDefinition;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
@@ -15,7 +17,8 @@ import java.util.Optional;
  *
  * Enumeration has restricted value set - only declared value can be used.
  */
-public interface EnumerationTypeDefinition extends SimpleTypeDefinition {
+public interface EnumerationTypeDefinition
+        extends SimpleTypeDefinition, SerializableDefinition {
 
     /**
      * Returns definition of enumeration values

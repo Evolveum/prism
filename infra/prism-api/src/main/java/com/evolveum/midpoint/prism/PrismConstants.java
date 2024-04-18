@@ -97,7 +97,7 @@ public class PrismConstants {
     public static final QName A_PROCESSING = new QName(NS_ANNOTATION, "processing");
     public static final QName A_OPERATIONAL = new QName(NS_ANNOTATION, "operational");
     public static final QName A_EXTENSION = new QName(NS_ANNOTATION, "extension");
-    public static final QName A_EXTENSION_REF = new QName(NS_ANNOTATION, "ref");
+    public static final QName A_REF = new QName(NS_ANNOTATION, "ref");
     public static final QName A_OBJECT_REFERENCE = new QName(NS_ANNOTATION, "objectReference");
     public static final QName A_OBJECT_REFERENCE_TARGET_TYPE = new QName(NS_ANNOTATION, "objectReferenceTargetType");
     public static final QName A_COMPOSITE = new QName(NS_ANNOTATION, "composite");
