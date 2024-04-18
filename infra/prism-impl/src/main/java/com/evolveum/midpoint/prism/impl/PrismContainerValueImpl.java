@@ -12,6 +12,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -1024,12 +1027,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public boolean representsSameValue(PrismValue other, boolean lax) {
-        return other instanceof PrismContainerValue && representsSameValue((PrismContainerValue<C>) other, lax);
+    public boolean representsSameValue(PrismValue other, EquivalenceStrategy strategy, boolean lax) {
+        return other instanceof PrismContainerValue && representsSameValue((PrismContainerValue<C>) other, strategy, lax);
     }
 
     @SuppressWarnings("Duplicates")
-    private boolean representsSameValue(PrismContainerValue<C> other, boolean lax) {
+    private boolean representsSameValue(PrismContainerValue<C> other, EquivalenceStrategy strategy, boolean lax) {
         if (lax && getParent() != null) {
             PrismContainerDefinition<?> definition = getDefinition();
             if (definition != null) {
@@ -1048,7 +1051,53 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 }
             }
         }
+
+        if (strategy instanceof ParameterizedEquivalenceStrategy pes) {
+            if (getId() != null && pes.isConsideringNaturalKeys() &&  equalNaturalKeys(other)) {
+                // this is very specific situation, we have to have ID to be able to create child delta if
+                // natural keys matches e.g. getId() != null avoids creating item paths with "null" ID segments,
+                // or adding natural keys to item path and problems related with it
+
+                return true;
+            }
+        }
+
         return this.getId() != null && this.getId().equals(other.getId());
+    }
+
+
+
+    private boolean equalNaturalKeys(PrismContainerValue<C> other) {
+        Definition def = findDefinition(other);
+        if (def == null) {
+            return false;
+        }
+
+        NaturalKeyDefinition key = def.getNaturalKeyInstance();
+        if (key != null && key.valuesMatch(this, other)) {
+            return true;
+        }
+
+        if (def.getMergerIdentifier() != null) {
+            ItemMerger merger = def.getMergerInstance(MergeStrategy.FULL, null);
+            if (merger != null) {
+                NaturalKeyDefinition k = merger.getNaturalKey();
+                if (k != null && k.valuesMatch(this, other)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private Definition findDefinition(PrismContainerValue<C> other) {
+        PrismContainerDefinition def = getDefinition();
+        if (def != null) {
+            return def;
+        }
+
+        return other.getDefinition();
     }
 
     @Override

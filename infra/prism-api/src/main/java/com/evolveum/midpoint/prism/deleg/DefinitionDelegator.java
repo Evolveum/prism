@@ -10,16 +10,16 @@ package com.evolveum.midpoint.prism.deleg;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.delta.ItemMerger;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
 import org.jetbrains.annotations.NotNull;
-
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-
 import org.jetbrains.annotations.Nullable;
+
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 public interface DefinitionDelegator extends Definition {
 
@@ -128,6 +128,19 @@ public interface DefinitionDelegator extends Definition {
     default DisplayHint getDisplayHint() {
         return delegate().getDisplayHint();
     }
+
+    @Override
+    @Nullable
+    default String getMergerIdentifier() {
+        return delegate().getMergerIdentifier();
+    }
+
+    @Override
+    @Nullable
+    default List<QName> getNaturalKeyConstituents() {
+        return delegate().getNaturalKeyConstituents();
+    }
+
     @Override
     default boolean isEmphasized() {
         return delegate().isEmphasized();
@@ -196,5 +209,14 @@ public interface DefinitionDelegator extends Definition {
     @Override
     default String getMutabilityFlag() {
         return delegate().getMutabilityFlag();
+    }
+
+    @Override
+    default @Nullable ItemMerger getMergerInstance(@NotNull MergeStrategy strategy, @Nullable OriginMarker originMarker) {
+        return delegate().getMergerInstance(strategy, originMarker);
+    }
+    @Override
+    default @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
+        return delegate().getNaturalKeyInstance();
     }
 }

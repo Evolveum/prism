@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.equivalence;
 
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.util.annotation.Experimental;
 
 import java.util.Comparator;
 
@@ -59,7 +60,7 @@ public interface EquivalenceStrategy {
     /**
      * As {@link #REAL_VALUE} but taking different PCV IDs into account (if both are present).
      *
-     * Currently this is the default for delta application. See {@link ParameterizedEquivalenceStrategy#FOR_DELTA_ADD_APPLICATION}
+     * Currently, this is the default for delta application. See {@link ParameterizedEquivalenceStrategy#FOR_DELTA_ADD_APPLICATION}
      * and {@link ParameterizedEquivalenceStrategy#FOR_DELTA_DELETE_APPLICATION}.
      *
      * It is not quite clear if this strategy is well-formed. Often we want to differentiate PCV IDs
@@ -67,6 +68,18 @@ public interface EquivalenceStrategy {
      * has to be sorted out.
      */
     ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS = ParameterizedEquivalenceStrategy.realValueConsiderDifferentIds();
+
+    /**
+     * Same as {@link #REAL_VALUE_CONSIDER_DIFFERENT_IDS} but also takes natural keys into account.
+     * However, natural keys can be considered only if there are PCV ids present in first value.
+     * This is to avoid item paths with null segments or natural keys being added to item path.
+     *
+     * This is a bit experimental.
+     */
+    @Experimental
+    ParameterizedEquivalenceStrategy REAL_VALUE_CONSIDER_DIFFERENT_IDS_NATURAL_KEYS =
+            ParameterizedEquivalenceStrategy.realValueConsiderDifferentIdsAndNaturalKeys();
+
 
     /**
      * This is something between {@link #DATA} and {@link #REAL_VALUE}: ignores

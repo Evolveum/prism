@@ -460,6 +460,9 @@ public interface PrismContext extends ProtectorCreator {
 
     PrismQuerySerializer querySerializer();
 
+    @NotNull
+    ItemMergerFactory itemMergerFactory();
+
     static PrismContext get() {
         return PrismService.get().prismContext();
     }

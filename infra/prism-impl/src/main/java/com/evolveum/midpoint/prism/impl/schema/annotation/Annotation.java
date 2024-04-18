@@ -90,6 +90,24 @@ public enum Annotation {
 
     IGNORE(new IgnoreProcessor()),
 
+    MERGER(new AnnotationProcessor<>(
+            A_MERGER, String.class, MutableDefinition::setMergerIdentifier)),
+
+    NATURAL_KEY(new AnnotationProcessor<>(
+            A_NATURAL_KEY, List.class, null) {
+
+        @Override
+        public void process(@NotNull MutableDefinition definition, @NotNull List<Element> elements) {
+            List<QName> naturalKey = elements.stream()
+                    .map(DOMUtil::getQNameValue)
+                    .toList();
+
+            definition.setNaturalKeyConstituents(naturalKey);
+
+            definition.setAnnotation(name, naturalKey);
+        }
+    }),
+
     OBJECT_REFERENCE_TARGET_TYPE(new AnnotationProcessor<>(
             A_OBJECT_REFERENCE_TARGET_TYPE, QName.class, MutablePrismReferenceDefinition.class, MutablePrismReferenceDefinition::setTargetTypeName, null) {
 
