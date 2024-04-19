@@ -50,7 +50,6 @@ public class EnumerationTypeDefinitionImpl extends SimpleTypeDefinitionImpl impl
         private final String constantName;
 
         public ValueDefinitionImpl(String value, String documentation, String constantName) {
-
             this.value = value;
             this.documentation = documentation;
             this.constantName = constantName;
@@ -70,9 +69,5 @@ public class EnumerationTypeDefinitionImpl extends SimpleTypeDefinitionImpl impl
         public Optional<String> getConstantName() {
             return Optional.ofNullable(constantName);
         }
-
-
-
     }
-
 }

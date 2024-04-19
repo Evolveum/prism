@@ -45,7 +45,7 @@ public class SchemaParsingUtil {
         }
     }
 
-    static PrismSchemaImpl createAndParse(
+    public static PrismSchemaImpl createAndParse(
             @NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription, boolean allowDelayedItemDefinitions)
             throws SchemaException {
         // TODO why not synchronizing here?
