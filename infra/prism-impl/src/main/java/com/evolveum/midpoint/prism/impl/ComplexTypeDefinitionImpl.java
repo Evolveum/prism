@@ -307,6 +307,10 @@ public class ComplexTypeDefinitionImpl
                 throw new IllegalArgumentException("Cannot resolve empty path on complex type definition "+this);
             }
             Object first = path.first();
+            if (first instanceof InfraItemName infraItem) {
+                return findInfraItemDefinition(infraItem, path.rest(), clazz);
+            }
+
             if (ItemPath.isName(first)) {
                 QName firstName = ItemPath.toName(first);
                 var defFound = findNamedItemDefinition(firstName, path.rest(), clazz);
@@ -348,6 +352,20 @@ public class ComplexTypeDefinitionImpl
                 throw new IllegalStateException("Unexpected path segment: " + first + " in " + path);
             }
         }
+    }
+
+    private <ID extends ItemDefinition<?>> ID findInfraItemDefinition(InfraItemName infraItem, ItemPath path, Class<ID> clazz) {
+        ItemDefinition<?> ret = null;
+        if (InfraItemName.METADATA.equals(infraItem)) {
+            ret =  PrismContext.get().getValueMetadataFactory().getDefinition();
+        }
+        if (ret != null && !path.isEmpty()) {
+            ret = ret.findItemDefinition(path, clazz);
+        }
+        if (clazz.isInstance(ret)) {
+            return clazz.cast(ret);
+        }
+        return null;
     }
 
     @Override

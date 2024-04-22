@@ -10,6 +10,7 @@ import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.path.InfraItemName;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -38,7 +39,7 @@ public class PrismConstants {
     public static final String PREFIX_NS_TYPES = "t";
     public static final String NS_QUERY = NS_PREFIX + "query-3";
     public static final String PREFIX_NS_QUERY = "q";
-    private static final String NS_METADATA = NS_PREFIX + "metadata-3";
+    public static final String NS_METADATA = NS_PREFIX + "metadata-3";
 
     public static final String NS_MATCHING_RULE = NS_PREFIX + "matching-rule-3";
 
@@ -158,6 +159,16 @@ public class PrismConstants {
     public static final ItemName T_OBJECT_REFERENCE = new ItemName(NS_TYPES, "objectReference");
     public static final String T_ID_LOCAL_PART = "id";
     public static final ItemName T_ID = new ItemName(NS_TYPES, T_ID_LOCAL_PART);
+
+
+
+
+    public static final InfraItemName I_ID = InfraItemName.of(NS_TYPES, T_ID_LOCAL_PART);
+    public static final InfraItemName I_TYPE = InfraItemName.of(NS_TYPES, "type");
+
+    public static final InfraItemName I_PATH = InfraItemName.of(NS_TYPES, "path");
+
+    public static final InfraItemName I_METADATA = InfraItemName.of(NS_METADATA,"metadata").intern();
 
     /**
      * Self is a bit special, because the item path for self (.) is technically an empty path.
