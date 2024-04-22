@@ -984,6 +984,13 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="schemaContext" type="xsd:QName">
+        <xsd:annotation>
+            <xsd:documentation>
+                Semantics information about annotated element.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
 </xsd:schema>
 
 

@@ -71,6 +71,7 @@ public abstract class DefinitionImpl
     private List<ItemDiagramSpecification> diagrams = null;
     private String mergerIdentifier;
     private List<QName> naturalKeyConstituents;
+    private QName schemaContext;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -365,6 +366,17 @@ public abstract class DefinitionImpl
     public void setDiagrams(List<ItemDiagramSpecification> value) {
         checkMutable();
         diagrams = value;
+    }
+
+    @Override
+    public @Nullable QName getSchemaContext() {
+        return schemaContext;
+    }
+
+    @Override
+    public void setSchemaContext(QName schemaContext) {
+        checkMutable();
+        this.schemaContext = schemaContext;
     }
 
     @Override

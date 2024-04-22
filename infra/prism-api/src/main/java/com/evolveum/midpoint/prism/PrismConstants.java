@@ -129,6 +129,7 @@ public class PrismConstants {
     public static final QName A_DIAGRAM_SUBITEM_INCLUSION = new QName(NS_ANNOTATION, "subitemInclusion");
     public static final QName A_MERGER = new QName(NS_ANNOTATION, "merger");
     public static final QName A_NATURAL_KEY = new QName(NS_ANNOTATION, "naturalKey");
+    public static final QName A_SCHEMA_CONTEXT = new QName(NS_ANNOTATION, "schemaContext");
 
     public static final QName SCHEMA_DOCUMENTATION = new QName(W3C_XML_SCHEMA_NS_URI, "documentation");
     public static final QName SCHEMA_ANNOTATION = new QName(W3C_XML_SCHEMA_NS_URI, "annotation");

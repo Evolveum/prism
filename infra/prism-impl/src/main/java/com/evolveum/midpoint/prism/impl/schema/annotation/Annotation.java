@@ -149,7 +149,9 @@ public enum Annotation {
     NATURAL_KEY(AnnotationBasedFeature.custom(
             A_NATURAL_KEY, QNameList.class,
             DefinitionMutator.class, (def, qNameList) -> def.setNaturalKeyConstituents(QNameList.unwrap(qNameList)),
-            XsomParsers.qNameList(A_NATURAL_KEY).restrictToSource(XSAnnotation.class)));
+            XsomParsers.qNameList(A_NATURAL_KEY).restrictToSource(XSAnnotation.class))),
+
+    SCHEMA_CONTEXT(AnnotationBasedFeature.forType(A_SCHEMA_CONTEXT, QName.class, DefinitionMutator.class, DefinitionMutator::setSchemaContext));
 
     /** This is the object that does all the work. */
     private final AnnotationBasedFeature<?, ?> definitionFeature;

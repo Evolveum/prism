@@ -125,6 +125,8 @@ public interface Definition
 
     @Nullable NaturalKeyDefinition getNaturalKeyInstance();
 
+    @Nullable QName getSchemaContext();
+
     @NotNull Definition clone();
 
     default String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
@@ -163,6 +165,8 @@ public interface Definition
         void setNaturalKeyConstituents(List<QName> naturalKeyConstituents);
 
         <A> void setAnnotation(QName qname, A value);
+
+        void setSchemaContext(QName schemaContext);
     }
 
     interface DefinitionBuilder extends DefinitionFragmentBuilder {

@@ -388,4 +388,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     public @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public @Nullable QName getSchemaContext() { throw new UnsupportedOperationException(); }
 }
