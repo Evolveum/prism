@@ -465,6 +465,7 @@ public class DOMUtil {
         return Boolean.parseBoolean(DOMUtil.getAttribute(element, DOMUtil.IS_INCOMPLETE_ATTRIBUTE_NAME));
     }
 
+    /** Should be synchronized. This is the responsibility of the caller. See MID-8860. */
     public static String getSchemaTargetNamespace(Element xsdSchema) throws SchemaException {
         String targetNamespace = getAttribute(xsdSchema, XSD_ATTR_TARGET_NAMESPACE);
         if (StringUtils.isNotEmpty(targetNamespace)) {
