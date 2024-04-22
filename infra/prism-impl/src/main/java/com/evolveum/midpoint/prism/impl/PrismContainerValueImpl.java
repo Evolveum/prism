@@ -340,7 +340,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         simpleAdd(item);
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition<?>> void simpleAdd(Item<IV, ID> item) {
+    protected  <IV extends PrismValue, ID extends ItemDefinition<?>> void simpleAdd(Item<IV, ID> item) {
         @NotNull ItemName itemName = item.getElementName();
         items.put(itemName, item);
         if (QNameUtil.isUnqualified(itemName)) {
