@@ -261,6 +261,14 @@ public interface ItemPath extends ShortDumpable, Serializable {
         return ItemPathSegmentUtil.isName(segment);
     }
 
+    static boolean isItemOrInfraItem(Object segment) {
+        if (segment instanceof InfraItemName) {
+            return true;
+        }
+        return isName(segment);
+    }
+
+
     /**
      * Returns a name corresponding to the name segment, or throw an exception otherwise.
      */
