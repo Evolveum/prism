@@ -44,7 +44,7 @@ pathValue: SQUARE_BRACKET_LEFT argument SQUARE_BRACKET_RIGHT;
 
 itemPathComponent: SHARP #IdentifierComponent
     | AT_SIGN #DereferenceComponent
-    | prefixedName #ItemComponent
+    | itemName #ItemComponent
     ;
 
 path: DOT #SelfPath

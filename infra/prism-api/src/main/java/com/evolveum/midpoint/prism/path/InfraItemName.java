@@ -6,12 +6,16 @@
  */
 package com.evolveum.midpoint.prism.path;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +48,16 @@ public class InfraItemName extends ItemName {
     public static final InfraItemName METADATA = InfraItemName.of(PrismConstants.NS_METADATA,"metadata").intern();
 
 
+    private static final BiMap<InfraItemName, QName> SERIALIZATION_MAPPING = ImmutableBiMap.<InfraItemName, QName>builder()
+            .put(serializationEntry(ID))
+            .put(serializationEntry(TYPE))
+            .put(serializationEntry(PATH))
+            .put(serializationEntry(METADATA))
+            .build();
+
+    private static final BiMap<QName, InfraItemName> DESERIALIZATION_MAPPING = SERIALIZATION_MAPPING.inverse();
+
+
 
     public InfraItemName(String namespaceURI, String localPart) {
         super(namespaceURI, localPart);
@@ -51,6 +65,24 @@ public class InfraItemName extends ItemName {
 
     public static InfraItemName of(String namespace, String localPart) {
         return new InfraItemName(namespace, localPart);
+    }
+
+    public static InfraItemName fromQName(QName name) {
+        if (name == null) {
+            return null;
+        } else if (name instanceof InfraItemName infra) {
+            return infra;
+        } else {
+            return of(name.getNamespaceURI(), name.getLocalPart());
+        }
+    }
+
+    public static boolean isSerializedForm(QName qname) {
+        return DESERIALIZATION_MAPPING.containsKey(qname);
+    }
+
+    public static InfraItemName fromSerialized(QName qname) {
+        return DESERIALIZATION_MAPPING.get(qname);
     }
 
     public InfraItemName intern() {
@@ -104,75 +136,20 @@ public class InfraItemName extends ItemName {
     }
 
     @Override
-    public Long firstToIdOrNull() {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public ItemPath namedSegmentsOnly() {
-        return this;
-    }
-
-    @NotNull
-    @Override
-    public ItemPath removeIds() {
-        return this;
-    }
-
-    @Override
-    public ItemName asSingleName() {
-        return null;
-    }
-
-    @Override
-    public boolean isSingleName() {
-        return true;
-    }
-
-    @Override
-    public ItemName lastName() {
-        return null;
-    }
-
-    @Override
-    public Object last() {
-        return this;
-    }
-
-    @Override
-    public ItemPath firstAsPath() {
-        return this;
-    }
-
-    @NotNull
-    @Override
-    public ItemPath allExceptLast() {
-        return EMPTY_PATH;
-    }
-
-    @Override
     public String toString() {
         return "@" + this.getLocalPart();
     }
 
-    @Override
-    public void shortDump(StringBuilder sb) {
-        sb.append(this);
-    }
-
-    @Override
-    public ItemPath subPath(int from, int to) {
-        if (from > 0) {
-            return EMPTY_PATH;
-        } else if (to == 0) {
-            return EMPTY_PATH;
-        } else {
-            return this;
-        }
-    }
 
     public boolean matches(QName other) {
         throw new UnsupportedOperationException();
+    }
+
+    public QName asSerializationForm() {
+        return SERIALIZATION_MAPPING.get(this);
+    }
+
+    private static Map.Entry<InfraItemName,QName> serializationEntry(InfraItemName infraItem) {
+        return new AbstractMap.SimpleEntry<>(infraItem, new QName("@" + infraItem.getLocalPart()));
     }
 }

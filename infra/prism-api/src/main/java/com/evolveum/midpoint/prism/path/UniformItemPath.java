@@ -110,6 +110,9 @@ public interface UniformItemPath extends Serializable, Cloneable, ShortDumpable,
     }
 
     static ItemPathSegment createSegment(QName qname, boolean variable) {
+        if (InfraItemName.isSerializedForm(qname)) {
+            return new NameItemPathSegment(InfraItemName.fromSerialized(qname));
+        }
         if (ParentPathSegment.QNAME.equals(qname)) {
             return new ParentPathSegment();
         } else if (ObjectReferencePathSegment.QNAME.equals(qname)) {

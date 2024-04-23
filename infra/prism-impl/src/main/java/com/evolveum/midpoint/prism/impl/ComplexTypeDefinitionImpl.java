@@ -307,7 +307,7 @@ public class ComplexTypeDefinitionImpl
                 throw new IllegalArgumentException("Cannot resolve empty path on complex type definition "+this);
             }
             Object first = path.first();
-            if (first instanceof InfraItemName infraItem) {
+            if (ItemPath.toNameOrNull(first) instanceof InfraItemName infraItem) {
                 return findInfraItemDefinition(infraItem, path.rest(), clazz);
             }
 

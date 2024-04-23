@@ -128,6 +128,12 @@ public final class ItemPathSerialization {
             Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs) {
         String namespace = name.getNamespaceURI();
         String explicitPrefix = name.getPrefix();
+
+        if(ItemPath.isInfraItem(name)) {
+
+            return InfraItemName.fromQName(name).asSerializationForm();
+        }
+
         if (Strings.isNullOrEmpty(namespace)) {
             if (Strings.isNullOrEmpty(explicitPrefix)) {
                 /*

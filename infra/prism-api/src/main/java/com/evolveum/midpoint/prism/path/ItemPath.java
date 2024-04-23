@@ -108,6 +108,11 @@ public interface ItemPath extends ShortDumpable, Serializable {
         return PrismContext.get().itemPathParser().asItemPath(value);
     }
 
+    static boolean isInfraItem(QName name) {
+        // FIXME: Maybe also add check for namespace, localName? - this could cause problems now with ID segment
+        return name instanceof InfraItemName;
+    }
+
     /**
      * Returns true if the path is empty i.e. has no components.
      */
