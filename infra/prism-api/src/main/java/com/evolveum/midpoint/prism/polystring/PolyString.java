@@ -368,7 +368,7 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
         }
         String defaultNorm = PrismContext.get().getDefaultPolyStringNormalizer().normalize(orig);
         if (Objects.equals(norm, defaultNorm)) {
-            sb.append(" (default norm)");
+            // nothing here
         } else {
             sb.append(" (");
             if (norm == null) {

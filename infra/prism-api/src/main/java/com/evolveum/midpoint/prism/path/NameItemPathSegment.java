@@ -24,6 +24,10 @@ public class NameItemPathSegment extends ItemPathSegment {
         this.name = ItemName.fromQName(name);
     }
 
+    public NameItemPathSegment(@NotNull InfraItemName name) {
+        this.name = name;
+    }
+
     @NotNull
     public ItemName getName() {
         return name;
@@ -31,7 +35,7 @@ public class NameItemPathSegment extends ItemPathSegment {
 
     @Override
     public String toString() {
-        return DebugUtil.formatElementName(name);
+        return name.toString();
     }
 
     @Override

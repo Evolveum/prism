@@ -14,6 +14,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+import com.evolveum.midpoint.prism.path.InfraItemName;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -340,7 +341,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         simpleAdd(item);
     }
 
-    private <IV extends PrismValue, ID extends ItemDefinition<?>> void simpleAdd(Item<IV, ID> item) {
+    protected  <IV extends PrismValue, ID extends ItemDefinition<?>> void simpleAdd(Item<IV, ID> item) {
         @NotNull ItemName itemName = item.getElementName();
         items.put(itemName, item);
         if (QNameUtil.isUnqualified(itemName)) {
@@ -630,12 +631,12 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @SuppressWarnings("unchecked")
     <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findCreateItem(ItemPath propPath, Class<I> type, ID itemDefinition, boolean create) throws SchemaException {
         Object first = propPath.first();
-        if (!ItemPath.isName(first)) {
+        if (!ItemPath.isItemOrInfraItem(first)) {
             throw new IllegalArgumentException("Attempt to lookup item using a non-name path '" + propPath + "' in " + this);
         }
         ItemName subName = ItemPath.toName(first);
         ItemPath rest = propPath.rest();
-        I item = (I) findItemByQName(subName);
+        I item = (I) findItemOrInfraItem(subName);
         if (item != null) {
             if (rest.isEmpty()) {
                 if (type.isAssignableFrom(item.getClass())) {
@@ -688,11 +689,26 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
+    private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemOrInfraItem(ItemName name) throws SchemaException {
+        if (name instanceof InfraItemName infra) {
+            return findInfraItemName(infra);
+        }
+        return findItemByQName(name);
+    }
+
+    private <ID extends ItemDefinition<?>, IV extends PrismValue> Item<IV,ID> findInfraItemName(InfraItemName name) {
+        if (InfraItemName.METADATA.equals(name)) {
+            return (Item<IV,ID>) getValueMetadataAsContainer();
+        }
+        return null;
+    }
+
     private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemByQName(QName subName) throws SchemaException {
         // We assume that "unqualifiedItemNames" is empty most of the time. Hence, we do not want to spend time
         // calling .contains(..) method unnecessarily.
         if (QNameUtil.isUnqualified(subName) ||
                 !unqualifiedItemNames.isEmpty() && unqualifiedItemNames.contains(subName.getLocalPart())) {
+            // FIXME: PERFORMANCE: unqualifiedItemNames could be hash map (instead of hash set (which is actually hash map) - this would avoid full scan
             return findItemByQNameFullScan(subName);
         } else {
             //noinspection unchecked

@@ -21,6 +21,9 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.MiscUtil;
 
+import com.evolveum.midpoint.util.annotation.OneUseOnly;
+import com.evolveum.midpoint.util.annotation.Unused;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -97,7 +100,6 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      *
      * TODO consider removing this method
      */
-    @VisibleForTesting
     void setElementName(QName elementName);
 
     /**
@@ -131,6 +133,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      *
      * @return help message for the item
      */
+    @Unused
     default String getHelp() {
         return getDefinition() == null ? null : getDefinition().getHelp();
     }
@@ -281,6 +284,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     /**
      * Type override, also for compatibility.
      */
+    @OneUseOnly("connectorConfiguration")
     <X> X[] getRealValuesArray(Class<X> type);
 
     /**
@@ -306,6 +310,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
                 .collect(Collectors.toList());
     }
 
+    @OneUseOnly("Delta serialization")
     @Experimental // Do NOT use !!!!
     @NotNull
     default Collection<Object> getRealValuesOrRawTypes() {
@@ -360,6 +365,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * or during overwriting existing value with a different one. The "difference" is taken using the
      * DEFAULT_FOR_EQUALS (DATA) equivalence strategy.
      */
+    @OneUseOnly("convenience")
     boolean add(@NotNull V newValue, @NotNull EquivalenceStrategy strategy) throws SchemaException;
 
     /**

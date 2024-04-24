@@ -62,7 +62,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         PrismContext ctx = constructInitializedPrismContext();
 
         // WHEN
-        PrismSchema schema = constructSchema(ctx);
+        PrismSchema schema = constructSchema();
 
         // THEN
         System.out.println("Constructed schema");
@@ -75,7 +75,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         // GIVEN
         PrismContext ctx = constructInitializedPrismContext();
 
-        schemaRoundtrip(ctx);
+        schemaRoundtrip();
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         PrismContext ctx = constructInitializedPrismContext();
         for (int i = 0; i < SCHEMA_ROUNDTRIP_LOOP_ATTEMPTS; i++) {
             System.out.println("\n--- attempt " + i + "---");
-            schemaRoundtrip(ctx);
+            schemaRoundtrip();
         }
     }
 
@@ -92,12 +92,12 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         for (int i = 0; i < SCHEMA_ROUNDTRIP_LOOP_ATTEMPTS; i++) {
             System.out.println("\n--- attempt " + i + "---");
             PrismContext ctx = constructInitializedPrismContext();
-            schemaRoundtrip(ctx);
+            schemaRoundtrip();
         }
     }
 
-    private void schemaRoundtrip(PrismContext ctx) throws SchemaException {
-        PrismSchema schema = constructSchema(ctx);
+    private void schemaRoundtrip() throws SchemaException {
+        PrismSchema schema = constructSchema();
         assertSchema(schema);
 
         // WHEN
@@ -119,7 +119,7 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         assertSchema(reparsedSchema);
     }
 
-    private PrismSchema constructSchema(PrismContext prismContext) {
+    private PrismSchema constructSchema() {
         PrismSchemaImpl schema = new PrismSchemaImpl(NS_MY_SCHEMA);
 
         ComplexTypeDefinitionMutator weaponTypeDef = addNewComplexTypeDefinition(schema, WEAPON_TYPE_LOCAL_NAME).mutator();

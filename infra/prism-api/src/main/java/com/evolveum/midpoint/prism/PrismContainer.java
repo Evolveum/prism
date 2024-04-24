@@ -122,11 +122,13 @@ public interface PrismContainer<C extends Containerable>
      */
     void trim();
 
+    @Deprecated
     <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(QName itemQName, Class<I> type);
 
     @Override
     <IV extends PrismValue,ID extends ItemDefinition<?>> PartiallyResolvedItem<IV,ID> findPartial(ItemPath path);
 
+    @Deprecated
     <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findCreateItem(QName itemQName, Class<I> type, boolean create) throws SchemaException;
 
     <IV extends PrismValue,ID extends ItemDefinition<?>,I extends Item<IV,ID>> I findItem(ItemPath path, Class<I> type);
