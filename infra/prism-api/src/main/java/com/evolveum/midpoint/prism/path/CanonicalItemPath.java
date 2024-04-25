@@ -9,6 +9,10 @@ package com.evolveum.midpoint.prism.path;
 
 import java.io.Serializable;
 
+/**
+ * Fixme: Rename this to its actual use and meaning - item path representation normalized for textual search (used in indexing)
+ *
+ */
 public interface CanonicalItemPath extends Serializable {
 
     int size();

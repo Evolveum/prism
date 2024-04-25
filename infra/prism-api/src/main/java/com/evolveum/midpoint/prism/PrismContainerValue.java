@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.annotation.Unused;
 import com.evolveum.midpoint.util.exception.CommonException;
 
 import org.jetbrains.annotations.Contract;
@@ -59,6 +60,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      * @return set of properties that the property container contains.
      */
     @NotNull
+    @Unused
     Set<PrismProperty<?>> getProperties();
 
     Long getId();

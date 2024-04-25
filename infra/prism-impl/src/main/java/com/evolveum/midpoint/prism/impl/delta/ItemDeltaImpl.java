@@ -99,7 +99,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             this.elementName = null;
         } else {
             Object last = path.last();
-            if (!ItemPath.isName(last)) {
+            // FIXME: isName or isItemOrInfraItem allows to write item paths with dereferencing and parent and other nasties
+            if (!ItemPath.isItemOrInfraItem(last)) {
                 throw new IllegalArgumentException("Invalid delta path " + path + ". Delta path must always point to item, not to value");
             }
             this.elementName = ItemPath.toName(last);

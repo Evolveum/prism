@@ -307,6 +307,10 @@ public class ComplexTypeDefinitionImpl
                 throw new IllegalArgumentException("Cannot resolve empty path on complex type definition "+this);
             }
             Object first = path.first();
+            if (ItemPath.toNameOrNull(first) instanceof InfraItemName infraItem) {
+                return findInfraItemDefinition(infraItem, path.rest(), clazz);
+            }
+
             if (ItemPath.isName(first)) {
                 QName firstName = ItemPath.toName(first);
                 var defFound = findNamedItemDefinition(firstName, path.rest(), clazz);
@@ -350,8 +354,28 @@ public class ComplexTypeDefinitionImpl
         }
     }
 
+    private <ID extends ItemDefinition<?>> ID findInfraItemDefinition(InfraItemName infraItem, ItemPath path, Class<ID> clazz) {
+        ItemDefinition<?> ret = null;
+        if (InfraItemName.METADATA.equals(infraItem)) {
+            ret =  PrismContext.get().getValueMetadataFactory().getDefinition();
+        }
+        if (ret != null && !path.isEmpty()) {
+            ret = ret.findItemDefinition(path, clazz);
+        }
+        if (clazz.isInstance(ret)) {
+            return clazz.cast(ret);
+        }
+        return null;
+    }
+
+
+
     @Override
     public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
+        if (name instanceof InfraItemName infra) {
+            return findInfraItemDefinition(infra, infra.rest(), clazz);
+        }
+
         var explicit = ComplexTypeDefinition.super.findLocalItemDefinition(name, clazz, caseInsensitive);
         if (explicit != null) {
             return explicit;

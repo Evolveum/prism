@@ -7,24 +7,26 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
-import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaBuilder;
-import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
 import org.w3c.dom.Element;
-
-import java.util.List;
 
 /** Temporary home for a bunch of "build me" methods. */
 public class SchemaParsingUtil {
 
-    @TestOnly
-    public static PrismSchema createAndParse(@NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription)
+    /** A convenience method for schemas with no potential for circular item definitions. */
+    public static PrismSchemaImpl createAndParse(@NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription)
+            throws SchemaException {
+        return createAndParse(sourceXsdElement, isRuntime, shortDescription, false);
+    }
+
+    public static PrismSchemaImpl createAndParse(
+            @NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription, boolean allowDelayedItemDefinitions)
             throws SchemaException {
         // We need to synchronize, because the DOM structures are not thread-safe, even for reading.
         // Here, DOMUtil.getSchemaTargetNamespace gets an exception, see MID-8860.
@@ -39,29 +41,9 @@ public class SchemaParsingUtil {
         //noinspection SynchronizationOnLocalVariableOrMethodParameter
         synchronized (sourceXsdElement) {
             PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(sourceXsdElement));
-            parse(
-                    schema, sourceXsdElement,
-                    isRuntime, shortDescription, false);
+            parse(schema, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions);
             return schema;
         }
-    }
-
-    public static PrismSchemaImpl createAndParse(
-            @NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription, boolean allowDelayedItemDefinitions)
-            throws SchemaException {
-        return createAndParse(sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, null);
-    }
-
-    static PrismSchemaImpl createAndParse(
-            @NotNull Element sourceXsdElement,
-            boolean isRuntime,
-            String shortDescription,
-            boolean allowDelayedItemDefinitions,
-            SchemaRegistryState schemaRegistryState) throws SchemaException {
-        // TODO why not synchronizing here?
-        PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(sourceXsdElement));
-        parse(schema, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, schemaRegistryState);
-        return schema;
     }
 
     // main entry point for parsing standard prism schemas

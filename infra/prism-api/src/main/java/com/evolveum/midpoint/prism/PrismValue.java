@@ -10,6 +10,7 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.metadata.MidpointOriginMetadata;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
+import com.evolveum.midpoint.prism.path.InfraItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -302,4 +303,5 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     default boolean isObjectable() {
         return getRealValueIfExists() instanceof Objectable;
     }
+
 }
