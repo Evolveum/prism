@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.MetadataAware;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -244,9 +245,9 @@ class DomReader {
 //            return false;
 //        }
 
-        SchemaRegistry.IsList fromSchema = schemaRegistry.isList(xsiType, itemDef.getName());
-        if (fromSchema != SchemaRegistry.IsList.MAYBE) {
-            return fromSchema == SchemaRegistry.IsList.YES;
+        SchemaRegistryState.IsList fromSchema = schemaRegistry.isList(xsiType, itemDef.getName());
+        if (fromSchema != SchemaRegistryState.IsList.MAYBE) {
+            return fromSchema == SchemaRegistryState.IsList.YES;
         }
 
         // checking the content

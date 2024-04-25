@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.schema.SchemaRegistryState.IsList;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -21,16 +22,19 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Maintains system-wide schemas.
+ * Maintains system-wide schemas that is used as source for parsing during initialize and reload.
  */
 public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
@@ -43,6 +47,7 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
      */
     DynamicNamespacePrefixMapper getNamespacePrefixMapper();
 
+    void customizeNamespacePrefixMapper(Consumer<DynamicNamespacePrefixMapper> customizer);
 
     PrismNamespaceContext staticNamespaceContext();
 
@@ -219,14 +224,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
      */
     boolean isContainerable(QName typeName);
 
-    // TODO move to GlobalSchemaRegistry
-    @NotNull
-    <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByElementName(@NotNull QName name, @NotNull Class<TD> clazz);
-
-    enum IsList {
-        YES, NO, MAYBE
-    }
-
     /**
      * Checks whether element with given (declared) xsi:type and name can be a heterogeneous list.
      *
@@ -284,4 +281,5 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
         void invalidate();
     }
 
+    void registerDynamicSchemaExtensions(Map<String, Element> dbSchemaExtensions) throws SchemaException;
 }

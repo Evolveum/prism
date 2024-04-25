@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.schema.SchemaBuilder;
 import com.evolveum.midpoint.prism.schema.SchemaDescription;
+import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -48,18 +49,27 @@ public class SchemaParsingUtil {
     public static PrismSchemaImpl createAndParse(
             @NotNull Element sourceXsdElement, boolean isRuntime, String shortDescription, boolean allowDelayedItemDefinitions)
             throws SchemaException {
+        return createAndParse(sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, null);
+    }
+
+    static PrismSchemaImpl createAndParse(
+            @NotNull Element sourceXsdElement,
+            boolean isRuntime,
+            String shortDescription,
+            boolean allowDelayedItemDefinitions,
+            SchemaRegistryState schemaRegistryState) throws SchemaException {
         // TODO why not synchronizing here?
         PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(sourceXsdElement));
-        parse(schema, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions);
+        parse(schema, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, schemaRegistryState);
         return schema;
     }
 
     // main entry point for parsing standard prism schemas
     static void parseSchemas(
-            Element sourceWrappingElement, List<PrismSchemaImpl> schemas)
+            Element sourceWrappingElement, List<PrismSchemaImpl> schemas, SchemaRegistryState schemaRegistryState)
             throws SchemaException {
         new SchemaDomParser()
-                .parseSchemas(schemas, sourceWrappingElement);
+                .parseSchemas(schemas, sourceWrappingElement, schemaRegistryState);
     }
 
     public static void parse(
@@ -68,7 +78,17 @@ public class SchemaParsingUtil {
             boolean isRuntime,
             String shortDescription,
             boolean allowDelayedItemDefinitions) throws SchemaException {
+        parse(schemaBuilder, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, null);
+    }
+
+    static void parse(
+            @NotNull SchemaBuilder schemaBuilder,
+            @NotNull Element sourceXsdElement,
+            boolean isRuntime,
+            String shortDescription,
+            boolean allowDelayedItemDefinitions,
+            SchemaRegistryState schemaRegistryState) throws SchemaException {
         new SchemaDomParser()
-                .parseSchema(schemaBuilder, sourceXsdElement, isRuntime, allowDelayedItemDefinitions, shortDescription);
+                .parseSchema(schemaBuilder, sourceXsdElement, isRuntime, allowDelayedItemDefinitions, shortDescription, schemaRegistryState);
     }
 }

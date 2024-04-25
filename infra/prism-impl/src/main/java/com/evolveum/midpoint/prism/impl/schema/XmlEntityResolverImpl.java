@@ -104,7 +104,7 @@ public class XmlEntityResolverImpl implements XmlEntityResolver {
 
     private InputSource resolveResourceFromRegisteredSchemasByNamespace(String namespaceURI) {
         if (namespaceURI != null) {
-            Collection<SchemaDescription> schemaDescriptions = schemaRegistry.getParsedSchemas().get(namespaceURI);
+            Collection<SchemaDescription> schemaDescriptions = getParsedSchemasForNamespace(namespaceURI);
             if (schemaDescriptions.size() == 1) {
                 SchemaDescription schemaDescription = schemaDescriptions.iterator().next();
                 InputStream inputStream;
@@ -128,6 +128,10 @@ public class XmlEntityResolverImpl implements XmlEntityResolver {
             }
         }
         return null;
+    }
+
+    protected Collection<SchemaDescription> getParsedSchemasForNamespace(String namespaceURI) {
+        return schemaRegistry.getParsedSchemas().get(namespaceURI);
     }
 
     public InputSource resolveResourceUsingBuiltinResolver(String type, String namespaceURI, String publicId, String systemId,
