@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017 Evolveum and contributors
+ * Copyright (c) 2010-2024 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -8,10 +8,10 @@
 package com.evolveum.midpoint.prism.schema;
 
 import java.util.Collection;
-import java.util.List;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.collections4.MultiValuedMap;
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,8 +29,6 @@ public interface SchemaRegistryState extends DebugDumpable, GlobalDefinitionsSto
 
     PrismSchema getPrismSchema(String namespace);
 
-    MultiValuedMap<String, SchemaDescription> getParsedSchemas();
-
     javax.xml.validation.Schema getJavaxSchema();
 
     /**
@@ -40,6 +38,11 @@ public interface SchemaRegistryState extends DebugDumpable, GlobalDefinitionsSto
 
     // TODO fix this temporary and inefficient implementation
     QName resolveUnqualifiedTypeName(QName type) throws SchemaException;
+
+    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
+    // fails on ambiguity
+    // it's a bit fragile, as adding new references to child CTD in future may break existing code
+    ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest);
 
     <T> Class<T> determineCompileTimeClass(QName typeName);
 
@@ -53,6 +56,8 @@ public interface SchemaRegistryState extends DebugDumpable, GlobalDefinitionsSto
 
     // Takes XSD types into account as well
     <T> Class<T> determineClassForType(QName type);
+
+    <T> Class<T> determineCompileTimeClassInternal(QName type, boolean cacheAlsoNegativeResults);
 
     Collection<Package> getCompileTimePackages();
 
@@ -69,15 +74,4 @@ public interface SchemaRegistryState extends DebugDumpable, GlobalDefinitionsSto
      */
     @NotNull
     IsList isList(@Nullable QName xsiType, @NotNull QName elementName);
-
-    <TD extends TypeDefinition> TD resolveGlobalTypeDefinitionWithoutNamespace(String typeLocalName, Class<TD> definitionClass);
-
-    <TD extends TypeDefinition> Collection<TD> resolveGlobalTypeDefinitionsWithoutNamespace(String typeLocalName, Class<TD> definitionClass);
-
-    <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass, @Nullable List<String> ignoredNamespaces);
-
-    <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass);
-
-    <ID extends ItemDefinition> ID resolveGlobalItemDefinitionWithoutNamespace(
-            String localPart, Class<ID> definitionClass, boolean exceptionIfAmbiguous, @Nullable List<String> ignoredNamespaces);
 }

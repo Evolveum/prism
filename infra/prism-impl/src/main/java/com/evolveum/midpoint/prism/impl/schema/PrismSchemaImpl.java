@@ -39,7 +39,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
  * @author Radovan Semancik
  */
 public class PrismSchemaImpl
-        extends AbstractFreezable
+        extends FreezableInitializable
         implements PrismSchema, PrismSchemaMutator, SchemaBuilder, SerializableSchema {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismSchema.class);
@@ -107,11 +107,6 @@ public class PrismSchemaImpl
      * Temporary. The method is not quite sound anyway.
      */
     private final Map<Class<?>, List<ItemDefinition<?>>> itemDefinitionsByCompileTimeClassMap = new ConcurrentHashMap<>();
-
-    /**
-     * Current schemaRegistryState. This variable is present only if this state(also this prismSchema) isn't fully initialized.
-     */
-    private SchemaRegistryStateImpl schemaRegistryState;
 
     //TODO PoC
     private String sourceDescription;
@@ -207,6 +202,9 @@ public class PrismSchemaImpl
                 throw new IllegalArgumentException("Unqualified definition of type " + typeName + " cannot be added to " + this);
             }
             typeDefinitionMap.put(typeName, typeDef);
+            if (def instanceof TypeDefinitionImpl typeImplDef && !def.isImmutable()) {
+                typeImplDef.setSchemaRegistryState(getSchemaRegistryState());
+            }
         } else {
             throw new IllegalArgumentException("Unsupported type to be added to this schema: " + def);
         }
@@ -216,13 +214,7 @@ public class PrismSchemaImpl
 
     void setupCompileTimeClass(@NotNull TypeDefinition typeDef) {
         // Not caching the negative result, as this is called during schema parsing.
-        Class<Object> compileTimeClass;
-        if (schemaRegistryState == null) {
-            compileTimeClass = prismContext.getSchemaRegistry()
-                    .determineCompileTimeClassInternal(typeDef.getTypeName(), false);
-        } else {
-            compileTimeClass = schemaRegistryState.determineCompileTimeClassInternal(typeDef.getTypeName(), false);
-        }
+        Class<Object> compileTimeClass = getSchemaResolver().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
         if (typeDef instanceof TypeDefinitionImpl typeDefImpl) {
             typeDefImpl.setCompileTimeClass(compileTimeClass); // FIXME do better!
         }
@@ -386,13 +378,7 @@ public class PrismSchemaImpl
                     found.add((ItemDefinition<?>) def);
                 }
             } else if (def instanceof PrismPropertyDefinition) {
-                Class<?> fondClass;
-                if (schemaRegistryState == null) {
-                    fondClass = prismContext.getSchemaRegistry()
-                            .determineClassForType(def.getTypeName());
-                } else {
-                    fondClass = schemaRegistryState.determineClassForType(def.getTypeName());
-                }
+                Class<?> fondClass = getSchemaResolver().determineClassForType(def.getTypeName());
                 if (compileTimeClass.equals(fondClass)) {
                     found.add((ItemDefinition<?>) def);
                 }
@@ -525,8 +511,8 @@ public class PrismSchemaImpl
 
     @Override
     public void performFreeze() {
+        super.performFreeze();
         definitions.forEach(Freezable::freeze);
-        schemaRegistryState = null;
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
@@ -581,12 +567,5 @@ public class PrismSchemaImpl
 
     public Package getCompileTimePackage() {
         return compileTimePackage;
-    }
-
-    public void setSchemaRegistryState(SchemaRegistryStateImpl schemaRegistryState) {
-        if (isImmutable()) {
-            throw new UnsupportedOperationException("PrismSchema is freeze.");
-        }
-        this.schemaRegistryState = schemaRegistryState;
     }
 }

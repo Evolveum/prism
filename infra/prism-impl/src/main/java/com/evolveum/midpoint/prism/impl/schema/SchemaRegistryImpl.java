@@ -808,6 +808,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
     //endregion
 
+    //region Unqualified names resolution
     @Override
     public QName resolveUnqualifiedTypeName(QName type) throws SchemaException {
         return schemaRegistryState.resolveUnqualifiedTypeName(type);
@@ -821,54 +822,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return resolveUnqualifiedTypeName(typeName);
     }
 
-    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
-    // fails on ambiguity
-    // it's a bit fragile, as adding new references to child CTD in future may break existing code
     @Override
     public ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest) {
-        Map<ComplexTypeDefinition, ItemDefinition<?>> found = new HashMap<>();
-        for (PrismSchema schema : getSchemas()) {
-            if (schema == null) {
-                continue;
-            }
-            for (ComplexTypeDefinition ctd : schema.getComplexTypeDefinitions()) {
-                for (ItemDefinition<?> item : ctd.getDefinitions()) {
-                    if (!(item instanceof PrismContainerDefinition)) {
-                        continue;
-                    }
-                    PrismContainerDefinition<?> itemPcd = (PrismContainerDefinition<?>) item;
-                    if (itemPcd.getComplexTypeDefinition() == null) {
-                        continue;
-                    }
-                    if (child.getTypeName().equals(itemPcd.getComplexTypeDefinition().getTypeName())) {
-                        if (!rest.isEmpty() && ctd.findItemDefinition(rest) == null) {
-                            continue;
-                        }
-                        found.put(ctd, itemPcd);
-                    }
-                }
-            }
-        }
-        if (found.isEmpty()) {
-            throw new IllegalStateException("Couldn't find definition for parent for " + child.getTypeName() + ", path=" + rest);
-        } else if (found.size() > 1) {
-            Map<ComplexTypeDefinition, ItemDefinition> notInherited = found.entrySet().stream()
-                    .filter(e -> !e.getValue().isInherited())
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-            if (notInherited.size() > 1) {
-                throw new IllegalStateException(
-                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found: "
-                                + notInherited);
-            } else if (notInherited.isEmpty()) {
-                throw new IllegalStateException(
-                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found - and all are inherited: "
-                                + found);
-            } else {
-                return notInherited.keySet().iterator().next();
-            }
-        } else {
-            return found.keySet().iterator().next();
-        }
+        return schemaRegistryState.determineParentDefinition(child, rest);
     }
 
     @Override
@@ -1020,6 +976,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return schemaRegistryState.determineCompileTimeClass(type);
     }
 
+    @Override
     public <T> Class<T> determineCompileTimeClassInternal(QName type, boolean cacheAlsoNegativeResults) {
         return schemaRegistryState.determineCompileTimeClassInternal(type, cacheAlsoNegativeResults);
     }

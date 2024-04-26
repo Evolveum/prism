@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2018 Evolveum and contributors
+ * Copyright (c) 2010-2024 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -25,9 +25,9 @@ import java.util.Collection;
  */
 public class XmlEntityResolverUsingCurrentState extends XmlEntityResolverImpl {
 
-    private final SchemaRegistryState unfinishedState;
+    private final SchemaRegistryStateImpl unfinishedState;
 
-    public XmlEntityResolverUsingCurrentState(SchemaRegistryImpl schemaRegistry, SchemaRegistryState unfinishedState) {
+    public XmlEntityResolverUsingCurrentState(SchemaRegistryImpl schemaRegistry, SchemaRegistryStateImpl unfinishedState) {
         super(schemaRegistry);
         this.unfinishedState = unfinishedState;
     }

@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryStateImpl;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -97,7 +98,7 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
             return true;
         }
         if (superType != null) {
-            ComplexTypeDefinition supertypeDef = PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(superType);
+            ComplexTypeDefinition supertypeDef = getSchemaResolver().findComplexTypeDefinitionByType(superType);
             return supertypeDef.canRepresent(typeName);
         } else {
             return false;

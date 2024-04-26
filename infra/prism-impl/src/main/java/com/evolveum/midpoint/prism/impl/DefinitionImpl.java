@@ -11,6 +11,8 @@ import java.io.Serial;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.schema.FreezableInitializable;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +46,7 @@ import com.evolveum.midpoint.util.PrettyPrinter;
  * @author Radovan Semancik
  */
 public abstract class DefinitionImpl
-        extends AbstractFreezable
+        extends FreezableInitializable
         implements Definition, Definition.DefinitionMutator {
 
     @Serial private static final long serialVersionUID = -2643332934312107274L;

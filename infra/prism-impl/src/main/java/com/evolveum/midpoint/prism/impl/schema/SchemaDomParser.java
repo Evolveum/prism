@@ -163,7 +163,7 @@ class SchemaDomParser {
         } else {
             resolver = new XmlEntityResolverUsingCurrentState(
                     (SchemaRegistryImpl) PrismContext.get().getSchemaRegistry(),
-                    schemaRegistryState);
+                    (SchemaRegistryStateImpl) schemaRegistryState);
         }
         SchemaHandler schemaHandler = new SchemaHandler(resolver);
         parser.setErrorHandler(schemaHandler);

@@ -13,7 +13,6 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMu
 import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
 import com.evolveum.midpoint.prism.path.*;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
 import com.evolveum.midpoint.util.*;
@@ -322,11 +321,12 @@ public class ComplexTypeDefinitionImpl
                 path = path.rest();
             } else if (ItemPath.isParent(first)) {
                 ItemPath rest = path.rest();
-                ComplexTypeDefinition parent = PrismContext.get().getSchemaRegistry().determineParentDefinition(this, rest);
+                ComplexTypeDefinition parent = getSchemaResolver().determineParentDefinition(this, rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
                     //noinspection unchecked
-                    return (ID) PrismContext.get().getSchemaRegistry().findItemDefinitionByType(parent.getTypeName());
+                    return (ID) getSchemaResolver().findItemDefinitionByType(parent.getTypeName());
+
                 } else {
                     return parent.findItemDefinition(rest, clazz);
                 }
@@ -390,11 +390,9 @@ public class ComplexTypeDefinitionImpl
         if (defaultTypeName == null) {
             return null;
         }
-        var typeDef =
-                MiscUtil.stateNonNull(
-                        PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(defaultTypeName),
-                        "No complex type definition for %s", defaultTypeName);
-        var pcd = new PrismContainerDefinitionImpl<>(firstName, typeDef);
+        ComplexTypeDefinition typeDef = getSchemaResolver().findComplexTypeDefinitionByType(defaultTypeName);
+        var stateNonNullTypeDef = MiscUtil.stateNonNull(typeDef, "No complex type definition for %s", defaultTypeName);
+        var pcd = new PrismContainerDefinitionImpl<>(firstName, stateNonNullTypeDef);
         pcd.setMinOccurs(0);
         pcd.setMaxOccurs(-1);
         pcd.setDynamic(true); // TODO ok?
@@ -427,8 +425,7 @@ public class ComplexTypeDefinitionImpl
             }
         }
         if (isXsdAnyMarker()) {
-            SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
-            ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(firstName);
+            ItemDefinition<?> def = getSchemaResolver().findItemDefinitionByElementName(firstName);
             if (def != null) {
                 return def.findItemDefinition(rest, clazz);
             }
@@ -737,7 +734,7 @@ public class ComplexTypeDefinitionImpl
 //    }
 
     public Class<?> getTypeClass() {
-        return PrismContext.get().getSchemaRegistry().determineClassForType(getTypeName());
+        return getSchemaResolver().determineClassForType(getTypeName());
     }
 
     @Override

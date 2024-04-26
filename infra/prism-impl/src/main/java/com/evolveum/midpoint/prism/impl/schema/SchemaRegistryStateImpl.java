@@ -20,6 +20,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
@@ -173,7 +174,6 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         this.parsedPrismSchemas = parsedPrismSchemas;
     }
 
-    @Override
     public MultiValuedMap<String, SchemaDescription> getParsedSchemas() {
         return parsedSchemas;
     }
@@ -351,8 +351,57 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         }
     }
 
+    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
+    // fails on ambiguity
+    // it's a bit fragile, as adding new references to child CTD in future may break existing code
     @Override
-    public <TD extends TypeDefinition> TD resolveGlobalTypeDefinitionWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
+    public ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest) {
+        Map<ComplexTypeDefinition, ItemDefinition<?>> found = new HashMap<>();
+        for (PrismSchema schema : getSchemas()) {
+            if (schema == null) {
+                continue;
+            }
+            for (ComplexTypeDefinition ctd : schema.getComplexTypeDefinitions()) {
+                for (ItemDefinition<?> item : ctd.getDefinitions()) {
+                    if (!(item instanceof PrismContainerDefinition)) {
+                        continue;
+                    }
+                    PrismContainerDefinition<?> itemPcd = (PrismContainerDefinition<?>) item;
+                    if (itemPcd.getComplexTypeDefinition() == null) {
+                        continue;
+                    }
+                    if (child.getTypeName().equals(itemPcd.getComplexTypeDefinition().getTypeName())) {
+                        if (!rest.isEmpty() && ctd.findItemDefinition(rest) == null) {
+                            continue;
+                        }
+                        found.put(ctd, itemPcd);
+                    }
+                }
+            }
+        }
+        if (found.isEmpty()) {
+            throw new IllegalStateException("Couldn't find definition for parent for " + child.getTypeName() + ", path=" + rest);
+        } else if (found.size() > 1) {
+            Map<ComplexTypeDefinition, ItemDefinition> notInherited = found.entrySet().stream()
+                    .filter(e -> !e.getValue().isInherited())
+                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            if (notInherited.size() > 1) {
+                throw new IllegalStateException(
+                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found: "
+                                + notInherited);
+            } else if (notInherited.isEmpty()) {
+                throw new IllegalStateException(
+                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found - and all are inherited: "
+                                + found);
+            } else {
+                return notInherited.keySet().iterator().next();
+            }
+        } else {
+            return found.keySet().iterator().next();
+        }
+    }
+
+    <TD extends TypeDefinition> TD resolveGlobalTypeDefinitionWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
         TD found = null;
         for (PrismSchemaImpl schema : parsedPrismSchemas) {
             TD def = schema.findTypeDefinitionByType(new QName(schema.getNamespace(), typeLocalName), definitionClass);
@@ -368,7 +417,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
     }
 
     @NotNull
-    public <TD extends TypeDefinition> Collection<TD> resolveGlobalTypeDefinitionsWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
+    <TD extends TypeDefinition> Collection<TD> resolveGlobalTypeDefinitionsWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
         List<TD> rv = new ArrayList<>();
         for (PrismSchemaImpl schema : parsedPrismSchemas) {
             rv.addAll(schema.findTypeDefinitionsByType(new QName(schema.getNamespace(), typeLocalName), definitionClass));
@@ -376,13 +425,11 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         return rv;
     }
 
-    @Override
-    public  <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass) {
+    <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass) {
         return resolveGlobalItemDefinitionsWithoutNamespace(localPart, definitionClass, null);
     }
 
-    @Override
-    public  <ID extends ItemDefinition> ID resolveGlobalItemDefinitionWithoutNamespace(
+    <ID extends ItemDefinition> ID resolveGlobalItemDefinitionWithoutNamespace(
             String localPart, Class<ID> definitionClass, boolean exceptionIfAmbiguous, @Nullable List<String> ignoredNamespaces) {
         return DefinitionStoreUtils.getOne(
                 resolveGlobalItemDefinitionsWithoutNamespace(localPart, definitionClass, ignoredNamespaces),
@@ -391,8 +438,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
     }
 
     @NotNull
-    @Override
-    public <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass, @Nullable List<String> ignoredNamespaces) {
+    private <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass, @Nullable List<String> ignoredNamespaces) {
         List<ID> found = new ArrayList<>();
         for (PrismSchemaImpl schema : parsedPrismSchemas) {
             if (namespaceMatches(schema.getNamespace(), ignoredNamespaces)) {

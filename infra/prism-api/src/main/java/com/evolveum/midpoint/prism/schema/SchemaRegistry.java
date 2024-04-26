@@ -36,16 +36,11 @@ import java.util.function.Function;
 /**
  * Maintains system-wide schemas that is used as source for parsing during initialize and reload.
  */
-public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
+public interface SchemaRegistry extends DebugDumpable, SchemaRegistryState {
 
     static SchemaRegistry get() {
         return PrismContext.get().getSchemaRegistry();
     }
-
-    /**
-     * @return System-wide "standard prefixes" registry.
-     */
-    DynamicNamespacePrefixMapper getNamespacePrefixMapper();
 
     void customizeNamespacePrefixMapper(Consumer<DynamicNamespacePrefixMapper> customizer);
 
@@ -59,17 +54,9 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     void initialize() throws SAXException, IOException, SchemaException;
 
-    javax.xml.validation.Schema getJavaxSchema();
-
     javax.xml.validation.Validator getJavaxSchemaValidator();
 
-    PrismSchema getPrismSchema(String namespace);
-
-    Collection<PrismSchema> getSchemas();
-
     Collection<SchemaDescription> getSchemaDescriptions();
-
-    Collection<Package> getCompileTimePackages();
 
     ItemDefinition locateItemDefinition(
             @NotNull QName itemName,
@@ -77,15 +64,7 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionResolver);
 
-    // TODO fix this temporary and inefficient implementation
-    QName resolveUnqualifiedTypeName(QName type) throws SchemaException;
-
     QName qualifyTypeName(QName typeName) throws SchemaException;
-
-    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
-    // fails on ambiguity
-    // it's a bit fragile, as adding new references to child CTD in future may break existing code
-    ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest);
 
     PrismObjectDefinition determineReferencedObjectDefinition(@NotNull QName targetTypeName, ItemPath rest);
 
@@ -102,13 +81,9 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     ItemDefinition findItemDefinitionByElementName(QName elementName, @Nullable List<String> ignoredNamespaces);
 
-    <T> Class<T> determineCompileTimeClass(QName typeName);
-
     default <T> Class<T> getCompileTimeClass(QName xsdType) {
         return determineCompileTimeClass(xsdType);
     }
-
-    PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass);
 
     /**
      * Tries to determine type name for any class (primitive, complex one).
@@ -150,12 +125,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
             QName... itemNames)
                             throws SchemaException;
 
-    PrismSchema findSchemaByNamespace(String namespaceURI);
-
-    SchemaDescription findSchemaDescriptionByNamespace(String namespaceURI);
-
-    SchemaDescription findSchemaDescriptionByPrefix(String prefix);
-
     PrismObjectDefinition determineDefinitionFromClass(Class type);
 
     @NotNull PrismContainerDefinition<?> getValueMetadataDefinition();
@@ -163,9 +132,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
     boolean hasImplicitTypeDefinition(@NotNull QName itemName, @NotNull QName typeName);
 
     ItemDefinition resolveGlobalItemDefinition(QName itemName, @Nullable ComplexTypeDefinition complexTypeDefinition);
-
-    // Takes XSD types into account as well
-    <T> Class<T> determineClassForType(QName type);
 
     default <T> Class<T> determineJavaClassForType(QName type) {
         Class<?> xsdClass = MiscUtil.resolvePrimitiveIfNecessary(
@@ -223,16 +189,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
      * TODO The utility of this method is questionable. Reconsider its removal/update.
      */
     boolean isContainerable(QName typeName);
-
-    /**
-     * Checks whether element with given (declared) xsi:type and name can be a heterogeneous list.
-     *
-     * @return YES if it is a list,
-     *         NO if it's not,
-     *         MAYBE if it probably is a list but some further content-based checks are needed
-     */
-    @NotNull
-    IsList isList(@Nullable QName xsiType, @NotNull QName elementName);
 
     enum ComparisonResult {
         EQUAL, // types are equal
