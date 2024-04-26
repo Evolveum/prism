@@ -1196,6 +1196,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         List<SchemaDescriptionImpl> registeredSchemasExtensions = new ArrayList<>();
         for (Entry<String, Element> entry : dynamicSchemaExtensions.entrySet()) {
             SchemaDescriptionImpl desc = SchemaDescriptionParser.parseNode(entry.getValue(), entry.getKey());
+            desc.setPrismSchema(true);
             desc.setRegistered();
             registeredSchemasExtensions.add(desc);
 

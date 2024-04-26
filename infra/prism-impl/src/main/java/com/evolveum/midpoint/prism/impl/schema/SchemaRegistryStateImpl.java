@@ -785,11 +785,11 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     parsedSchemas,
                     prismContextBuilder);
 
-            ParsePrismSchemasState parsedPrismSchemaDto = parsePrismSchemas(schemaDescriptionsBuilder, schemaRegistryState);
-            schemaRegistryState.setParsedPrismSchemas(parsedPrismSchemaDto.parsedPrismSchemas);
+            ParsePrismSchemasState parsedPrismSchemaState = parsePrismSchemas(schemaDescriptionsBuilder, schemaRegistryState);
+            schemaRegistryState.setParsedPrismSchemas(parsedPrismSchemaState.parsedPrismSchemas);
 
             //we need split whole schema parsing process to two method, because second method already use result of first
-            finishParsingPrismSchemas(parsedPrismSchemaDto, schemaRegistryState);
+            finishParsingPrismSchemas(parsedPrismSchemaState, schemaRegistryState);
             long prismSchemasDone = System.currentTimeMillis();
             LOGGER.trace("parsePrismSchemas() done in {} ms", prismSchemasDone - parsedSchemasDone);
 
