@@ -161,7 +161,7 @@ class SchemaDomParser {
         if (schemaRegistryState == null) {
             resolver = ((PrismContextImpl) PrismContext.get()).getEntityResolver();
         } else {
-            resolver = new XmlEntityResolverUsingCurrentState(
+            resolver = new XmlEntityResolverImpl(
                     (SchemaRegistryImpl) PrismContext.get().getSchemaRegistry(),
                     (SchemaRegistryStateImpl) schemaRegistryState);
         }

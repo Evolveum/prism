@@ -39,7 +39,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
  * @author Radovan Semancik
  */
 public class PrismSchemaImpl
-        extends FreezableInitializable
+        extends SchemaRegistryStateAware
         implements PrismSchema, PrismSchemaMutator, SchemaBuilder, SerializableSchema {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismSchema.class);
@@ -214,7 +214,7 @@ public class PrismSchemaImpl
 
     void setupCompileTimeClass(@NotNull TypeDefinition typeDef) {
         // Not caching the negative result, as this is called during schema parsing.
-        Class<Object> compileTimeClass = getSchemaResolver().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
+        Class<Object> compileTimeClass = getSchemaLookup().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
         if (typeDef instanceof TypeDefinitionImpl typeDefImpl) {
             typeDefImpl.setCompileTimeClass(compileTimeClass); // FIXME do better!
         }
@@ -378,7 +378,7 @@ public class PrismSchemaImpl
                     found.add((ItemDefinition<?>) def);
                 }
             } else if (def instanceof PrismPropertyDefinition) {
-                Class<?> fondClass = getSchemaResolver().determineClassForType(def.getTypeName());
+                Class<?> fondClass = getSchemaLookup().determineClassForType(def.getTypeName());
                 if (compileTimeClass.equals(fondClass)) {
                     found.add((ItemDefinition<?>) def);
                 }

@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 import javax.xml.validation.Validator;
 
@@ -40,7 +39,6 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.impl.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
-import com.evolveum.midpoint.prism.schema.SchemaRegistryState.IsList;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
@@ -84,7 +82,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     /**
      * Advanced entity resolver that uses all registered schemas and built-in catalog-based schema resolver.
      */
-    private final XmlEntityResolver entityResolver = new XmlEntityResolverImpl(this);
+    private XmlEntityResolver entityResolver;
 
     /**
      * Registered schema descriptions.
@@ -100,7 +98,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     /**
      * Current parsed schema state.
      */
-    private SchemaRegistryStateImpl schemaRegistryState;
+    private SchemaRegistryStateImpl schemaRegistryState = null;
 
     /**
      * "Registry" for namespace prefixes. It is used when serializing data as well as schemas.
@@ -133,21 +131,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      * for midPoint it is c:ValueMetadataType.
      */
     private QName valueMetadataTypeName;
-
-    /**
-     * Definition of the value metadata container.
-     * It is lazily evaluated, because the schema registry has to be initialized to resolve type name to definition.
-     */
-    private PrismContainerDefinition<?> valueMetadataDefinition;
-
-    /**
-     * Default name for value metadata container. Used to construct ad-hoc definition when no value metadata
-     * type name is specified.
-     */
-    private static final QName DEFAULT_VALUE_METADATA_NAME = new QName("valueMetadata");
-
-    /** Type name for empty metadata. Doesn't exist in the registry. */
-    private static final QName DEFAULT_VALUE_METADATA_TYPE_NAME = new QName("EmptyValueMetadataType");
 
     private PrismNamespaceContext staticNamespaceContext;
 
@@ -189,7 +172,14 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     public XmlEntityResolver getEntityResolver() {
+        if (entityResolver == null) {
+            initEntityResolver();
+        }
         return entityResolver;
+    }
+
+    private void initEntityResolver() {
+        entityResolver = new XmlEntityResolverImpl(this, schemaRegistryState);
     }
 
     public MultiValuedMap<String, SchemaDescription> getParsedSchemas() {
@@ -474,6 +464,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             schemaRegistryStateLocale.freeze();
 
             this.schemaRegistryState = schemaRegistryStateLocale;
+            initEntityResolver();
 
             invalidateCaches();
             staticNamespaceContext = staticPrefixes.build();
@@ -902,36 +893,17 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return schemaRegistryState.isList(xsiType, elementName);
     }
 
+    /**
+     * Must be called before call to initialize()
+     */
     public synchronized void setValueMetadataTypeName(QName typeName) {
         valueMetadataTypeName = typeName;
-        valueMetadataDefinition = null;
     }
 
     @Override
     @NotNull
     public synchronized PrismContainerDefinition<?> getValueMetadataDefinition() {
-        if (valueMetadataDefinition == null) {
-            valueMetadataDefinition = resolveValueMetadataDefinition();
-        }
-        return valueMetadataDefinition;
-    }
-
-    private PrismContainerDefinition<?> resolveValueMetadataDefinition() {
-        if (valueMetadataTypeName != null) {
-            return Objects.requireNonNull(
-                    schemaRegistryState.findContainerDefinitionByType(valueMetadataTypeName),
-                    () -> "no definition for value metadata type " + valueMetadataTypeName);
-        } else {
-            return createDefaultValueMetadataDefinition();
-        }
-    }
-
-    private PrismContainerDefinition<?> createDefaultValueMetadataDefinition() {
-        var pcd = prismContext.definitionFactory().newContainerDefinitionWithoutTypeDefinition(
-                DEFAULT_VALUE_METADATA_NAME, DEFAULT_VALUE_METADATA_TYPE_NAME);
-        pcd.mutator().setMinOccurs(0);
-        pcd.mutator().setMaxOccurs(1);
-        return pcd;
+        return schemaRegistryState.getValueMetadataDefinition();
     }
     //endregion
 

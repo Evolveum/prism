@@ -7,22 +7,19 @@
 package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.Freezable;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 
-import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
  * Class allow before freeze setting of SchemaRegistryStateImpl
  * and use it for resolving of definitions during initializing of schema.
  */
-public abstract class FreezableInitializable extends AbstractFreezable {
+public abstract class SchemaRegistryStateAware extends AbstractFreezable {
 
     /**
      * Current schemaRegistryState. This variable is present only if this state(also this prismSchema) isn't fully initialized.
@@ -49,7 +46,7 @@ public abstract class FreezableInitializable extends AbstractFreezable {
     /**
      * Return schemaRegistryState that will be used for resolving of schema.
      * This method is used to move the variable to another class.
-     * For resolving of definition use {@link #getSchemaResolver()}.
+     * For resolving of definition use {@link #getSchemaLookup()}.
      */
     @Nullable
     protected final SchemaRegistryStateImpl getSchemaRegistryState() {
@@ -59,7 +56,7 @@ public abstract class FreezableInitializable extends AbstractFreezable {
     /**
      * @return SchemaRegistryState that can be used for resolving of schema
      */
-    protected final SchemaRegistryState getSchemaResolver() {
+    protected final SchemaRegistryState getSchemaLookup() {
         return Objects.requireNonNullElseGet(schemaRegistryState, () -> PrismContext.get().getSchemaRegistry());
     }
 }

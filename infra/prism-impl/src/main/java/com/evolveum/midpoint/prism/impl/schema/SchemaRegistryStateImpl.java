@@ -143,6 +143,12 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
      */
     protected final PrismContext prismContext;
 
+    /**
+     * Definition of the value metadata container.
+     * It is lazily evaluated, because the schema registry has to be initialized to resolve type name to definition.
+     */
+    private PrismContainerDefinition<?> valueMetadataDefinition;
+
     private SchemaRegistryStateImpl(
             DynamicNamespacePrefixMapper namespacePrefixMapper, List<SchemaDescriptionImpl> schemaDescriptions,
             MultiValuedMap<String, SchemaDescription> parsedSchemas, PrismContext prismContext) {
@@ -176,6 +182,14 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
 
     public MultiValuedMap<String, SchemaDescription> getParsedSchemas() {
         return parsedSchemas;
+    }
+
+    public PrismContainerDefinition<?> getValueMetadataDefinition() {
+        return valueMetadataDefinition;
+    }
+
+    private void setValueMetadataDefinition(PrismContainerDefinition<?> valueMetadataDefinition) {
+        this.valueMetadataDefinition = valueMetadataDefinition;
     }
 
     @Override
@@ -727,6 +741,21 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
 
         private final Multimap<QName, ItemDefinition<?>> substitutionsBuilder = HashMultimap.create();
 
+        /**
+         * Type name for value metadata container. It is set by the application. For example,
+         * for midPoint it is c:ValueMetadataType.
+         */
+        private QName valueMetadataTypeNameBuilder;
+
+        /**
+         * Default name for value metadata container. Used to construct ad-hoc definition when no value metadata
+         * type name is specified.
+         */
+        private static final QName DEFAULT_VALUE_METADATA_NAME = new QName("valueMetadata");
+
+        /** Type name for empty metadata. Doesn't exist in the registry. */
+        private static final QName DEFAULT_VALUE_METADATA_TYPE_NAME = new QName("EmptyValueMetadataType");
+
         public Builder prismContext(@NotNull PrismContext prismContext) {
             this.prismContextBuilder = prismContext;
             return this;
@@ -756,7 +785,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     parsedSchemas,
                     prismContextBuilder);
 
-            ParsePrismSchemasDto parsedPrismSchemaDto = parsePrismSchemas(schemaDescriptionsBuilder, schemaRegistryState);
+            ParsePrismSchemasState parsedPrismSchemaDto = parsePrismSchemas(schemaDescriptionsBuilder, schemaRegistryState);
             schemaRegistryState.setParsedPrismSchemas(parsedPrismSchemaDto.parsedPrismSchemas);
 
             //we need split whole schema parsing process to two method, because second method already use result of first
@@ -774,8 +803,31 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             long javaxSchemasDone = System.currentTimeMillis();
             LOGGER.trace("parseJavaxSchema() done in {} ms", javaxSchemasDone - initPackageMapperDone);
 
+            PrismContainerDefinition<?> valueMetadataDefinition = resolveValueMetadataDefinition(schemaRegistryState);
+            schemaRegistryState.setValueMetadataDefinition(valueMetadataDefinition);
+            long valueMetadataDefinitionDone = System.currentTimeMillis();
+            LOGGER.trace("resolveValueMetadataDefinition() done in {} ms", valueMetadataDefinitionDone - javaxSchemasDone);
+
             LOGGER.trace("build() finish");
             return schemaRegistryState;
+        }
+
+        private PrismContainerDefinition<?> resolveValueMetadataDefinition(SchemaRegistryStateImpl schemaRegistryState) {
+            if (valueMetadataTypeNameBuilder != null) {
+                return Objects.requireNonNull(
+                        schemaRegistryState.findContainerDefinitionByType(valueMetadataTypeNameBuilder),
+                        () -> "no definition for value metadata type " + valueMetadataTypeNameBuilder);
+            } else {
+                return createDefaultValueMetadataDefinition();
+            }
+        }
+
+        private PrismContainerDefinition<?> createDefaultValueMetadataDefinition() {
+            var pcd = prismContextBuilder.definitionFactory().newContainerDefinitionWithoutTypeDefinition(
+                    DEFAULT_VALUE_METADATA_NAME, DEFAULT_VALUE_METADATA_TYPE_NAME);
+            pcd.mutator().setMinOccurs(0);
+            pcd.mutator().setMaxOccurs(1);
+            return pcd;
         }
 
         private MultiValuedMap<String, SchemaDescription> createMapForSchemaDescByNamespace(List<SchemaDescriptionImpl> schemaDescriptions) {
@@ -796,7 +848,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         }
 
         // see https://stackoverflow.com/questions/14837293/xsd-circular-import
-        private ParsePrismSchemasDto parsePrismSchemas(
+        private ParsePrismSchemasState parsePrismSchemas(
                 List<SchemaDescriptionImpl> schemaDescriptions, SchemaRegistryStateImpl schemaRegistryState) {
             List<SchemaDescriptionImpl> prismSchemaDescriptions = schemaDescriptions.stream()
                     .filter(SchemaDescriptionImpl::isPrismSchema)
@@ -831,7 +883,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     wrappedSchemas.add(schema);
                 }
             }
-            return new ParsePrismSchemasDto()
+            return new ParsePrismSchemasState()
                     .schemaElement(schemaElement)
                     .wrappedSchemas(wrappedSchemas)
                     .fragmentedNamespaces(fragmentedNamespaces)
@@ -840,7 +892,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     .schemasByNamespace(schemasByNamespace);
         }
 
-        void finishParsingPrismSchemas(ParsePrismSchemasDto parsePrismSchemasDto, SchemaRegistryStateImpl schemaRegistryState) throws SchemaException {
+        void finishParsingPrismSchemas(ParsePrismSchemasState parsePrismSchemasDto, SchemaRegistryStateImpl schemaRegistryState) throws SchemaException {
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Wrapper XSD:\n{}", DOMUtil.serializeDOMToString(parsePrismSchemasDto.schemaElement));
             }
@@ -1001,14 +1053,14 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                 sources[i] = source;
                 i++;
             }
-            schemaFactory.setResourceResolver(new XmlEntityResolverUsingCurrentState(
+            schemaFactory.setResourceResolver(new XmlEntityResolverImpl(
                     (SchemaRegistryImpl) schemaRegistryState.prismContext.getSchemaRegistry(),
                     schemaRegistryState));
             return schemaFactory.newSchema(sources);
         }
     }
 
-    private static class ParsePrismSchemasDto implements Serializable {
+    private static class ParsePrismSchemasState implements Serializable {
 
         Element schemaElement;
         List<PrismSchemaImpl> wrappedSchemas;
@@ -1017,32 +1069,32 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         MultiValuedMap<String, SchemaDescriptionImpl> filteredSchemasByNamespace;
         MultiValuedMap<String, SchemaDescription> schemasByNamespace;
 
-        public ParsePrismSchemasDto schemaElement(Element schemaElement) {
+        public ParsePrismSchemasState schemaElement(Element schemaElement) {
             this.schemaElement = schemaElement;
             return this;
         }
 
-        public ParsePrismSchemasDto wrappedSchemas(List<PrismSchemaImpl> wrappedSchemas) {
+        public ParsePrismSchemasState wrappedSchemas(List<PrismSchemaImpl> wrappedSchemas) {
             this.wrappedSchemas = wrappedSchemas;
             return this;
         }
 
-        public ParsePrismSchemasDto fragmentedNamespaces(List<String> fragmentedNamespaces) {
+        public ParsePrismSchemasState fragmentedNamespaces(List<String> fragmentedNamespaces) {
             this.fragmentedNamespaces = fragmentedNamespaces;
             return this;
         }
 
-        public ParsePrismSchemasDto parsedPrismSchemas(Collection<PrismSchemaImpl> parsedPrismSchemas) {
+        public ParsePrismSchemasState parsedPrismSchemas(Collection<PrismSchemaImpl> parsedPrismSchemas) {
             this.parsedPrismSchemas = parsedPrismSchemas;
             return this;
         }
 
-        public ParsePrismSchemasDto filteredSchemasByNamespace(MultiValuedMap<String, SchemaDescriptionImpl> filteredSchemasByNamespace) {
+        public ParsePrismSchemasState filteredSchemasByNamespace(MultiValuedMap<String, SchemaDescriptionImpl> filteredSchemasByNamespace) {
             this.filteredSchemasByNamespace = filteredSchemasByNamespace;
             return this;
         }
 
-        public ParsePrismSchemasDto schemasByNamespace(MultiValuedMap<String, SchemaDescription> schemasByNamespace) {
+        public ParsePrismSchemasState schemasByNamespace(MultiValuedMap<String, SchemaDescription> schemasByNamespace) {
             this.schemasByNamespace = schemasByNamespace;
             return this;
         }
