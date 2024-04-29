@@ -21,6 +21,7 @@ import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
+import com.evolveum.midpoint.prism.schema.SchemaContextDefinition;
 
 /**
  * Abstract definition in the schema.
@@ -71,7 +72,7 @@ public abstract class DefinitionImpl
     private List<ItemDiagramSpecification> diagrams = null;
     private String mergerIdentifier;
     private List<QName> naturalKeyConstituents;
-    private QName schemaContext;
+    private SchemaContextDefinition schemaContextDefinition;
 
     /**
      * This means that this particular definition (of an item or of a type) is part of the runtime schema, e.g.
@@ -369,14 +370,14 @@ public abstract class DefinitionImpl
     }
 
     @Override
-    public @Nullable QName getSchemaContext() {
-        return schemaContext;
+    public @Nullable SchemaContextDefinition getSchemaContext() {
+        return schemaContextDefinition;
     }
 
     @Override
-    public void setSchemaContext(QName schemaContext) {
+    public void setSchemaContext(SchemaContextDefinition schemaContextDefinition) {
         checkMutable();
-        this.schemaContext = schemaContext;
+        this.schemaContextDefinition = schemaContextDefinition;
     }
 
     @Override

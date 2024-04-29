@@ -984,13 +984,31 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:complexType name="SchemaContextType">
+        <xsd:sequence>
+            <xsd:element name="typePath" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Name of element which have path to type object.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="algorithm" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Algorithm for handling schema context definition.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
     <xsd:element name="schemaContext" type="xsd:QName">
         <xsd:annotation>
             <xsd:documentation>
-                Semantics information about annotated element.
+                Schema context defines semantics information about annotated element.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
+
 </xsd:schema>
-
-

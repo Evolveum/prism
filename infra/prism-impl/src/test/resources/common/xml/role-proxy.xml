@@ -1,0 +1,12 @@
+<role oid="30bbf2f2-d48d-11e4-a091-001e8c717e5b"
+        xmlns:t="http://prism.evolveum.com/xml/ns/public/types-3"
+        xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
+        xmlns='http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd'>
+    <name>PROXY</name>
+    <authorization>
+        <action>http://midpoint.evolveum.com/xml/ns/public/security/authorization-model-3#read</action>
+        <object>
+            <type>UserType</type>
+        </object>
+    </authorization>
+</role>
