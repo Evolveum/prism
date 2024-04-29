@@ -98,6 +98,11 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             }
             if (shouldImplementGetter(clazz, contract, definition)) {
                 implementGetter(clazz, getter, definition, bindingType);
+                // If we have secondary name for getter we should also implement it.
+                if (definition.secondaryGetterName() != null) {
+                    JMethod secondaryGetter = clazz.method(JMod.PUBLIC,  maybeBoxedType, definition.secondaryGetterName());
+                    implementGetter(clazz, secondaryGetter, definition, bindingType);
+                }
             }
             // Setter
             if (shouldImplementSetter(clazz, contract, definition)) {
@@ -229,7 +234,7 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
 
             }
 
-            // Generate begin only for structured, non substituble, non abstract complex types
+            // Generate begin only for structured, non substituble, non-abstract complex types
             if (targetContract instanceof StructuredContract
                     && !((StructuredContract) targetContract).getTypeDefinition().isAbstract()
                     && !type.erasure().equals(clazz(JAXBElement.class))) {
