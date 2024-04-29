@@ -874,6 +874,9 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         Item<V, D> currentItem = object.findItem(getPath());
         if (currentItem == null) {
             return narrowWhenNoItem(object, assumeMissingItems);
+        } else if (currentItem.hasRaw() || hasAnyRawValue()) {
+            // Raw comparisons are imprecise. To avoid losing any modifications, we keep the delta untouched in this case.
+            return this;
         } else {
             if (isReplace()) {
                 return narrowReplaceDelta(currentItem, plusComparator);
@@ -1858,6 +1861,24 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             }
         }
         return true;
+    }
+
+    public boolean hasAnyRawValue() {
+        return hasAnyRawValue(valuesToAdd)
+                || hasAnyRawValue(valuesToReplace)
+                || hasAnyRawValue(valuesToDelete);
+    }
+
+    private boolean hasAnyRawValue(Collection<V> set) {
+        if (set == null) {
+            return false;
+        }
+        for (V val : set) {
+            if (val.isRaw()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
