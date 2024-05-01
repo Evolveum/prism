@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
@@ -84,6 +85,8 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     PrismContainer<?> getOrCreateExtension() throws SchemaException;
 
     PrismContainerValue<?> getExtensionContainerValue();
+
+    SchemaContext getSchemaContext();
 
     <I extends Item<?, ?>> I findExtensionItem(String elementLocalName);
 

@@ -14,9 +14,11 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.ObjectDeltaImpl;
+import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -198,6 +200,12 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         } else {
             return extension.getValue();
         }
+    }
+
+    @Override
+    public SchemaContext getSchemaContext() {
+        SchemaContextResolver a;
+        return null;
     }
 
     @Override

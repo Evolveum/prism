@@ -1,4 +1,4 @@
-package com.evolveum.midpoint.prism.schema;
+package com.evolveum.midpoint.prism.schemaContext;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
 

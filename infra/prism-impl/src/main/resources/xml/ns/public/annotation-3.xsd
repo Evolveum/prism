@@ -1003,7 +1003,7 @@
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:element name="schemaContext" type="xsd:QName">
+    <xsd:element name="schemaContext" type="tns:SchemaContextType">
         <xsd:annotation>
             <xsd:documentation>
                 Schema context defines semantics information about annotated element.

@@ -21,7 +21,7 @@ import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.prism.schema.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 /**
  * Abstract definition in the schema.
@@ -370,7 +370,7 @@ public abstract class DefinitionImpl
     }
 
     @Override
-    public @Nullable SchemaContextDefinition getSchemaContext() {
+    public @Nullable SchemaContextDefinition getSchemaContextDefinition() {
         return schemaContextDefinition;
     }
 

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.schema.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -127,7 +127,7 @@ public interface Definition
 
     @Nullable NaturalKeyDefinition getNaturalKeyInstance();
 
-    @Nullable SchemaContextDefinition getSchemaContext();
+    @Nullable SchemaContextDefinition getSchemaContextDefinition();
 
     @NotNull Definition clone();
 

@@ -28,8 +28,9 @@ import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil;
 import com.evolveum.midpoint.prism.impl.schema.annotation.AlwaysUseForEquals;
 import com.evolveum.midpoint.prism.impl.schema.features.SchemaMigrationXsomParser.SchemaMigrations;
-import com.evolveum.midpoint.prism.schema.DefinitionFeatureSerializer;
-import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
+import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextDefinitionImpl;
+import com.evolveum.midpoint.prism.schema.*;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.MiscUtil;
@@ -39,8 +40,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.schema.DefinitionFeature;
-import com.evolveum.midpoint.prism.schema.DefinitionFeatureParser;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -466,6 +465,32 @@ public class DefinitionFeatures {
                 public @Nullable QNameList getValue(@Nullable Object annotation) {
                     return QNameList.wrap(
                             SchemaProcessorUtil.getAnnotationQNameList(annotation, name));
+                }
+            };
+        }
+
+        public static DefinitionFeatureParser<SchemaContextDefinition, XSAnnotation> schemaContextXSAnnotationDefinitionFeatureParser() {
+            return new DefinitionFeatureParser<>() {
+                @Override
+                public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) {
+                    Element rootElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_SCHEMA_CONTEXT);
+                    if (rootElement != null) {
+                        Element typePathElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_TYPE_PATH);
+                        Element algorithmElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_ALGORITHM);
+
+                        SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
+
+                        if (typePathElement != null) {
+                            schemaContextDefinition.setTypePath(typePathElement.getTextContent());
+                        }
+
+                        if (algorithmElement != null) {
+                            schemaContextDefinition.setAlgorithm(algorithmElement.getTextContent());
+                        }
+
+                        return schemaContextDefinition;
+                    }
+                    return null;
                 }
             };
         }

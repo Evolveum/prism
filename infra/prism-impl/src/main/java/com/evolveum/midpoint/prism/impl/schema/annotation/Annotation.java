@@ -13,7 +13,7 @@ import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeature
 import java.util.Collection;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.schema.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 import com.sun.xml.xsom.XSAnnotation;
 
@@ -153,7 +153,11 @@ public enum Annotation {
             DefinitionMutator.class, (def, qNameList) -> def.setNaturalKeyConstituents(QNameList.unwrap(qNameList)),
             XsomParsers.qNameList(A_NATURAL_KEY).restrictToSource(XSAnnotation.class))),
 
-    SCHEMA_CONTEXT(AnnotationBasedFeature.forType(A_SCHEMA_CONTEXT, SchemaContextDefinition.class, DefinitionMutator.class, DefinitionMutator::setSchemaContext));
+    SCHEMA_CONTEXT(AnnotationBasedFeature.custom(A_SCHEMA_CONTEXT, SchemaContextDefinition.class,
+                    DefinitionMutator.class,
+                    DefinitionMutator::setSchemaContext,
+                    XsomParsers.schemaContextXSAnnotationDefinitionFeatureParser())
+    );
 
     /** This is the object that does all the work. */
     private final AnnotationBasedFeature<?, ?> definitionFeature;
