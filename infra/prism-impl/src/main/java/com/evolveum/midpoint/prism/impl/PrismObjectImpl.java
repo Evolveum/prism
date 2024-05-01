@@ -203,12 +203,6 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public SchemaContext getSchemaContext() {
-        SchemaContextResolver a;
-        return null;
-    }
-
-    @Override
     public <I extends Item<?, ?>> I findExtensionItem(String elementLocalName) {
         return findExtensionItem(new QName(null, elementLocalName));
     }

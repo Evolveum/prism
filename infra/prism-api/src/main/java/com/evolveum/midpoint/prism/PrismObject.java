@@ -86,8 +86,6 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
 
     PrismContainerValue<?> getExtensionContainerValue();
 
-    SchemaContext getSchemaContext();
-
     <I extends Item<?, ?>> I findExtensionItem(String elementLocalName);
 
     <I extends Item<?, ?>> I findExtensionItem(QName elementName);
