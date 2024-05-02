@@ -10,7 +10,8 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.QNameUtil;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
@@ -23,26 +24,27 @@ import java.util.function.Consumer;
  */
 public class TypedItemPath {
 
-    private final QName rootType;
-    private final ItemPath path;
+    @NotNull private final QName rootType;
+    @NotNull private final ItemPath path;
 
-    private TypedItemPath(QName rootType, ItemPath path) {
+    private TypedItemPath(@NotNull QName rootType, @NotNull ItemPath path) {
         this.rootType = rootType;
         this.path = path;
     }
 
-    public static TypedItemPath of(QName root, ItemPath path) {
+    public static TypedItemPath of(@NotNull QName root, @NotNull ItemPath path) {
         return new TypedItemPath(root, path);
     }
 
-    public static TypedItemPath of(QName typeName) {
+    public static TypedItemPath of(@NotNull QName typeName) {
         return new TypedItemPath(typeName, ItemPath.EMPTY_PATH);
     }
 
-    QName getRootType() {
+    public @NotNull QName getRootType() {
         return rootType;
     }
-    public ItemPath getPath() {
+
+    public @NotNull ItemPath getPath() {
         return path;
     }
 
@@ -63,10 +65,10 @@ public class TypedItemPath {
 
     @Override
     public String toString() {
-        return DebugUtil.formatElementName(rootType) + "/" + path.toString();
+        return DebugUtil.formatElementName(rootType) + "/" + path;
     }
 
-    public TypedItemPath append(ItemPath descendant) {
+    public @NotNull TypedItemPath append(@NotNull ItemPath descendant) {
         return of(rootType, this.path.append(descendant));
     }
 
@@ -133,10 +135,10 @@ public class TypedItemPath {
     }
 
     private static class Builder {
-        private final QName typeName;
-        private final List<Object> segments = new ArrayList<>();
+        @NotNull private final QName typeName;
+        @NotNull private final List<Object> segments = new ArrayList<>();
 
-        public Builder(QName typeName) {
+        public Builder(@NotNull QName typeName) {
             this.typeName = typeName;
         }
 
@@ -145,9 +147,7 @@ public class TypedItemPath {
         }
 
         TypedItemPath build() {
-            return of(typeName,ItemPath.create(segments));
+            return of(typeName, ItemPath.create(segments));
         };
-
     }
-
 }
