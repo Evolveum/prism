@@ -10,8 +10,6 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DebugDumpable;
 
@@ -91,6 +89,4 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
     static boolean isTrue(PrismPropertyValue<Boolean> booleanPropertyValue) {
         return booleanPropertyValue != null && BooleanUtils.isTrue(booleanPropertyValue.getRealValue());
     }
-
-    SchemaContext getSchemaContext(SchemaContextDefinition schemaContextDefinition);
 }
