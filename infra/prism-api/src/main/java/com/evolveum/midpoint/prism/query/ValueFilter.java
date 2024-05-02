@@ -8,7 +8,10 @@ package com.evolveum.midpoint.prism.query;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

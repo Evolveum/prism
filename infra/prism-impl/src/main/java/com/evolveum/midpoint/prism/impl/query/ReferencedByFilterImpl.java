@@ -6,8 +6,12 @@
  */
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Consumer;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.NotNull;
@@ -146,5 +150,14 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
         return new ReferencedByFilterImpl(type, path,
                 filter != null ? filter.clone() : null,
                 relation);
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath unused, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        var base = TypedItemPath.of(getType().getTypeName());
+        base.append(path).emitTo(pathConsumer, expandReferences);
+        if (filter != null) {
+            filter.collectUsedPaths(TypedItemPath.of(getType().getTypeName()), pathConsumer, expandReferences);
+        }
     }
 }

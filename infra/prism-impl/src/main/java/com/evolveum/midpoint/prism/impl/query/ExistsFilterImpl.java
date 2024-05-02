@@ -7,6 +7,9 @@
 package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.Objects;
+import java.util.function.Consumer;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -195,5 +198,13 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
         result = 31 * result + (definition != null ? definition.hashCode() : 0);
         result = 31 * result + (filter != null ? filter.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        var newBase = base.append(getFullPath()).emitTo(pathConsumer, expandReferences);
+        if (getFilter() != null) {
+            getFilter().collectUsedPaths(newBase, pathConsumer, expandReferences);
+        }
     }
 }
