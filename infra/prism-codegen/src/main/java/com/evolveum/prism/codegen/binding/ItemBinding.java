@@ -12,6 +12,8 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 
+import org.jetbrains.annotations.Nullable;
+
 import static com.google.common.base.CaseFormat.*;
 
 public class ItemBinding {
@@ -50,6 +52,14 @@ public class ItemBinding {
             return StructuredContract.IS_PREFIX + name;
         }
         return StructuredContract.GET_PREFIX + name;
+    }
+
+    @Nullable
+    public String secondaryGetterName() {
+        if (isBoolean(definition)) {
+            return StructuredContract.GET_PREFIX + name;
+        }
+        return null;
     }
 
     private boolean isBoolean(ItemDefinition<?> definition) {

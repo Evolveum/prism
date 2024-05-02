@@ -10,7 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -466,5 +469,14 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        base.append(fullPath).emitTo(pathConsumer, expandReferences);
+        // UserType/archetypeRef a ArchetypeType/name
+        if (getRightHandSidePath() != null) {
+            base.append(getRightHandSidePath()).emitTo(pathConsumer, expandReferences);
+        }
     }
 }

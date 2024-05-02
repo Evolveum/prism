@@ -12,6 +12,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.*;
 
+import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.api.AxiomName;
@@ -72,9 +74,9 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     }
 
     @Override
-    protected void parseAdditionalSchemas() throws SchemaException {
+    protected void parseAdditionalSchemas(SchemaRegistryState schemaRegistryState) throws SchemaException {
         parseAxiomSchemas();
-        enhanceMetadata();
+        enhanceMetadata(schemaRegistryState);
     }
 
     static final ModelReactorContext prismSources(ModelReactorContext context) {
@@ -92,21 +94,21 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
     }
 
     // FIXME: Should we enhance? or should we just return Axiom metadata?
-    void enhanceMetadata() {
+    void enhanceMetadata(SchemaRegistryState schemaRegistryState) {
         QName targetType = this.getValueMetadataTypeName();
         AxiomTypeDefinition axiomMetadata = currentContext.getType(AxiomValue.METADATA_TYPE).orElseThrow(() -> new IllegalStateException("Axiom ValueMetadata type not present"));
 
-        PrismContainerDefinition<?> targetDef = findContainerDefinitionByType(targetType);
+        PrismContainerDefinition<?> targetDef = schemaRegistryState.findContainerDefinitionByType(targetType);
         Preconditions.checkState(targetDef != null,"Value metadata type needs to be available");
         valueMetadata = targetDef;
         Preconditions.checkState(targetDef.canModify(), "Value metadata definition not can be modified");
-        copyItemDefs(targetDef.getComplexTypeDefinition(), axiomMetadata);
+        copyItemDefs(targetDef.getComplexTypeDefinition(), axiomMetadata, schemaRegistryState);
 
     }
 
-    private void copyItemDefs(ComplexTypeDefinition target, AxiomTypeDefinition source) {
+    private void copyItemDefs(ComplexTypeDefinition target, AxiomTypeDefinition source, SchemaRegistryState schemaRegistryState) {
         for (Entry<AxiomName, AxiomItemDefinition> entry : source.itemDefinitions().entrySet()) {
-            ItemDefinition<?> prismified = prismify(entry.getValue());
+            ItemDefinition<?> prismified = prismify(entry.getValue(), schemaRegistryState);
             QName name = qName(entry.getValue().name());
             ComplexTypeDefinition realTarget = primaryOrExtension(target, entry.getValue());
             if(realTarget.containsItemDefinition(name)) {
@@ -130,14 +132,14 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         return extContainer.getComplexTypeDefinition();
     }
 
-    private ItemDefinition<?> prismify(AxiomItemDefinition value) {
+    private ItemDefinition<?> prismify(AxiomItemDefinition value, SchemaRegistryState schemaRegistryState) {
 
         if(isType(value, PROPERTY_ITEM)) {
-            return prismifyProperty(value);
+            return prismifyProperty(value, schemaRegistryState);
         }
 
         if(isType(value, CONTAINER_ITEM)) {
-            return prismifyContainer(value);
+            return prismifyContainer(value, schemaRegistryState);
         }
         if(isType(value, REFERENCE_ITEM)) {
             return prismifyReference(value);
@@ -155,9 +157,9 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         return fillDetails(ret,value);
     }
 
-    private ItemDefinition<?> prismifyContainer(AxiomItemDefinition value) {
+    private ItemDefinition<?> prismifyContainer(AxiomItemDefinition value, SchemaRegistryState schemaRegistryState) {
         QName elementName = qName(value.name());
-        ComplexTypeDefinition ctd = prismifyStructured(value.typeDefinition());
+        ComplexTypeDefinition ctd = prismifyStructured(value.typeDefinition(), schemaRegistryState);
         PrismContainerDefinition<?> container = prismContext.definitionFactory().newContainerDefinition(elementName, ctd);
         return fillDetails(container, value);
     }
@@ -185,22 +187,22 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         }
     }
 
-    private PrismPropertyDefinition<?> prismifyProperty(AxiomItemDefinition value) {
+    private PrismPropertyDefinition<?> prismifyProperty(AxiomItemDefinition value, SchemaRegistryState schemaRegistryState) {
         QName elementName = qName(value.name());
-        QName typeName = prismify(value.typeDefinition());
+        QName typeName = prismify(value.typeDefinition(), schemaRegistryState);
 
         PrismPropertyDefinitionImpl<?> property = new PrismPropertyDefinitionImpl<>(elementName, typeName);
         return property;
     }
 
-    private QName prismify(AxiomTypeDefinition typeDefinition) {
+    private QName prismify(AxiomTypeDefinition typeDefinition, SchemaRegistryState schemaRegistryState) {
         QName prismName = qName(typeDefinition.name());
-        TypeDefinition maybe = findTypeDefinitionByType(prismName);
+        TypeDefinition maybe = schemaRegistryState.findTypeDefinitionByType(prismName);
         if(maybe != null) {
             return maybe.getTypeName();
         }
         if(typeDefinition.isComplex()) {
-            return prismifyStructured(typeDefinition).getTypeName();
+            return prismifyStructured(typeDefinition, schemaRegistryState).getTypeName();
         }
         QName maybeXsd = AXIOM_XSD_TYPES.get(typeDefinition.name());
         if(maybeXsd != null) {
@@ -209,21 +211,21 @@ public class AxiomEnabledSchemaRegistry extends SchemaRegistryImpl {
         throw new UnsupportedOperationException(typeDefinition.name().toString());
     }
 
-    private @NotNull ComplexTypeDefinition prismifyStructured(AxiomTypeDefinition typeDefinition) {
+    private @NotNull ComplexTypeDefinition prismifyStructured(AxiomTypeDefinition typeDefinition, SchemaRegistryState schemaRegistryState) {
         QName prismName = qName(typeDefinition.name());
-        ComplexTypeDefinition maybe = findComplexTypeDefinitionByType(prismName);
+        ComplexTypeDefinition maybe = schemaRegistryState.findComplexTypeDefinitionByType(prismName);
         if (maybe != null) {
             return maybe;
         }
 
         ComplexTypeDefinitionImpl typeDef = new ComplexTypeDefinitionImpl(prismName);
-        reuseXjcClassIfExists(typeDef);
-        copyItemDefs(typeDef, typeDefinition);
+        reuseXjcClassIfExists(typeDef, schemaRegistryState);
+        copyItemDefs(typeDef, typeDefinition, schemaRegistryState);
         return typeDef;
     }
 
-    private void reuseXjcClassIfExists(ComplexTypeDefinitionImpl typeDef) {
-        ComplexTypeDefinition maybeClass = findComplexTypeDefinitionByType(typeQname(typeDef.getTypeName()));
+    private void reuseXjcClassIfExists(ComplexTypeDefinitionImpl typeDef, SchemaRegistryState schemaRegistryState) {
+        ComplexTypeDefinition maybeClass = schemaRegistryState.findComplexTypeDefinitionByType(typeQname(typeDef.getTypeName()));
         if (maybeClass != null) {
             typeDef.setCompileTimeClass(maybeClass.getCompileTimeClass());
         }

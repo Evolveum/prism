@@ -39,7 +39,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
  * @author Radovan Semancik
  */
 public class PrismSchemaImpl
-        extends AbstractFreezable
+        extends SchemaRegistryStateAware
         implements PrismSchema, PrismSchemaMutator, SchemaBuilder, SerializableSchema {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismSchema.class);
@@ -202,6 +202,9 @@ public class PrismSchemaImpl
                 throw new IllegalArgumentException("Unqualified definition of type " + typeName + " cannot be added to " + this);
             }
             typeDefinitionMap.put(typeName, typeDef);
+            if (def instanceof TypeDefinitionImpl typeImplDef && !def.isImmutable()) {
+                typeImplDef.setSchemaRegistryState(getSchemaRegistryState());
+            }
         } else {
             throw new IllegalArgumentException("Unsupported type to be added to this schema: " + def);
         }
@@ -211,8 +214,7 @@ public class PrismSchemaImpl
 
     void setupCompileTimeClass(@NotNull TypeDefinition typeDef) {
         // Not caching the negative result, as this is called during schema parsing.
-        Class<Object> compileTimeClass = prismContext.getSchemaRegistry()
-                .determineCompileTimeClassInternal(typeDef.getTypeName(), false);
+        Class<Object> compileTimeClass = getSchemaLookup().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
         if (typeDef instanceof TypeDefinitionImpl typeDefImpl) {
             typeDefImpl.setCompileTimeClass(compileTimeClass); // FIXME do better!
         }
@@ -376,7 +378,8 @@ public class PrismSchemaImpl
                     found.add((ItemDefinition<?>) def);
                 }
             } else if (def instanceof PrismPropertyDefinition) {
-                if (compileTimeClass.equals(prismContext.getSchemaRegistry().determineClassForType(def.getTypeName()))) {
+                Class<?> fondClass = getSchemaLookup().determineClassForType(def.getTypeName());
+                if (compileTimeClass.equals(fondClass)) {
                     found.add((ItemDefinition<?>) def);
                 }
             } else {
@@ -508,6 +511,7 @@ public class PrismSchemaImpl
 
     @Override
     public void performFreeze() {
+        super.performFreeze();
         definitions.forEach(Freezable::freeze);
     }
 

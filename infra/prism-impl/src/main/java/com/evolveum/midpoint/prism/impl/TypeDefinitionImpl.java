@@ -97,7 +97,7 @@ public abstract class TypeDefinitionImpl extends DefinitionImpl implements TypeD
             return true;
         }
         if (superType != null) {
-            ComplexTypeDefinition supertypeDef = PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(superType);
+            ComplexTypeDefinition supertypeDef = getSchemaLookup().findComplexTypeDefinitionByType(superType);
             return supertypeDef.canRepresent(typeName);
         } else {
             return false;

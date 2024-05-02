@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.schema.SchemaRegistryState.IsList;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -21,28 +22,27 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Maintains system-wide schemas.
+ * Maintains system-wide schemas that is used as source for parsing during initialize and reload.
  */
-public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
+public interface SchemaRegistry extends DebugDumpable, SchemaRegistryState {
 
     static SchemaRegistry get() {
         return PrismContext.get().getSchemaRegistry();
     }
 
-    /**
-     * @return System-wide "standard prefixes" registry.
-     */
-    DynamicNamespacePrefixMapper getNamespacePrefixMapper();
-
+    void customizeNamespacePrefixMapper(Consumer<DynamicNamespacePrefixMapper> customizer);
 
     PrismNamespaceContext staticNamespaceContext();
 
@@ -54,17 +54,9 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     void initialize() throws SAXException, IOException, SchemaException;
 
-    javax.xml.validation.Schema getJavaxSchema();
-
     javax.xml.validation.Validator getJavaxSchemaValidator();
 
-    PrismSchema getPrismSchema(String namespace);
-
-    Collection<PrismSchema> getSchemas();
-
     Collection<SchemaDescription> getSchemaDescriptions();
-
-    Collection<Package> getCompileTimePackages();
 
     ItemDefinition locateItemDefinition(
             @NotNull QName itemName,
@@ -72,15 +64,7 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             @Nullable Function<QName, ItemDefinition> dynamicDefinitionResolver);
 
-    // TODO fix this temporary and inefficient implementation
-    QName resolveUnqualifiedTypeName(QName type) throws SchemaException;
-
     QName qualifyTypeName(QName typeName) throws SchemaException;
-
-    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
-    // fails on ambiguity
-    // it's a bit fragile, as adding new references to child CTD in future may break existing code
-    ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest);
 
     PrismObjectDefinition determineReferencedObjectDefinition(@NotNull QName targetTypeName, ItemPath rest);
 
@@ -97,13 +81,9 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
 
     ItemDefinition findItemDefinitionByElementName(QName elementName, @Nullable List<String> ignoredNamespaces);
 
-    <T> Class<T> determineCompileTimeClass(QName typeName);
-
     default <T> Class<T> getCompileTimeClass(QName xsdType) {
         return determineCompileTimeClass(xsdType);
     }
-
-    PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass);
 
     /**
      * Tries to determine type name for any class (primitive, complex one).
@@ -145,12 +125,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
             QName... itemNames)
                             throws SchemaException;
 
-    PrismSchema findSchemaByNamespace(String namespaceURI);
-
-    SchemaDescription findSchemaDescriptionByNamespace(String namespaceURI);
-
-    SchemaDescription findSchemaDescriptionByPrefix(String prefix);
-
     PrismObjectDefinition determineDefinitionFromClass(Class type);
 
     @NotNull PrismContainerDefinition<?> getValueMetadataDefinition();
@@ -158,9 +132,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
     boolean hasImplicitTypeDefinition(@NotNull QName itemName, @NotNull QName typeName);
 
     ItemDefinition resolveGlobalItemDefinition(QName itemName, @Nullable ComplexTypeDefinition complexTypeDefinition);
-
-    // Takes XSD types into account as well
-    <T> Class<T> determineClassForType(QName type);
 
     default <T> Class<T> determineJavaClassForType(QName type) {
         Class<?> xsdClass = MiscUtil.resolvePrimitiveIfNecessary(
@@ -219,24 +190,6 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
      */
     boolean isContainerable(QName typeName);
 
-    // TODO move to GlobalSchemaRegistry
-    @NotNull
-    <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByElementName(@NotNull QName name, @NotNull Class<TD> clazz);
-
-    enum IsList {
-        YES, NO, MAYBE
-    }
-
-    /**
-     * Checks whether element with given (declared) xsi:type and name can be a heterogeneous list.
-     *
-     * @return YES if it is a list,
-     *         NO if it's not,
-     *         MAYBE if it probably is a list but some further content-based checks are needed
-     */
-    @NotNull
-    IsList isList(@Nullable QName xsiType, @NotNull QName elementName);
-
     enum ComparisonResult {
         EQUAL, // types are equal
         NO_STATIC_CLASS, // static class cannot be determined
@@ -284,4 +237,5 @@ public interface SchemaRegistry extends DebugDumpable, GlobalDefinitionsStore {
         void invalidate();
     }
 
+    void registerDynamicSchemaExtensions(Map<String, Element> dbSchemaExtensions) throws SchemaException;
 }

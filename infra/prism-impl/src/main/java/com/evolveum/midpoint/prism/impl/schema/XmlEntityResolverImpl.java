@@ -29,9 +29,11 @@ public class XmlEntityResolverImpl implements XmlEntityResolver {
     private static final Trace LOGGER = TraceManager.getTrace(XmlEntityResolverImpl.class);
 
     private final SchemaRegistryImpl schemaRegistry;
+    private final SchemaRegistryStateImpl schemaRegistryState;
 
-    public XmlEntityResolverImpl(SchemaRegistryImpl schemaRegistry) {
+    public XmlEntityResolverImpl(SchemaRegistryImpl schemaRegistry, SchemaRegistryStateImpl schemaRegistryState) {
         this.schemaRegistry = schemaRegistry;
+        this.schemaRegistryState = schemaRegistryState;
     }
 
      /*
@@ -104,7 +106,7 @@ public class XmlEntityResolverImpl implements XmlEntityResolver {
 
     private InputSource resolveResourceFromRegisteredSchemasByNamespace(String namespaceURI) {
         if (namespaceURI != null) {
-            Collection<SchemaDescription> schemaDescriptions = schemaRegistry.getParsedSchemas().get(namespaceURI);
+            Collection<SchemaDescription> schemaDescriptions = schemaRegistryState.getParsedSchemas().get(namespaceURI);
             if (schemaDescriptions.size() == 1) {
                 SchemaDescription schemaDescription = schemaDescriptions.iterator().next();
                 InputStream inputStream;

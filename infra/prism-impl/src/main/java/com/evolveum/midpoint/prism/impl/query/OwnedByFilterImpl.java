@@ -7,7 +7,10 @@
 package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.NotNull;
@@ -136,5 +139,16 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
     @Override
     public OwnedByFilterImpl clone() {
         return new OwnedByFilterImpl(type, path, filter != null ? filter.clone() : null);
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        var typeName = getType().getTypeName();
+        if (path != null) {
+            TypedItemPath.of(typeName, path).emitTo(pathConsumer, expandReferences);
+        }
+        if (filter != null) {
+            filter.collectUsedPaths(TypedItemPath.of(typeName), pathConsumer, expandReferences);
+        }
     }
 }

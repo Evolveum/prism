@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * FIXME Creation of this interface was most probably a design mistake. We should decide
@@ -152,5 +153,12 @@ public interface GlobalDefinitionsStore extends DefinitionsStore {
 
     default TypeDefinition findTypeDefinitionByType(@NotNull QName typeName) {
         return findTypeDefinitionByType(typeName, TypeDefinition.class);
+    }
+
+    @NotNull
+    default <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByElementName(@NotNull QName name, @NotNull Class<TD> clazz) {
+        return findItemDefinitionsByElementName(name, ItemDefinition.class).stream()
+                .flatMap(itemDef -> findTypeDefinitionsByType(itemDef.getTypeName(), clazz).stream())
+                .collect(Collectors.toList());
     }
 }

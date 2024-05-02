@@ -8,9 +8,12 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 import com.evolveum.midpoint.prism.query.UndefinedFilter;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import java.util.function.Consumer;
 
 // FIXME: This could be singleton
 public class UndefinedFilterImpl extends ObjectFilterImpl implements UndefinedFilter {
@@ -73,5 +76,8 @@ public class UndefinedFilterImpl extends ObjectFilterImpl implements UndefinedFi
         return 0;
     }
 
-
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        // Intentional NOOP
+    }
 }

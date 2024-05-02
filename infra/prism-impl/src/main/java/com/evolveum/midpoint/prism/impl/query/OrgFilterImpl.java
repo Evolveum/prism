@@ -7,11 +7,13 @@
 package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 import com.evolveum.midpoint.prism.query.OrgFilter;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -158,5 +160,10 @@ public final class OrgFilterImpl extends ObjectFilterImpl implements OrgFilter {
     @Override
     public boolean match(PrismContainerValue value, MatchingRuleRegistry matchingRuleRegistry) throws SchemaException {
         throw new UnsupportedOperationException("Matching object and ORG filter is not supported yet");
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        // NOOP
     }
 }

@@ -80,11 +80,14 @@ class SchemaXsomParser {
 
     private final DefinitionFactoryImpl definitionFactory = prismContext.definitionFactory();
 
+    private final SchemaRegistryState schemaRegistryState;
+
     SchemaXsomParser(
             @NotNull XSSchemaSet xsSchemaSet,
             @NotNull Collection<SchemaBuilder> schemaBuilders,
             boolean allowDelayedItemDefinitions,
-            String shortDescription) {
+            String shortDescription,
+            @Nullable SchemaRegistryState schemaRegistryState) {
         this.xsSchemaSet = xsSchemaSet;
         this.schemaBuilderMap = schemaBuilders.stream()
                 .collect(Collectors.toMap(
@@ -96,6 +99,7 @@ class SchemaXsomParser {
                 ));
         this.allowDelayedItemDefinitions = allowDelayedItemDefinitions;
         this.shortDescription = shortDescription;
+        this.schemaRegistryState = schemaRegistryState;
     }
 
     /** Executes the parsing process. Should be called only once per class instantiation. */
@@ -587,7 +591,10 @@ class SchemaXsomParser {
             }
         }
         // Last attempt, maybe the definition is already in the registry
-        return schemaRegistry.findTypeDefinitionByType(typeQName);
+        if (schemaRegistryState == null) {
+            return schemaRegistry.findTypeDefinitionByType(typeQName);
+        }
+        return schemaRegistryState.findTypeDefinitionByType(typeQName);
     }
 
     private QName getSubstitutionHead(XSElementDecl element) {
@@ -810,7 +817,13 @@ class SchemaXsomParser {
     }
 
     private Object adjustEnumValueFromStaticInfo(QName typeName, Object original) {
-        Class<?> compileTimeClass = prismContext.getSchemaRegistry().getCompileTimeClass(typeName);
+        Class<?> compileTimeClass;
+        if (schemaRegistryState == null) {
+            compileTimeClass = prismContext.getSchemaRegistry().getCompileTimeClass(typeName);
+        } else {
+            compileTimeClass = schemaRegistryState.determineCompileTimeClass(typeName);
+        }
+
         if (compileTimeClass == null) {
             return original;
         }

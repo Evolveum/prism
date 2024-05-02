@@ -7,6 +7,9 @@
 package com.evolveum.midpoint.prism.impl.query;
 
 import java.util.*;
+import java.util.function.Consumer;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -216,5 +219,10 @@ public final class InOidFilterImpl extends ObjectFilterImpl implements InOidFilt
         result = 31 * result + (expression != null ? expression.hashCode() : 0);
         result = 31 * result + (considerOwner ? 1 : 0);
         return result;
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        // inOid does not use data paths
     }
 }

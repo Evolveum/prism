@@ -168,6 +168,7 @@ public class GlobalDynamicNamespacePrefixMapper extends NamespacePrefixMapper im
         GlobalDynamicNamespacePrefixMapper clone = new GlobalDynamicNamespacePrefixMapper();
         clone.defaultNamespace = this.defaultNamespace;
         clone.localNamespacePrefixMap = clonePrefixMap(this.localNamespacePrefixMap);
+        clone.prefixesDeclaredByDefault.addAll(this.prefixesDeclaredByDefault);
         return clone;
     }
 

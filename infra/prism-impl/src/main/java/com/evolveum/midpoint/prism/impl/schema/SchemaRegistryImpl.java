@@ -15,19 +15,12 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.transform.Source;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
-
 import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
@@ -44,7 +37,6 @@ import org.xml.sax.SAXParseException;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.impl.*;
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
@@ -57,8 +49,6 @@ import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * Registry and resolver of schema files and resources.
@@ -84,12 +74,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     private String catalogResourceName = DEFAULT_RUNTIME_CATALOG_RESOURCE;
 
     /**
-     * Schema that is used for "native" validation of XML files.
-     * It is set up during initialization. So any schemas added after that will not be reflected here.
-     */
-    private javax.xml.validation.Schema javaxSchema;
-
-    /**
      * Resolver for schema files based on catalog files or catalog resource.
      * Created during early stages of the initialization.
      */
@@ -98,38 +82,23 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     /**
      * Advanced entity resolver that uses all registered schemas and built-in catalog-based schema resolver.
      */
-    private final XmlEntityResolver entityResolver = new XmlEntityResolverImpl(this);
+    private XmlEntityResolver entityResolver;
 
     /**
      * Registered schema descriptions.
-     * When the registry is in initialized state, all schema descriptions in this list are frozen.
      */
     private final List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
 
-    /** Map for fast lookup of schema descriptions by class or package. */
-    private final Map<Package, SchemaDescriptionImpl> schemaDescriptionMap = new HashMap<>();
-
-    private final Collection<PrismSchemaImpl> parsedPrismSchemas = new ArrayList<>();
+    /**
+     * Registered schema extensions descriptions.
+     * When the registry is in initialized state, all schema descriptions in this list are frozen.
+     */
+    private List<SchemaDescriptionImpl> dynamicSchemaExtensions = List.of();
 
     /**
-     * Schema descriptions for a given namespace.
-     * In case of extension schemas there can be more schema descriptions with the same namespace!
+     * Current parsed schema state.
      */
-    private final MultiValuedMap<String, SchemaDescription> parsedSchemas = new ArrayListValuedHashMap<>();
-
-    /**
-     * Extension CTDs for base types.
-     * Key is the type being extended: UserType, RoleType, and so on.
-     * Value is (merged) extension complex type definition.
-     */
-    private final Map<QName, ComplexTypeDefinition> extensionSchemas = new HashMap<>();
-
-    private final Map<QName, ComplexTypeDefinition> dbExtensionSchemas = new HashMap<>();
-
-    /**
-     * Was the schema registry initialized?
-     */
-    private boolean initialized = false;
+    private SchemaRegistryStateImpl schemaRegistryState = null;
 
     /**
      * "Registry" for namespace prefixes. It is used when serializing data as well as schemas.
@@ -143,54 +112,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      * serialization.
      */
     private String defaultNamespace;
-
-    /**
-     * Cached value of "isList" for given type.
-     */
-    private final ConcurrentHashMap<QName, IsList> isListByXsiType = new ConcurrentHashMap<>();
-
-    /**
-     * Cached value of "isList" for given item.
-     */
-    private final ConcurrentHashMap<QName, IsList> isListByElementName = new ConcurrentHashMap<>();
-
-    /**
-     * Cached class for given type for {@link #determineClassForType(QName)} method.
-     * TODO better name, probably unify with the latter
-     */
-    @Experimental
-    private final ConcurrentHashMap<QName, Class<?>> classForTypeIncludingXsd = new ConcurrentHashMap<>();
-
-    /**
-     * Cached class for given type for {@link #determineCompileTimeClass(QName)} method.
-     * TODO better name, probably unify with the former
-     */
-    @Experimental
-    private final ConcurrentHashMap<QName, Class<?>> classForTypeExcludingXsd = new ConcurrentHashMap<>();
-
-    /**
-     * Cached object definition for given compile-time class.
-     */
-    @Experimental
-    private final ConcurrentHashMap<Class<?>, PrismObjectDefinition<?>> objectDefinitionForClass = new ConcurrentHashMap<>();
-
-    /**
-     * Cached object definition for given type name.
-     */
-    @Experimental
-    private final ConcurrentHashMap<QName, PrismObjectDefinition<?>> objectDefinitionForType = new ConcurrentHashMap<>();
-
-    /**
-     * Marker value for "no such class": cached value that indicates that we have executed the search but found
-     * no matching class.
-     */
-    private static final Class<?> NO_CLASS = Void.class;
-
-    /**
-     * Marker value for "no object definition": cached value that indicates that we have executed the search
-     * but found no matching definition.
-     */
-    private static final PrismObjectDefinition<?> NO_OBJECT_DEFINITION = new DummyPrismObjectDefinition();
 
     /**
      * A prism context this schema registry is part of.
@@ -211,32 +132,32 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
      */
     private QName valueMetadataTypeName;
 
-    /**
-     * Definition of the value metadata container.
-     * It is lazily evaluated, because the schema registry has to be initialized to resolve type name to definition.
-     */
-    private PrismContainerDefinition<?> valueMetadataDefinition;
-
-    /**
-     * Default name for value metadata container. Used to construct ad-hoc definition when no value metadata
-     * type name is specified.
-     */
-    private static final QName DEFAULT_VALUE_METADATA_NAME = new QName("valueMetadata");
-
-    /** Type name for empty metadata. Doesn't exist in the registry. */
-    private static final QName DEFAULT_VALUE_METADATA_TYPE_NAME = new QName("EmptyValueMetadataType");
-
-    private final Multimap<QName, ItemDefinition<?>> substitutions = HashMultimap.create();
-
     private PrismNamespaceContext staticNamespaceContext;
 
-    private PrismNamespaceContext.Builder staticPrefixes = PrismNamespaceContext.builder();
+    private final PrismNamespaceContext.Builder staticPrefixes = PrismNamespaceContext.builder();
 
+    /**
+     * Don't use it for edit of mapper. For editing of mapper use {@link #customizeNamespacePrefixMapper}
+     */
     @Override
     public DynamicNamespacePrefixMapper getNamespacePrefixMapper() {
+        if (isInitialized()) {
+            return schemaRegistryState.getNamespacePrefixMapper();
+        }
         return namespacePrefixMapper;
     }
 
+    public void customizeNamespacePrefixMapper(Consumer<DynamicNamespacePrefixMapper> customizer){
+        if (isInitialized()) {
+            customizer.accept(schemaRegistryState.getNamespacePrefixMapper());
+        }
+        customizer.accept(namespacePrefixMapper);
+
+    }
+
+    /**
+     * Must be called before call to initialize()
+     */
     public void setNamespacePrefixMapper(DynamicNamespacePrefixMapper namespacePrefixMapper) {
         this.namespacePrefixMapper = namespacePrefixMapper;
     }
@@ -251,11 +172,18 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     public XmlEntityResolver getEntityResolver() {
+        if (entityResolver == null) {
+            initEntityResolver();
+        }
         return entityResolver;
     }
 
+    private void initEntityResolver() {
+        entityResolver = new XmlEntityResolverImpl(this, schemaRegistryState);
+    }
+
     public MultiValuedMap<String, SchemaDescription> getParsedSchemas() {
-        return parsedSchemas;
+        return schemaRegistryState.getParsedSchemas();
     }
 
     public EntityResolver getBuiltinSchemaResolver() {
@@ -285,6 +213,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return defaultNamespace;
     }
 
+    /**
+     * Must be called before call to initialize()
+     */
     public void setDefaultNamespace(String defaultNamespace) {
         this.defaultNamespace = defaultNamespace;
         this.staticPrefixes.defaultNamespace(defaultNamespace);
@@ -322,6 +253,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         registerPrismSchemasFromWsdl(resourcePath, descriptions, compileTimeClassesPackages);
 
     }
+
     protected void registerPrismSchemasFromWsdl(String resourcePath, List<SchemaDescriptionImpl> descriptions, List<Package> compileTimeClassesPackages) throws SchemaException {
         Iterator<Package> pkgIterator = null;
         if (compileTimeClassesPackages != null) {
@@ -410,7 +342,30 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         registerSchemaDescription(desc);
     }
 
-    private void registerSchemaDescription(SchemaDescriptionImpl desc) {
+    private void registerSchemaDescription(SchemaDescriptionImpl desc) throws SchemaException {
+        registerDynamicPrefix(desc, this.namespacePrefixMapper);
+
+        addStaticPrefix(desc);
+
+        schemaDescriptions.add(desc);
+
+        desc.setRegistered();
+
+        if (isInitialized()) {
+            reload();
+        }
+
+        invalidateCaches();
+    }
+
+    private void addStaticPrefix(SchemaDescriptionImpl desc) {
+        String defaultPrefix = desc.getDefaultPrefix();
+        if (defaultPrefix != null) {
+            staticPrefixes.addPrefix(defaultPrefix, desc.getNamespace());
+        }
+    }
+
+    private void registerDynamicPrefix(SchemaDescriptionImpl desc, DynamicNamespacePrefixMapper namespacePrefixMapper) {
         String usualPrefix = desc.getUsualPrefix();
         if (usualPrefix != null) {
             namespacePrefixMapper.registerPrefix(desc.getNamespace(), usualPrefix, desc.isDefault());
@@ -418,24 +373,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
                 namespacePrefixMapper.addDeclaredByDefault(usualPrefix);
             }
         }
-        String defaultPrefix = desc.getDefaultPrefix();
-        if (defaultPrefix != null) {
-            staticPrefixes.addPrefix(defaultPrefix, desc.getNamespace());
-        }
+    }
 
-
-        if (initialized) {
-            desc.freeze();
-        }
-        parsedSchemas.put(desc.getNamespace(), desc);
-        schemaDescriptions.add(desc);
-        Package pkg = desc.getCompileTimeClassesPackage();
-        if (pkg != null) {
-            schemaDescriptionMap.put(pkg, desc);
-        }
-        desc.setRegistered();
-
-        invalidateCaches();
+    private boolean isInitialized() {
+        return schemaRegistryState != null;
     }
 
     public void registerPrismSchemasFromDirectory(File directory) throws IOException, SchemaException {
@@ -473,18 +414,15 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public void loadPrismSchemaResource(String resourcePath) throws SchemaException {
         SchemaDescriptionImpl desc = SchemaDescriptionParser.parseResource(resourcePath);
         desc.setPrismSchema(true);
-        parsePrismSchema(desc, false);
         registerSchemaDescription(desc);
     }
 
     public void reload() throws SchemaException {
         try {
-            parsedPrismSchemas.clear();
             initialize();
         } catch (SAXException | IOException e) {
             throw new SchemaException(e.getMessage(), e);
         }
-//        applySchemaExtensions(dbExtensionSchemas);
     }
 
     /**
@@ -506,21 +444,30 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
             long resolverDone = System.currentTimeMillis();
             LOGGER.trace("initResolver() done in {} ms", resolverDone - start);
 
-            parsePrismSchemas();
-            long prismSchemasDone = System.currentTimeMillis();
-            LOGGER.trace("parsePrismSchemas() done in {} ms", prismSchemasDone - resolverDone);
+            List<SchemaDescriptionImpl> schemaDescriptions = new ArrayList<>();
+            schemaDescriptions.addAll(this.schemaDescriptions);
+            schemaDescriptions.addAll(this.dynamicSchemaExtensions);
 
-            parseJavaxSchema();
-            long javaxSchemasDone = System.currentTimeMillis();
-            LOGGER.trace("parseJavaxSchema() done in {} ms", javaxSchemasDone - prismSchemasDone);
+            DynamicNamespacePrefixMapper namespacePrefixMapper = this.namespacePrefixMapper.clone();
+            dynamicSchemaExtensions.forEach(schema -> registerDynamicPrefix(schema, namespacePrefixMapper));
 
-            parseAdditionalSchemas();
+            SchemaRegistryStateImpl schemaRegistryStateLocale = new SchemaRegistryStateImpl.Builder()
+                    .prismContext(prismContext)
+                    .schemaDescriptions(schemaDescriptions)
+                    .namespacePrefixMapper(namespacePrefixMapper)
+                    .build();
+            long schemaRegistryStateDone = System.currentTimeMillis();
+            LOGGER.trace("init schemaRegistryState done in {} ms", schemaRegistryStateDone - resolverDone);
 
-            parsedPrismSchemas.forEach(Freezable::freeze);
+            parseAdditionalSchemas(schemaRegistryStateLocale);
+
+            schemaRegistryStateLocale.freeze();
+
+            this.schemaRegistryState = schemaRegistryStateLocale;
+            initEntityResolver();
 
             invalidateCaches();
             staticNamespaceContext = staticPrefixes.build();
-            initialized = true;
         } catch (SAXException ex) {
             if (ex instanceof SAXParseException sex) {
                 throw new SchemaException("Error parsing schema " + sex.getSystemId() + " line " + sex.getLineNumber() + ": " + sex.getMessage(), sex);
@@ -529,221 +476,14 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
     }
 
-    protected void parseAdditionalSchemas() throws SchemaException {
+    protected void parseAdditionalSchemas(SchemaRegistryState schemaRegistryStateLocale) throws SchemaException {
     }
 
     private void invalidateCaches() {
-        isListByXsiType.clear();
-        isListByElementName.clear();
-        classForTypeIncludingXsd.clear();
-        classForTypeExcludingXsd.clear();
+        if (isInitialized()) {
+            schemaRegistryState.invalidateCaches();
+        }
         invalidationListeners.forEach(InvalidationListener::invalidate);
-    }
-
-    private void parseJavaxSchema() throws SAXException {
-        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        Source[] sources = new Source[schemaDescriptions.size()];
-        int i = 0;
-        for (SchemaDescription schemaDescription : schemaDescriptions) {
-            Source source = schemaDescription.getSource();
-            sources[i] = source;
-            i++;
-        }
-        schemaFactory.setResourceResolver(entityResolver);
-        javaxSchema = schemaFactory.newSchema(sources);
-    }
-
-    private void parsePrismSchemas() throws SchemaException {
-        parsePrismSchemas(schemaDescriptions);
-        applyAugmentations();
-        for (PrismSchemaImpl schema : parsedPrismSchemas) {
-            resolveMissingTypeDefinitionsInGlobalItemDefinitions(schema);
-            processTypes(schema);
-        }
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("====================================== Dumping prism schemas ======================================\n");
-            for (PrismSchemaImpl prismSchema : parsedPrismSchemas) {
-                LOGGER.trace("************************************************************* {} (in {})",
-                        prismSchema.getNamespace(), prismSchema.getSourceDescription());
-                LOGGER.trace("{}", prismSchema.debugDump());
-            }
-        }
-    }
-
-    private void fillInSubstitutionGroups() {
-        // TODO Auto-generated method stub
-
-    }
-
-    private void fillInSubtype(TypeDefinition typeDefinition) {
-        if (typeDefinition.getSuperType() == null) {
-            return;
-        }
-        TypeDefinition superTypeDef = findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
-        if (superTypeDef instanceof TypeDefinitionImpl) {
-            ((TypeDefinitionImpl) superTypeDef).addStaticSubType(typeDefinition);
-        }
-    }
-
-    private void processTypes(PrismSchemaImpl schema) {
-        for (TypeDefinition typeDefinition : schema.getDefinitions(TypeDefinition.class)) {
-            processSubstitutionGroups(typeDefinition);
-            fillInSubtype(typeDefinition);
-        }
-    }
-
-    private void processSubstitutionGroups(TypeDefinition typeDefinition) {
-        if(!(typeDefinition instanceof ComplexTypeDefinition complex)) {
-            return;
-        }
-        for(ItemDefinition<?> itemDef : complex.getDefinitions()) {
-            Collection<ItemDefinition<?>> maybeSubst = substitutions.get(itemDef.getItemName());
-            if (!maybeSubst.isEmpty()) {
-                addSubstitutionsToComplexType(complex.mutator(), itemDef, maybeSubst);
-            }
-        }
-    }
-
-    private void addSubstitutionsToComplexType(
-            ComplexTypeDefinitionMutator ctdMutator, ItemDefinition<?> itemDef, Collection<ItemDefinition<?>> maybeSubst) {
-        for(ItemDefinition<?> substitution : maybeSubst) {
-            if (isSubstitution(itemDef, substitution)) {
-                ctdMutator.addSubstitution(itemDef, substitution);
-            }
-        }
-    }
-
-    private boolean isSubstitution(ItemDefinition<?> itemDef, ItemDefinition<?> maybeSubst) {
-        return itemDef.getItemName().equals(maybeSubst.getSubstitutionHead());
-    }
-
-    // global item definitions may refer to types that are not yet available
-    private void resolveMissingTypeDefinitionsInGlobalItemDefinitions(PrismSchemaImpl schema) throws SchemaException {
-        for (var iterator = schema.getDelayedItemDefinitions().iterator(); iterator.hasNext(); ) {
-            schema.add(iterator.next().get());
-            iterator.remove();
-        }
-    }
-
-    private void parsePrismSchema(SchemaDescriptionImpl schemaDescription, boolean allowDelayedItemDefinitions)
-            throws SchemaException {
-        String namespace = schemaDescription.getNamespace();
-
-        Element domElement = schemaDescription.getDomElement();
-        boolean isRuntime = schemaDescription.getCompileTimeClassesPackage() == null;
-        long started = System.currentTimeMillis();
-        LOGGER.trace("Parsing schema {}, namespace: {}, isRuntime: {}",
-                schemaDescription.getSourceDescription(), namespace, isRuntime);
-        PrismSchemaImpl schema = SchemaParsingUtil.createAndParse(
-                domElement, isRuntime, schemaDescription.getSourceDescription(), allowDelayedItemDefinitions);
-        if (StringUtils.isEmpty(namespace)) {
-            namespace = schema.getNamespace();
-        }
-        LOGGER.trace("Parsed schema {}, namespace: {}, isRuntime: {} in {} ms",
-                schemaDescription.getSourceDescription(), namespace, isRuntime, System.currentTimeMillis() - started);
-        parsedPrismSchemas.add(schema);
-        detectAugmentations(schema);
-    }
-
-    // see https://stackoverflow.com/questions/14837293/xsd-circular-import
-    private void parsePrismSchemas(List<SchemaDescriptionImpl> schemaDescriptions) throws SchemaException {
-        List<SchemaDescriptionImpl> prismSchemaDescriptions = schemaDescriptions.stream()
-                .filter(SchemaDescriptionImpl::isPrismSchema)
-                .toList();
-        Element schemaElement = DOMUtil.createElement(DOMUtil.XSD_SCHEMA_ELEMENT);
-        schemaElement.setAttribute("targetNamespace", "http://dummy/");
-        schemaElement.setAttribute("elementFormDefault", "qualified");
-
-        // These fragmented namespaces should not be included in wrapper XSD because they are defined in multiple XSD files.
-        // We have to process them one by one.
-        MultiValuedMap<String, SchemaDescriptionImpl> schemasByNamespace = new ArrayListValuedHashMap<>();
-        prismSchemaDescriptions.forEach(sd -> schemasByNamespace.put(sd.getNamespace(), sd));
-        List<String> fragmentedNamespaces = schemasByNamespace.keySet().stream()
-                .filter(ns -> schemasByNamespace.get(ns).size() > 1)
-                .collect(Collectors.toList());
-        LOGGER.trace("Fragmented namespaces: {}", fragmentedNamespaces);
-
-        List<PrismSchemaImpl> wrappedSchemas = new ArrayList<>();
-        for (SchemaDescriptionImpl description : prismSchemaDescriptions) {
-            String namespace = description.getNamespace();
-            if (!fragmentedNamespaces.contains(namespace)) {
-                Element importElement = DOMUtil.createSubElement(schemaElement, DOMUtil.XSD_IMPORT_ELEMENT);
-                importElement.setAttribute(DOMUtil.XSD_ATTR_NAMESPACE.getLocalPart(), namespace);
-                PrismSchemaImpl schema = new PrismSchemaImpl(namespace, description.getCompileTimeClassesPackage());
-                schema.setRuntime(description.getCompileTimeClassesPackage() == null);
-                schema.setSourceDescription(description.getSourceDescription());
-                parsedPrismSchemas.add(schema);
-                wrappedSchemas.add(schema);
-            }
-        }
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Wrapper XSD:\n{}", DOMUtil.serializeDOMToString(schemaElement));
-        }
-
-        long started = System.currentTimeMillis();
-        LOGGER.trace("Parsing {} schemas wrapped in single XSD", wrappedSchemas.size());
-        SchemaParsingUtil.parseSchemas(schemaElement, wrappedSchemas);
-        LOGGER.trace("Parsed {} schemas in {} ms",
-                wrappedSchemas.size(), System.currentTimeMillis() - started);
-
-        for (PrismSchemaImpl parsedSchema : parsedPrismSchemas) {
-            detectAugmentations(parsedSchema);
-        }
-
-        for (String namespace : fragmentedNamespaces) {
-            Collection<SchemaDescriptionImpl> fragments = schemasByNamespace.get(namespace);
-            LOGGER.trace("Parsing {} schemas for fragmented namespace {}", fragments.size(), namespace);
-            for (SchemaDescriptionImpl schemaDescription : fragments) {
-                parsePrismSchema(schemaDescription, true);
-            }
-        }
-    }
-
-    private void detectAugmentations(PrismSchema schema) {
-        detectSubstitutions(schema);
-        detectExtensionSchema(schema);
-    }
-
-    private void detectSubstitutions(PrismSchema schema) {
-        substitutions.putAll(schema.getSubstitutions());
-    }
-
-    private void detectExtensionSchema(PrismSchema schema) {
-        for (ComplexTypeDefinition def : schema.getComplexTypeDefinitions()) {
-            QName typeBeingExtended = def.getExtensionForType(); // e.g. c:UserType
-            if (typeBeingExtended != null) {
-                LOGGER.trace("Processing {} as an extension for {}", def, typeBeingExtended);
-                if (extensionSchemas.containsKey(typeBeingExtended)) {
-                    ComplexTypeDefinition existingExtension = extensionSchemas.get(typeBeingExtended);
-                    existingExtension.merge(def);
-                } else {
-                    extensionSchemas.put(typeBeingExtended, def.clone());
-                }
-            }
-        }
-    }
-
-    private void applyAugmentations() throws SchemaException {
-        //applySubstitutions();
-        applySchemaExtensions(extensionSchemas);
-        applySchemaExtensions(dbExtensionSchemas);
-    }
-
-    private void applySchemaExtensions(Map<QName, ComplexTypeDefinition> extensionSchemas) throws SchemaException {
-        for (Entry<QName, ComplexTypeDefinition> entry : extensionSchemas.entrySet()) {
-            QName typeQName = entry.getKey();
-            ComplexTypeDefinition extensionCtd = entry.getValue();
-            ComplexTypeDefinition primaryCtd = findComplexTypeDefinitionByType(typeQName);
-            PrismContainerDefinition<?> extensionContainer = primaryCtd.findContainerDefinition(
-                    new ItemName(primaryCtd.getTypeName().getNamespaceURI(), PrismConstants.EXTENSION_LOCAL_NAME));
-            if (extensionContainer == null) {
-                throw new SchemaException(
-                        "Attempt to extend type '%s' with '%s' but the original type does not have extension container".formatted(
-                                typeQName, extensionCtd.getTypeClass()));
-            }
-            var clone = extensionContainer.cloneWithNewType(extensionCtd.getTypeName(), extensionCtd.clone());
-            primaryCtd.mutator().replaceDefinition(extensionContainer.getItemName(), clone);
-        }
     }
 
     private void initResolver() throws IOException {
@@ -779,25 +519,19 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     //region Schemas and type maps (TODO)
     @Override
     public javax.xml.validation.Schema getJavaxSchema() {
-        return javaxSchema;
+        return schemaRegistryState.getJavaxSchema();
     }
 
     @Override
     public Validator getJavaxSchemaValidator() {
-        Validator validator = javaxSchema.newValidator();
+        Validator validator = getJavaxSchema().newValidator();
         validator.setResourceResolver(entityResolver);
         return validator;
     }
 
     @Override
     public Collection<Package> getCompileTimePackages() {
-        Collection<Package> compileTimePackages = new ArrayList<>(schemaDescriptions.size());
-        for (SchemaDescription desc : schemaDescriptions) {
-            if (desc.getCompileTimeClassesPackage() != null) {
-                compileTimePackages.add(desc.getCompileTimeClassesPackage());
-            }
-        }
-        return compileTimePackages;
+        return schemaRegistryState.getCompileTimePackages();
     }
     //endregion
 
@@ -805,15 +539,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public String debugDump(int indent) {
         StringBuilder sb = new StringBuilder();
         DebugUtil.indentDebugDump(sb, indent);
-        sb.append("SchemaRegistry:\n");
-        sb.append("  Parsed Schemas:");
-        for (String namespace : parsedSchemas.keySet()) {
-            sb.append("\n");
-            DebugUtil.indentDebugDump(sb, indent + 1);
-            sb.append(namespace);
-            sb.append(": ");
-            sb.append(parsedSchemas.get(namespace));
-        }
+        sb.append("SchemaRegistry:\n")
+                .append("  Parsed Schema state:")
+                .append("\n")
+                .append(schemaRegistryState == null ? null : schemaRegistryState.debugDump(indent));
         return sb.toString();
     }
 
@@ -906,7 +635,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public <ID extends ItemDefinition> ID findItemDefinitionByType(@NotNull QName typeName, @NotNull Class<ID> definitionClass) {
         if (QNameUtil.noNamespace(typeName)) {
-            TypeDefinition td = resolveGlobalTypeDefinitionWithoutNamespace(typeName.getLocalPart(), TypeDefinition.class);
+            TypeDefinition td = schemaRegistryState.resolveGlobalTypeDefinitionWithoutNamespace(typeName.getLocalPart(), TypeDefinition.class);
             if (td == null) {
                 return null;
             }
@@ -923,7 +652,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public <ID extends ItemDefinition> List<ID> findItemDefinitionsByElementName(@NotNull QName elementName, @NotNull Class<ID> definitionClass) {
         if (QNameUtil.noNamespace(elementName)) {
-            return resolveGlobalItemDefinitionsWithoutNamespace(elementName.getLocalPart(), definitionClass);
+            return schemaRegistryState.resolveGlobalItemDefinitionsWithoutNamespace(elementName.getLocalPart(), definitionClass);
         } else {
             PrismSchema schema = findSchemaByNamespace(elementName.getNamespaceURI());
             if (schema == null) {
@@ -947,7 +676,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public <TD extends TypeDefinition> TD findTypeDefinitionByType(@NotNull QName typeName, @NotNull Class<TD> definitionClass) {
         if (QNameUtil.noNamespace(typeName)) {
-            return resolveGlobalTypeDefinitionWithoutNamespace(typeName.getLocalPart(), definitionClass);
+            return schemaRegistryState.resolveGlobalTypeDefinitionWithoutNamespace(typeName.getLocalPart(), definitionClass);
         }
         PrismSchema schema = findSchemaByNamespace(typeName.getNamespaceURI());
         if (schema == null) {
@@ -961,7 +690,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     public <TD extends TypeDefinition> Collection<? extends TD> findTypeDefinitionsByType(@NotNull QName typeName,
             @NotNull Class<TD> definitionClass) {
         if (QNameUtil.noNamespace(typeName)) {
-            return resolveGlobalTypeDefinitionsWithoutNamespace(typeName.getLocalPart(), definitionClass);
+            return schemaRegistryState.resolveGlobalTypeDefinitionsWithoutNamespace(typeName.getLocalPart(), definitionClass);
         }
         PrismSchema schema = findSchemaByNamespace(typeName.getNamespaceURI());
         if (schema == null) {
@@ -969,15 +698,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
         return schema.findTypeDefinitionsByType(typeName, definitionClass);
     }
-
-    @NotNull
-    @Override
-    public <TD extends TypeDefinition> Collection<TD> findTypeDefinitionsByElementName(@NotNull QName name, @NotNull Class<TD> clazz) {
-        return findItemDefinitionsByElementName(name, ItemDefinition.class).stream()
-                .flatMap(itemDef -> findTypeDefinitionsByType(itemDef.getTypeName(), clazz).stream())
-                .collect(Collectors.toList());
-    }
-
     //endregion
 
     //region Finding items - cached (frequent cases) - EXPERIMENTAL
@@ -986,34 +706,12 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public <O extends Objectable> PrismObjectDefinition<O> findObjectDefinitionByCompileTimeClass(
             @NotNull Class<O> compileTimeClass) {
-        PrismObjectDefinition<?> cached = objectDefinitionForClass.get(compileTimeClass);
-        if (cached == NO_OBJECT_DEFINITION) {
-            return null;
-        } else if (cached != null) {
-            //noinspection unchecked
-            return (PrismObjectDefinition<O>) cached;
-        } else {
-            //noinspection unchecked
-            PrismObjectDefinition<O> found = findItemDefinitionByCompileTimeClass(compileTimeClass, PrismObjectDefinition.class);
-            objectDefinitionForClass.put(compileTimeClass, found != null ? found : NO_OBJECT_DEFINITION);
-            return found;
-        }
+        return schemaRegistryState.findObjectDefinitionByCompileTimeClass(compileTimeClass);
     }
 
     @Override
     public <O extends Objectable> PrismObjectDefinition<O> findObjectDefinitionByType(@NotNull QName typeName) {
-        PrismObjectDefinition<?> cached = objectDefinitionForType.get(typeName);
-        if (cached == NO_OBJECT_DEFINITION) {
-            return null;
-        } else if (cached != null) {
-            //noinspection unchecked
-            return (PrismObjectDefinition<O>) cached;
-        } else {
-            //noinspection unchecked
-            PrismObjectDefinition<O> found = findItemDefinitionByType(typeName, PrismObjectDefinition.class);
-            objectDefinitionForType.put(typeName, found != null ? found : NO_OBJECT_DEFINITION);
-            return found;
-        }
+        return schemaRegistryState.findObjectDefinitionByType(typeName);
     }
 
     //endregion
@@ -1035,7 +733,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public ItemDefinition findItemDefinitionByElementName(QName elementName, @Nullable List<String> ignoredNamespaces) {
         if (StringUtils.isEmpty(elementName.getNamespaceURI())) {
-            return resolveGlobalItemDefinitionWithoutNamespace(elementName.getLocalPart(), ItemDefinition.class, true, ignoredNamespaces);
+            return schemaRegistryState.resolveGlobalItemDefinitionWithoutNamespace(
+                    elementName.getLocalPart(), ItemDefinition.class, true, ignoredNamespaces);
         }
         PrismSchema schema = findSchemaByNamespace(elementName.getNamespaceURI());
         if (schema == null) {
@@ -1043,62 +742,6 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
         return schema.findItemDefinitionByElementName(elementName, ItemDefinition.class);
     }
-
-    private <T> Class<T> computeCompileTimeClass(QName typeName) {
-        if (QNameUtil.noNamespace(typeName)) {
-            TypeDefinition td = resolveGlobalTypeDefinitionWithoutNamespace(typeName.getLocalPart(), TypeDefinition.class);
-            if (td == null) {
-                return null;
-            }
-            if (QNameUtil.noNamespace(td.getTypeName())) {
-                //noinspection unchecked
-                return (Class<T>) td.getCompileTimeClass(); // This is the best we can do
-            }
-            typeName = td.getTypeName();
-        }
-        SchemaDescription desc = findSchemaDescriptionByNamespace(typeName.getNamespaceURI());
-        if (desc == null) {
-            return null;
-        }
-        Package pkg = desc.getCompileTimeClassesPackage();
-        if (pkg != null) {
-            var fromJaxb = JAXBUtil.findClassForType(typeName, pkg);
-            if (fromJaxb != null) {
-                //noinspection unchecked
-                return (Class<T>) fromJaxb;
-            }
-        }
-
-        // Last attempt: is this an extension? HACK HACK HACK
-        TypeDefinition typeDefinition = findTypeDefinitionByType(typeName);
-        if (typeDefinition instanceof ComplexTypeDefinition ctd) {
-            QName extensionForType = ctd.getExtensionForType();
-            QName extContainerTypeName = PrismContext.get().getExtensionContainerTypeName();
-            if (extensionForType != null && extContainerTypeName != null) {
-                //noinspection unchecked
-                return (Class<T>) Objects.requireNonNull(
-                        findComplexTypeDefinitionByType(extContainerTypeName), "No definition for extension container type")
-                        .getCompileTimeClass();
-            }
-        }
-
-        return null;
-    }
-
-//    @Override
-//    public <T> Class<T> getCompileTimeClass(QName xsdType) {
-//        return determineCompileTimeClass(xsdType);
-//        // TODO: which one is better (this one or the above)?
-//        //        SchemaDescription desc = findSchemaDescriptionByNamespace(xsdType.getNamespaceURI());
-//        //        if (desc == null) {
-//        //            return null;
-//        //        }
-//        //        Map<QName, Class<?>> map = desc.getXsdTypeTocompileTimeClassMap();
-//        //        if (map == null) {
-//        //            return null;
-//        //        }
-//        //        return (Class<T>) map.get(xsdType);
-//    }
 
     @Override
     public Class<? extends ObjectType> getCompileTimeClassForObjectType(QName objectType) {
@@ -1157,25 +800,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     //endregion
 
     //region Unqualified names resolution
-    // TODO fix this temporary and inefficient implementation
     @Override
     public QName resolveUnqualifiedTypeName(QName type) throws SchemaException {
-        QName typeFound = null;
-        for (PrismSchemaImpl desc : parsedPrismSchemas) {
-            QName typeInSchema = new QName(desc.getNamespace(), type.getLocalPart());
-            if (desc.findComplexTypeDefinitionByType(typeInSchema) != null) {
-                if (typeFound != null) {
-                    throw new SchemaException("Ambiguous type name: " + type);
-                } else {
-                    typeFound = typeInSchema;
-                }
-            }
-        }
-        if (typeFound == null) {
-            throw new SchemaException("Unknown type: " + type);
-        } else {
-            return typeFound;
-        }
+        return schemaRegistryState.resolveUnqualifiedTypeName(type);
     }
 
     @Override
@@ -1186,54 +813,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         return resolveUnqualifiedTypeName(typeName);
     }
 
-    // current implementation tries to find all references to the child CTD and select those that are able to resolve path of 'rest'
-    // fails on ambiguity
-    // it's a bit fragile, as adding new references to child CTD in future may break existing code
     @Override
     public ComplexTypeDefinition determineParentDefinition(@NotNull ComplexTypeDefinition child, @NotNull ItemPath rest) {
-        Map<ComplexTypeDefinition, ItemDefinition<?>> found = new HashMap<>();
-        for (PrismSchema schema : getSchemas()) {
-            if (schema == null) {
-                continue;
-            }
-            for (ComplexTypeDefinition ctd : schema.getComplexTypeDefinitions()) {
-                for (ItemDefinition<?> item : ctd.getDefinitions()) {
-                    if (!(item instanceof PrismContainerDefinition)) {
-                        continue;
-                    }
-                    PrismContainerDefinition<?> itemPcd = (PrismContainerDefinition<?>) item;
-                    if (itemPcd.getComplexTypeDefinition() == null) {
-                        continue;
-                    }
-                    if (child.getTypeName().equals(itemPcd.getComplexTypeDefinition().getTypeName())) {
-                        if (!rest.isEmpty() && ctd.findItemDefinition(rest) == null) {
-                            continue;
-                        }
-                        found.put(ctd, itemPcd);
-                    }
-                }
-            }
-        }
-        if (found.isEmpty()) {
-            throw new IllegalStateException("Couldn't find definition for parent for " + child.getTypeName() + ", path=" + rest);
-        } else if (found.size() > 1) {
-            Map<ComplexTypeDefinition, ItemDefinition> notInherited = found.entrySet().stream()
-                    .filter(e -> !e.getValue().isInherited())
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-            if (notInherited.size() > 1) {
-                throw new IllegalStateException(
-                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found: "
-                                + notInherited);
-            } else if (notInherited.isEmpty()) {
-                throw new IllegalStateException(
-                        "Couldn't find parent definition for " + child.getTypeName() + ": More than one candidate found - and all are inherited: "
-                                + found);
-            } else {
-                return notInherited.keySet().iterator().next();
-            }
-        } else {
-            return found.keySet().iterator().next();
-        }
+        return schemaRegistryState.determineParentDefinition(child, rest);
     }
 
     @Override
@@ -1243,32 +825,7 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         if (def == null) {
             throw new IllegalStateException("Couldn't find definition for referenced object for " + targetTypeName + ", path=" + rest);
         }
-        return def;
-    }
-
-    private <TD extends TypeDefinition> TD resolveGlobalTypeDefinitionWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
-        TD found = null;
-        for (PrismSchemaImpl schema : parsedPrismSchemas) {
-            TD def = schema.findTypeDefinitionByType(new QName(schema.getNamespace(), typeLocalName), definitionClass);
-            if (def != null) {
-                if (found != null) {
-                    throw new IllegalArgumentException("Multiple possible resolutions for unqualified type name " + typeLocalName + " (e.g. in " +
-                            def.getTypeName() + " and " + found.getTypeName());
-                }
-                found = def;
-            }
-        }
-        return found;
-    }
-
-    @NotNull
-    private <TD extends TypeDefinition> Collection<TD> resolveGlobalTypeDefinitionsWithoutNamespace(String typeLocalName, Class<TD> definitionClass) {
-        List<TD> rv = new ArrayList<>();
-        for (PrismSchemaImpl schema : parsedPrismSchemas) {
-            rv.addAll(schema.findTypeDefinitionsByType(new QName(schema.getNamespace(), typeLocalName), definitionClass));
-        }
-        return rv;
-    }
+        return def;    }
 
     @Override
     public ItemDefinition resolveGlobalItemDefinition(QName itemName, @Nullable ComplexTypeDefinition complexTypeDefinition) {
@@ -1279,7 +836,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
                 List<String> ignoredNamespaces = complexTypeDefinition != null ?
                         complexTypeDefinition.getIgnoredNamespaces() :
                         null;
-                return resolveGlobalItemDefinitionWithoutNamespace(itemName.getLocalPart(), ItemDefinition.class, true, ignoredNamespaces);
+                return schemaRegistryState.resolveGlobalItemDefinitionWithoutNamespace(
+                        itemName.getLocalPart(), ItemDefinition.class, true, ignoredNamespaces);
             }
         }
         PrismSchema schema = findSchemaByNamespace(itemName.getNamespaceURI());
@@ -1288,104 +846,42 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
         return schema.findItemDefinitionByElementName(itemName, ItemDefinition.class);
     }
-
-    private <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass) {
-        return resolveGlobalItemDefinitionsWithoutNamespace(localPart, definitionClass, null);
-    }
-
-    private <ID extends ItemDefinition> ID resolveGlobalItemDefinitionWithoutNamespace(String localPart, Class<ID> definitionClass, boolean exceptionIfAmbiguous, @Nullable List<String> ignoredNamespaces) {
-        return DefinitionStoreUtils.getOne(
-                resolveGlobalItemDefinitionsWithoutNamespace(localPart, definitionClass, ignoredNamespaces),
-                exceptionIfAmbiguous,
-                "Multiple possible resolutions for unqualified element name '" + localPart + "'");
-    }
-
-    @NotNull
-    private <ID extends ItemDefinition> List<ID> resolveGlobalItemDefinitionsWithoutNamespace(String localPart, Class<ID> definitionClass, @Nullable List<String> ignoredNamespaces) {
-        List<ID> found = new ArrayList<>();
-        for (PrismSchemaImpl schema : parsedPrismSchemas) {
-            if (namespaceMatches(schema.getNamespace(), ignoredNamespaces)) {
-                continue;
-            }
-            ItemDefinition def = schema.findItemDefinitionByElementName(new QName(localPart), definitionClass);
-            if (def != null) {
-                //noinspection unchecked
-                found.add((ID) def);
-            }
-        }
-        return found;
-    }
-
     //endregion
 
     //region Finding schemas
-
     @Override
     public PrismSchema getPrismSchema(String namespace) {
-        List<PrismSchema> schemas = parsedPrismSchemas.stream()
-                .filter(s -> namespace.equals(s.getNamespace()))
-                .collect(Collectors.toList());
-        if (schemas.size() > 1) {
-            throw new IllegalStateException("More than one prism schema for namespace " + namespace);
-        } else if (schemas.size() == 1) {
-            return schemas.get(0);
-        } else {
-            return null;
-        }
+        return schemaRegistryState.getPrismSchema(namespace);
     }
 
     @Override
     public Collection<PrismSchema> getSchemas() {
-        return (Collection) parsedPrismSchemas; //TODO
+        return schemaRegistryState.getSchemas();
     }
 
     @Override
     public Collection<SchemaDescription> getSchemaDescriptions() {
-        return parsedSchemas.values();
+        return getParsedSchemas().values();
     }
 
     @Override
     public PrismSchema findSchemaByCompileTimeClass(@NotNull Class<?> compileTimeClass) {
-        // FIXME migrate to map!
-        List<PrismSchemaImpl> foundSchemas = parsedPrismSchemas.stream()
-                .filter(schema -> schema.getCompileTimePackage() == compileTimeClass.getPackage())
-                .toList();
-
-        //todo
-        return !foundSchemas.isEmpty() ? foundSchemas.iterator().next() : null;
-//        Package compileTimePackage = compileTimeClass.getPackage();
-//        if (compileTimePackage == null) {
-//            return null; // e.g. for arrays
-//        }
-//        var schemaDescription = schemaDescriptionMap.get(compileTimePackage);
-//        return schemaDescription != null ? schemaDescription.getSchema() : null;
+        return schemaRegistryState.findSchemaByCompileTimeClass(compileTimeClass);
     }
 
     @Override
     public PrismSchema findSchemaByNamespace(String namespaceURI) {
-        return parsedPrismSchemas.stream()
-                .filter(schema -> namespaceURI.equals(schema.getNamespace()))
-                .findFirst().orElse(null);
+        return schemaRegistryState.findSchemaByNamespace(namespaceURI);
     }
 
     @Override
     public SchemaDescription findSchemaDescriptionByNamespace(String namespaceURI) {
-        for (SchemaDescription desc : schemaDescriptions) {
-            if (namespaceURI.equals(desc.getNamespace())) {
-                return desc;
-            }
-        }
-        return null;
+        return schemaRegistryState.findSchemaDescriptionByNamespace(namespaceURI);
     }
 
     @Override
     public SchemaDescription findSchemaDescriptionByPrefix(String prefix) {
-        for (SchemaDescription desc : schemaDescriptions) {
-            if (prefix.equals(desc.getUsualPrefix())) {
-                return desc;
-            }
-        }
-        return null;
+        return schemaRegistryState.findSchemaDescriptionByPrefix(prefix);
     }
 
     //endregion
@@ -1394,107 +890,21 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @NotNull
     @Override
     public IsList isList(@Nullable QName xsiType, @NotNull QName elementName) {
-        if (xsiType != null) {
-            return isListByType(xsiType);
-        } else {
-            return isListByElementName(elementName);
-        }
+        return schemaRegistryState.isList(xsiType, elementName);
     }
 
-    @NotNull
-    private IsList isListByElementName(@NotNull QName elementName) {
-        IsList cached = isListByElementName.get(elementName);
-        if (cached != null) {
-            return cached;
-        } else {
-            IsList computed = determineIsListFromElementName(elementName);
-            isListByElementName.put(elementName, computed);
-            return computed;
-        }
-    }
-
-    @NotNull
-    private IsList determineIsListFromElementName(@NotNull QName elementName) {
-        Collection<? extends ComplexTypeDefinition> definitions =
-                findTypeDefinitionsByElementName(elementName, ComplexTypeDefinition.class);
-        // TODO - or allMatch here? - allMatch would mean that if there's an extension (or resource item) with a name
-        // of e.g. formItems, pipeline, sequence, ... - it would not be recognizable as list=true anymore. That's why
-        // we will use anyMatch here.
-        if (definitions.stream().anyMatch(ComplexTypeDefinition::isListMarker)) {
-            // we are very hopefully OK -- so let's continue
-            return IsList.MAYBE;
-        } else {
-            return IsList.NO;
-        }
-    }
-
-    @NotNull
-    private IsList isListByType(@NotNull QName xsiType) {
-        IsList cached = isListByXsiType.get(xsiType);
-        if (cached != null) {
-            return cached;
-        } else {
-            IsList computed = determineIsListFromType(xsiType);
-            isListByXsiType.put(xsiType, computed);
-            return computed;
-        }
-    }
-
-    @NotNull
-    private IsList determineIsListFromType(@NotNull QName xsiType) {
-        Collection<? extends ComplexTypeDefinition> definitions = findTypeDefinitionsByType(xsiType, ComplexTypeDefinition.class);
-        if (definitions.isEmpty()) {
-            return IsList.NO;    // to be safe (we support this heuristic only for known types)
-        }
-        if (QNameUtil.hasNamespace(xsiType)) {
-            assert definitions.size() <= 1;
-            return definitions.iterator().next().isListMarker() ? IsList.YES : IsList.NO;
-        } else {
-            if (definitions.stream().allMatch(ComplexTypeDefinition::isListMarker)) {
-                // great -- we are very probably OK -- so let's continue
-                return IsList.MAYBE;
-            } else {
-                return IsList.NO;    // sorry, there's a possibility of failure
-            }
-        }
-    }
-
+    /**
+     * Must be called before call to initialize()
+     */
     public synchronized void setValueMetadataTypeName(QName typeName) {
         valueMetadataTypeName = typeName;
-        valueMetadataDefinition = null;
     }
 
     @Override
     @NotNull
     public synchronized PrismContainerDefinition<?> getValueMetadataDefinition() {
-        if (valueMetadataDefinition == null) {
-            valueMetadataDefinition = resolveValueMetadataDefinition();
-        }
-        return valueMetadataDefinition;
+        return schemaRegistryState.getValueMetadataDefinition();
     }
-
-    private PrismContainerDefinition<?> resolveValueMetadataDefinition() {
-        if (!initialized) {
-            throw new IllegalStateException("Schema registry is not yet initialized");
-        }
-
-        if (valueMetadataTypeName != null) {
-            return Objects.requireNonNull(
-                    findContainerDefinitionByType(valueMetadataTypeName),
-                    () -> "no definition for value metadata type " + valueMetadataTypeName);
-        } else {
-            return createDefaultValueMetadataDefinition();
-        }
-    }
-
-    private PrismContainerDefinition<?> createDefaultValueMetadataDefinition() {
-        var pcd = prismContext.definitionFactory().newContainerDefinitionWithoutTypeDefinition(
-                DEFAULT_VALUE_METADATA_NAME, DEFAULT_VALUE_METADATA_TYPE_NAME);
-        pcd.mutator().setMinOccurs(0);
-        pcd.mutator().setMaxOccurs(1);
-        return pcd;
-    }
-
     //endregion
 
     //region TODO categorize
@@ -1530,48 +940,17 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
 
     @Override
     public <T> Class<T> determineClassForType(QName type) {
-        Class<?> cached = classForTypeIncludingXsd.get(type);
-        if (cached == NO_CLASS) {
-            return null;
-        } else if (cached != null) {
-            //noinspection unchecked
-            return (Class<T>) cached;
-        } else {
-            Class<?> computed = computeClassForType(type);
-            classForTypeIncludingXsd.put(type, Objects.requireNonNullElse(computed, NO_CLASS));
-            //noinspection unchecked
-            return (Class<T>) computed;
-        }
-    }
-
-    private <T> Class<T> computeClassForType(QName type) {
-        if (XmlTypeConverter.canConvert(type)) {
-            return XsdTypeMapper.toJavaType(type);
-        } else {
-            return determineCompileTimeClass(type);
-        }
+        return schemaRegistryState.determineClassForType(type);
     }
 
     @Override
     public <T> Class<T> determineCompileTimeClass(QName type) {
-        return determineCompileTimeClassInternal(type, true);
+        return schemaRegistryState.determineCompileTimeClass(type);
     }
 
+    @Override
     public <T> Class<T> determineCompileTimeClassInternal(QName type, boolean cacheAlsoNegativeResults) {
-        Class<?> cached = classForTypeExcludingXsd.get(type);
-        if (cached == NO_CLASS) {
-            return null;
-        } else if (cached != null) {
-            //noinspection unchecked
-            return (Class<T>) cached;
-        } else {
-            Class<?> computed = computeCompileTimeClass(type);
-            if (computed != null || cacheAlsoNegativeResults) {
-                classForTypeExcludingXsd.put(type, Objects.requireNonNullElse(computed, NO_CLASS));
-            }
-            //noinspection unchecked
-            return (Class<T>) computed;
-        }
+        return schemaRegistryState.determineCompileTimeClassInternal(type, cacheAlsoNegativeResults);
     }
 
     @Override
@@ -1805,21 +1184,35 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public PrismNamespaceContext staticNamespaceContext() {
         PrismNamespaceContext ret = staticNamespaceContext;
-        if(ret == null) {
+        if (ret == null) {
             // Temporary version, initialize was not yet called on schema registry
             return staticPrefixes.build();
         }
         return ret;
     }
 
-    public void registerDbSchemaExtensions(Map<QName, ComplexTypeDefinition> dbExtensionSchemas) {
-        this.dbExtensionSchemas.clear();
-        this.dbExtensionSchemas.putAll(dbExtensionSchemas);
+    @Override
+    public void registerDynamicSchemaExtensions(Map<String, Element> dynamicSchemaExtensions) throws SchemaException {
+        List<SchemaDescriptionImpl> registeredSchemasExtensions = new ArrayList<>();
+        for (Entry<String, Element> entry : dynamicSchemaExtensions.entrySet()) {
+            SchemaDescriptionImpl desc = SchemaDescriptionParser.parseNode(entry.getValue(), entry.getKey());
+            desc.setPrismSchema(true);
+            desc.setRegistered();
+            registeredSchemasExtensions.add(desc);
+
+            addStaticPrefix(desc);
+        }
+
+        if (registeredSchemasExtensions.isEmpty()) {
+            return;
+        }
+
+        this.dynamicSchemaExtensions = registeredSchemasExtensions;
     }
 
     public void registerStaticNamespace(String ns, String prefix, boolean declaredByDefault) {
         staticPrefixes.addPrefix(prefix, ns);
-        getNamespacePrefixMapper().registerPrefix(ns, prefix, declaredByDefault);
+        customizeNamespacePrefixMapper(namespacePrefixMapper -> namespacePrefixMapper.registerPrefix(ns, prefix, declaredByDefault));
     }
 
     public List<TypeDefinition> getAllSubTypesByTypeDefinition(List<TypeDefinition> typeDefinitions) {
