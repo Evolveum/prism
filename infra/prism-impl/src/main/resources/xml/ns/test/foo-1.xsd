@@ -516,6 +516,14 @@
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
+            <xsd:element minOccurs="0" name="parent" type="tns:ObjectParentSelectorType">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.parent</a:displayName>
+                        <a:elaborate>true</a:elaborate> <!-- because of recursion -->
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:long"/>
     </xsd:complexType>
@@ -546,6 +554,10 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                    <a:algorithm>ResourceObject</a:algorithm>
+                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
@@ -678,9 +690,6 @@
             <xsd:appinfo>
                 <a:container/>
                 <a:naturalKey>name</a:naturalKey>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
@@ -751,4 +760,34 @@
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:element name="abstractRole" type="tns:AbstractRoleType"/>
+
+    <xsd:complexType name="ObjectParentSelectorType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Position of an object (an item in the language of prism) within midPoint objects structure.
+                For example a case work item can be specified as having type=CaseType, path=workItem.
+
+                Note that although technically this derives from OwnedObjectSelectorType, not all the features may be available
+                in all contexts (e.g., sometimes only ObjectSelectorType features may be available).
+            </xsd:documentation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:since>4.8</a:since>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:OwnedObjectSelectorType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="path" type="t:ItemPathType">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specification of a path from the parent to the current object (item).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
 </xsd:schema>
