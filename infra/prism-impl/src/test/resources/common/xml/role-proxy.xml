@@ -3,10 +3,25 @@
         xmlns:q="http://prism.evolveum.com/xml/ns/public/query-3"
         xmlns='http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd'>
     <name>PROXY</name>
-    <authorization>
+    <authorization id="1">
         <action>http://midpoint.evolveum.com/xml/ns/public/security/authorization-model-3#read</action>
         <object>
-            <type>UserType</type>
+            <type>RoleType</type>
+            <parent>
+                <type>UserType</type>
+            </parent>
+            <filter>
+                <q:type>
+                    <q:type>UserType</q:type>
+                    <q:filter>
+                        <q:substring>
+                            <q:path>name</q:path>
+                            <q:value>test-role-</q:value>
+                            <q:anchorStart>true</q:anchorStart>
+                        </q:substring>
+                    </q:filter>
+                </q:type>
+            </filter>
         </object>
     </authorization>
 </role>

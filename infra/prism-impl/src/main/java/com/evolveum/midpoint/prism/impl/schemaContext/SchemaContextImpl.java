@@ -9,11 +9,11 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 public class SchemaContextImpl implements SchemaContext {
     ItemDefinition<?> itemDefinition;
 
-    public ItemDefinition<?> getItemDefinition() {
-        return itemDefinition;
+    public SchemaContextImpl(ItemDefinition<?> itemDefinition) {
+        this.itemDefinition = itemDefinition;
     }
 
-    public void setItemDefinition(ItemDefinition<?> itemDefinition) {
-        this.itemDefinition = itemDefinition;
+    public ItemDefinition<?> getItemDefinition() {
+        return itemDefinition;
     }
 }

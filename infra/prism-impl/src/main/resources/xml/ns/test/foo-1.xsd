@@ -511,6 +511,11 @@
             </xsd:element>
             <xsd:element name="filter" type="q:SearchFilterType" minOccurs="0">
                 <xsd:annotation>
+                    <xsd:documentation>
+                        Filter that an object must match to be considered selected by this statement.
+                        This filter MUST NOT contain organization unit clauses. It may only contain
+                        property clauses, logical operations and so on.
+                    </xsd:documentation>
                     <xsd:appinfo>
                         <a:displayName>ObjectSelectorType.filter</a:displayName>
                     </xsd:appinfo>
@@ -521,6 +526,10 @@
                     <xsd:appinfo>
                         <a:displayName>ObjectSelectorType.parent</a:displayName>
                         <a:elaborate>true</a:elaborate> <!-- because of recursion -->
+                        <a:schemaContext>
+                            <a:typePath>type</a:typePath>
+                            <a:algorithm>ResourceObject</a:algorithm>
+                        </a:schemaContext>
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
