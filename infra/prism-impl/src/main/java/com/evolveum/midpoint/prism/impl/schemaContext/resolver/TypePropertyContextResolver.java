@@ -1,9 +1,14 @@
 package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
+import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismProperty;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.impl.schemaContext.ContextResolverFactory;
-import com.evolveum.midpoint.prism.schema.SchemaContextDefinition;
-//import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 import javax.xml.namespace.QName;
 
@@ -12,22 +17,27 @@ import javax.xml.namespace.QName;
  */
 public class TypePropertyContextResolver implements SchemaContextResolver {
 
-    @Override
-    public SchemaContextDefinition computeContext(PrismValue prismValue) {
-        // return object type from xml
-        return null;
+    SchemaContextDefinition schemaContextDefinition;
+
+    public TypePropertyContextResolver(SchemaContextDefinition schemaContextDefinition) {
+        this.schemaContextDefinition = schemaContextDefinition;
     }
 
-    static class Factory implements ContextResolverFactory {
+    @Override
+    public SchemaContext computeContext(PrismValue prismValue) {
+        if (prismValue instanceof PrismContainerValue<?> container) {
+            var typeProp = container.findItem(ItemPath.create(schemaContextDefinition.getTypePath()), PrismProperty.class);
 
-        @Override
-        public QName getAlgorithmName() {
-            return null;
+            if (typeProp != null) {
+                var ppv = typeProp.getAnyValue();
+
+                if (ppv.getRealValue() instanceof QName typeName) {
+                    var o_def = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
+                    return new SchemaContextImpl(o_def);
+                }
+            }
         }
 
-//        @Override
-//        public SchemaContextResolver createResolver(SchemaContext schemaContext) {
-//            return null;
-//        }
+        return null;
     }
 }
