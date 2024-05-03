@@ -189,7 +189,7 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
 
     @Override
     public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
-        var retyped = TypedItemPath.of(getType(),base.getPath()).emitTo(pathConsumer, expandReferences);
+        var retyped = TypedItemPath.of(getType(), base.getPath()).emitTo(pathConsumer, expandReferences);
         if (getFilter() != null) {
             getFilter().collectUsedPaths(retyped, pathConsumer, expandReferences);
         }
