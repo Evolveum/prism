@@ -481,11 +481,11 @@ public class DefinitionFeatures {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
 
                         if (typePathElement != null) {
-                            schemaContextDefinition.setTypePath(typePathElement.getTextContent());
+                            schemaContextDefinition.setTypePath(new QName(typePathElement.getTextContent()));
                         }
 
                         if (algorithmElement != null) {
-                            schemaContextDefinition.setAlgorithm(algorithmElement.getTextContent());
+                            schemaContextDefinition.setAlgorithm(new QName(algorithmElement.getTextContent()));
                         }
 
                         return schemaContextDefinition;

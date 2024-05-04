@@ -2,30 +2,32 @@ package com.evolveum.midpoint.prism.impl.schemaContext;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
+import javax.xml.namespace.QName;
+
 /**
  * Created by Dominik.
  */
 public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
 
-    String typePath;
-    String algorithmName;
+    QName typePath;
+    QName algorithmName;
 
     @Override
-    public String getTypePath() {
+    public QName getTypePath() {
         return typePath;
     }
 
     @Override
-    public String getAlgorithm() {
+    public QName getAlgorithm() {
         return algorithmName;
     }
 
-    public void setTypePath(String typePath) {
+    public void setTypePath(QName typePath) {
         this.typePath = typePath;
     }
 
     @Override
-    public void setAlgorithm(String algorithmName) {
+    public void setAlgorithm(QName algorithmName) {
         this.algorithmName = algorithmName;
     }
 }

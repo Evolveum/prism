@@ -1,9 +1,6 @@
 package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismProperty;
-import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.schemaContext.ContextResolverFactory;
 import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -29,11 +26,11 @@ public class TypePropertyContextResolver implements SchemaContextResolver {
             var typeProp = container.findItem(ItemPath.create(schemaContextDefinition.getTypePath()), PrismProperty.class);
 
             if (typeProp != null) {
-                var ppv = typeProp.getAnyValue();
-
-                if (ppv.getRealValue() instanceof QName typeName) {
-                    var o_def = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
-                    return new SchemaContextImpl(o_def);
+                if (typeProp.getAnyValue() != null) {
+                    if (typeProp.getAnyValue().getRealValue() instanceof QName typeName) {
+                        var objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
+                        return new SchemaContextImpl(objectDefinition);
+                    }
                 }
             }
         }

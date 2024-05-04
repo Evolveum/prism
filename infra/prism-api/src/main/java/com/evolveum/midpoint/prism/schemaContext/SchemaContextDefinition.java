@@ -1,12 +1,14 @@
 package com.evolveum.midpoint.prism.schemaContext;
 
+import javax.xml.namespace.QName;
+
 /**
  * Created by Dominik.
  */
 public interface SchemaContextDefinition {
-    String getTypePath();
-    String getAlgorithm();
+    QName getTypePath();
+    QName getAlgorithm();
 
-    void setTypePath(String typePath);
-    void setAlgorithm(String algorithmName);
+    void setTypePath(QName typePath);
+    void setAlgorithm(QName algorithmName);
 }
