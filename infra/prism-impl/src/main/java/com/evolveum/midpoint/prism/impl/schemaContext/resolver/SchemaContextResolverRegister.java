@@ -6,6 +6,7 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import javax.xml.namespace.QName;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by Dominik.
@@ -23,6 +24,10 @@ public class SchemaContextResolverRegister {
             return new TypePropertyContextResolver(schemaContextDefinition);
         }
 
-        return schemaContextResolver.get(new QName(schemaContextDefinition.getAlgorithm())).createResolver(schemaContextDefinition);
+        if (Objects.equals(schemaContextDefinition.getAlgorithm(), new QName("ResourceObjectContextResolver"))) {
+            return new ResourceObjectContextResolver(schemaContextDefinition);
+        }
+
+        return schemaContextResolver.get(schemaContextDefinition.getAlgorithm()).createResolver(schemaContextDefinition);
     }
 }
