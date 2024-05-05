@@ -1,7 +1,6 @@
 package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.schemaContext.ContextResolverFactory;
 import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;

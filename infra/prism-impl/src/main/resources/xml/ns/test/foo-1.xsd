@@ -459,9 +459,9 @@
             <xsd:appinfo>
                 <a:container/>
                 <a:merger>ObjectSelectorType</a:merger>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
+                <!--<a:schemaContext>-->
+                <!--    <a:typePath>type</a:typePath>-->
+                <!--</a:schemaContext>-->
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
@@ -561,6 +561,9 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
@@ -763,11 +766,13 @@
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:element name="abstractRole" type="tns:AbstractRoleType"/>
-
     <xsd:complexType name="ObjectParentSelectorType">
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>

@@ -429,11 +429,9 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         isTransient = value;
     }
 
-
     @Override
     public SchemaContext getSchemaContext() {
         if (getParent() == null) return null;
-
 
         if (getParent().getDefinition().getSchemaContextDefinition() != null) {
             SchemaContextDefinition schemaContextDefinition = getParent().getDefinition().getSchemaContextDefinition();
@@ -446,7 +444,6 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
                 return parentItem.getParent().getSchemaContext();
             }
         }
-
 
         return null;
     }
