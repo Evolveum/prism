@@ -436,7 +436,6 @@
         </xsd:sequence>
     </xsd:complexType>
 
-    <!-- schema context testing -->
     <xsd:complexType name="RoleType">
         <xsd:complexContent>
             <xsd:extension base="tns:AbstractRoleType">
@@ -460,6 +459,9 @@
             <xsd:appinfo>
                 <a:container/>
                 <a:merger>ObjectSelectorType</a:merger>
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
@@ -526,10 +528,6 @@
                     <xsd:appinfo>
                         <a:displayName>ObjectSelectorType.parent</a:displayName>
                         <a:elaborate>true</a:elaborate> <!-- because of recursion -->
-                        <a:schemaContext>
-                            <a:typePath>type</a:typePath>
-                            <a:algorithm>ResourceObject</a:algorithm>
-                        </a:schemaContext>
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
@@ -563,10 +561,6 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                    <a:algorithm>ResourceObject</a:algorithm>
-                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
@@ -772,16 +766,8 @@
 
     <xsd:complexType name="ObjectParentSelectorType">
         <xsd:annotation>
-            <xsd:documentation>
-                Position of an object (an item in the language of prism) within midPoint objects structure.
-                For example a case work item can be specified as having type=CaseType, path=workItem.
-
-                Note that although technically this derives from OwnedObjectSelectorType, not all the features may be available
-                in all contexts (e.g., sometimes only ObjectSelectorType features may be available).
-            </xsd:documentation>
             <xsd:appinfo>
                 <a:container/>
-                <a:since>4.8</a:since>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>

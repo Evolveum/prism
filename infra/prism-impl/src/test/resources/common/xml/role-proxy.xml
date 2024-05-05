@@ -5,23 +5,23 @@
     <name>PROXY</name>
     <authorization id="1">
         <action>http://midpoint.evolveum.com/xml/ns/public/security/authorization-model-3#read</action>
-        <object>
-            <type>RoleType</type>
-            <parent>
-                <type>UserType</type>
-            </parent>
+        <object id="1">
+            <type>UserType</type>
             <filter>
-                <q:type>
-                    <q:type>UserType</q:type>
-                    <q:filter>
-                        <q:substring>
-                            <q:path>name</q:path>
-                            <q:value>test-role-</q:value>
-                            <q:anchorStart>true</q:anchorStart>
-                        </q:substring>
-                    </q:filter>
-                </q:type>
+                <q:equal>
+                    <q:path>subtype</q:path>
+                    <q:value>enduser</q:value>
+                </q:equal>
             </filter>
+            <parent>
+                <type>RoleType</type>
+                <filter>
+                    <q:equal>
+                        <q:path>subtype</q:path>
+                        <q:value>enduser</q:value>
+                    </q:equal>
+                </filter>
+            </parent>
         </object>
     </authorization>
 </role>
