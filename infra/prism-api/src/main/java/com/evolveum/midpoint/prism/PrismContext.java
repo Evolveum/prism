@@ -439,8 +439,12 @@ public interface PrismContext extends ProtectorCreator {
     @Experimental
     EquivalenceStrategy getProvenanceEquivalenceStrategy();
 
+    /**
+     *
+     * @return Prism Query Language Parser with static default namespaces declared
+     */
     default PrismQueryLanguageParser createQueryParser() {
-        return createQueryParser(Collections.emptyMap());
+        return createQueryParser(getSchemaRegistry().staticNamespaceContext().allPrefixes());
     }
 
     void registerQueryExpressionFactory(PrismQueryExpressionFactory factory);
