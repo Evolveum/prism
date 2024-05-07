@@ -15,6 +15,7 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefi
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.*;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -769,5 +770,10 @@ public class ComplexTypeDefinitionImpl
 
     public void setValueMigrator(ValueMigrator valueMigrator) {
         this.valueMigrator = valueMigrator;
+    }
+
+    @Override
+    public @Nullable SchemaContextDefinition getSchemaContextDefinition() {
+        return super.getSchemaContextDefinition();
     }
 }

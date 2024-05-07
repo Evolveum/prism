@@ -15,6 +15,8 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefi
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
 import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+
 import com.sun.xml.xsom.XSComplexType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -301,4 +303,6 @@ public interface ComplexTypeDefinition
     interface ValueMigrator {
         @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value);
     }
+
+    SchemaContextDefinition getSchemaContextDefinition();
 }

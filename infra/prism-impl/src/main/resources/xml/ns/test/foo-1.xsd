@@ -459,9 +459,9 @@
             <xsd:appinfo>
                 <a:container/>
                 <a:merger>ObjectSelectorType</a:merger>
-                <!--<a:schemaContext>-->
-                <!--    <a:typePath>type</a:typePath>-->
-                <!--</a:schemaContext>-->
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
@@ -523,7 +523,7 @@
                     </xsd:appinfo>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element minOccurs="0" name="parent" type="tns:ObjectParentSelectorType">
+            <xsd:element name="parent" type="tns:ObjectParentSelectorType" minOccurs="0">
                 <xsd:annotation>
                     <xsd:appinfo>
                         <a:displayName>ObjectSelectorType.parent</a:displayName>
@@ -561,9 +561,9 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
+                <!--<a:schemaContext>-->
+                <!--    <a:typePath>type</a:typePath>-->
+                <!--</a:schemaContext>-->
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
@@ -770,9 +770,9 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
+                <!--<a:schemaContext>-->
+                <!--    <a:typePath>type</a:typePath>-->
+                <!--</a:schemaContext>-->
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
