@@ -473,12 +473,10 @@ public class DefinitionFeatures {
             return new DefinitionFeatureParser<>() {
                 @Override
                 public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) {
-                    Element rootElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_SCHEMA_CONTEXT);
-                    if (rootElement != null) {
-                        Element typePathElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_TYPE_PATH);
-                        Element algorithmElement = SchemaProcessorUtil.getAnnotationElement(annotation, A_ALGORITHM);
-
+                    if (getAnnotationElement(annotation, A_SCHEMA_CONTEXT) != null) {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
+                        Element typePathElement = getAnnotationElement(annotation, A_TYPE_PATH);
+                        Element algorithmElement = getAnnotationElement(annotation, A_ALGORITHM);
 
                         if (typePathElement != null) {
                             schemaContextDefinition.setTypePath(new QName(typePathElement.getTextContent()));
@@ -490,6 +488,7 @@ public class DefinitionFeatures {
 
                         return schemaContextDefinition;
                     }
+
                     return null;
                 }
             };
