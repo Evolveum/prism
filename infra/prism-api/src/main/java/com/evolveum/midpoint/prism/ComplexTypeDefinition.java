@@ -18,6 +18,7 @@ import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 import com.sun.xml.xsom.XSComplexType;
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -260,6 +261,7 @@ public interface ComplexTypeDefinition
         default Collection<DefinitionFeature<?, ?, ? super XSComplexType, ?>> getExtraFeaturesToParse() {
             return List.of();
         }
+        void setSchemaContextDefinitionForInheritedType(XSType xsType);
     }
 
     /**
@@ -303,6 +305,4 @@ public interface ComplexTypeDefinition
     interface ValueMigrator {
         @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value);
     }
-
-    SchemaContextDefinition getSchemaContextDefinition();
 }

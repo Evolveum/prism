@@ -168,7 +168,7 @@ public interface Definition
 
         <A> void setAnnotation(QName qname, A value);
 
-        void setSchemaContext(SchemaContextDefinition schemaContextDefinition);
+        void setSchemaContextDefinition(SchemaContextDefinition schemaContextDefinition);
     }
 
     interface DefinitionBuilder extends DefinitionFragmentBuilder {

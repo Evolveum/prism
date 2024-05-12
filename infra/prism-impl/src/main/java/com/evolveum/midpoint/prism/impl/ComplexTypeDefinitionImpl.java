@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLi
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
 import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
+import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextDefinitionImpl;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
@@ -20,6 +21,7 @@ import com.evolveum.midpoint.util.*;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -753,6 +755,11 @@ public class ComplexTypeDefinitionImpl
         return definitionFactory().newObjectDefinition(itemName, (ComplexTypeDefinition) ctd);
     }
 
+    @Override
+    public void setSchemaContextDefinitionForInheritedType(XSType xsType) {
+//        var schemaContextDefinition = SchemaProcessorUtil.getAnnotationElement(xsType.getAnnotation(), PrismConstants.A_SCHEMA_CONTEXT);
+    }
+
     @NotNull
     private static DefinitionFactoryImpl definitionFactory() {
         return ((PrismContextImpl) PrismContext.get()).definitionFactory();
@@ -770,10 +777,5 @@ public class ComplexTypeDefinitionImpl
 
     public void setValueMigrator(ValueMigrator valueMigrator) {
         this.valueMigrator = valueMigrator;
-    }
-
-    @Override
-    public @Nullable SchemaContextDefinition getSchemaContextDefinition() {
-        return super.getSchemaContextDefinition();
     }
 }

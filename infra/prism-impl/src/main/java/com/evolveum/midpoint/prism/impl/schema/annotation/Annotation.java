@@ -155,8 +155,8 @@ public enum Annotation {
 
     SCHEMA_CONTEXT(AnnotationBasedFeature.custom(A_SCHEMA_CONTEXT, SchemaContextDefinition.class,
                     DefinitionMutator.class,
-                    DefinitionMutator::setSchemaContext,
-                    XsomParsers.schemaContextXSAnnotationDefinitionFeatureParser())
+                    DefinitionMutator::setSchemaContextDefinition,
+                    XsomParsers.schemaContextDefinitionParser())
     );
 
     /** This is the object that does all the work. */

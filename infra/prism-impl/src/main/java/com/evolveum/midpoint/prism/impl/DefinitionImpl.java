@@ -377,7 +377,7 @@ public abstract class DefinitionImpl
     }
 
     @Override
-    public void setSchemaContext(SchemaContextDefinition schemaContextDefinition) {
+    public void setSchemaContextDefinition(SchemaContextDefinition schemaContextDefinition) {
         checkMutable();
         this.schemaContextDefinition = schemaContextDefinition;
     }
@@ -408,6 +408,7 @@ public abstract class DefinitionImpl
         if (migrations != null) {
             this.schemaMigrations = new ArrayList<>(migrations);
         }
+        this.schemaContextDefinition = source.getSchemaContextDefinition();
     }
 
     @SuppressWarnings("ConstantConditions")

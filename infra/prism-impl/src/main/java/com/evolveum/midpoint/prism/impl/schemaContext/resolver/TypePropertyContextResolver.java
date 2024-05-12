@@ -24,12 +24,10 @@ public class TypePropertyContextResolver implements SchemaContextResolver {
         if (prismValue instanceof PrismContainerValue<?> container) {
             var typeProp = container.findItem(ItemPath.create(schemaContextDefinition.getTypePath()), PrismProperty.class);
 
-            if (typeProp != null) {
-                if (typeProp.getAnyValue() != null) {
-                    if (typeProp.getAnyValue().getRealValue() instanceof QName typeName) {
-                        var objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
-                        return new SchemaContextImpl(objectDefinition);
-                    }
+            if (typeProp != null && typeProp.getAnyValue() != null) {
+                if (typeProp.getAnyValue().getRealValue() instanceof QName typeName) {
+                    var objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
+                    return new SchemaContextImpl(objectDefinition);
                 }
             }
         }
