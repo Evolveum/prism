@@ -248,11 +248,15 @@ public class DOMUtil {
 
     public static Document parseDocument(String doc) {
         try {
-            DocumentBuilder loader = createDocumentBuilder();
-            return loader.parse(IOUtils.toInputStream(doc, StandardCharsets.UTF_8));
+            return parseDocumentInternal(doc);
         } catch (SAXException | IOException ex) {
             throw new IllegalStateException("Error parsing XML document " + ex.getMessage(), ex);
         }
+    }
+
+    private static Document parseDocumentInternal(String doc) throws IOException, SAXException {
+            DocumentBuilder loader = createDocumentBuilder();
+            return loader.parse(IOUtils.toInputStream(doc, StandardCharsets.UTF_8));
     }
 
     public static Document parseFile(String filePath) {
@@ -1643,7 +1647,14 @@ public class DOMUtil {
      * Parse documentation that contains xml tag 'documentation' to text of context only
      */
     public static String getContentOfDocumentation(@NotNull String documentation){
-        Document docDom = parseDocument(documentation);
-        return docDom.getDocumentElement().getTextContent();
+        try {
+            Document docDom = parseDocumentInternal(documentation);
+            return docDom.getDocumentElement().getTextContent();
+        } catch (IOException ex) {
+            new IllegalStateException("Error parsing XML document " + ex.getMessage(), ex);
+        } catch (SAXException e) {
+            return documentation;
+        }
+        return null;
     }
 }
