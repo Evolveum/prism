@@ -1441,8 +1441,8 @@ public class DOMUtil {
      */
     public static String serializeElementContent(Element element) {
         String completeXml = serializeDOMToString(element);
-        String restXml = completeXml.replaceFirst("^\\s*<[^>]>", "");
-        return restXml.replaceFirst("</[^>]>\\s*$", "");
+        String restXml = completeXml.replaceFirst("^\\s*<[^>]+>", "");
+        return restXml.replaceFirst("</[^>]+>\\s*$", "");
     }
 
     public static boolean isEmpty(Element element) {

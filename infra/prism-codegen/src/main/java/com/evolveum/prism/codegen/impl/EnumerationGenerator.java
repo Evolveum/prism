@@ -46,7 +46,9 @@ public class EnumerationGenerator extends ContractGenerator<EnumerationContract>
     @Override
     public void implement(EnumerationContract contract, JDefinedClass clazz) {
         for (ValueDefinition value : contract.values()) {
-            JEnumConstant enumConst = clazz.enumConstant(value.getConstantName().get());
+            String constantName = value.getValue().toUpperCase();
+            JEnumConstant enumConst = clazz.enumConstant(
+                    value.getConstantName().isPresent() ? value.getConstantName().get() : constantName);
             applyDocumentation(enumConst.javadoc(),value.getDocumentation());
             enumConst.arg(JExpr.lit(value.getValue()));
             enumConst.annotate(XmlEnumValue.class).param("value", value.getValue());

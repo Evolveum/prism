@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism.schema;
 
+import com.evolveum.midpoint.prism.DisplayHint;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -17,6 +19,8 @@ public interface SerializableDefinition {
     Integer getDisplayOrder();
     String getHelp();
     boolean isEmphasized();
+    DisplayHint getDisplayHint();
+    String getDocumentation();
 
     default Collection<? extends DefinitionFeature<?, ?, ?, ?>> getExtraFeaturesToSerialize() {
         return List.of();

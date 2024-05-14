@@ -83,7 +83,7 @@ public abstract class ContractGenerator<T extends Contract> {
     }
 
     protected void createQNameConstant(JDefinedClass targetClass, String targetField, QName qname, JExpression namespaceArgument, boolean namespaceFieldIsLocal, boolean createPath) {
-        if (namespaceArgument == null) {
+        if (qname.getNamespaceURI() != null) {
             namespaceArgument = JExpr.lit(qname.getNamespaceURI());
         }
         createNameConstruction(targetClass, targetField, qname, namespaceArgument, createPath ? ItemName.class : QName.class);

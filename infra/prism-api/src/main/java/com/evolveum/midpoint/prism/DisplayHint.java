@@ -57,4 +57,8 @@ public enum DisplayHint {
                 findFirst()
                 .orElse(null);
     }
+
+    public String getValue() {
+        return value;
+    }
 }

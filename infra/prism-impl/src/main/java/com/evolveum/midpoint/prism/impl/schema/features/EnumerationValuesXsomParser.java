@@ -27,6 +27,7 @@ public class EnumerationValuesXsomParser
         implements DefinitionFeatureParser<List<EnumerationTypeDefinition.ValueDefinition>, XSSimpleType> {
 
     public static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
+    public static final QName TYPESAFE_ENUM_CLASS = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumClass");
     private static final QName TYPESAFE_ENUM_MEMBER_LEGACY = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
 
     @Override
