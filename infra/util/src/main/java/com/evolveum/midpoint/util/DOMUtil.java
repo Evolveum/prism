@@ -1441,8 +1441,8 @@ public class DOMUtil {
      */
     public static String serializeElementContent(Element element) {
         String completeXml = serializeDOMToString(element);
-        String restXml = completeXml.replaceFirst("^\\s*<[^>]+>", "");
-        return restXml.replaceFirst("</[^>]+>\\s*$", "");
+        String restXml = completeXml.replaceFirst("^\\s*<[^>]>", "");
+        return restXml.replaceFirst("</[^>]>\\s*$", "");
     }
 
     public static boolean isEmpty(Element element) {
@@ -1637,5 +1637,13 @@ public class DOMUtil {
                 }
             }
         }
+    }
+
+    /**
+     * Parse documentation that contains xml tag 'documentation' to text of context only
+     */
+    public static String getContentOfDocumentation(@NotNull String documentation){
+        Document docDom = parseDocument(documentation);
+        return docDom.getDocumentElement().getTextContent();
     }
 }

@@ -75,6 +75,9 @@ public interface PrismPresentationDefinition {
      */
     String getHelp();
 
+    /**
+     * Must contains <documentation> tag because of html tags used in text.
+     */
     String getDocumentation();
 
     @Experimental

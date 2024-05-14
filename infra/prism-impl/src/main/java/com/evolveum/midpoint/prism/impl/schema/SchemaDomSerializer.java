@@ -409,7 +409,7 @@ public class SchemaDomSerializer {
         AppInfoSerializationTarget aia = createAppInfoAnnotationsTarget(enumeration);
 
         if (valueDefinition.getDocumentation().isPresent()) {
-            aia.documentation.setTextContent(valueDefinition.getDocumentation().get());
+            aia.documentation.setTextContent(DOMUtil.getContentOfDocumentation(valueDefinition.getDocumentation().get()));
         }
 
         if (valueDefinition.getConstantName().isPresent()) {
@@ -444,7 +444,9 @@ public class SchemaDomSerializer {
     }
 
     private void addDocumentation(SerializableDefinition definition, AppInfoSerializationTarget ais) {
-        ais.documentation.setTextContent(definition.getDocumentation());
+        if (definition.getDocumentation() != null) {
+            ais.documentation.setTextContent(DOMUtil.getContentOfDocumentation(definition.getDocumentation()));
+        }
     }
 
     private void addDisplayHint(SerializableDefinition definition, Element parent) {

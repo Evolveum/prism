@@ -58,9 +58,7 @@ public abstract class ContractGenerator<T extends Contract> {
 
     protected void applyDocumentation(JDocComment javadoc, Optional<String> documentation) {
         if (documentation.isPresent()) {
-            Document docDom = DOMUtil.parseDocument(documentation.get());
-            String docText = docDom.getDocumentElement().getTextContent();
-            javadoc.add(docText);
+            javadoc.add(DOMUtil.getContentOfDocumentation(documentation.get()));
 
         }
 
@@ -83,7 +81,7 @@ public abstract class ContractGenerator<T extends Contract> {
     }
 
     protected void createQNameConstant(JDefinedClass targetClass, String targetField, QName qname, JExpression namespaceArgument, boolean namespaceFieldIsLocal, boolean createPath) {
-        if (qname.getNamespaceURI() != null) {
+        if (namespaceArgument == null) {
             namespaceArgument = JExpr.lit(qname.getNamespaceURI());
         }
         createNameConstruction(targetClass, targetField, qname, namespaceArgument, createPath ? ItemName.class : QName.class);
