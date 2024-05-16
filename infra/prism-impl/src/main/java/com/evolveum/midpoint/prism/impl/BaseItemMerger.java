@@ -127,6 +127,6 @@ public abstract class BaseItemMerger<T extends Item<?, ?>> implements ItemMerger
 
     @Override
     public NaturalKeyDefinition getNaturalKey() {
-        throw new UnsupportedOperationException("not implemented yet");
+        return null;
     }
 }
