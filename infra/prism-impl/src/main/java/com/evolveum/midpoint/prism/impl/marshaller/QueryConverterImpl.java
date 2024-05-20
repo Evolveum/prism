@@ -1306,13 +1306,30 @@ public class QueryConverterImpl implements QueryConverter {
 
     @Override
     public SearchFilterType createSearchFilterType(ObjectFilter filter) throws SchemaException {
+        return createSearchFilterType(filter, false);
+    }
+
+    @Override
+    public SearchFilterType createSearchFilterType(ObjectFilter filter, boolean forceAxiom) throws SchemaException {
         if (filter == null) {
             return null;
+        }
+        if (forceAxiom && axiomSupportedFilter(filter)) {
+            var serializedForm =  PrismContext.get().querySerializer().trySerialize(filter);
+            if (serializedForm.isPresent()) {
+                return serializedForm.get().toSearchFilterType();
+            }
         }
         SearchFilterType filterType = new SearchFilterType();
         MapXNodeImpl filterXNode = serializeFilter(filter);
         filterType.setFilterClauseXNode(filterXNode);
         return filterType;
-    }
+        }
 
+    private boolean axiomSupportedFilter(ObjectFilter filter) {
+        if (filter instanceof AllFilter || filter instanceof NoneFilter || filter instanceof UndefinedFilter) {
+            return false;
+        }
+        return true;
+    }
 }
