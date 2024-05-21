@@ -160,6 +160,11 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+        if (hasValueMetadata()) {
+            getValueMetadata().accept(visitor);
+        } else {
+            // we don't want to create empty metadata just for the sake of visiting it
+        }
     }
 
     @Override
@@ -354,8 +359,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     }
 
     @Override
-    @NotNull
-    public ValueMetadata getValueMetadata() {
+    @NotNull public ValueMetadata getValueMetadata() {
         if (valueMetadata == null) {
             assert isMutable();
             valueMetadata = createEmptyMetadata();
@@ -363,11 +367,18 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         return valueMetadata;
     }
 
+    @Override
+    public @Nullable ValueMetadata getValueMetadataIfExists() {
+        return valueMetadata;
+    }
+
     private ValueMetadata createEmptyMetadata() {
-        if (PrismContext.get().getValueMetadataFactory() != null) {
-            return PrismContext.get().getValueMetadataFactory().createEmpty();
+        var valueMetadataFactory = PrismContext.get().getValueMetadataFactory();
+        if (valueMetadataFactory != null) {
+            return valueMetadataFactory.createEmpty();
         } else {
-            return ValueMetadataAdapter.holding(new PrismContainerImpl<>(PrismConstants.VALUE_METADATA_CONTAINER_NAME));
+            return ValueMetadataAdapter.holding(
+                    new PrismContainerImpl<>(PrismConstants.VALUE_METADATA_CONTAINER_NAME));
         }
     }
 

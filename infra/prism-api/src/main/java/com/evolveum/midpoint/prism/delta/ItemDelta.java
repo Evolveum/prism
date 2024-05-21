@@ -7,12 +7,14 @@
 package com.evolveum.midpoint.prism.delta;
 
 import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.getRealValuesOfCollectionPreservingNull;
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
@@ -126,7 +128,7 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         if (valuesToReplace != null) {
             return valuesToReplace; // This is a REPLACE delta
         } else {
-            return MiscUtil.emptyIfNull(getValuesToAdd()); // This is an ADD/DELETE delta
+            return emptyIfNull(getValuesToAdd()); // This is an ADD/DELETE delta
         }
     }
 
@@ -211,6 +213,11 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     boolean isLiterallyEmpty();
 
     boolean addsAnyValue();
+
+    default boolean addsAnyValueMatching(Predicate<V> predicate) {
+        return emptyIfNull(getValuesToAdd()).stream().anyMatch(predicate)
+                || emptyIfNull(getValuesToReplace()).stream().anyMatch(predicate);
+    }
 
     void foreach(Processor<V> processor);
 
@@ -406,4 +413,9 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     void setOriginTypeRecursive(OriginType originType);
 
     boolean isImmutable();
+
+    /** Beware: approximate implementation, see the called method for details. */
+    default boolean isMetadataRelated() {
+        return getPath().isMetadataRelated();
+    }
 }

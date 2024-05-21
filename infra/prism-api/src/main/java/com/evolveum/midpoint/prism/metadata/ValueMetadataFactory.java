@@ -20,8 +20,7 @@ import org.jetbrains.annotations.NotNull;
 @Experimental
 public interface ValueMetadataFactory {
 
-    @NotNull
-    ValueMetadata createEmpty();
+    @NotNull ValueMetadata createEmpty();
 
     default PrismContainerDefinition<?> getDefinition() {
         return createEmpty().getDefinition();

@@ -1596,6 +1596,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 }
             }
         }
+        var valueMetadata = getValueMetadata();
+        if (!valueMetadata.isEmpty()) {
+            sb.append("\n");
+            DebugUtil.debugDumpWithLabel(sb, "value metadata", valueMetadata, indent + 1);
+        }
         return sb.toString();
     }
 

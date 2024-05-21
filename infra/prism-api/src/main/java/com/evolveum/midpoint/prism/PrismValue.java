@@ -45,20 +45,15 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     void setParent(Itemable parent);
 
     /**
-     * To be reconsidered.
+     * Returns the value metadata, creating empty one if there's none.
+     *
+     * When performance is critical, consider using {@link #getValueMetadataIfExists()} instead;
+     * or call {@link #hasValueMetadata()} first.
      */
-    @Deprecated
-    default Optional<ValueMetadata> valueMetadata() {
-        return Optional.of(getValueMetadata());
-    }
+    @NotNull ValueMetadata getValueMetadata();
 
-    /**
-     * Maybe it is better to expect empty value metadata if these are absent.
-     * Client code would be simpler. HIGHLY EXPERIMENTAL.
-     */
-    @Experimental
-    @NotNull
-    ValueMetadata getValueMetadata();
+    /** Returns the value metadata, if there is any. */
+    @Nullable ValueMetadata getValueMetadataIfExists();
 
     /**
      * Returns value metadata as typed PrismContainer.

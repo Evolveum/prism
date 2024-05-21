@@ -73,6 +73,7 @@ import java.util.Objects;
  *
  *     LITERAL                                          L E O I i F r M -
  *     DATA                                             - E O I i F r M -
+ *     DATA_ALLOW_MISSING_IDS                           - E O - i F r M -
  *     IGNORE_METADATA                                  - E - - - F r - -
  *     REAL_VALUE_CONSIDER_DIFFERENT_IDS                - - - - i - - - -
  *     REAL_VALUE                                       - - - - - - - - -
@@ -117,6 +118,19 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         data.consideringReferenceOptions = true;
         data.consideringValueMetadata = true;
         return data;
+    }
+
+    static ParameterizedEquivalenceStrategy dataAllowingMissingIds() {
+        var s = new ParameterizedEquivalenceStrategy();
+        s.literalDomComparison = false;
+        s.consideringElementNames = true;
+        s.consideringOperationalData = true;
+        s.consideringContainerIds = false; // this is the difference to data()
+        s.consideringDifferentContainerIds = true;
+        s.consideringReferenceFilters = true;
+        s.consideringReferenceOptions = true;
+        s.consideringValueMetadata = true;
+        return s;
     }
 
     static ParameterizedEquivalenceStrategy ignoreMetadata() {

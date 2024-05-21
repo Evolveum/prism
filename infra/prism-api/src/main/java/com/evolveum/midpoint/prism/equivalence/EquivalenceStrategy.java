@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.equivalence;
 
 import com.evolveum.midpoint.prism.Item;
 import com.evolveum.midpoint.prism.PrismValue;
+import com.evolveum.midpoint.util.EqualsChecker;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import java.util.Comparator;
@@ -45,6 +46,12 @@ public interface EquivalenceStrategy {
      * Currently this is the default for equals/hashCode.
      */
     ParameterizedEquivalenceStrategy DATA = ParameterizedEquivalenceStrategy.data();
+
+    /**
+     * As {@link #DATA} but allows missing IDs in the data, i.e. missing vs present PCV ID is not considered
+     * as a difference.
+     */
+    ParameterizedEquivalenceStrategy DATA_ALLOWING_MISSING_IDS = ParameterizedEquivalenceStrategy.dataAllowingMissingIds();
 
     /**
      * Captures the "real value" of the data: it is something that we consider equivalent so that
@@ -108,5 +115,9 @@ public interface EquivalenceStrategy {
                 return 1;
             }
         };
+    }
+
+    default <V extends PrismValue> EqualsChecker<V> prismValueEqualsChecker() {
+        return (o1, o2) -> o1.equals(o2, this);
     }
 }
