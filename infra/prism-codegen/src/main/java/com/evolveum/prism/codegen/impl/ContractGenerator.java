@@ -84,15 +84,28 @@ public abstract class ContractGenerator<T extends Contract> {
         if (namespaceArgument == null) {
             namespaceArgument = JExpr.lit(qname.getNamespaceURI());
         }
-        createNameConstruction(targetClass, targetField, qname, namespaceArgument, createPath ? ItemName.class : QName.class);
+        if (createPath) {
+            createNameConstruction(targetClass, targetField, qname, namespaceArgument);
+        } else {
+            createQNameConstruction(targetClass, targetField, qname, namespaceArgument);
+        }
     }
 
-    private void createNameConstruction(JDefinedClass definedClass, String fieldName,
-            QName reference, JExpression namespaceArgument, Class<?> nameClass) {
-        JClass clazz = (JClass) codeModel()._ref(nameClass);
+    private void createQNameConstruction(JDefinedClass definedClass, String fieldName,
+            QName reference, JExpression namespaceArgument) {
+        JClass clazz = (JClass) codeModel()._ref(QName.class);
         JInvocation invocation = JExpr._new(clazz);
         invocation.arg(namespaceArgument);
         invocation.arg(reference.getLocalPart());
-        definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, nameClass, fieldName, invocation);
+        definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, QName.class, fieldName, invocation);
+    }
+
+    private void createNameConstruction(JDefinedClass definedClass, String fieldName,
+            QName reference, JExpression namespaceArgument) {
+        JClass clazz = (JClass) codeModel()._ref(ItemName.class);
+        JInvocation invocation = clazz.staticInvoke("from");
+        invocation.arg(namespaceArgument);
+        invocation.arg(reference.getLocalPart());
+        definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, ItemName.class, fieldName, invocation);
     }
 }

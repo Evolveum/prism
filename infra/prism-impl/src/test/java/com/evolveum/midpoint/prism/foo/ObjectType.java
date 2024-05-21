@@ -64,10 +64,10 @@ public abstract class ObjectType
     public static final String NS_FOO = "http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd";
 
     // This is NOT GENERATED. It is supplied here manually for the testing.
-    public static final ItemName F_NAME = new ItemName(NS_FOO, "name");
-    public static final ItemName F_DESCRIPTION = new ItemName(NS_FOO, "description");
-    public static final ItemName F_EXTENSION = new ItemName(NS_FOO, "extension");
-    public static final ItemName F_PARENT_ORG_REF = new ItemName(NS_FOO, "parentOrgRef");
+    public static final ItemName F_NAME = ItemName.from(NS_FOO, "name");
+    public static final ItemName F_DESCRIPTION = ItemName.from(NS_FOO, "description");
+    public static final ItemName F_EXTENSION = ItemName.from(NS_FOO, "extension");
+    public static final ItemName F_PARENT_ORG_REF = ItemName.from(NS_FOO, "parentOrgRef");
 
     private static final long serialVersionUID = 201202081233L;
     protected PolyStringType name;

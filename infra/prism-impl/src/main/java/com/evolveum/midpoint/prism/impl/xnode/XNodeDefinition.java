@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.path.ItemName;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,12 +76,13 @@ public abstract class XNodeDefinition {
                 }
             }
             Optional<String> ns = namespaceContext.namespaceFor(prefixed.prefix());
+
             if (ns.isPresent()) {
-                return toContext(new QName(ns.get(), prefixed.localName()));
+                return toContext(ItemName.from(ns.get(), prefixed.localName()));
             } else if (!prefixed.prefix().isEmpty()) {
                 warnOrThrow("Undeclared prefix '%s' , name: %s", prefixed.prefix(), name);
             } else {
-                return toContext(new QName(prefixed.localName()));
+                return toContext(new ItemName(prefixed.localName()));
             }
         }
         QNameInfo result = QNameUtil.uriToQNameInfo(name, true);
@@ -91,7 +94,7 @@ public abstract class XNodeDefinition {
                 result = QNameUtil.qnameToQnameInfo(new QName(defaultNs.get(), result.name.getLocalPart()));
             }
         }
-        return toContext(result.name);
+        return toContext(ItemName.fromQName(result.name));
     }
 
     private @NotNull XNodeDefinition infra(@NotNull String name) {
@@ -119,7 +122,7 @@ public abstract class XNodeDefinition {
     }
 
     public XNodeDefinition child(QName name) {
-        XNodeDefinition maybe = resolveLocally(name);
+        XNodeDefinition maybe = resolveLocally(ItemName.from(name.getNamespaceURI(), name.getLocalPart()));
         if(maybe != null) {
             return maybe;
         }
@@ -142,11 +145,11 @@ public abstract class XNodeDefinition {
         return null;
     }
 
-    protected @Nullable XNodeDefinition resolveLocally(@NotNull QName name) {
+    protected @Nullable XNodeDefinition resolveLocally(@NotNull ItemName name) {
         return null;
     }
 
-    private @NotNull XNodeDefinition toContext(QName name) {
+    private @NotNull XNodeDefinition toContext(ItemName name) {
         XNodeDefinition ret = resolveLocally(name);
         if(ret != null) {
             return ret;
@@ -279,7 +282,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             ItemDefinition<?> def = registry.findObjectDefinitionByElementName(name);
             if(def == null) {
                 try {
@@ -324,7 +327,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             return awareFrom(name, findDefinition(name), true);
         }
 
@@ -341,7 +344,7 @@ public abstract class XNodeDefinition {
          * @param name
          * @return
          */
-        protected ItemDefinition<?> findDefinition(QName name) {
+        protected ItemDefinition<?> findDefinition(ItemName name) {
             ItemDefinition ret = definition.findLocalItemDefinition(name);
             if (ret != null) {
                 return ret;
@@ -363,23 +366,24 @@ public abstract class XNodeDefinition {
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
-            QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
+            var proposed = ItemName.from(definition.getTypeName().getNamespaceURI(),localName);
             ItemDefinition<?> childDef = findDefinition(proposed);
 
             // If child definition is dynamic and default namespace is specified and parent definition generates
             // it with constant type - use default namespace (do not assume definition exists in parent).
             // for example shadow/associations
+            var defaultNsName = ItemName.from(defaultNs, localName);
             if (childDef != null && childDef.isDynamic() && definition.getDefaultItemTypeName() != null && defaultNs != null) {
-                var maybeDef = findDefinition(new QName(defaultNs, localName));
+                var maybeDef = findDefinition(defaultNsName);
                 if (maybeDef != null) {
                     childDef = maybeDef;
                 }
             }
             if (childDef == null) {
-                childDef = findDefinition(new QName(defaultNs,localName));
+                childDef = findDefinition(defaultNsName);
             }
             if (childDef == null) {
-                childDef = findDefinition(new QName(localName));
+                childDef = findDefinition(new ItemName(localName));
             }
             if (childDef != null) {
                 return awareFrom(proposed, childDef, true);
@@ -410,7 +414,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected ItemDefinition<?> findDefinition(QName name) {
+        protected ItemDefinition<?> findDefinition(ItemName name) {
             // TODO: Add schemaMigrations lookup
             return definition.itemOrSubstitution(name).orElse(null);
         }
@@ -424,13 +428,13 @@ public abstract class XNodeDefinition {
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
-            QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
+            var proposed = ItemName.from(definition.getTypeName().getNamespaceURI(),localName);
             ItemDefinition<?> def = findDefinition(proposed);
             if(def == null && !Strings.isNullOrEmpty(defaultNs)) {
-                def = findDefinition(new QName(defaultNs, localName));
+                def = findDefinition(ItemName.from(definition.getTypeName().getNamespaceURI(),localName));
             }
             if(def == null) {
-                def = findDefinition(new QName(localName));
+                def = findDefinition(new ItemName(localName));
             }
             if(def != null) {
                 return awareFrom(proposed, def, true);
@@ -439,7 +443,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected ItemDefinition<?> findDefinition(QName name) {
+        protected ItemDefinition<?> findDefinition(ItemName name) {
             var maybe = super.findDefinition(name);
             if (maybe == null) {
                 maybe = root.registry.findItemDefinitionByElementName(name);
@@ -500,7 +504,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected @Nullable XNodeDefinition resolveLocally(@NotNull QName name) {
+        protected @Nullable XNodeDefinition resolveLocally(@NotNull ItemName name) {
             return delegate.resolveLocally(name);
         }
 
@@ -561,7 +565,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             // TODO: Since CTD now contains attributes section this could be reworked
             // into ComplexTypeAware as search in attributes section
             if (PrismConstants.ATTRIBUTE_OID_LOCAL_NAME.equals(name.getLocalPart())) {
