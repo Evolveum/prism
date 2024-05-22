@@ -134,6 +134,17 @@
                     <xsd:element name="locality" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                     <!-- Multi-valued container -->
                     <xsd:element name="assignment" type="tns:AssignmentType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="uselessAssignment" type="tns:AssignmentType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                This is just useless version of assignment that contains/tests customized natural key (note),
+                                which overrides the one defined on AssignmentType.
+                            </xsd:documentation>
+                            <xsd:appinfo>
+                                <a:naturalKey>tns:note</a:naturalKey>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
                     <!-- Single-valued container -->
                     <xsd:element name="activation" type="tns:ActivationType" minOccurs="0">
                         <xsd:annotation>
@@ -253,9 +264,11 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
+                <a:naturalKey>tns:identifier</a:naturalKey>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
+            <xsd:element name="identifier" type="xsd:string" minOccurs="0"/>
             <xsd:element name="description" type="xsd:string" minOccurs="0"/>
             <xsd:element name="note" type="xsd:string" minOccurs="0"/>
             <xsd:element name="accountConstruction" type="tns:AccountConstructionType" minOccurs="0"/>

@@ -20,6 +20,8 @@ import java.util.function.Function;
 import javax.xml.namespace.QName;
 import javax.xml.validation.Validator;
 
+import com.evolveum.axiom.concepts.CheckedFunction;
+
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.resolver.Catalog;
@@ -1266,5 +1268,10 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
         }
 
         return subTypesAll;
+    }
+
+    @Override
+    public <R, E extends Exception> R getDerivedObject(DerivationKey<R> derivationKey, CheckedFunction<SchemaRegistryState, R, E> mapping) throws E {
+        return schemaRegistryState.getDerivedObject(derivationKey, mapping);
     }
 }

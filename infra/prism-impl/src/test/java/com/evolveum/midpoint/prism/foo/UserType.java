@@ -86,6 +86,7 @@ public class UserType
     public static final ItemName F_POLY_NAME = ItemName.from(NS_FOO, "polyName");
     public static final ItemName F_ACTIVATION = ItemName.from(NS_FOO, "activation");
     public static final ItemName F_ASSIGNMENT = ItemName.from(NS_FOO, "assignment");
+    public static final ItemName F_USELESS_ASSIGNMENT = ItemName.from(NS_FOO, "uselessAssignment");
     public static final ItemName F_LOCALITY = ItemName.from(NS_FOO, "locality");
     public static final ItemName F_ACCOUNT_REF = ItemName.from(NS_FOO, "accountRef");
     public static final ItemName F_SPECIAL = ItemName.from(NS_FOO, "special");
@@ -108,6 +109,7 @@ public class UserType
     protected List<String> additionalNames;
     protected String locality;
     protected List<AssignmentType> assignment;
+    protected List<AssignmentType> uselessAssignment;
     protected ActivationType activation;
     protected ActivationType singleActivation;
     protected List<ActivationType> multiActivation;

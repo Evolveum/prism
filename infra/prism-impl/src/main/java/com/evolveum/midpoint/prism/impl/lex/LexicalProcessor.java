@@ -6,6 +6,7 @@
  */
  package com.evolveum.midpoint.prism.impl.lex;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.ParserSource;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.SerializationContext;
@@ -30,8 +31,14 @@ import java.util.List;
  */
 public interface LexicalProcessor<T> {
 
-    @NotNull
-    RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException;
+    @Deprecated
+    default RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException {
+        return read(source, parsingContext, null);
+    }
+
+
+    RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) throws SchemaException, IOException;
+
 
     @NotNull
     List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException;

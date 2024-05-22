@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.json;
 
-import com.evolveum.midpoint.prism.ParserSource;
-import com.evolveum.midpoint.prism.ParserXNodeSource;
-import com.evolveum.midpoint.prism.ParsingContext;
-import com.evolveum.midpoint.prism.SerializationContext;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
@@ -31,7 +28,7 @@ public class NullLexicalProcessor implements LexicalProcessor<XNodeImpl> {
 
     @NotNull
     @Override
-    public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) {
+    public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) {
         if (!(source instanceof ParserXNodeSource)) {
             throw new IllegalStateException("Unsupported parser source: " + source.getClass().getName());
         }
