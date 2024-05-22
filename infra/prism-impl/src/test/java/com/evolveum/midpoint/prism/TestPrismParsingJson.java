@@ -57,7 +57,7 @@ public class TestPrismParsingJson extends TestPrismParsing {
         JsonReader parser = new JsonReader(getPrismContext().getSchemaRegistry());
 
         @NotNull
-        RootXNodeImpl rootXNode = parser.read(new ParserFileSource(jackContext), getPrismContext().getDefaultParsingContext());
+        RootXNodeImpl rootXNode = parser.read(new ParserFileSource(jackContext), getPrismContext().getDefaultParsingContext(), null);
         assertContextJack(rootXNode);
     }
 
@@ -68,7 +68,7 @@ public class TestPrismParsingJson extends TestPrismParsing {
         JsonReader parser = new JsonReader(getPrismContext().getSchemaRegistry());
 
         @NotNull
-        RootXNodeImpl rootXNode = parser.read(new ParserFileSource(jackContext), getPrismContext().getDefaultParsingContext());
+        RootXNodeImpl rootXNode = parser.read(new ParserFileSource(jackContext), getPrismContext().getDefaultParsingContext(), null);
         assertContextJack(rootXNode);
     }
 

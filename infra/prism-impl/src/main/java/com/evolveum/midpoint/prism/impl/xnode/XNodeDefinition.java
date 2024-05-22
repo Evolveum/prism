@@ -277,7 +277,7 @@ public abstract class XNodeDefinition {
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
             var baseNs = registry.staticNamespaceContext().defaultNamespace();
-            if (baseNs.isPresent()) {
+            if (Strings.isNullOrEmpty(defaultNs) && baseNs.isPresent()) {
                 var maybe = registry.findItemDefinitionByElementName(ItemName.from(baseNs.get(), localName));
                 if (maybe != null) {
                     return awareFrom(maybe.getItemName(), maybe, true);
