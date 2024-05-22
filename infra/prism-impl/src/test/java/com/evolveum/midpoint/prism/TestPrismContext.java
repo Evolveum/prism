@@ -14,6 +14,7 @@ import java.io.IOException;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
@@ -208,5 +209,22 @@ public class TestPrismContext extends AbstractPrismTest {
 
         // THEN
         assertNotNull("No foo XSD DOM", fooXsd);
+    }
+
+    @Test
+    public void testNaturalKeyAnnotation() throws SchemaException, SAXException, IOException {
+        PrismContext prismContext = constructInitializedPrismContext();
+        PrismObjectDefinition objectDefinition = prismContext.getSchemaRegistry()
+                .findObjectDefinitionByCompileTimeClass(UserType.class);
+
+        PrismContainerDefinition assignmentDefinition = objectDefinition.findContainerDefinition(UserType.F_ASSIGNMENT);
+        Assertions.assertThat(assignmentDefinition.getNaturalKeyConstituents())
+                .hasSize(1)
+                .containsExactly(AssignmentType.F_IDENTIFIER);
+
+        PrismContainerDefinition uselessAssignmentDefinition = objectDefinition.findContainerDefinition(UserType.F_USELESS_ASSIGNMENT);
+        Assertions.assertThat(uselessAssignmentDefinition.getNaturalKeyConstituents())
+                .hasSize(1)
+                .containsExactly(AssignmentType.F_NOTE);
     }
 }
