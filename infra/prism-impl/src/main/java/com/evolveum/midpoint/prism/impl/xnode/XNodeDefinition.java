@@ -47,22 +47,17 @@ public abstract class XNodeDefinition {
     protected abstract XNodeDefinition unawareFrom(QName name);
 
     public static QName resolveQName(String name, PrismNamespaceContext context) throws SchemaException {
+        // taken from empty.resolve(context.withoutDefault) so it can be simplified to this.
         if (!QNameUtil.isUriQName(name)) {
             PrefixedName prefixed = QNameUtil.parsePrefixedName(name);
-            Optional<String> ns = context.namespaceFor(prefixed.prefix());
-            if (ns.isPresent()) {
-                return new QName(ns.get(), prefixed.localName(),prefixed.prefix());
+            if (!prefixed.prefix().isEmpty()) {
+                Optional<String> ns = context.namespaceFor(prefixed.prefix());
+                if (ns.isPresent()) {
+                    return new QName(ns.get(), prefixed.localName(), prefixed.prefix());
+                }
             }
         }
         QNameInfo result = QNameUtil.uriToQNameInfo(name, true);
-        // FIXME: Explicit empty namespace is workaround for cases, where we somehow lost namespace
-        // eg. parsing json with filters without namespaces
-        if (Strings.isNullOrEmpty(result.name.getNamespaceURI()) && !result.explicitEmptyNamespace) {
-            Optional<String> defaultNs = context.defaultNamespace();
-            if(defaultNs.isPresent()) {
-                result = QNameUtil.qnameToQnameInfo(new QName(defaultNs.get(), result.name.getLocalPart()));
-            }
-        }
         return result.name;
     }
 
