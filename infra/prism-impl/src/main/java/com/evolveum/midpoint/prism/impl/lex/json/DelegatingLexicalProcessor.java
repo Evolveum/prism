@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.lex.json;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.ParserSource;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.SerializationContext;
@@ -39,21 +40,21 @@ public class DelegatingLexicalProcessor implements LexicalProcessor<String> {
     }
 
     @Override
-    public @NotNull RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext)
+    public @NotNull RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition)
             throws SchemaException, IOException {
-        return reader.read(source, parsingContext);
+        return reader.read(source, parsingContext, definition);
     }
 
     @Override
     public @NotNull List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext)
             throws SchemaException, IOException {
-        return reader.readObjects(source, parsingContext);
+        return reader.readObjects(source, parsingContext, null);
     }
 
     @Override
     public void readObjectsIteratively(@NotNull ParserSource source, @NotNull ParsingContext parsingContext,
             RootXNodeHandler handler) throws SchemaException, IOException {
-        reader.readObjectsIteratively(source, parsingContext, handler);
+        reader.readObjectsIteratively(source, parsingContext, null,  handler);
     }
 
     @Override

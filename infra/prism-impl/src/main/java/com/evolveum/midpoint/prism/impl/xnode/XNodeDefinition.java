@@ -5,18 +5,12 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismNamespaceContext;
-import com.evolveum.midpoint.prism.PrismReferenceDefinition;
-import com.evolveum.midpoint.prism.SchemaMigration;
-import com.evolveum.midpoint.prism.SchemaMigrationOperation;
 import com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -40,6 +34,10 @@ public abstract class XNodeDefinition {
 
     public static Root root(@NotNull SchemaRegistry schemaRegistry) {
         return new SchemaRoot(schemaRegistry);
+    }
+
+    public static Root rootWithDefinition(@NotNull SchemaRegistry schemaRegistry, ItemDefinition<?> topLevelItem) {
+        return new SchemaRootExpectingItem(schemaRegistry, topLevelItem);
     }
 
     public static Root empty() {
@@ -278,6 +276,13 @@ public abstract class XNodeDefinition {
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
+            var baseNs = registry.staticNamespaceContext().defaultNamespace();
+            if (baseNs.isPresent()) {
+                var maybe = registry.findItemDefinitionByElementName(ItemName.from(baseNs.get(), localName));
+                if (maybe != null) {
+                    return awareFrom(maybe.getItemName(), maybe, true);
+                }
+            }
             return null;
         }
 
@@ -310,6 +315,32 @@ public abstract class XNodeDefinition {
             return awareFrom(JsonInfraItems.PROP_METADATA_QNAME, def.getTypeName(), def.structuredType(), true);
         }
 
+    }
+
+    private static class SchemaRootExpectingItem extends SchemaRoot {
+
+        private final ItemDefinition<?> expectedItem;
+
+        public SchemaRootExpectingItem(SchemaRegistry reg, ItemDefinition<?> expectedItem) {
+            super(reg);
+            this.expectedItem = expectedItem;
+        }
+
+        @Override
+        protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
+            if (expectedItem.getItemName().getLocalPart().equals(localName)) {
+                return awareFrom(expectedItem.getItemName(), expectedItem, true);
+            }
+            return super.resolveLocally(localName, defaultNs);
+        }
+
+        @Override
+        protected XNodeDefinition resolveLocally(ItemName name) {
+            if (expectedItem.getItemName().equals(name)) {
+                return awareFrom(expectedItem.getItemName(), expectedItem, true);
+            }
+            return super.resolveLocally(name);
+        }
     }
 
     private static class ComplexTypeAware extends SchemaAware {
