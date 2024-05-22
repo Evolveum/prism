@@ -91,6 +91,10 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     @Experimental
     void setValueMetadata(Containerable realValue) throws SchemaException;
 
+    default void deleteValueMetadata() {
+        setValueMetadata((ValueMetadata) null);
+    }
+
     @NotNull
     ItemPath getPath();
 
