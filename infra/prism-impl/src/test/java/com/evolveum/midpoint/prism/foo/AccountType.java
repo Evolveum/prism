@@ -50,7 +50,7 @@ public class AccountType
 
     private static final long serialVersionUID = 201202081233L;
 
-    public static final ItemName F_ATTRIBUTES = new ItemName(NS_FOO, "attributes");
+    public static final ItemName F_ATTRIBUTES = ItemName.from(NS_FOO, "attributes");
 
     protected AttributesType attributes;
 

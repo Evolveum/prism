@@ -8,8 +8,12 @@ package com.evolveum.midpoint.prism.path;
 
 import java.util.Collections;
 import java.util.List;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.DebugUtil;
@@ -17,6 +21,13 @@ import com.evolveum.midpoint.util.QNameUtil;
 
 public class ItemName extends QName implements ItemPath {
 
+    /**
+     * Interner for Unprefixed Item Names (item names used in schema definitions, generated classes)
+     *
+     */
+    private static final Interner<WithoutPrefix> WITHOUT_PREFIX = Interners.newStrongInterner();
+
+    @Deprecated
     public ItemName(String namespaceURI, String localPart) {
         super(namespaceURI, localPart);
     }
@@ -36,11 +47,29 @@ public class ItemName extends QName implements ItemPath {
     public static ItemName fromQName(QName name) {
         if (name == null) {
             return null;
-        } else if (name instanceof ItemName) {
+        }
+        if (name instanceof ItemName) {
             return (ItemName) name;
+        }
+        if (Strings.isNullOrEmpty(name.getPrefix())) {
+            // FIXME: Should we use interned? would not this slow-down this construction?
+            return new WithoutPrefix(name.getNamespaceURI(), name.getLocalPart());
         } else {
             return new ItemName(name);
         }
+    }
+
+    /**
+     * Creates ItemName without prefix specified. Instance of Item Name is internalized
+     * (deduplicated, ensured that only one such instance using this method exists in JVM)
+     *
+     * @param namespace
+     * @param localPart
+     * @return ItemName without prefix. Instance should be deduplicated inside JVM.
+     */
+    public static WithoutPrefix from(String namespace, String localPart) {
+        var name = new WithoutPrefix(namespace, localPart);
+        return WITHOUT_PREFIX.intern(name);
     }
 
     @Override
@@ -169,4 +198,16 @@ public class ItemName extends QName implements ItemPath {
     public boolean matches(QName other) {
         return QNameUtil.match(this, other);
     }
+
+    /**
+     * ItemName without prefix specified, ideal item name for runtime data, constants, etc.
+     * which could be internalized (one deduplicated instance for each combination of namespace, localPart)
+     * per JVM - which simplifies equals.
+     */
+    public static class WithoutPrefix extends ItemName {
+        protected WithoutPrefix(String namespaceUri, String localPart) {
+            super(namespaceUri, localPart);
+        }
+    }
+
 }

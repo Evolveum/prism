@@ -20,7 +20,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 public class PrismConstants {
 
     public static final String EXTENSION_LOCAL_NAME = "extension";
-    public static final ItemName EXTENSION_ITEM_NAME = new ItemName(EXTENSION_LOCAL_NAME);
+    public static final ItemName EXTENSION_ITEM_NAME = ItemName.from(null, EXTENSION_LOCAL_NAME);
     public static final String NAME_LOCAL_NAME = "name";
 
     public static final String ATTRIBUTE_ID_LOCAL_NAME = "id";
@@ -154,14 +154,14 @@ public class PrismConstants {
     public static final QName Q_RELATION = new QName(NS_QUERY, "relation");
     public static final QName Q_VALUE = new QName(NS_QUERY, "value");
     public static final QName Q_ORDER_BY = new QName(NS_QUERY, "orderBy");
-    public static final ItemName Q_ANY = new ItemName(NS_QUERY, "any");
+    public static final ItemName Q_ANY = ItemName.from(NS_QUERY, "any");
 
     // Path constants
     public static final String T_PARENT_LOCAL_PART = "parent";
-    public static final ItemName T_PARENT = new ItemName(NS_TYPES, T_PARENT_LOCAL_PART);
-    public static final ItemName T_OBJECT_REFERENCE = new ItemName(NS_TYPES, "objectReference");
+    public static final ItemName T_PARENT = ItemName.from(NS_TYPES, T_PARENT_LOCAL_PART);
+    public static final ItemName T_OBJECT_REFERENCE = ItemName.from(NS_TYPES, "objectReference");
     public static final String T_ID_LOCAL_PART = "id";
-    public static final ItemName T_ID = new ItemName(NS_TYPES, T_ID_LOCAL_PART);
+    public static final ItemName T_ID = ItemName.from(NS_TYPES, T_ID_LOCAL_PART);
 
 
 

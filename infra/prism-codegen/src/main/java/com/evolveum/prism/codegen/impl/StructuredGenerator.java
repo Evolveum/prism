@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import com.sun.codemodel.*;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -37,16 +38,6 @@ import com.evolveum.prism.codegen.binding.ObjectFactoryContract;
 import com.evolveum.prism.codegen.binding.ReferenceContract;
 import com.evolveum.prism.codegen.binding.StructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
-import com.sun.codemodel.JAnnotationArrayMember;
-import com.sun.codemodel.JAnnotationUse;
-import com.sun.codemodel.JClass;
-import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JExpr;
-import com.sun.codemodel.JMethod;
-import com.sun.codemodel.JMod;
-import com.sun.codemodel.JPrimitiveType;
-import com.sun.codemodel.JType;
-import com.sun.codemodel.JVar;
 
 public abstract class StructuredGenerator<T extends StructuredContract> extends ContractGenerator<T> {
 
@@ -77,7 +68,11 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
         var namespaceField = codeModel().ref(clazz.getPackage().name() + "." + ObjectFactoryContract.OBJECT_FACTORY).staticRef(ObjectFactoryContract.NAMESPACE_CONST);
         createQNameConstant(clazz, BindingContext.TYPE_CONSTANT, contract.getTypeDefinition().getTypeName(),  namespaceField, false, false);
         for(ItemBinding def : definitions) {
-            createQNameConstant(clazz, "F_"  + def.constantName(), def.itemName(), namespaceField, true, true);
+            JFieldRef namespaceForDef = null;
+            if (def.itemName().getNamespaceURI().equals(contract.getTypeDefinition().getTypeName().getNamespaceURI())) {
+                namespaceForDef = namespaceField;
+            }
+            createQNameConstant(clazz, "F_" + def.constantName(), def.itemName(), namespaceForDef, true, true);
         }
     }
 

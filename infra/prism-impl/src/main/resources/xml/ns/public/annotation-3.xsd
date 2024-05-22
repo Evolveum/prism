@@ -110,6 +110,13 @@
     </xsd:element>
 
     <xsd:simpleType name="AccessAnnotationType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Item annotation: access restrictions. This annotation specifies the allowed
+                operations for an item. If no access annotation is present then all
+                operations are allowed.
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="read"/>
             <xsd:enumeration value="update"/>

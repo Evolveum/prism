@@ -39,11 +39,11 @@ public class TestExtraSchema extends AbstractPrismTest {
 
     public static final String NS_USER_2_EXT = "http://example.com/xml/ns/user-2-extension";
 
-    private static final ItemName USER_EXTENSION_TYPE_QNAME = new ItemName(NS_USER_EXT, "UserExtensionType");
-    private static final ItemName USER_2_EXTENSION_TYPE_QNAME = new ItemName(NS_USER_2_EXT, "User2ExtensionType");
-    private static final ItemName USER_3__EXTENSION_TYPE_QNAME = new ItemName(PrismInternalTestUtil.USER_EXTENSION);
+    private static final ItemName USER_EXTENSION_TYPE_QNAME = ItemName.from(NS_USER_EXT, "UserExtensionType");
+    private static final ItemName USER_2_EXTENSION_TYPE_QNAME = ItemName.from(NS_USER_2_EXT, "User2ExtensionType");
+    private static final ItemName USER_3__EXTENSION_TYPE_QNAME = ItemName.fromQName(PrismInternalTestUtil.USER_EXTENSION);
 
-    private static final ItemName USER_EXT_2_ELEMENT = new ItemName(NS_USER_2_EXT, "ext2");
+    private static final ItemName USER_EXT_2_ELEMENT = ItemName.from(NS_USER_2_EXT, "ext2");
 
     /**
      * Test if extra schema can be loaded to the schema registry and whether the file compliant to that
@@ -205,7 +205,7 @@ public class TestExtraSchema extends AbstractPrismTest {
 
         PrismContainerDefinition rootContDef = schema.findContainerDefinitionByElementName(new QName(NS_ROOT, "root"));
         assertNotNull("Not <root> definition", rootContDef);
-        PrismContainerDefinition extensionContDef = rootContDef.findContainerDefinition(new ItemName(NS_FOO, "extension"));
+        PrismContainerDefinition extensionContDef = rootContDef.findContainerDefinition(ItemName.from(NS_FOO, "extension"));
         assertNotNull("Not <extension> definition", extensionContDef);
         assertEquals("Wrong <extension> type", new QName(NS_ROOT, "MyExtensionType"), extensionContDef.getTypeName());
 

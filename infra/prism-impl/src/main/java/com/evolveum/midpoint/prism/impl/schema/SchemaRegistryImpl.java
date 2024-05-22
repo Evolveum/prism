@@ -366,13 +366,21 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     private void registerDynamicPrefix(SchemaDescriptionImpl desc, DynamicNamespacePrefixMapper namespacePrefixMapper) {
+        // Usual prefix is prefix, which was set during the schema description creation - it was explicitly specified by authors
+        // of the system
         String usualPrefix = desc.getUsualPrefix();
+        // Default prefix is suggested prefix which was loaded from schema itself. It should allows to customize extension prefixes.
+        String defaultPrefix = desc.getDefaultPrefix();
         if (usualPrefix != null) {
             namespacePrefixMapper.registerPrefix(desc.getNamespace(), usualPrefix, desc.isDefault());
             if (desc.isDeclaredByDefault()) {
                 namespacePrefixMapper.addDeclaredByDefault(usualPrefix);
             }
+        } else if (defaultPrefix != null) {
+            // Default prefixes should be not declared
+            namespacePrefixMapper.registerPrefix(desc.getNamespace(), defaultPrefix, false);
         }
+
     }
 
     private boolean isInitialized() {

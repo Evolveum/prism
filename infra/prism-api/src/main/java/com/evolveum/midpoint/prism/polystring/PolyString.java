@@ -49,11 +49,11 @@ import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 public class PolyString implements Matchable<PolyString>, Recomputable, Structured, DebugDumpable, ShortDumpable, Serializable, Comparable<Object> {
     private static final long serialVersionUID = -5070443143609226661L;
 
-    public static final ItemName F_ORIG = new ItemName(PrismConstants.NS_TYPES, "orig");
-    public static final ItemName F_NORM = new ItemName(PrismConstants.NS_TYPES, "norm");
-    public static final ItemName F_TRANSLATION = new ItemName(PrismConstants.NS_TYPES, "translation");
+    public static final ItemName F_ORIG = ItemName.from(PrismConstants.NS_TYPES, "orig");
+    public static final ItemName F_NORM = ItemName.from(PrismConstants.NS_TYPES, "norm");
+    public static final ItemName F_TRANSLATION = ItemName.from(PrismConstants.NS_TYPES, "translation");
     public static final String F_TRANSLATION_LOCAL_PART = F_TRANSLATION.getLocalPart();
-    public static final ItemName F_LANG = new ItemName(PrismConstants.NS_TYPES, "lang");
+    public static final ItemName F_LANG = ItemName.from(PrismConstants.NS_TYPES, "lang");
     public static final String F_LANG_LOCAL_PART = F_LANG.getLocalPart();
 
     private String orig;

@@ -59,9 +59,9 @@ public class ActivationType
 
     private static final long serialVersionUID = 201202081233L;
 
-    public static final ItemName F_ENABLED = new ItemName(ObjectType.NS_FOO, "enabled");
-    public static final ItemName F_VALID_FROM = new ItemName(ObjectType.NS_FOO, "validFrom");
-    public static final ItemName F_VALID_TO = new ItemName(ObjectType.NS_FOO, "validTo");
+    public static final ItemName F_ENABLED = ItemName.from(ObjectType.NS_FOO, "enabled");
+    public static final ItemName F_VALID_FROM = ItemName.from(ObjectType.NS_FOO, "validFrom");
+    public static final ItemName F_VALID_TO = ItemName.from(ObjectType.NS_FOO, "validTo");
 
     protected boolean enabled;
 

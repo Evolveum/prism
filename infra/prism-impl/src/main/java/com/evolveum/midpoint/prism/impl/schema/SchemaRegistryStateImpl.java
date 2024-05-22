@@ -904,7 +904,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     parsePrismSchemasDto.wrappedSchemas.size(), System.currentTimeMillis() - started);
 
             for (PrismSchemaImpl parsedSchema : parsePrismSchemasDto.parsedPrismSchemas) {
-                detectAugmentations(parsedSchema);
+                detectAugmentations(parsedSchema, schemaRegistryState);
             }
 
             for (String namespace : parsePrismSchemasDto.fragmentedNamespaces) {
@@ -950,7 +950,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             LOGGER.trace("Parsed schema {}, namespace: {}, isRuntime: {} in {} ms",
                     schemaDescription.getSourceDescription(), namespace, isRuntime, System.currentTimeMillis() - started);
             parsedPrismSchemas.add(schema);
-            detectAugmentations(schema);
+            detectAugmentations(schema, schemaRegistryState);
         }
 
         // global item definitions may refer to types that are not yet available
@@ -1003,16 +1003,16 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             return itemDef.getItemName().equals(maybeSubst.getSubstitutionHead());
         }
 
-        private void detectAugmentations(PrismSchema schema) {
+        private void detectAugmentations(PrismSchema schema, SchemaRegistryStateImpl schemaRegistryState) {
             detectSubstitutions(schema);
-            detectExtensionSchema(schema);
+            detectExtensionSchema(schema, schemaRegistryState);
         }
 
         private void detectSubstitutions(PrismSchema schema) {
             substitutionsBuilder.putAll(schema.getSubstitutions());
         }
 
-        private void detectExtensionSchema(PrismSchema schema) {
+        private void detectExtensionSchema(PrismSchema schema, SchemaRegistryStateImpl schemaRegistryState) {
             for (ComplexTypeDefinition def : schema.getComplexTypeDefinitions()) {
                 QName typeBeingExtended = def.getExtensionForType(); // e.g. c:UserType
                 if (typeBeingExtended != null) {
@@ -1021,7 +1021,11 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                         ComplexTypeDefinition existingExtension = extensionSchemasBuilder.get(typeBeingExtended);
                         existingExtension.merge(def);
                     } else {
-                        extensionSchemasBuilder.put(typeBeingExtended, def.clone());
+                        @NotNull ComplexTypeDefinition clone = def.clone();
+                        if (clone instanceof ComplexTypeDefinitionImpl clonedComplexDef) {
+                            clonedComplexDef.setSchemaRegistryState(schemaRegistryState);
+                        }
+                        extensionSchemasBuilder.put(typeBeingExtended, clone);
                     }
                 }
             }

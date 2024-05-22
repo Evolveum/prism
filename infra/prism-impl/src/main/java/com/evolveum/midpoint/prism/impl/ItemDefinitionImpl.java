@@ -102,7 +102,8 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
 
     ItemDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, QName definedInType) {
         super(typeName);
-        this.itemName = ItemName.fromQName(itemName);
+        // We use from(ns, localPart) instead of QName, to make sure itemName is internalized and only one instance is always used.
+        this.itemName = ItemName.from(itemName.getNamespaceURI(), itemName.getLocalPart());
         this.serializationProxy = definedInType != null ? SerializationProxy.forItemDef(definedInType, this.itemName) : null;
     }
 
