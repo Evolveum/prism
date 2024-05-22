@@ -19,6 +19,7 @@ import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import com.evolveum.axiom.concepts.CheckedFunction;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
@@ -125,6 +126,9 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
     @Experimental
     private final ConcurrentHashMap<QName, PrismObjectDefinition<?>> objectDefinitionForType = new ConcurrentHashMap<>();
 
+
+    private final ConcurrentHashMap<DerivationKey, Object> derivedObjects = new ConcurrentHashMap<>();
+
     /**
      * Marker value for "no such class": cached value that indicates that we have executed the search but found
      * no matching class.
@@ -165,6 +169,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         classForTypeExcludingXsd.clear();
         objectDefinitionForClass.clear();
         objectDefinitionForType.clear();
+        derivedObjects.clear();
     }
 
     //region Schemas and type maps (TODO)
@@ -341,6 +346,24 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         }
         return null;
     }
+    //endregion
+
+    //region Derived objects
+
+    @Override
+    public <R, E extends Exception> R getDerivedObject(DerivationKey<R> derivationKey, CheckedFunction<SchemaRegistryState, R, E> mapping) throws E {
+        var maybe = derivedObjects.get(derivationKey);
+        if (maybe != null) {
+            return (R) maybe;
+        }
+        var computed = mapping.apply(this);
+        if (computed == null) {
+            throw new IllegalArgumentException("Mapping returned null.");
+        }
+        derivedObjects.putIfAbsent(derivationKey, computed);
+        return computed;
+    }
+
     //endregion
 
     //region Unqualified names resolution
