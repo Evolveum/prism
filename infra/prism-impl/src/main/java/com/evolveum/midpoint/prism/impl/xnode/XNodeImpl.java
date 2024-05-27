@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
+import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
@@ -31,16 +32,16 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
     public static final QName KEY_OID = new QName(null, "oid");
     public static final QName KEY_VERSION = new QName(null, "version");
-    public static final QName KEY_CONTAINER_ID = new QName(null, "id");
-    public static final QName KEY_REFERENCE_OID = new QName(null, "oid");
-    public static final QName KEY_REFERENCE_TYPE = new QName(null, "type");
-    public static final QName KEY_REFERENCE_RELATION = new QName(null, "relation");
-    public static final QName KEY_REFERENCE_DESCRIPTION = new QName(null, "description");
-    public static final QName KEY_REFERENCE_FILTER = new QName(null, "filter");
-    public static final QName KEY_REFERENCE_RESOLUTION_TIME = new QName(null, "resolutionTime");
-    public static final QName KEY_REFERENCE_REFERENTIAL_INTEGRITY = new QName(null, "referentialIntegrity");
-    public static final QName KEY_REFERENCE_TARGET_NAME = new QName(null, "targetName");
-    public static final QName KEY_REFERENCE_OBJECT = new QName(null, "object");
+    public static final QName KEY_CONTAINER_ID = PrismConstants.T_ID;
+    public static final QName KEY_REFERENCE_OID = PrismConstants.T_OBJECT_REFERENCE_OID;
+    public static final QName KEY_REFERENCE_TYPE = PrismConstants.T_OBJECT_REFERENCE_TYPE;
+    public static final QName KEY_REFERENCE_RELATION = PrismConstants.T_OBJECT_REFERENCE_RELATION;
+    public static final QName KEY_REFERENCE_DESCRIPTION = PrismConstants.T_OBJECT_REFERENCE_DESCRIPTION;
+    public static final QName KEY_REFERENCE_FILTER = PrismConstants.T_OBJECT_REFERENCE_FILTER;
+    public static final QName KEY_REFERENCE_RESOLUTION_TIME = PrismConstants.T_OBJECT_REFERENCE_RESOLUTION_TIME;
+    public static final QName KEY_REFERENCE_REFERENTIAL_INTEGRITY = PrismConstants.T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY;
+    public static final QName KEY_REFERENCE_TARGET_NAME = PrismConstants.T_OBJECT_REFERENCE_TARGET_NAME;
+    public static final QName KEY_REFERENCE_OBJECT = PrismConstants.T_OBJECT_REFERENCE_OBJECT;
 
     private static final QName DUMMY_NAME = new QName(null, "dummy");
 
