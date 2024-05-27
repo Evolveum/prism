@@ -20,7 +20,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 public class PrismConstants {
 
     public static final String EXTENSION_LOCAL_NAME = "extension";
-    public static final ItemName EXTENSION_ITEM_NAME = ItemName.from(null, EXTENSION_LOCAL_NAME);
+    public static final ItemName EXTENSION_ITEM_NAME = ItemName.interned(null, EXTENSION_LOCAL_NAME);
     public static final String NAME_LOCAL_NAME = "name";
 
     public static final String ATTRIBUTE_ID_LOCAL_NAME = "id";
@@ -151,14 +151,14 @@ public class PrismConstants {
     public static final QName Q_RELATION = new QName(NS_QUERY, "relation");
     public static final QName Q_VALUE = new QName(NS_QUERY, "value");
     public static final QName Q_ORDER_BY = new QName(NS_QUERY, "orderBy");
-    public static final ItemName Q_ANY = ItemName.from(NS_QUERY, "any");
+    public static final ItemName Q_ANY = ItemName.interned(NS_QUERY, "any");
 
     // Path constants
     public static final String T_PARENT_LOCAL_PART = "parent";
-    public static final ItemName T_PARENT = ItemName.from(NS_TYPES, T_PARENT_LOCAL_PART);
-    public static final ItemName T_OBJECT_REFERENCE = ItemName.from(NS_TYPES, "objectReference");
+    public static final ItemName T_PARENT = ItemName.interned(NS_TYPES, T_PARENT_LOCAL_PART);
+    public static final ItemName T_OBJECT_REFERENCE = ItemName.interned(NS_TYPES, "objectReference");
     public static final String T_ID_LOCAL_PART = "id";
-    public static final ItemName T_ID = ItemName.from(NS_TYPES, T_ID_LOCAL_PART);
+    public static final ItemName T_ID = ItemName.interned(NS_TYPES, T_ID_LOCAL_PART);
 
 
 
@@ -169,6 +169,20 @@ public class PrismConstants {
     public static final InfraItemName I_PATH = InfraItemName.of(NS_TYPES, "path");
 
     public static final InfraItemName I_METADATA = InfraItemName.of(NS_METADATA,"metadata").intern();
+
+    public static final ItemName T_OBJECT_REFERENCE_OID = ItemName.interned(NS_TYPES, "oid");
+
+    public static final ItemName T_OBJECT_REFERENCE_TYPE = ItemName.interned(NS_TYPES, "type");
+
+    public static final ItemName T_OBJECT_REFERENCE_RELATION = ItemName.interned(NS_TYPES, "relation");
+
+    public static final QName T_OBJECT_REFERENCE_DESCRIPTION = ItemName.interned(NS_TYPES,  "description");
+    public static final QName T_OBJECT_REFERENCE_FILTER = ItemName.interned(NS_TYPES,  "filter");
+    public static final QName T_OBJECT_REFERENCE_RESOLUTION_TIME = ItemName.interned(NS_TYPES,  "resolutionTime");
+    public static final QName T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY = ItemName.interned(NS_TYPES,  "referentialIntegrity");
+    public static final QName T_OBJECT_REFERENCE_TARGET_NAME = ItemName.interned(NS_TYPES,  "targetName");
+    public static final QName T_OBJECT_REFERENCE_OBJECT = ItemName.interned(NS_TYPES,  "object");
+
 
     /**
      * Self is a bit special, because the item path for self (.) is technically an empty path.

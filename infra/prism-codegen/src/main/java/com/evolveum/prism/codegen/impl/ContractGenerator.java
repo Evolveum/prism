@@ -10,8 +10,6 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
-import org.w3c.dom.Document;
-
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.codegen.binding.BindingContext;
@@ -85,7 +83,7 @@ public abstract class ContractGenerator<T extends Contract> {
             namespaceArgument = JExpr.lit(qname.getNamespaceURI());
         }
         if (createPath) {
-            createNameConstruction(targetClass, targetField, qname, namespaceArgument);
+            createItemNameConstruction(targetClass, targetField, qname, namespaceArgument);
         } else {
             createQNameConstruction(targetClass, targetField, qname, namespaceArgument);
         }
@@ -100,10 +98,10 @@ public abstract class ContractGenerator<T extends Contract> {
         definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, QName.class, fieldName, invocation);
     }
 
-    private void createNameConstruction(JDefinedClass definedClass, String fieldName,
+    private void createItemNameConstruction(JDefinedClass definedClass, String fieldName,
             QName reference, JExpression namespaceArgument) {
         JClass clazz = (JClass) codeModel()._ref(ItemName.class);
-        JInvocation invocation = clazz.staticInvoke("from");
+        JInvocation invocation = clazz.staticInvoke("interned");
         invocation.arg(namespaceArgument);
         invocation.arg(reference.getLocalPart());
         definedClass.field(JMod.PUBLIC | JMod.STATIC | JMod.FINAL, ItemName.class, fieldName, invocation);
