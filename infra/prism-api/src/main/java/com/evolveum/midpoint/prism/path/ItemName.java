@@ -215,6 +215,18 @@ public class ItemName extends QName implements ItemPath {
         public WithoutPrefix intern() {
             return WITHOUT_PREFIX.intern(this);
         }
+
+        @Override
+        public WithoutPrefix withoutNamespace() {
+            if (getNamespaceURI() == null) {
+                return this;
+            }
+            return super.withoutNamespace();
+        }
+    }
+
+    public WithoutPrefix withoutNamespace() {
+        return new WithoutPrefix(null, getLocalPart());
     }
 
 }

@@ -170,18 +170,18 @@ public class PrismConstants {
 
     public static final InfraItemName I_METADATA = InfraItemName.of(NS_METADATA,"metadata").intern();
 
-    public static final ItemName T_OBJECT_REFERENCE_OID = ItemName.interned(NS_TYPES, "oid");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_OID = ItemName.interned(NS_TYPES, "oid");
 
-    public static final ItemName T_OBJECT_REFERENCE_TYPE = ItemName.interned(NS_TYPES, "type");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_TYPE = ItemName.interned(NS_TYPES, "type");
 
-    public static final ItemName T_OBJECT_REFERENCE_RELATION = ItemName.interned(NS_TYPES, "relation");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_RELATION = ItemName.interned(NS_TYPES, "relation");
 
-    public static final QName T_OBJECT_REFERENCE_DESCRIPTION = ItemName.interned(NS_TYPES,  "description");
-    public static final QName T_OBJECT_REFERENCE_FILTER = ItemName.interned(NS_TYPES,  "filter");
-    public static final QName T_OBJECT_REFERENCE_RESOLUTION_TIME = ItemName.interned(NS_TYPES,  "resolutionTime");
-    public static final QName T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY = ItemName.interned(NS_TYPES,  "referentialIntegrity");
-    public static final QName T_OBJECT_REFERENCE_TARGET_NAME = ItemName.interned(NS_TYPES,  "targetName");
-    public static final QName T_OBJECT_REFERENCE_OBJECT = ItemName.interned(NS_TYPES,  "object");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_DESCRIPTION = ItemName.interned(NS_TYPES,  "description");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_FILTER = ItemName.interned(NS_TYPES,  "filter");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_RESOLUTION_TIME = ItemName.interned(NS_TYPES,  "resolutionTime");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY = ItemName.interned(NS_TYPES,  "referentialIntegrity");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_TARGET_NAME = ItemName.interned(NS_TYPES,  "targetName");
+    public static final ItemName.WithoutPrefix T_OBJECT_REFERENCE_OBJECT = ItemName.interned(NS_TYPES,  "object");
 
 
     /**
