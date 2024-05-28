@@ -68,8 +68,11 @@ public class ItemName extends QName implements ItemPath {
      * @return ItemName without prefix. Instance should be deduplicated inside JVM.
      */
     public static WithoutPrefix from(String namespace, String localPart) {
-        var name = new WithoutPrefix(namespace, localPart);
-        return WITHOUT_PREFIX.intern(name);
+        return new WithoutPrefix(namespace, localPart);
+    }
+
+    public static WithoutPrefix interned(String namespace, String localPart) {
+        return ItemName.from(namespace, localPart).intern();
     }
 
     @Override
@@ -208,6 +211,22 @@ public class ItemName extends QName implements ItemPath {
         protected WithoutPrefix(String namespaceUri, String localPart) {
             super(namespaceUri, localPart);
         }
+
+        public WithoutPrefix intern() {
+            return WITHOUT_PREFIX.intern(this);
+        }
+
+        @Override
+        public WithoutPrefix withoutNamespace() {
+            if (getNamespaceURI() == null) {
+                return this;
+            }
+            return super.withoutNamespace();
+        }
+    }
+
+    public WithoutPrefix withoutNamespace() {
+        return new WithoutPrefix(null, getLocalPart());
     }
 
 }

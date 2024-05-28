@@ -210,7 +210,14 @@ public class MapXNodeImpl extends XNodeImpl implements MapXNode {
     }
 
     public <T> T getParsedPrimitiveValue(QName key, QName typeName) throws SchemaException {
-        XNodeImpl xnode = get(key);
+        return parsePrimitiveValue(key, get(key), typeName);           // TODO expected class
+    }
+
+    public <T> T getParsedPrimitiveValue(String key, QName typeName) throws SchemaException {
+        return parsePrimitiveValue(key, get(key), typeName);
+    }
+
+    private <T> T parsePrimitiveValue(Object key, XNodeImpl xnode, QName typeName) throws SchemaException {
         if (xnode == null) {
             return null;
         }
@@ -219,7 +226,7 @@ public class MapXNodeImpl extends XNodeImpl implements MapXNode {
         }
         //noinspection unchecked
         PrimitiveXNodeImpl<T> xprim = (PrimitiveXNodeImpl<T>) xnode;
-        return xprim.getParsedValue(typeName, null);            // TODO expected class
+        return xprim.getParsedValue(typeName, null); // TODO expected class
     }
 
     public void merge(@NotNull MapXNodeImpl other) {

@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.xnode;
 
-import com.evolveum.midpoint.prism.Copyable;
-import com.evolveum.midpoint.prism.Freezable;
-import com.evolveum.midpoint.prism.PrismNamespaceContext;
-import com.evolveum.midpoint.prism.Visitable;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.DebugDumpable;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,4 +47,7 @@ public interface XNode extends DebugDumpable, Visitable<XNode>, Cloneable, Copya
         freeze();
         return this;
     }
+
+    void setDefinition(ItemDefinition<?> definition);
+    ItemDefinition<?> getDefinition();
 }

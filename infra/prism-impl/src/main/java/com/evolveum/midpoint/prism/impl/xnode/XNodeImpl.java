@@ -13,7 +13,10 @@ import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;
@@ -29,18 +32,20 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
-    public static final QName KEY_OID = new QName(null, "oid");
-    public static final QName KEY_VERSION = new QName(null, "version");
-    public static final QName KEY_CONTAINER_ID = new QName(null, "id");
-    public static final QName KEY_REFERENCE_OID = new QName(null, "oid");
-    public static final QName KEY_REFERENCE_TYPE = new QName(null, "type");
-    public static final QName KEY_REFERENCE_RELATION = new QName(null, "relation");
-    public static final QName KEY_REFERENCE_DESCRIPTION = new QName(null, "description");
-    public static final QName KEY_REFERENCE_FILTER = new QName(null, "filter");
-    public static final QName KEY_REFERENCE_RESOLUTION_TIME = new QName(null, "resolutionTime");
-    public static final QName KEY_REFERENCE_REFERENTIAL_INTEGRITY = new QName(null, "referentialIntegrity");
-    public static final QName KEY_REFERENCE_TARGET_NAME = new QName(null, "targetName");
-    public static final QName KEY_REFERENCE_OBJECT = new QName(null, "object");
+    public static final ItemName KEY_OID = ItemName.interned(null, "oid");
+    public static final ItemName KEY_VERSION = ItemName.interned(null ,"version");
+    public static final ItemName KEY_CONTAINER_ID = PrismConstants.T_ID;
+    public static final ItemName.WithoutPrefix KEY_REFERENCE_OID = PrismConstants.T_OBJECT_REFERENCE_OID;
+    public static final ItemName.WithoutPrefix KEY_REFERENCE_TYPE = PrismConstants.T_OBJECT_REFERENCE_TYPE;
+    public static final ItemName.WithoutPrefix KEY_REFERENCE_RELATION = PrismConstants.T_OBJECT_REFERENCE_RELATION;
+
+    // FIXME: Versions with namespace break PrismUnmarshaller parsing of references
+    public static final ItemName KEY_REFERENCE_DESCRIPTION = PrismConstants.T_OBJECT_REFERENCE_DESCRIPTION;
+    public static final ItemName KEY_REFERENCE_FILTER = PrismConstants.T_OBJECT_REFERENCE_FILTER;
+    public static final ItemName KEY_REFERENCE_RESOLUTION_TIME = PrismConstants.T_OBJECT_REFERENCE_RESOLUTION_TIME;
+    public static final ItemName KEY_REFERENCE_REFERENTIAL_INTEGRITY = PrismConstants.T_OBJECT_REFERENCE_REFERENTIAL_INTEGRITY;
+    public static final ItemName KEY_REFERENCE_TARGET_NAME = PrismConstants.T_OBJECT_REFERENCE_TARGET_NAME;
+    public static final ItemName KEY_REFERENCE_OBJECT = PrismConstants.T_OBJECT_REFERENCE_OBJECT;
 
     private static final QName DUMMY_NAME = new QName(null, "dummy");
 
@@ -68,6 +73,11 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
     // a comment that could be stored into formats that support these (e.g. XML or YAML)
     private String comment;
+
+    /**
+     * Attached definition if it was discovered during parsing.
+     */
+    private ItemDefinition<?> definition;
 
     /**
      * Custom data to be used during parsing process. TODO reconsider
@@ -299,5 +309,15 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         target.setParserData(CloneUtil.clone(getParserData()));
         target.setTypeQName(getTypeQName());
         return target;
+    }
+
+    @Override
+    public void setDefinition(ItemDefinition<?> definition) {
+        this.definition = definition;
+    }
+
+    @Override
+    public ItemDefinition<?> getDefinition() {
+        return definition;
     }
 }
