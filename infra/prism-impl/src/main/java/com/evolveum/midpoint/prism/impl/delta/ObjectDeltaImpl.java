@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism.impl.delta;
 
+import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult.*;
+
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
@@ -302,7 +304,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             Collection<PartiallyResolvedDelta<IV, ID>> deltas = new ArrayList<>();
             for (ItemDelta<?, ?> modification : modifications) {
                 CompareResult compareComplex = modification.getPath().compareComplex(propertyPath);
-                if (compareComplex == CompareResult.EQUIVALENT) {
+                if (compareComplex == EQUIVALENT) {
                     deltas.add(new PartiallyResolvedDelta<>((ItemDelta<IV, ID>) modification, null));
                 } else if (compareComplex == CompareResult.SUBPATH) {   // path in modification is shorter than propertyPath
                     deltas.add(new PartiallyResolvedDelta<>((ItemDelta<IV, ID>) modification, null));
@@ -339,7 +341,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         } else if (changeType == ChangeType.MODIFY) {
             for (ItemDelta<?, ?> modification : getModifications()) {
                 CompareResult compare = modification.getPath().compareComplex(itemPath);
-                if (compare == CompareResult.EQUIVALENT || compare == CompareResult.SUBPATH) {
+                if (compare == EQUIVALENT || compare == CompareResult.SUBPATH) {
                     return true;
                 }
             }
@@ -642,16 +644,60 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         if (changeType == ChangeType.ADD) {
             newItemDelta.applyTo(objectToAdd);
         } else if (changeType == ChangeType.MODIFY) {
-            // We use 'strict' finding mode because of MID-4690 (TODO)
-            ItemDelta existingModification = findModification(newItemDelta.getPath(), ItemDelta.class, true);
-            if (existingModification == null) {
-                addModification(newItemDelta.clone());
-            } else {
-                //noinspection unchecked
-                existingModification.merge(newItemDelta);
-            }
+            swallowToModifyDelta(newItemDelta);
         }
         // nothing to do for DELETE
+    }
+
+    private void swallowToModifyDelta(ItemDelta<?, ?> newItemDelta) throws SchemaException {
+        ItemPath newDeltaPath = newItemDelta.getPath();
+        for (var existingDelta : modifications) {
+            var existingDeltaPath = existingDelta.getPath();
+            var relation = existingDeltaPath.compareComplex(newDeltaPath);
+            if (relation == EQUIVALENT) {
+                // Both items refer to the same item, so we assume the value types will be matching as well.
+                //noinspection unchecked,rawtypes
+                existingDelta.merge((ItemDelta) newItemDelta);
+                return;
+            } else if (relation == SUBPATH) {
+                // The new delta updates a part of an item value that was touched by the previous delta.
+                // For example, the previous delta may add an assignment, and the new delta may update it (e.g. its description).
+                // We try to find the matching value in the existing delta and update it.
+                var remainderWithValueId = newDeltaPath.remainder(existingDeltaPath);
+                var valueId = remainderWithValueId.firstToIdOrNull();
+                if (valueId != null) {
+                    var remainder = remainderWithValueId.rest();
+                    if (remainder.isEmpty()) {
+                        // Strange situation. We are applying a delta right to a PCV? Most probably an invalid delta.
+                        // Let's not try to solve it here, just pass it through.
+                        continue;
+                    }
+                    for (var valueInExistingDelta : existingDelta.getNewValues()) {
+                        if (valueInExistingDelta instanceof PrismContainerValue<?> pcv
+                                && valueId.equals(pcv.getId())) {
+                            newItemDelta.applyTo(pcv, remainder);
+                            return;
+                        }
+                    }
+                    continue; // The value was not found. The deltas are not related.
+                }
+                // There can be other cases, like for the single-valued containers.
+                // We can implement them later, if needed. For now, let's continue looking for other matching delta.
+                continue;
+            } else if (relation == SUPERPATH) {
+                // Either the deltas are unrelated (like older one adding an assignment, and the new one updating
+                // a different assignment), or there is a conflict. We don't care at this moment.
+                continue;
+            } else if (relation == NO_RELATION) {
+                // The deltas are completely unrelated
+                continue;
+            }
+            assert false : "Unexpected relation " + relation;
+        }
+
+        // Nowhere to merge, so we just add the new delta to the list.
+        //noinspection unchecked,rawtypes
+        ((Collection) modifications).add(newItemDelta);
     }
 
     @Override

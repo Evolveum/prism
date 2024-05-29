@@ -430,12 +430,17 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    default void applyTo(PrismContainerValue containerValue) throws SchemaException {
+    default void applyTo(PrismContainerValue<?> containerValue) throws SchemaException {
         delegate().applyTo(containerValue);
     }
 
     @Override
-    default void applyTo(Item item) throws SchemaException {
+    default void applyTo(@NotNull PrismContainerValue<?> containerValue, @NotNull ItemPath targetPath) throws SchemaException {
+        delegate().applyTo(containerValue, targetPath);
+    }
+
+    @Override
+    default void applyTo(Item<?, ?> item) throws SchemaException {
         delegate().applyTo(item);
     }
 
