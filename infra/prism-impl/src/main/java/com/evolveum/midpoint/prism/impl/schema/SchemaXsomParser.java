@@ -195,7 +195,6 @@ class SchemaXsomParser {
         DF_SCHEMA_MIGRATIONS.parse(ctdBuilder, sourceComplexType);
         DF_DIAGRAMS.parse(ctdBuilder, sourceComplexType);
 
-        DF_SCHEMA_CONTEXT_INHERITED.parse(ctdBuilder, sourceComplexType);
         SCHEMA_CONTEXT.parseIfApplicable(ctdBuilder, sourceComplexType.getAnnotation());
 
         XSContentType content = sourceComplexType.getContentType();

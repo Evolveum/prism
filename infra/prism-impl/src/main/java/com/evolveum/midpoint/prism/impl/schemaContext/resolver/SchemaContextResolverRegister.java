@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-/**
+/**3
  * Created by Dominik.
  */
 public class SchemaContextResolverRegister {

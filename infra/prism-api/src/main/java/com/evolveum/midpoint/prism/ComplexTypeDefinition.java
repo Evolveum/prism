@@ -261,7 +261,6 @@ public interface ComplexTypeDefinition
         default Collection<DefinitionFeature<?, ?, ? super XSComplexType, ?>> getExtraFeaturesToParse() {
             return List.of();
         }
-        void setSchemaContextDefinitionForInheritedType(XSType xsType);
     }
 
     /**

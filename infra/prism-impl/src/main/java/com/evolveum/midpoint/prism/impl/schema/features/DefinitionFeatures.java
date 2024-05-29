@@ -241,13 +241,6 @@ public class DefinitionFeatures {
                         return new PrismReferenceValueImpl(oid, targetType);
                     });
 
-    public static final DefinitionFeature<XSType, ComplexTypeDefinitionLikeBuilder, XSType, ?> DF_SCHEMA_CONTEXT_INHERITED =
-            DefinitionFeature.of(
-                    XSType.class,
-                    ComplexTypeDefinitionLikeBuilder.class,
-                    ComplexTypeDefinitionLikeBuilder::setSchemaContextDefinitionForInheritedType,
-                    XsomParsers.schemaContextDefinitionInherited());
-
     public static class XsomParsers {
 
         public static final IsAnyXsomParser DF_IS_ANY_XSD_PARSER = IsAnyXsomParser.instance();
@@ -475,16 +468,6 @@ public class DefinitionFeatures {
                 }
             };
         }
-
-        public static DefinitionFeatureParser<XSType, XSType> schemaContextDefinitionInherited() {
-            return new DefinitionFeatureParser<>() {
-                @Override
-                public @Nullable XSType getValue(@Nullable XSType xsType) {
-                    return xsType;
-                }
-            };
-        }
-
 
         public static DefinitionFeatureParser<SchemaContextDefinition, XSAnnotation> schemaContextDefinitionParser() {
             return new DefinitionFeatureParser<>() {

@@ -24,10 +24,8 @@ public class TestSchemaContext extends AbstractPrismTest {
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
-        PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
     }
-
 
     @Test
     public void typePropertyContextResolverTest() throws SchemaException, IOException {

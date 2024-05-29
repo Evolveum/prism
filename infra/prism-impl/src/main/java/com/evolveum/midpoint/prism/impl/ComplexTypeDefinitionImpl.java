@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
 import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextDefinitionImpl;
 import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
@@ -753,11 +754,6 @@ public class ComplexTypeDefinitionImpl
     @Override
     public ItemDefinitionLikeBuilder newObjectLikeDefinition(QName itemName, AbstractTypeDefinition ctd) {
         return definitionFactory().newObjectDefinition(itemName, (ComplexTypeDefinition) ctd);
-    }
-
-    @Override
-    public void setSchemaContextDefinitionForInheritedType(XSType xsType) {
-//        var schemaContextDefinition = SchemaProcessorUtil.getAnnotationElement(xsType.getAnnotation(), PrismConstants.A_SCHEMA_CONTEXT);
     }
 
     @NotNull
