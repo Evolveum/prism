@@ -12,10 +12,10 @@ import java.util.Objects;
  * Created by Dominik.
  */
 public class SchemaContextResolverRegister {
-    private static final Map<QName, ContextResolverFactory> schemaContextResolver = new HashMap<>();
+    private static final Map<QName, ContextResolverFactory> SCHEMA_CONTEXT_RESOLVER = new HashMap<>();
 
     public static void register(QName nameResolver, ContextResolverFactory resolver) {
-        schemaContextResolver.put(nameResolver, resolver);
+        SCHEMA_CONTEXT_RESOLVER.put(nameResolver, resolver);
     }
 
     public static SchemaContextResolver createResolver(SchemaContextDefinition schemaContextDefinition) {
@@ -28,6 +28,6 @@ public class SchemaContextResolverRegister {
             return new ResourceObjectContextResolver(schemaContextDefinition);
         }
 
-        return schemaContextResolver.get(schemaContextDefinition.getAlgorithm()).createResolver(schemaContextDefinition);
+        return SCHEMA_CONTEXT_RESOLVER.get(schemaContextDefinition.getAlgorithm()).createResolver(schemaContextDefinition);
     }
 }
