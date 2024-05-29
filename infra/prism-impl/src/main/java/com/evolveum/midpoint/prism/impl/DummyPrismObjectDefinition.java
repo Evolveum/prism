@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
@@ -388,4 +389,7 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     public @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public @Nullable SchemaContextDefinition getSchemaContextDefinition() { throw new UnsupportedOperationException(); }
 }

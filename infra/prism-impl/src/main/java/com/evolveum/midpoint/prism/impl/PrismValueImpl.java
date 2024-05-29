@@ -12,7 +12,11 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.metadata.ValueMetadataAdapter;
+import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolver;
+import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolverRegister;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
@@ -423,6 +427,25 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
     @Override
     public void setTransient(boolean value) {
         isTransient = value;
+    }
+
+    @Override
+    public SchemaContext getSchemaContext() {
+        if (getParent() == null) return null;
+
+        if (getParent().getDefinition().getSchemaContextDefinition() != null) {
+            SchemaContextDefinition schemaContextDefinition = getParent().getDefinition().getSchemaContextDefinition();
+            SchemaContextResolver schemaContextResolver = SchemaContextResolverRegister.createResolver(schemaContextDefinition);
+            return schemaContextResolver.computeContext(this);
+        }
+
+        if (getParent() instanceof Item<?, ?> parentItem) {
+            if (parentItem.getParent() != null) {
+                return parentItem.getParent().getSchemaContext();
+            }
+        }
+
+        return null;
     }
 
 }

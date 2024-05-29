@@ -125,6 +125,16 @@ public class UserType
     public UserType() {
     }
 
+    @Override
+    protected QName prismGetContainerName() {
+        return null;
+    }
+
+    @Override
+    protected QName prismGetContainerType() {
+        return null;
+    }
+
     public UserType(PrismContext ignored) {
     }
 

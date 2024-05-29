@@ -1226,9 +1226,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     }
 
     public List<TypeDefinition> getAllSubTypesByTypeDefinition(List<TypeDefinition> typeDefinitions) {
+        final List<TypeDefinition> subTypesAll = new ArrayList<>();
+        final List<TypeDefinition> subTypes = new ArrayList<>();
         TypeDefinition typeDefinition;
-        List<TypeDefinition> subTypesAll = new ArrayList<>();
-        List<TypeDefinition> subTypes = new ArrayList<>();
 
         // find subtypes for ObjectType
         List<TypeDefinition> objectSubTypes = new ArrayList<>();
