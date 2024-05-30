@@ -106,31 +106,43 @@ public class ItemMergerFactoryImpl implements ItemMergerFactory {
 
         ItemName itemName = def instanceof ItemDefinition<?> id ? id.getItemName() : null;
 
+        ItemMerger merger = createCustomMerger(def, originMarker);
+        if (merger != null) {
+            return merger;
+        }
+
         // try to use a:naturalKey annotation
-        List<QName> identifiers = def.getNaturalKeyConstituents();
-        if (identifiers != null && !identifiers.isEmpty()) {
-            NaturalKeyDefinition key = NaturalKeyDefinitionImpl.of(identifiers.toArray(new QName[0]));
+        List<QName> constituents = def.getNaturalKeyConstituents();
+        if (constituents != null && !constituents.isEmpty()) {
+            NaturalKeyDefinition key = NaturalKeyDefinitionImpl.of(constituents.toArray(new QName[0]));
 
             LOGGER.trace("Using generic item merger for {} (value class {}) with key {}", itemName, valueClass, key);
             return new GenericItemMerger(originMarker, key);
         }
 
+        return null;
+    }
+
+    private ItemMerger createCustomMerger(Definition def, OriginMarker originMarker) {
+        Class<?> valueClass = def.getTypeClass();
+
+        ItemName itemName = def instanceof ItemDefinition<?> id ? id.getItemName() : null;
+
         // try to use a:merger annotation (merger identifier for custom mergers)
         String customMerger = def.getMergerIdentifier();
-        TypedMergerSupplier typedSupplier =
-                customMerger != null ? identifierSpecificMergers.get(customMerger) : null;
-
-        if (typedSupplier != null) {
-            ItemMerger merger = typedSupplier.mergerFunction().apply(originMarker);
-            LOGGER.trace("Using custom merger for {} (value class {}) with identifier {}", itemName, valueClass, merger.getClass());
-            return merger;
+        if (customMerger == null) {
+            return null;
         }
 
-        if (customMerger != null) {
+        TypedMergerSupplier typedSupplier = identifierSpecificMergers.get(customMerger);
+        if (typedSupplier == null) {
             throw new SystemException(String.format("Merger with identifier %s was not found", customMerger));
         }
 
-        return null;
+        ItemMerger merger = typedSupplier.mergerFunction().apply(originMarker);
+        LOGGER.trace("Using custom merger for {} (value class {}) with identifier {}", itemName, valueClass, merger.getClass());
+
+        return merger;
     }
 
     private ItemMerger findMergerByType(Class<?> valueClass, OriginMarker originMarker) {
