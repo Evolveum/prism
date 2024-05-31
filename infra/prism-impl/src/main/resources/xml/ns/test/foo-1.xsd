@@ -350,12 +350,34 @@
         <xsd:complexContent>
             <xsd:extension base="tns:ObjectType">
                 <xsd:sequence>
-                    <xsd:element name="schema" type="t:SchemaDefinitionType" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="connectorRef" type="tns:ObjectReferenceType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:ConnectorType</a:objectReferenceTargetType>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="schema" type="t:SchemaDefinitionType" minOccurs="0"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:element name="resource" type="tns:ResourceType"/>
+
+    <xsd:complexType name="ConnectorType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="connectorType" type="xsd:string"/>
+                    <xsd:element name="connectorVersion" type="xsd:string" minOccurs="0"/>
+                    <xsd:element minOccurs="0" name="available" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="connector" type="tns:ConnectorType"/>
+
 
     <!-- The following is currently not supported by prism. Keeping it here if needed in the future... -->
     <xsd:complexType name="EventHandlerType">

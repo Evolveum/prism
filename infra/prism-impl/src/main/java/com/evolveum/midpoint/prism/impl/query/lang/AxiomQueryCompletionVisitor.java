@@ -3,10 +3,7 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismObjectDefinition;
-import com.evolveum.midpoint.prism.TypeDefinition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
@@ -35,6 +32,13 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         schemaRegistry = prismContext.getSchemaRegistry();
         if (rootDef != null) {
             lastType = rootDef.getTypeName();
+
+            if (rootDef instanceof PrismReferenceDefinition refDef) {
+                QName targetTypeName = refDef.getTargetTypeName();
+                if (targetTypeName != null) {
+                    lastType = new QName(targetTypeName.getNamespaceURI(), targetTypeName.getLocalPart());
+                }
+            }
         }
     }
 

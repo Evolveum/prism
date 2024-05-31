@@ -53,7 +53,17 @@ public class ResourceType extends ObjectType implements Serializable {
 
     public static final ItemName F_SCHEMA = ItemName.from(NS_FOO, "schema");
 
+    protected ObjectReferenceType connectorRef;
+
     protected SchemaDefinitionType schema;
+
+    public ObjectReferenceType getConnectorRef() {
+        return connectorRef;
+    }
+
+    public void setConnectorRef(ObjectReferenceType connectorRef) {
+        this.connectorRef = connectorRef;
+    }
 
     /**
      * Gets the value of the schema property.

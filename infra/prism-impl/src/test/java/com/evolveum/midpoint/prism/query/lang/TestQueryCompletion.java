@@ -1,7 +1,9 @@
 package com.evolveum.midpoint.prism.query.lang;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.foo.ResourceType;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -111,4 +113,15 @@ public class TestQueryCompletion extends AbstractPrismTest {
     }
 
     // Advanced filters
+
+    @Test
+    public void testQueryCompletionForConnectorRefFilter() {
+        PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass(ResourceType.class);
+        ItemDefinition<?> connectorRefFilter  = objectDefinition.findItemDefinition(
+                ItemPath.create(new QName("connectorRef")));
+
+        String query = " ";
+        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(connectorRefFilter, query);
+        System.out.println(suggestions);
+    }
 }
