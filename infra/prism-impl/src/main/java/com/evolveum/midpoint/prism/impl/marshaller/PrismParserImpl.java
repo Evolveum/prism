@@ -86,6 +86,11 @@ abstract class PrismParserImpl implements PrismParser {
         return language(PrismContext.LANG_YAML);
     }
 
+    @Override
+    public @NotNull PrismParser preserveNamespaceContext() {
+        return create(source, language, context.clone().preserveNamespaceContext(), prismContext, itemDefinition, itemName, typeName, typeClass);
+    }
+
     @NotNull
     @Override
     public PrismParser context(@NotNull ParsingContext context) {
