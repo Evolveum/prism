@@ -303,6 +303,9 @@ public final class ItemPathHolder {
     }
 
     static void addPureXpath(boolean absolute, Collection<PathHolderSegment> segments, StringBuilder sb) {
+        addPureXpath(absolute, segments, sb, false);
+    }
+    static void addPureXpath(boolean absolute, Collection<PathHolderSegment> segments, StringBuilder sb, boolean forceDefaultNs) {
         if (!absolute && segments.isEmpty()) {
             // Empty segment list gives a "local node" XPath
             sb.append(".");
@@ -345,7 +348,7 @@ public final class ItemPathHolder {
                 } else if (StringUtils.isNotEmpty(qname.getPrefix())) {
                     sb.append(qname.getPrefix()).append(':').append(qname.getLocalPart());
                 } else {
-                    if (StringUtils.isNotEmpty(qname.getNamespaceURI())) {
+                    if (!forceDefaultNs && StringUtils.isNotEmpty(qname.getNamespaceURI())) {
                         String prefix = GlobalDynamicNamespacePrefixMapper.getPreferredPrefix(qname.getNamespaceURI());
                         seg.setQNamePrefix(prefix); // hack - we modify the path segment here (only the form, not the meaning), but nevertheless it's ugly
                         sb.append(seg.getQName().getPrefix()).append(':').append(seg.getQName().getLocalPart());
