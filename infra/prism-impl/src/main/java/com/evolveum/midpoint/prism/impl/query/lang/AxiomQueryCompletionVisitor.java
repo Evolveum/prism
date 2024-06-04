@@ -32,13 +32,6 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         schemaRegistry = prismContext.getSchemaRegistry();
         if (rootDef != null) {
             lastType = rootDef.getTypeName();
-
-            if (rootDef instanceof PrismReferenceDefinition refDef) {
-                QName targetTypeName = refDef.getTargetTypeName();
-                if (targetTypeName != null) {
-                    lastType = new QName(targetTypeName.getNamespaceURI(), targetTypeName.getLocalPart());
-                }
-            }
         }
     }
 

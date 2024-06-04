@@ -12,9 +12,12 @@ import java.util.Optional;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionBuilder;
+import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextDefinitionImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import com.evolveum.midpoint.prism.schema.SerializableReferenceDefinition;
+
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -207,5 +210,22 @@ public class PrismReferenceDefinitionImpl
     @Override
     public Optional<ComplexTypeDefinition> structuredType() {
         return structuredType.get();
+    }
+
+    @Override
+    public @Nullable SchemaContextDefinition getSchemaContextDefinition() {
+        SchemaContextDefinition def = super.getSchemaContextDefinition();
+        if (def != null) {
+            return def;
+        }
+
+        if (targetTypeName == null) {
+            return null;
+        }
+
+        def = new SchemaContextDefinitionImpl();
+        def.setType(targetTypeName);
+
+        return def;
     }
 }

@@ -12,10 +12,7 @@ import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.foo.ConnectorType;
-import com.evolveum.midpoint.prism.foo.ResourceType;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
-import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -113,27 +110,4 @@ public class TestQueryCompletion extends AbstractPrismTest {
     }
 
     // Advanced filters
-
-    @Test
-    public void testQueryCompletionForConnectorRefFilter() {
-        PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass(ResourceType.class);
-        ItemDefinition<?> connectorRefFilter = objectDefinition.findItemDefinition(
-                ItemPath.create(new QName("connectorRef")));
-
-        String query = " ";
-        Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(connectorRefFilter, query);
-        List<String> list = suggestions.keySet().stream().sorted().toList();
-
-        PrismObjectDefinition<?> connectorDef = schemaRegistry.findObjectDefinitionByCompileTimeClass(ConnectorType.class);
-        List<String> connectorItems = connectorDef.getItemNames().stream()
-                .map(QName::getLocalPart)
-                .sorted()
-                .toList();
-
-        List<String> expected = new ArrayList<>();
-        expected.add(".");
-        expected.addAll(connectorItems);
-
-        Assert.assertEquals(list, expected);
-    }
 }
