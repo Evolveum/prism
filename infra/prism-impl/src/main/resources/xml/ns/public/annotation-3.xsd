@@ -993,14 +993,14 @@
 
     <xsd:complexType name="SchemaContextType">
         <xsd:sequence>
-            <xsd:element name="typePath" type="xsd:string">
+            <xsd:element name="typePath" type="xsd:string" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
                         Name of element which have path to type object.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="algorithm" type="xsd:string">
+            <xsd:element name="algorithm" type="xsd:string" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
                         Algorithm for handling schema context definition.

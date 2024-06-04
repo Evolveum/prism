@@ -13,7 +13,7 @@ import javax.xml.namespace.QName;
  */
 public class TypePropertyContextResolver implements SchemaContextResolver {
 
-    SchemaContextDefinition schemaContextDefinition;
+    private SchemaContextDefinition schemaContextDefinition;
 
     public TypePropertyContextResolver(SchemaContextDefinition schemaContextDefinition) {
         this.schemaContextDefinition = schemaContextDefinition;

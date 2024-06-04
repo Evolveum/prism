@@ -191,15 +191,22 @@ public class PrismUnmarshaller {
             }
         }
 
+        Item result;
         if (itemDefinition == null || itemDefinition instanceof PrismPropertyDefinition) {
-            return parseProperty(node, itemName, (PrismPropertyDefinition<?>) itemDefinition, pc);
+            result = parseProperty(node, itemName, (PrismPropertyDefinition<?>) itemDefinition, pc);
         } else if (itemDefinition instanceof PrismContainerDefinition) {    // also objects go here
-            return parseContainer(node, itemName, (PrismContainerDefinition<?>) itemDefinition, pc);
+            result = parseContainer(node, itemName, (PrismContainerDefinition<?>) itemDefinition, pc);
         } else if (itemDefinition instanceof PrismReferenceDefinition) {
-            return parseReference(node, itemName, (PrismReferenceDefinition) itemDefinition, pc);
+            result = parseReference(node, itemName, (PrismReferenceDefinition) itemDefinition, pc);
         } else {
             throw new IllegalArgumentException("Attempt to parse unknown definition type " + itemDefinition.getClass().getName());
         }
+
+        if (pc.isPreserveNamespaceContext()) {
+            result.setUserData(Item.KEY_NAMESPACE_CONTEXT, node.namespaceContext());
+        }
+
+        return result;
     }
 
     @NotNull

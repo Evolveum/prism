@@ -13,7 +13,7 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.metadata.ValueMetadataAdapter;
 import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolver;
-import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolverRegister;
+import com.evolveum.midpoint.prism.impl.schemaContext.resolver.SchemaContextResolverRegistry;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
@@ -435,7 +435,7 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
         if (getParent().getDefinition().getSchemaContextDefinition() != null) {
             SchemaContextDefinition schemaContextDefinition = getParent().getDefinition().getSchemaContextDefinition();
-            SchemaContextResolver schemaContextResolver = SchemaContextResolverRegister.createResolver(schemaContextDefinition);
+            SchemaContextResolver schemaContextResolver = SchemaContextResolverRegistry.createResolver(schemaContextDefinition);
             return schemaContextResolver.computeContext(this);
         }
 

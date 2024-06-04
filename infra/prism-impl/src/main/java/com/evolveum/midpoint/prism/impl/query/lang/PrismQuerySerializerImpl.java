@@ -32,10 +32,10 @@ public class PrismQuerySerializerImpl implements PrismQuerySerializer {
         this.expressionFactory = factory;
     }
 
-        @Override
-    public PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context)
+    @Override
+    public PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context, boolean useDefaultPrefix)
             throws NotSupportedException {
-        QueryWriter output = new QueryWriter(new SimpleBuilder(context), expressionFactory);
+        QueryWriter output = new QueryWriter(new SimpleBuilder(context), expressionFactory, useDefaultPrefix);
         output.writeFilter(filter);
         return output.build();
     }

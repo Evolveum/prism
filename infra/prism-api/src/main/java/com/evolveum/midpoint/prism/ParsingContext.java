@@ -36,6 +36,10 @@ public interface ParsingContext extends Cloneable {
 
     boolean hasWarnings();
 
+    ParsingContext preserveNamespaceContext();
+
+    boolean isPreserveNamespaceContext();
+
     ParsingContext clone();
 
     ParsingContext strict();
