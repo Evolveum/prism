@@ -10,9 +10,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.ZonedDateTime;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.XMLConstants;
 import javax.xml.datatype.Duration;
@@ -218,6 +216,13 @@ public class XsdTypeMapper {
             LOGGER.error("Cannot initialize XSD type mapping: " + e.getMessage(), e);
             throw new IllegalStateException("Cannot initialize XSD type mapping: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Return QNames of all qualified types.
+     */
+    public static Collection<QName> getAllTypes(){
+        return XSD_TYPE_QUALIFICATION_MAP.values();
     }
 
 }

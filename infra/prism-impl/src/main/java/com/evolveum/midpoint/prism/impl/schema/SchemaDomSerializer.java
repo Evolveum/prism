@@ -522,10 +522,20 @@ public class SchemaDomSerializer {
 
     @SuppressWarnings("SameParameterValue")
     private void addAnnotationToDefinition(Element definitionElement, QName qname) {
-        addAnnotationToDefinition(definitionElement, qname, null);
+        addAnnotationToDefinition(definitionElement, qname, (QName) null);
     }
 
     private void addAnnotationToDefinition(Element definitionElement, QName qname, QName value) {
+        Element annotationElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"), definitionElement);
+        Element appinfoElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"), annotationElement);
+        if (value == null) {
+            addEmptyAnnotation(qname, appinfoElement);
+        } else {
+            addAnnotation(qname, value, appinfoElement);
+        }
+    }
+
+    public void addAnnotationToDefinition(Element definitionElement, QName qname, String value) {
         Element annotationElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"), definitionElement);
         Element appinfoElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"), annotationElement);
         if (value == null) {
