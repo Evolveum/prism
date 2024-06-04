@@ -7,7 +7,8 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
  * Created by Dominik.
  */
 public class SchemaContextImpl implements SchemaContext {
-    ItemDefinition<?> itemDefinition;
+
+    private ItemDefinition<?> itemDefinition;
 
     public SchemaContextImpl(ItemDefinition<?> itemDefinition) {
         this.itemDefinition = itemDefinition;
