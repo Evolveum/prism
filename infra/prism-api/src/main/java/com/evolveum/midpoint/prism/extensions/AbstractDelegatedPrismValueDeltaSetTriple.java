@@ -277,6 +277,11 @@ public class AbstractDelegatedPrismValueDeltaSetTriple<V extends PrismValue> imp
     }
 
     @Override
+    public void foreach(SetAwareProcessor<V> processor) {
+        inner.foreach(processor);
+    }
+
+    @Override
     public void simpleAccept(SimpleVisitor<V> visitor) {
         inner.simpleAccept(visitor);
     }

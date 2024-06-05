@@ -21,24 +21,20 @@ public enum PlusMinusZero {
         if (mode1 == null || mode2 == null) {
             return null;
         }
-        switch (mode1) {
-            case PLUS: switch (mode2) {
-                case PLUS: return PlusMinusZero.PLUS;
-                case ZERO: return PlusMinusZero.PLUS;
-                case MINUS: return null;
-            }
-            case ZERO: switch (mode2) {
-                case PLUS: return PlusMinusZero.PLUS;
-                case ZERO: return PlusMinusZero.ZERO;
-                case MINUS: return PlusMinusZero.MINUS;
-            }
-            case MINUS: switch (mode2) {
-                case PLUS: return null;
-                case ZERO: return PlusMinusZero.MINUS;
-                case MINUS: return PlusMinusZero.MINUS;
-            }
-        }
-        // notreached
-        throw new IllegalStateException();
+        return switch (mode1) {
+            case PLUS -> switch (mode2) {
+                case PLUS, ZERO -> PlusMinusZero.PLUS;
+                case MINUS -> null;
+            };
+            case ZERO -> switch (mode2) {
+                case PLUS -> PlusMinusZero.PLUS;
+                case ZERO -> PlusMinusZero.ZERO;
+                case MINUS -> PlusMinusZero.MINUS;
+            };
+            case MINUS -> switch (mode2) {
+                case PLUS -> null;
+                case ZERO, MINUS -> PlusMinusZero.MINUS;
+            };
+        };
     }
 }

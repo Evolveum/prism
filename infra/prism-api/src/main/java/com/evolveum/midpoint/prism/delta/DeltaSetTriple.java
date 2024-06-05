@@ -118,6 +118,8 @@ public interface DeltaSetTriple<T> extends DebugDumpable, ShortDumpable, Seriali
     @Override
     void foreach(Processor<T> processor);
 
+    void foreach(SetAwareProcessor<T> processor);
+
     @Override
     void simpleAccept(SimpleVisitor<T> visitor);
 
@@ -131,5 +133,9 @@ public interface DeltaSetTriple<T> extends DebugDumpable, ShortDumpable, Seriali
         clearPlusSet();
         clearMinusSet();
         clearZeroSet();
+    }
+
+    interface SetAwareProcessor<T> {
+        void process(@NotNull PlusMinusZero inSet, T value);
     }
 }
