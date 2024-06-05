@@ -1,11 +1,12 @@
 package com.evolveum.midpoint.prism.schemaContext;
 
+import java.io.Serializable;
 import javax.xml.namespace.QName;
 
 /**
  * Created by Dominik.
  */
-public interface SchemaContextDefinition {
+public interface SchemaContextDefinition extends Serializable {
 
     QName getType();
 

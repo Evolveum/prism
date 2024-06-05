@@ -3,7 +3,6 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.foo.RoleType;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
-import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.testng.annotations.BeforeSuite;
@@ -13,7 +12,6 @@ import org.xml.sax.SAXException;
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
 
 import static org.testng.AssertJUnit.assertEquals;
 

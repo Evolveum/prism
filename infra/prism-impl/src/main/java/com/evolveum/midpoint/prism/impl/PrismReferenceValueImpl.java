@@ -9,9 +9,12 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -773,5 +776,22 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             return (I) getObject().findItem(path.rest(), (Class) type);
         }
         return null;
+    }
+
+    @Override
+    public SchemaContext getSchemaContext() {
+        QName targetType = getTargetType();
+        if (targetType == null && getDefinition() != null) {
+            targetType = getDefinition().getTargetTypeName();
+        }
+
+        if (targetType != null) {
+            var targetDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(targetType);
+            if (targetDef != null) {
+                return new SchemaContextImpl(targetDef);
+            }
+        }
+
+        return super.getSchemaContext();
     }
 }

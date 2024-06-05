@@ -596,9 +596,6 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
@@ -805,9 +802,6 @@
         <xsd:annotation>
             <xsd:appinfo>
                 <a:container/>
-                <a:schemaContext>
-                    <a:typePath>type</a:typePath>
-                </a:schemaContext>
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:complexContent>
