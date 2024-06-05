@@ -989,7 +989,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             for (TypeDefinition typeDefinition : schema.getDefinitions(TypeDefinition.class)) {
                 processSubstitutionGroups(typeDefinition);
                 fillInSubtype(schemaRegistryState, typeDefinition);
-                setSchemaContextDefinitionInherited(schemaRegistryState, typeDefinition);
+                schemaContextDefinitionInherited(schemaRegistryState, typeDefinition);
             }
         }
 
@@ -1088,20 +1088,20 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             return schemaFactory.newSchema(sources);
         }
 
-        private void setSchemaContextDefinitionInherited(SchemaRegistryStateImpl schemaRegistryState, TypeDefinition typeDefinition) {
-            if (typeDefinition.getSchemaContextDefinition() != null) return;
+        private void schemaContextDefinitionInherited(SchemaRegistryStateImpl schemaRegistryState, TypeDefinition currentTypeDefinition) {
+            if (currentTypeDefinition.getSchemaContextDefinition() != null) return;
 
-            TypeDefinition typeDefinition1 = typeDefinition;
+            TypeDefinition typeDefinition = currentTypeDefinition;
             SchemaContextDefinition schemaContextDefinition = null;
 
             while(schemaContextDefinition == null) {
-                schemaContextDefinition = typeDefinition1.getSchemaContextDefinition();
-                if (typeDefinition1.getSuperType() == null) break;
-                typeDefinition1 = schemaRegistryState.findTypeDefinitionByType(typeDefinition1.getSuperType(), TypeDefinition.class);
-                if (typeDefinition1 == null) break;
+                schemaContextDefinition = typeDefinition.getSchemaContextDefinition();
+                if (typeDefinition.getSuperType() == null) break;
+                typeDefinition = schemaRegistryState.findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
+                if (typeDefinition == null) break;
             }
 
-            ((TypeDefinitionImpl) typeDefinition).setSchemaContextDefinition(schemaContextDefinition);
+            ((TypeDefinitionImpl) currentTypeDefinition).setSchemaContextDefinition(schemaContextDefinition);
         }
     }
 
