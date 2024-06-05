@@ -1657,4 +1657,14 @@ public class DOMUtil {
         }
         return null;
     }
+
+    public static Element getOrCreateSubElement(Document doc, Element parentElement, QName qName) {
+        Element annotationElement = getChildElement(parentElement, qName);
+        if (annotationElement == null) {
+            annotationElement = createElement(doc, qName);
+            Element refChild = getFirstChildElement(parentElement);
+            parentElement.insertBefore(annotationElement, refChild);
+        }
+        return annotationElement;
+    }
 }

@@ -535,16 +535,6 @@ public class SchemaDomSerializer {
         }
     }
 
-    public void addAnnotationToDefinition(Element definitionElement, QName qname, String value) {
-        Element annotationElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"), definitionElement);
-        Element appinfoElement = getOrCreateElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"), annotationElement);
-        if (value == null) {
-            addEmptyAnnotation(qname, appinfoElement);
-        } else {
-            addAnnotation(qname, value, appinfoElement);
-        }
-    }
-
     private Element getOrCreateElement(QName qName, Element parentElement) {
         NodeList elements = parentElement.getElementsByTagNameNS(qName.getNamespaceURI(), qName.getLocalPart());
         if (elements.getLength() == 0) {
