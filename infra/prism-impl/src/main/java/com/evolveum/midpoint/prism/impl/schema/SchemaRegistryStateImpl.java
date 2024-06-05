@@ -24,6 +24,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 
 import com.google.common.collect.HashMultimap;
@@ -988,6 +989,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             for (TypeDefinition typeDefinition : schema.getDefinitions(TypeDefinition.class)) {
                 processSubstitutionGroups(typeDefinition);
                 fillInSubtype(schemaRegistryState, typeDefinition);
+                setSchemaContextDefinitionInherited(schemaRegistryState, typeDefinition);
             }
         }
 
@@ -1084,6 +1086,22 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     (SchemaRegistryImpl) schemaRegistryState.prismContext.getSchemaRegistry(),
                     schemaRegistryState));
             return schemaFactory.newSchema(sources);
+        }
+
+        private void setSchemaContextDefinitionInherited(SchemaRegistryStateImpl schemaRegistryState, TypeDefinition typeDefinition) {
+            if (typeDefinition.getSchemaContextDefinition() != null) return;
+
+            TypeDefinition typeDefinition1 = typeDefinition;
+            SchemaContextDefinition schemaContextDefinition = null;
+
+            while(schemaContextDefinition == null) {
+                schemaContextDefinition = typeDefinition1.getSchemaContextDefinition();
+                if (typeDefinition1.getSuperType() == null) break;
+                typeDefinition1 = schemaRegistryState.findTypeDefinitionByType(typeDefinition1.getSuperType(), TypeDefinition.class);
+                if (typeDefinition1 == null) break;
+            }
+
+            ((TypeDefinitionImpl) typeDefinition).setSchemaContextDefinition(schemaContextDefinition);
         }
     }
 
