@@ -425,7 +425,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      *
      * If a value is to be added as a whole, it is cloned.
      */
-    void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException;
+    V addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException;
 
     /**
      * Removes values equivalent to given value from the item; under specified equivalence strategy

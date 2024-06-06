@@ -156,8 +156,8 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
     }
 
     @Override
-    public void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
-        delegate().addRespectingMetadataAndCloning(value, strategy, metadataEquivalenceStrategy);
+    public V addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
+        return delegate().addRespectingMetadataAndCloning(value, strategy, metadataEquivalenceStrategy);
     }
 
     @Override

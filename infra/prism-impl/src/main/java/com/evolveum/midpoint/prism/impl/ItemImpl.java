@@ -404,16 +404,22 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy,
+    public V addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy,
             EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
         if (!value.hasValueMetadata()) {
-            add(CloneUtil.clone(value), strategy);
+            var cloned = CloneUtil.clone(value);
+            add(cloned, strategy);
+            // FIXME: return real value which is stored;
+            return cloned;
         } else {
             V existingValue = findValue(value, strategy);
             if (existingValue == null) {
-                addInternal(CloneUtil.clone(value), false, null);
+                var cloned = CloneUtil.clone(value);
+                addInternal(cloned, false, null);
+                return cloned;
             } else {
                 addMetadataValues(existingValue, value.getValueMetadata(), metadataEquivalenceStrategy);
+                return existingValue;
             }
         }
     }
