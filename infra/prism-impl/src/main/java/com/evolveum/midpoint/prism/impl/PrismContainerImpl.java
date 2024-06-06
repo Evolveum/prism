@@ -207,7 +207,7 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    protected boolean addInternal(@NotNull PrismContainerValue newValue, boolean checkEquivalents, EquivalenceStrategy strategy) throws SchemaException {
+    protected ItemModifyResult<PrismContainerValue<C>> addInternal(@NotNull PrismContainerValue newValue, boolean checkEquivalents, EquivalenceStrategy strategy) throws SchemaException {
         checkMutable();
         return super.addInternal(newValue, checkEquivalents, strategy);
     }

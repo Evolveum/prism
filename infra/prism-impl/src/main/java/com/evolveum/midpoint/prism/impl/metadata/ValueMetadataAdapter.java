@@ -518,13 +518,13 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public PrismContainerValue<Containerable> addRespectingMetadataAndCloning(PrismContainerValue<Containerable> value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
+    public ItemModifyResult<PrismContainerValue<Containerable>> addRespectingMetadataAndCloning(PrismContainerValue<Containerable> value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
         return delegate.addRespectingMetadataAndCloning(value, strategy, metadataEquivalenceStrategy);
     }
 
     @Override
-    public void removeRespectingMetadata(PrismContainerValue<Containerable> value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) {
-        delegate.removeRespectingMetadata(value, strategy, metadataEquivalenceStrategy);
+    public ItemModifyResult<PrismContainerValue<Containerable>> removeRespectingMetadata(PrismContainerValue<Containerable> value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) {
+        return delegate.removeRespectingMetadata(value, strategy, metadataEquivalenceStrategy);
     }
 
     @Override

@@ -12,13 +12,12 @@ import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.util.MiscUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +30,8 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.Foreachable;
 import com.evolveum.midpoint.util.Processor;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Item Delta describes a change of an item which is a property, container or a reference.
@@ -417,5 +418,15 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     /** Beware: approximate implementation, see the called method for details. */
     default boolean isMetadataRelated() {
         return getPath().isMetadataRelated();
+    }
+
+    /**
+     * Returns set of actual modify operations that was performed, when delta was executed.
+     *
+     * @return null if apply results are unvavailable.
+     */
+    @Nullable
+    default  Collection<ItemModifyResult<V>> applyResults() {
+        return null;
     }
 }
