@@ -475,8 +475,13 @@ public class DefinitionFeatures {
                 public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) {
                     if (getAnnotationElement(annotation, A_SCHEMA_CONTEXT) != null) {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
+                        Element type = getAnnotationElement(annotation, A_TYPE);
                         Element typePathElement = getAnnotationElement(annotation, A_TYPE_PATH);
                         Element algorithmElement = getAnnotationElement(annotation, A_ALGORITHM);
+
+                        if (type != null) {
+                            schemaContextDefinition.setType(new QName(type.getTextContent()));
+                        }
 
                         if (typePathElement != null) {
                             schemaContextDefinition.setTypePath(new QName(typePathElement.getTextContent()));

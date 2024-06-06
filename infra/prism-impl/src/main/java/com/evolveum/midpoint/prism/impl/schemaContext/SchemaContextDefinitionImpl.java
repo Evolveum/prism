@@ -13,7 +13,7 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
 
     private QName typePath;
 
-    private QName algorithmName;
+    private QName algorithm;
 
     @Override
     public QName getType() {
@@ -31,17 +31,15 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
     }
 
     @Override
-    public QName getAlgorithm() {
-        return algorithmName;
-    }
-
-    @Override
     public void setTypePath(QName typePath) {
         this.typePath = typePath;
     }
 
-    @Override
-    public void setAlgorithm(QName algorithmName) {
-        this.algorithmName = algorithmName;
+    public QName getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(QName algorithm) {
+        this.algorithm = algorithm;
     }
 }

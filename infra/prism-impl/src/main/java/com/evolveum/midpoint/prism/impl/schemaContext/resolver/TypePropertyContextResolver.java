@@ -13,7 +13,7 @@ import javax.xml.namespace.QName;
  */
 public class TypePropertyContextResolver implements SchemaContextResolver {
 
-    private SchemaContextDefinition schemaContextDefinition;
+    private final SchemaContextDefinition schemaContextDefinition;
 
     public TypePropertyContextResolver(SchemaContextDefinition schemaContextDefinition) {
         this.schemaContextDefinition = schemaContextDefinition;
@@ -26,7 +26,7 @@ public class TypePropertyContextResolver implements SchemaContextResolver {
 
             if (typeProp != null && typeProp.getAnyValue() != null) {
                 if (typeProp.getAnyValue().getRealValue() instanceof QName typeName) {
-                    var objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
+                    PrismObjectDefinition<?> objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
                     return new SchemaContextImpl(objectDefinition);
                 }
             }
