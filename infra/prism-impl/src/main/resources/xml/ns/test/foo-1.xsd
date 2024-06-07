@@ -746,6 +746,14 @@
     </xsd:complexType>
 
     <xsd:complexType name="AbstractRoleType" abstract="true">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:schemaContext>
+                    <a:type>RoleType</a:type>
+                </a:schemaContext>
+            </xsd:appinfo>
+        </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="tns:ObjectType">
                 <xsd:sequence>

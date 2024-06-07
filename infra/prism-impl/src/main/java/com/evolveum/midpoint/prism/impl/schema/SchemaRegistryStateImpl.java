@@ -1095,10 +1095,10 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             SchemaContextDefinition schemaContextDefinition = null;
 
             while(schemaContextDefinition == null) {
+                if (typeDefinition == null) break;
                 schemaContextDefinition = typeDefinition.getSchemaContextDefinition();
                 if (typeDefinition.getSuperType() == null) break;
                 typeDefinition = schemaRegistryState.findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
-                if (typeDefinition == null) break;
             }
 
             ((TypeDefinitionImpl) currentTypeDefinition).setSchemaContextDefinition(schemaContextDefinition);
