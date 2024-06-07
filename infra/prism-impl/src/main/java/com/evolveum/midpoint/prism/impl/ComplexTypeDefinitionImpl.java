@@ -770,4 +770,24 @@ public class ComplexTypeDefinitionImpl
     public void setValueMigrator(ValueMigrator valueMigrator) {
         this.valueMigrator = valueMigrator;
     }
+
+    @Override
+    public @Nullable List<QName> getNaturalKeyConstituents() {
+        List<QName> constituents = super.getNaturalKeyConstituents();
+        if (constituents != null) {
+            return constituents;
+        }
+
+        QName superTypeQName = getSuperType();
+        if (superTypeQName == null) {
+            return null;
+        }
+
+        TypeDefinition superTypeDef = PrismContext.get().getSchemaRegistry().findTypeDefinitionByType(superTypeQName);
+        if (superTypeDef == null) {
+            return null;
+        }
+
+        return superTypeDef.getNaturalKeyConstituents();
+    }
 }

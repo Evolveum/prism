@@ -39,6 +39,7 @@ import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.google.common.collect.ImmutableSet;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Definition of a property container.
@@ -606,5 +607,15 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
         return super.getSchemaContextDefinition() != null ?
                 super.getSchemaContextDefinition() :
                 getComplexTypeDefinition().getSchemaContextDefinition();
+    }
+
+    @Override
+    public @Nullable List<QName> getNaturalKeyConstituents() {
+        List<QName> constituents = super.getNaturalKeyConstituents();
+        if (constituents != null) {
+            return constituents;
+        }
+
+        return getComplexTypeDefinition().getNaturalKeyConstituents();
     }
 }

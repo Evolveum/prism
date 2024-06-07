@@ -475,6 +475,8 @@
         <xsd:complexContent>
             <xsd:extension base="tns:AbstractRoleType">
                 <xsd:sequence>
+                    <xsd:element name="feature" type="tns:UserInterfaceFeatureType" minOccurs="0"/>
+                    <xsd:element name="objectListPanel" type="tns:GuiObjectListPanelConfigurationType" minOccurs="0"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
@@ -819,4 +821,47 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:complexType name="UserInterfaceFeatureType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:naturalKey>tns:identifier</a:naturalKey>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="identifier" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+            <xsd:element ref="tns:documentation" minOccurs="0"/>
+            <xsd:element name="displayOrder" type="xsd:int" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="GuiObjectListPanelConfigurationType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:since>3.9</a:since>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:UserInterfaceFeatureType">
+                <xsd:sequence>
+                    <xsd:element name="includeDefaultColumns" type="xsd:boolean" minOccurs="0"/>
+                    <xsd:element name="disableSorting" type="xsd:boolean" default="false" minOccurs="0"/>
+                    <xsd:element name="disableCounting" type="xsd:boolean" default="false" minOccurs="0"/>
+                    <xsd:element name="refreshInterval" type="xsd:int" minOccurs="0"/>
+                    <xsd:element name="paging" type="q:PagingType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:experimental>true</a:experimental>
+                                <a:since>4.4</a:since>
+                                <a:displayName>GuiObjectListPanelConfigurationType.paging</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
 </xsd:schema>

@@ -1,14 +1,14 @@
 package com.evolveum.midpoint.prism.foo;
 
+import javax.xml.namespace.QName;
+
+import jakarta.xml.bind.annotation.*;
+
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 import com.evolveum.midpoint.prism.path.ItemName;
-
-import jakarta.xml.bind.annotation.*;
-
-import javax.xml.namespace.QName;
 
 /**
  * Created by Dominik.
@@ -18,10 +18,6 @@ import javax.xml.namespace.QName;
         "identifier",
         "description",
         "documentation",
-        "display",
-        "visibility",
-        "displayOrder",
-        "applicableForOperation"
 })
 @XmlSeeAlso({
         GuiObjectListPanelConfigurationType.class,
@@ -108,8 +104,8 @@ public class UserInterfaceFeatureType extends AbstractMutableContainerable {
         return this;
     }
 
-    public<X >X end() {
-        return ((X)((PrismContainerValue)((PrismContainer) asPrismContainerValue().getParent()).getParent()).asContainerable());
+    public <X> X end() {
+        return ((X) ((PrismContainerValue) ((PrismContainer) asPrismContainerValue().getParent()).getParent()).asContainerable());
     }
 
     @Override
