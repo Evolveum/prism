@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.json.reader;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.impl.ParsingContextImpl;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
@@ -30,12 +31,12 @@ class JsonReadingContext {
 
     JsonReadingContext(@NotNull JsonParser parser, @NotNull ParsingContextImpl prismParsingContext,
             @NotNull LexicalProcessor.RootXNodeHandler objectHandler, @NotNull AbstractReader.YamlTagResolver yamlTagResolver,
-            @NotNull SchemaRegistry schemaRegistry) {
+            @NotNull SchemaRegistry schemaRegistry, ItemDefinition<?> initialDefinition) {
         this.parser = parser;
         this.prismParsingContext = prismParsingContext;
         this.objectHandler = objectHandler;
         this.yamlTagResolver = yamlTagResolver;
-        this.rootContext = XNodeDefinition.root(schemaRegistry);
+        this.rootContext = initialDefinition != null ?  XNodeDefinition.rootWithDefinition(schemaRegistry, initialDefinition) : XNodeDefinition.root(schemaRegistry);
     }
 
 

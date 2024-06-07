@@ -123,7 +123,6 @@ public class PrismValueCollectionsUtil {
         return containsRealValue(collection, value, Function.identity());
     }
 
-
     public static <V extends PrismValue> boolean equalsRealValues(Collection<V> collection1, Collection<V> collection2) {
         return MiscUtil.unorderedCollectionEquals(collection1, collection2, (v1, v2) -> v1.equals(v2, EquivalenceStrategy.REAL_VALUE));
     }

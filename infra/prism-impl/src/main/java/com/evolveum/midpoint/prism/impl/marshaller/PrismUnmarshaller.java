@@ -191,15 +191,22 @@ public class PrismUnmarshaller {
             }
         }
 
+        Item result;
         if (itemDefinition == null || itemDefinition instanceof PrismPropertyDefinition) {
-            return parseProperty(node, itemName, (PrismPropertyDefinition<?>) itemDefinition, pc);
+            result = parseProperty(node, itemName, (PrismPropertyDefinition<?>) itemDefinition, pc);
         } else if (itemDefinition instanceof PrismContainerDefinition) {    // also objects go here
-            return parseContainer(node, itemName, (PrismContainerDefinition<?>) itemDefinition, pc);
+            result = parseContainer(node, itemName, (PrismContainerDefinition<?>) itemDefinition, pc);
         } else if (itemDefinition instanceof PrismReferenceDefinition) {
-            return parseReference(node, itemName, (PrismReferenceDefinition) itemDefinition, pc);
+            result = parseReference(node, itemName, (PrismReferenceDefinition) itemDefinition, pc);
         } else {
             throw new IllegalArgumentException("Attempt to parse unknown definition type " + itemDefinition.getClass().getName());
         }
+
+        if (pc.isPreserveNamespaceContext()) {
+            result.setUserData(Item.KEY_NAMESPACE_CONTEXT, node.namespaceContext());
+        }
+
+        return result;
     }
 
     @NotNull
@@ -709,10 +716,10 @@ public class PrismUnmarshaller {
         checkArgument(xnode instanceof MapXNodeImpl, "Cannot parse reference from %s", xnode);
         MapXNodeImpl map = (MapXNodeImpl) xnode;
         TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(definition.getTypeName());
-        String oid = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_OID, DOMUtil.XSD_STRING);
+        String oid = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_OID.getLocalPart(), DOMUtil.XSD_STRING);
         PrismReferenceValue refVal = new PrismReferenceValueImpl(oid);
 
-        QName targetType = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_TYPE, DOMUtil.XSD_QNAME);
+        QName targetType = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_TYPE.getLocalPart(), DOMUtil.XSD_QNAME);
         if (targetType == null) {
             if (!pc.isAllowMissingRefTypes() && !allowMissingRefTypesOverride) {
                 targetType = checkSchemaNotNull(definition.getTargetTypeName(),
@@ -735,32 +742,32 @@ public class PrismUnmarshaller {
             refVal.setTargetType(targetType);
         }
 
-        QName relationAttribute = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_RELATION, DOMUtil.XSD_QNAME);
+        QName relationAttribute = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_RELATION.getLocalPart(), DOMUtil.XSD_QNAME);
         refVal.setRelation(relationAttribute);
 
-        refVal.setDescription(map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_DESCRIPTION, DOMUtil.XSD_STRING));
+        refVal.setDescription(map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_DESCRIPTION.getLocalPart(), DOMUtil.XSD_STRING));
 
-        refVal.setFilter(parseFilter(map.get(XNodeImpl.KEY_REFERENCE_FILTER), pc));
+        refVal.setFilter(parseFilter(map.get(XNodeImpl.KEY_REFERENCE_FILTER.withoutNamespace()), pc));
 
-        String resolutionTimeString = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_RESOLUTION_TIME, DOMUtil.XSD_STRING);
+        String resolutionTimeString = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_RESOLUTION_TIME.getLocalPart(), DOMUtil.XSD_STRING);
         if (resolutionTimeString != null) {
             EvaluationTimeType resolutionTime = EvaluationTimeType.fromValue(resolutionTimeString);
             refVal.setResolutionTime(resolutionTime);
         }
 
-        String referentialIntegrityString = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_REFERENTIAL_INTEGRITY,
+        String referentialIntegrityString = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_REFERENTIAL_INTEGRITY.withoutNamespace(),
                 DOMUtil.XSD_STRING);
         if (referentialIntegrityString != null) {
             refVal.setReferentialIntegrity(ReferentialIntegrityType.fromValue(referentialIntegrityString));
         }
 
-        XNodeImpl xnodeForTargetName = map.get(XNodeImpl.KEY_REFERENCE_TARGET_NAME);
+        XNodeImpl xnodeForTargetName = map.get(XNodeImpl.KEY_REFERENCE_TARGET_NAME.withoutNamespace());
         if (xnodeForTargetName != null) {
             PolyStringType targetName = beanUnmarshaller.unmarshal(xnodeForTargetName, PolyStringType.class, pc);
             refVal.setTargetName(targetName);
         }
 
-        XNodeImpl xrefObject = map.get(XNodeImpl.KEY_REFERENCE_OBJECT);
+        XNodeImpl xrefObject = map.get(XNodeImpl.KEY_REFERENCE_OBJECT.withoutNamespace());
         if (xrefObject != null) {
             MapXNodeImpl objectMapNode = toObjectMapNode(xrefObject);
             checkSchemaNotNull(targetType, "Cannot parse object from %s without knowing its type", xrefObject);
@@ -862,6 +869,13 @@ public class PrismUnmarshaller {
             @Nullable ComplexTypeDefinition complexTypeDefinition,
             XNode xnode) {
         QName explicitItemType = xnode != null && xnode.isExplicitTypeDeclaration() ? xnode.getTypeQName() : null;
+
+        if(xnode != null && xnode.getDefinition() != null) {
+            // XNode provided definition
+            return xnode.getDefinition();
+        }
+
+
         return schemaRegistry.locateItemDefinition(
                 itemName, explicitItemType, complexTypeDefinition, qName -> createDynamicItemDefinition(qName, xnode));
     }

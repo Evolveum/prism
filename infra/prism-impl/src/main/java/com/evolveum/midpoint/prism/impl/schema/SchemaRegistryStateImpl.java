@@ -19,10 +19,12 @@ import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import com.evolveum.axiom.concepts.CheckedFunction;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 
 import com.google.common.collect.HashMultimap;
@@ -125,6 +127,9 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
     @Experimental
     private final ConcurrentHashMap<QName, PrismObjectDefinition<?>> objectDefinitionForType = new ConcurrentHashMap<>();
 
+
+    private final ConcurrentHashMap<DerivationKey, Object> derivedObjects = new ConcurrentHashMap<>();
+
     /**
      * Marker value for "no such class": cached value that indicates that we have executed the search but found
      * no matching class.
@@ -165,6 +170,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         classForTypeExcludingXsd.clear();
         objectDefinitionForClass.clear();
         objectDefinitionForType.clear();
+        derivedObjects.clear();
     }
 
     //region Schemas and type maps (TODO)
@@ -341,6 +347,24 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         }
         return null;
     }
+    //endregion
+
+    //region Derived objects
+
+    @Override
+    public <R, E extends Exception> R getDerivedObject(DerivationKey<R> derivationKey, CheckedFunction<SchemaRegistryState, R, E> mapping) throws E {
+        var maybe = derivedObjects.get(derivationKey);
+        if (maybe != null) {
+            return (R) maybe;
+        }
+        var computed = mapping.apply(this);
+        if (computed == null) {
+            throw new IllegalArgumentException("Mapping returned null.");
+        }
+        derivedObjects.putIfAbsent(derivationKey, computed);
+        return computed;
+    }
+
     //endregion
 
     //region Unqualified names resolution
@@ -904,7 +928,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     parsePrismSchemasDto.wrappedSchemas.size(), System.currentTimeMillis() - started);
 
             for (PrismSchemaImpl parsedSchema : parsePrismSchemasDto.parsedPrismSchemas) {
-                detectAugmentations(parsedSchema);
+                detectAugmentations(parsedSchema, schemaRegistryState);
             }
 
             for (String namespace : parsePrismSchemasDto.fragmentedNamespaces) {
@@ -950,7 +974,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             LOGGER.trace("Parsed schema {}, namespace: {}, isRuntime: {} in {} ms",
                     schemaDescription.getSourceDescription(), namespace, isRuntime, System.currentTimeMillis() - started);
             parsedPrismSchemas.add(schema);
-            detectAugmentations(schema);
+            detectAugmentations(schema, schemaRegistryState);
         }
 
         // global item definitions may refer to types that are not yet available
@@ -965,6 +989,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             for (TypeDefinition typeDefinition : schema.getDefinitions(TypeDefinition.class)) {
                 processSubstitutionGroups(typeDefinition);
                 fillInSubtype(schemaRegistryState, typeDefinition);
+                schemaContextDefinitionInherited(schemaRegistryState, typeDefinition);
             }
         }
 
@@ -1003,16 +1028,16 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             return itemDef.getItemName().equals(maybeSubst.getSubstitutionHead());
         }
 
-        private void detectAugmentations(PrismSchema schema) {
+        private void detectAugmentations(PrismSchema schema, SchemaRegistryStateImpl schemaRegistryState) {
             detectSubstitutions(schema);
-            detectExtensionSchema(schema);
+            detectExtensionSchema(schema, schemaRegistryState);
         }
 
         private void detectSubstitutions(PrismSchema schema) {
             substitutionsBuilder.putAll(schema.getSubstitutions());
         }
 
-        private void detectExtensionSchema(PrismSchema schema) {
+        private void detectExtensionSchema(PrismSchema schema, SchemaRegistryStateImpl schemaRegistryState) {
             for (ComplexTypeDefinition def : schema.getComplexTypeDefinitions()) {
                 QName typeBeingExtended = def.getExtensionForType(); // e.g. c:UserType
                 if (typeBeingExtended != null) {
@@ -1021,7 +1046,11 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                         ComplexTypeDefinition existingExtension = extensionSchemasBuilder.get(typeBeingExtended);
                         existingExtension.merge(def);
                     } else {
-                        extensionSchemasBuilder.put(typeBeingExtended, def.clone());
+                        @NotNull ComplexTypeDefinition clone = def.clone();
+                        if (clone instanceof ComplexTypeDefinitionImpl clonedComplexDef) {
+                            clonedComplexDef.setSchemaRegistryState(schemaRegistryState);
+                        }
+                        extensionSchemasBuilder.put(typeBeingExtended, clone);
                     }
                 }
             }
@@ -1057,6 +1086,22 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     (SchemaRegistryImpl) schemaRegistryState.prismContext.getSchemaRegistry(),
                     schemaRegistryState));
             return schemaFactory.newSchema(sources);
+        }
+
+        private void schemaContextDefinitionInherited(SchemaRegistryStateImpl schemaRegistryState, TypeDefinition currentTypeDefinition) {
+            if (currentTypeDefinition.getSchemaContextDefinition() != null) return;
+
+            TypeDefinition typeDefinition = currentTypeDefinition;
+            SchemaContextDefinition schemaContextDefinition = null;
+
+            while(schemaContextDefinition == null) {
+                if (typeDefinition == null) break;
+                schemaContextDefinition = typeDefinition.getSchemaContextDefinition();
+                if (typeDefinition.getSuperType() == null) break;
+                typeDefinition = schemaRegistryState.findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
+            }
+
+            ((TypeDefinitionImpl) currentTypeDefinition).setSchemaContextDefinition(schemaContextDefinition);
         }
     }
 

@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.path.ItemName;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
@@ -148,7 +150,7 @@ class DocumentWriter {
         writeMetadataIfNeeded(map, localNamespace);
         for (Map.Entry<QName, XNodeImpl> entry : map.entrySet()) {
             if (entry.getValue() != null) {
-                XNodeDefinition entryDef = itemDef.child(entry.getKey());
+                XNodeDefinition entryDef = itemDef.child(ItemName.fromQName(entry.getKey()));
                 generator.writeFieldName(createKeyUri(entry, localNamespace, entryDef, itemDef));
                 write(entry.getValue(), localNamespace, false, entryDef);
             }

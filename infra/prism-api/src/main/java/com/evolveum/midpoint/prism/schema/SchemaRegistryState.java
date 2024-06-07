@@ -8,8 +8,10 @@
 package com.evolveum.midpoint.prism.schema;
 
 import java.util.Collection;
+import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.concepts.CheckedFunction;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 import org.jetbrains.annotations.NotNull;
@@ -74,4 +76,69 @@ public interface SchemaRegistryState extends DebugDumpable, GlobalDefinitionsSto
      */
     @NotNull
     IsList isList(@Nullable QName xsiType, @NotNull QName elementName);
+
+    static <R> DerivationKey<R> derivationKeyFrom(Class<?> keyOwner, String keyName) {
+        return new DerivationKey(keyOwner, keyName);
+    }
+
+    /**
+     * Returns derived value specific to this schema context state, supplied derivation key and mapping.
+     *
+     * Returns cached value if it was already computed and is available. If value is not available, it is computed by supplied
+     * mapping function.
+     *
+     * Do not use for short-lived values. Use-cases should be like caching parser instances with already done lookups for
+     * repository or other long-lived components, which needs to be recomputed when schemas are changed.
+     *
+     *
+     * @param derivationKey
+     * @param mapping
+     * @return
+     * @param <R>
+     * @param <E>
+     * @throws E
+     */
+    default <R,E extends Exception> R getDerivedObject(DerivationKey<R> derivationKey, CheckedFunction<SchemaRegistryState, R, E> mapping)
+        throws E {
+        return mapping.apply(this);
+    }
+
+
+    /**
+     * Derivation key is used for caching computed values, which depends on schema context state.
+     *
+     * @param <R>
+     */
+    public static class DerivationKey<R> {
+        private final Class<?> keyOwner;
+        private final String keyName;
+
+        private DerivationKey(Class<?> keyOwner, String keyName) {
+            this.keyOwner = keyOwner;
+            this.keyName = keyName;
+        }
+
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            DerivationKey<?> that = (DerivationKey<?>) o;
+
+            if (!Objects.equals(keyOwner, that.keyOwner))
+                return false;
+            return Objects.equals(keyName, that.keyName);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = keyOwner != null ? keyOwner.hashCode() : 0;
+            result = 31 * result + (keyName != null ? keyName.hashCode() : 0);
+            return result;
+        }
+    }
 }

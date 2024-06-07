@@ -15,23 +15,24 @@ import java.util.Map;
 import java.util.function.Function;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 public class NaturalKeyDefinitionImpl implements NaturalKeyDefinition {
 
-    private static final Function<QName, NaturalKeyDefinition> DEFAULT_CONSTITUENT_HANDLER = (constituent) -> DefaultNaturalKeyDefinitionImpl.of(constituent);
+    private static final Function<QName, NaturalKeyDefinition> DEFAULT_CONSTITUENT_HANDLER =
+            (constituent) -> DefaultNaturalKeyDefinitionImpl.of(constituent);
 
-    private static final @NotNull Map<Class<?>, Function<QName, NaturalKeyDefinition>> CONSTITUENT_HANDLERS = Map.ofEntries(
-            entry(ItemPathType.class, (constituent) -> ItemPathNaturalKeyDefinitionImpl.of(new ItemName(constituent)))
-    );
+    private static final @NotNull Map<Class<?>, Function<QName, NaturalKeyDefinition>> CONSTITUENT_HANDLERS =
+            Map.ofEntries(
+                    entry(ItemPathType.class, (constituent) -> ItemPathNaturalKeyDefinitionImpl.of(new ItemName(constituent)))
+            );
 
     @NotNull private final Collection<QName> constituents;
 

@@ -7,14 +7,22 @@
 
 package com.evolveum.midpoint.prism.key;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.Item;
+import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.path.ItemName;
 
 /**
- * Describes how to handle a natural key of multi-valued items.
+ * Describes how to handle a natural key of multivalued items.
  *
  * Responsibilities:
  *
- * 1. _Matching_ values of a multi-valued item, so that the matching pairs can be appropriately merged.
+ * 1. _Matching_ values of a multivalued item, so that the matching pairs can be appropriately merged.
  * 2. _Merging_ values of the key itself. For example, definitions of an attribute `ri:drink` with `ref`
  * of `drink` (unqualified) and `ri:drink` (qualified) have to be merged, and the result should use the
  * `ref` of `ri:drink`, i.e. the qualified version.
@@ -34,4 +42,25 @@ public interface NaturalKeyDefinition {
      * PrismContainerValue)}), i.e. updates the key in targetValue if necessary.
      */
     void mergeMatchingKeys(PrismContainerValue<?> targetValue, PrismContainerValue<?> sourceValue);
+
+    /**
+     * Returns a collection of items that constitute the natural key for specific value.
+     */
+    default Collection<Item<?, ?>> getConstituents(PrismContainerValue<?> value) {
+        PrismContainerDefinition<?> def = value.getDefinition();
+        List<QName> constituents = def.getNaturalKeyConstituents();
+        if (constituents == null || constituents.isEmpty()) {
+            return null;
+        }
+
+        Collection<Item<?, ?>> items = new ArrayList<>();
+        for (QName constituent : constituents) {
+            Item<?, ?> item = value.findItem(ItemName.fromQName(constituent));
+            if (item != null) {
+                items.add(item);
+            }
+        }
+
+        return items;
+    }
 }

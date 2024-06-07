@@ -60,6 +60,11 @@ public class PrismContainerImpl<C extends Containerable>
 
     protected Class<C> compileTimeClass;
 
+    private static final int FAST_ID_THRESHOLD = 20;
+
+    private transient boolean strictModifications = false;
+    private transient Set<Long> presentIdentifiers;
+
     public PrismContainerImpl(QName name) {
         super(name);
     }
@@ -214,10 +219,26 @@ public class PrismContainerImpl<C extends Containerable>
 
     @Override
     protected boolean addInternalExecution(@NotNull PrismContainerValue<C> newValue) {
-        if (newValue.getId() != null) {
-            for (PrismContainerValue<?> existingValue : getValues()) {
-                if (existingValue.getId() != null && existingValue.getId().equals(newValue.getId())) {
+        if (useIdentifierIndex()) {
+            var id = newValue.getId();
+            if (id != null) {
+                if (presentIdentifiers.contains(id)) {
                     throw new IllegalStateException("Attempt to add a container value with an id that already exists: " + newValue.getId());
+                }
+                presentIdentifiers.add(id);
+            } else {
+                // ID is null, we can not asume strict modifications anymore
+                stopStrictModifications();
+            }
+        }
+
+        // We check strict modifications again, they could be turn off by previous block, if new value does not have id
+        if (!strictModifications) {
+            if (newValue.getId() != null) {
+                for (PrismContainerValue existingValue : getValues()) {
+                    if (existingValue.getId() != null && existingValue.getId().equals(newValue.getId())) {
+                        throw new IllegalStateException("Attempt to add a container value with an id that already exists: " + newValue.getId());
+                    }
                 }
             }
         }
@@ -955,5 +976,37 @@ public class PrismContainerImpl<C extends Containerable>
             }
             return rv;
         }
+    }
+
+    public void startStrictModifications() {
+        strictModifications = true;
+    }
+
+    public boolean useIdentifierIndex() {
+        if (!strictModifications) {
+            return false;
+        }
+        if (presentIdentifiers != null) {
+            return true;
+        }
+        if (values.size() < FAST_ID_THRESHOLD) {
+            return false;
+        }
+        presentIdentifiers = new HashSet<>();
+
+        for (var value: values) {
+            if (value.getId() == null) {
+                // If we have value without identifier, we fallback to original behaviour
+                stopStrictModifications();
+                return false;
+            }
+            presentIdentifiers.add(value.getId());
+        }
+        return true;
+    }
+
+    public void stopStrictModifications() {
+        strictModifications = false;
+        presentIdentifiers = null;
     }
 }

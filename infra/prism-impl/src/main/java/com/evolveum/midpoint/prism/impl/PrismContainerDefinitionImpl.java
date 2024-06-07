@@ -22,6 +22,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableContainerDefinition;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -598,4 +600,11 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
 //        return itemName.getLocalPart().equals(PrismConstants.EXTENSION_LOCAL_NAME);
 //
 //    }
+
+    @Override
+    public SchemaContextDefinition getSchemaContextDefinition() {
+        return super.getSchemaContextDefinition() != null ?
+                super.getSchemaContextDefinition() :
+                getComplexTypeDefinition().getSchemaContextDefinition();
+    }
 }

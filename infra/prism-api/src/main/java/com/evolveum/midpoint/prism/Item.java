@@ -54,6 +54,8 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
 public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PathVisitable,
         ParentVisitable, Serializable, Revivable, Freezable {
 
+    String KEY_NAMESPACE_CONTEXT = PrismNamespaceContext.class.getSimpleName();
+
     /**
      * Returns applicable definition.
      * <p>
@@ -187,6 +189,22 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     @Override
     @NotNull
     ItemPath getPath();
+
+    /**
+     * Returns the namespace context for this item if available.
+     * Namespace context is currently stored in user data with key
+     *
+     * Namespace context is stored only if {@link PrismParser#preserveNamespaceContext()} is flag was used during parsing
+     *
+     * @return The namespace context for this item if available.
+     *
+     * @see PrismParser#preserveNamespaceContext()
+     * @see ParsingContext#isPreserveNamespaceContext()
+     */
+    @Nullable
+    default PrismNamespaceContext getNamespaceContext() {
+        return getUserData(KEY_NAMESPACE_CONTEXT);
+    }
 
     /**
      * Returns the "user data", a map that allows attaching arbitrary named data to this item.

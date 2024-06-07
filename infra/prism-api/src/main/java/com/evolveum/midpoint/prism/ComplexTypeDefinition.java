@@ -15,7 +15,10 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefi
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
 import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+
 import com.sun.xml.xsom.XSComplexType;
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

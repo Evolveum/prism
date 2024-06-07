@@ -92,6 +92,14 @@ public interface PrismParser {
     PrismParser context(@NotNull ParsingContext context);
 
     /**
+     * Preserves namespace context during parsing.
+     * This is useful when we want to use namespaces and prefixes later on during serialization.
+     * @return Updated parser.
+     */
+    @NotNull
+    PrismParser preserveNamespaceContext();
+
+    /**
      * Switches the parser into "strict" parsing mode.
      * @return Updated parser.
      */

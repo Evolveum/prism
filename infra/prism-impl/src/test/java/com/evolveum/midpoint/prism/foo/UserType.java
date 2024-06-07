@@ -79,23 +79,24 @@ public class UserType
 {
 
     // This is NOT GENERATED. It is supplied here manually for the testing.
-    public static final ItemName F_FULL_NAME = new ItemName(NS_FOO, "fullName");
-    public static final ItemName F_GIVEN_NAME = new ItemName(NS_FOO, "givenName");
-    public static final ItemName F_FAMILY_NAME = new ItemName(NS_FOO, "familyName");
-    public static final ItemName F_ADDITIONAL_NAMES = new ItemName(NS_FOO, "additionalNames");
-    public static final ItemName F_POLY_NAME = new ItemName(NS_FOO, "polyName");
-    public static final ItemName F_ACTIVATION = new ItemName(NS_FOO, "activation");
-    public static final ItemName F_ASSIGNMENT = new ItemName(NS_FOO, "assignment");
-    public static final ItemName F_LOCALITY = new ItemName(NS_FOO, "locality");
-    public static final ItemName F_ACCOUNT_REF = new ItemName(NS_FOO, "accountRef");
-    public static final ItemName F_SPECIAL = new ItemName(NS_FOO, "special");
-    public static final ItemName F_SINGLE_ACTIVATION = new ItemName(NS_FOO, "singleActivation");
-    public static final ItemName F_MULTI_ACTIVATION = new ItemName(NS_FOO, "multiActivation");
-    public static final ItemName F_MULTI_ACTIVATION_COPY = new ItemName(NS_FOO, "multiActivationCopy");
-    public static final ItemName F_SINGLE_CONSTRUCTION = new ItemName(NS_FOO, "singleConstruction");
-    public static final ItemName F_MULTI_CONSTRUCTION = new ItemName(NS_FOO, "multiConstruction");
-    public static final ItemName F_MULTI_CONSTRUCTION_COPY = new ItemName(NS_FOO, "multiConstructionCopy");
-    public static final ItemName F_PASSWORD = new ItemName(NS_FOO, "password");
+    public static final ItemName F_FULL_NAME = ItemName.from(NS_FOO, "fullName");
+    public static final ItemName F_GIVEN_NAME = ItemName.from(NS_FOO, "givenName");
+    public static final ItemName F_FAMILY_NAME = ItemName.from(NS_FOO, "familyName");
+    public static final ItemName F_ADDITIONAL_NAMES = ItemName.from(NS_FOO, "additionalNames");
+    public static final ItemName F_POLY_NAME = ItemName.from(NS_FOO, "polyName");
+    public static final ItemName F_ACTIVATION = ItemName.from(NS_FOO, "activation");
+    public static final ItemName F_ASSIGNMENT = ItemName.from(NS_FOO, "assignment");
+    public static final ItemName F_USELESS_ASSIGNMENT = ItemName.from(NS_FOO, "uselessAssignment");
+    public static final ItemName F_LOCALITY = ItemName.from(NS_FOO, "locality");
+    public static final ItemName F_ACCOUNT_REF = ItemName.from(NS_FOO, "accountRef");
+    public static final ItemName F_SPECIAL = ItemName.from(NS_FOO, "special");
+    public static final ItemName F_SINGLE_ACTIVATION = ItemName.from(NS_FOO, "singleActivation");
+    public static final ItemName F_MULTI_ACTIVATION = ItemName.from(NS_FOO, "multiActivation");
+    public static final ItemName F_MULTI_ACTIVATION_COPY = ItemName.from(NS_FOO, "multiActivationCopy");
+    public static final ItemName F_SINGLE_CONSTRUCTION = ItemName.from(NS_FOO, "singleConstruction");
+    public static final ItemName F_MULTI_CONSTRUCTION = ItemName.from(NS_FOO, "multiConstruction");
+    public static final ItemName F_MULTI_CONSTRUCTION_COPY = ItemName.from(NS_FOO, "multiConstructionCopy");
+    public static final ItemName F_PASSWORD = ItemName.from(NS_FOO, "password");
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "UserType");
 
     private static final long serialVersionUID = 201202081233L;
@@ -108,6 +109,7 @@ public class UserType
     protected List<String> additionalNames;
     protected String locality;
     protected List<AssignmentType> assignment;
+    protected List<AssignmentType> uselessAssignment;
     protected ActivationType activation;
     protected ActivationType singleActivation;
     protected List<ActivationType> multiActivation;
@@ -121,6 +123,16 @@ public class UserType
     protected String specialWithInternalizedName; // internal name here differs from the one in serialized form
 
     public UserType() {
+    }
+
+    @Override
+    protected QName prismGetContainerName() {
+        return null;
+    }
+
+    @Override
+    protected QName prismGetContainerType() {
+        return null;
     }
 
     public UserType(PrismContext ignored) {

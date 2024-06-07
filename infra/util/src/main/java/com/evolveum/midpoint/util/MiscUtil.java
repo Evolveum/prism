@@ -690,6 +690,20 @@ public class MiscUtil {
         return value != null ? value.toString() : null;
     }
 
+    @SafeVarargs
+    public static <T> @NotNull T first(T value, Supplier<T>... suppliers) {
+        if (value != null) {
+            return value;
+        }
+        for (Supplier<T> supplier : suppliers) {
+            T supplied = supplier.get();
+            if (supplied != null) {
+                return supplied;
+            }
+        }
+        throw new IllegalStateException("No value");
+    }
+
     public static <T> T extractSingleton(Collection<T> collection) {
         return extractSingleton(collection, () -> new IllegalArgumentException("Expected a collection with at most one item; got the one with " + collection.size() + " items"));
     }

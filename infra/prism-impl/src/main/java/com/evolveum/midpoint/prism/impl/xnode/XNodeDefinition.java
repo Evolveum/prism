@@ -5,16 +5,12 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemName;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismNamespaceContext;
-import com.evolveum.midpoint.prism.PrismReferenceDefinition;
-import com.evolveum.midpoint.prism.SchemaMigration;
-import com.evolveum.midpoint.prism.SchemaMigrationOperation;
 import com.evolveum.midpoint.prism.impl.lex.json.JsonInfraItems;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -26,13 +22,13 @@ import com.google.common.base.Strings;
 
 public abstract class XNodeDefinition {
 
-    private static final SchemaIgnorant EMPTY = new SchemaIgnorant(new QName(""));
+    private static final SchemaIgnorant EMPTY = new SchemaIgnorant(ItemName.interned(null, ""));
 
     private static final @NotNull QName FILTER_CLAUSE = new QName(PrismConstants.NS_QUERY, "filterClause");
 
-    private final @NotNull QName name;
+    private final @NotNull ItemName name;
 
-    protected XNodeDefinition(QName name) {
+    protected XNodeDefinition(ItemName name) {
         this.name = name;
     }
 
@@ -40,18 +36,33 @@ public abstract class XNodeDefinition {
         return new SchemaRoot(schemaRegistry);
     }
 
+    public static Root rootWithDefinition(@NotNull SchemaRegistry schemaRegistry, ItemDefinition<?> topLevelItem) {
+        return new SchemaRootExpectingItem(schemaRegistry, topLevelItem);
+    }
+
     public static Root empty() {
         return EMPTY;
     }
 
-    protected abstract XNodeDefinition unawareFrom(QName name);
+    protected abstract XNodeDefinition unawareFrom(ItemName name);
 
     public static QName resolveQName(String name, PrismNamespaceContext context) throws SchemaException {
-        return empty().resolve(name, context.withoutDefault()).getName();
+        // taken from empty.resolve(context.withoutDefault) so it can be simplified to this.
+        if (!QNameUtil.isUriQName(name)) {
+            PrefixedName prefixed = QNameUtil.parsePrefixedName(name);
+            if (!prefixed.prefix().isEmpty()) {
+                Optional<String> ns = context.namespaceFor(prefixed.prefix());
+                if (ns.isPresent()) {
+                    return new QName(ns.get(), prefixed.localName(), prefixed.prefix());
+                }
+            }
+        }
+        QNameInfo result = QNameUtil.uriToQNameInfo(name, true);
+        return result.name;
     }
 
 
-    public @NotNull QName getName() {
+    public @NotNull ItemName getName() {
         return name;
     }
 
@@ -74,12 +85,13 @@ public abstract class XNodeDefinition {
                 }
             }
             Optional<String> ns = namespaceContext.namespaceFor(prefixed.prefix());
+
             if (ns.isPresent()) {
-                return toContext(new QName(ns.get(), prefixed.localName()));
+                return toContext(ItemName.from(ns.get(), prefixed.localName()));
             } else if (!prefixed.prefix().isEmpty()) {
                 warnOrThrow("Undeclared prefix '%s' , name: %s", prefixed.prefix(), name);
             } else {
-                return toContext(new QName(prefixed.localName()));
+                return toContext(new ItemName(prefixed.localName()));
             }
         }
         QNameInfo result = QNameUtil.uriToQNameInfo(name, true);
@@ -91,7 +103,7 @@ public abstract class XNodeDefinition {
                 result = QNameUtil.qnameToQnameInfo(new QName(defaultNs.get(), result.name.getLocalPart()));
             }
         }
-        return toContext(result.name);
+        return toContext(ItemName.fromQName(result.name));
     }
 
     private @NotNull XNodeDefinition infra(@NotNull String name) {
@@ -103,7 +115,7 @@ public abstract class XNodeDefinition {
         }
         // Infra properties are unqualified for now
         // TODO: We could return definition for infra properties later
-        return unawareFrom(new QName(name));
+        return unawareFrom(new ItemName(name));
     }
 
     public @NotNull XNodeDefinition unaware() {
@@ -119,7 +131,11 @@ public abstract class XNodeDefinition {
     }
 
     public XNodeDefinition child(QName name) {
-        XNodeDefinition maybe = resolveLocally(name);
+        return child(ItemName.fromQName(name));
+    }
+
+    public XNodeDefinition child(ItemName name) {
+        XNodeDefinition maybe = resolveLocally(ItemName.from(name.getNamespaceURI(), name.getLocalPart()));
         if(maybe != null) {
             return maybe;
         }
@@ -130,7 +146,7 @@ public abstract class XNodeDefinition {
         return new Value(this);
     }
 
-    private boolean isInfra(@NotNull String name) {
+    protected boolean isInfra(@NotNull String name) {
         return name.startsWith("@");
     }
 
@@ -142,11 +158,11 @@ public abstract class XNodeDefinition {
         return null;
     }
 
-    protected @Nullable XNodeDefinition resolveLocally(@NotNull QName name) {
+    protected @Nullable XNodeDefinition resolveLocally(@NotNull ItemName name) {
         return null;
     }
 
-    private @NotNull XNodeDefinition toContext(QName name) {
+    private @NotNull XNodeDefinition toContext(ItemName name) {
         XNodeDefinition ret = resolveLocally(name);
         if(ret != null) {
             return ret;
@@ -154,13 +170,24 @@ public abstract class XNodeDefinition {
         return unawareFrom(name);
     }
 
+    public abstract ItemDefinition<?> itemDefinition();
+
     private abstract static class SchemaAware extends XNodeDefinition {
 
         protected final SchemaRoot root;
+        protected final ItemDefinition<?> itemDefinition;
         private final boolean inherited;
 
-        public SchemaAware(QName name, SchemaRoot root, boolean inherited) {
+        public SchemaAware(ItemName name, ItemDefinition<?> itemDefinition, SchemaRoot root, boolean inherited) {
             super(name);
+            this.itemDefinition = itemDefinition;
+            this.inherited = inherited;
+            this.root = root;
+        }
+
+        public SchemaAware(ItemDefinition<?> itemDefinition, SchemaRoot root, boolean inherited) {
+            super(itemDefinition.getItemName());
+            this.itemDefinition = itemDefinition;
             this.inherited = inherited;
             this.root = root;
         }
@@ -170,17 +197,17 @@ public abstract class XNodeDefinition {
             return inherited;
         }
 
-        protected XNodeDefinition awareFrom(QName name, ItemDefinition<?> definition, boolean inherited) {
+        protected XNodeDefinition awareFrom(ItemName name, ItemDefinition<?> definition, boolean inherited) {
             return root.awareFrom(name, definition, inherited);
         }
 
         @Override
         public @NotNull XNodeDefinition withType(QName typeName) {
-            return root.fromType(getName(), typeName, inherited);
+            return root.fromType(itemDefinition, typeName, inherited);
         }
 
         @Override
-        protected XNodeDefinition unawareFrom(QName name) {
+        protected XNodeDefinition unawareFrom(ItemName name) {
             return root.unawareFrom(name);
         }
 
@@ -189,11 +216,15 @@ public abstract class XNodeDefinition {
             return root.metadataDef();
         }
 
+        @Override
+        public ItemDefinition<?> itemDefinition() {
+            return itemDefinition;
+        }
     }
 
     public abstract static class Root extends XNodeDefinition {
 
-        protected Root(QName name) {
+        protected Root(ItemName name) {
             super(name);
         }
 
@@ -209,7 +240,7 @@ public abstract class XNodeDefinition {
         private SchemaRegistry registry;
 
         public SchemaRoot(SchemaRegistry reg) {
-            super(new QName(""));
+            super(new ItemName(""));
             registry = reg;
         }
 
@@ -218,13 +249,13 @@ public abstract class XNodeDefinition {
             return registry.staticNamespaceContext();
         }
 
-        public @NotNull XNodeDefinition fromType(@NotNull QName name, QName typeName, boolean inherited) {
-            var definition = Optional.ofNullable(registry.findComplexTypeDefinitionByType(typeName));
-            return awareFrom(name, typeName, definition, inherited);
+        public @NotNull XNodeDefinition fromType(@NotNull ItemDefinition<?> itemDef, QName typeName, boolean inherited) {
+            var typeDef = Optional.ofNullable(registry.findComplexTypeDefinitionByType(typeName));
+            return awareFrom(itemDef, typeDef, inherited);
         }
 
 
-        XNodeDefinition awareFrom(QName name, ItemDefinition<?> definition, boolean inherited) {
+        XNodeDefinition awareFrom(ItemName name, ItemDefinition<?> definition, boolean inherited) {
 //            if(definition instanceof PrismReferenceDefinition) {
 //                var refDef = ((PrismReferenceDefinition) definition);
 //                QName compositeName = refDef.getCompositeObjectElementName();
@@ -243,43 +274,49 @@ public abstract class XNodeDefinition {
                 if (definition.isDynamic()) {
                     inherited = false;
                 }
-                return awareFrom(definition.getItemName(), definition.getTypeName(),definition.structuredType(), inherited);
+                return awareFrom(definition, definition.structuredType(), inherited);
             }
             return unawareFrom(name);
         }
 
-        private XNodeDefinition awareFrom(QName name, @NotNull QName typeName,
-                Optional<ComplexTypeDefinition> structuredType, boolean inherited) {
+        private XNodeDefinition awareFrom(@NotNull ItemDefinition<?> definition, Optional<ComplexTypeDefinition> structuredType, boolean inherited) {
             if(structuredType.isPresent()) {
                 var complex = structuredType.get();
                 if(complex.isReferenceMarker()) {
-                    return new ObjectReference(name, complex, this, inherited);
+                    return new ObjectReference(definition, structuredType.get(), this, inherited);
                 }
                 if(complex.hasSubstitutions()) {
-                    return new ComplexTypeWithSubstitutions(name, complex, this, inherited);
+                    return new ComplexTypeWithSubstitutions(definition, structuredType.get(), this, inherited);
                 }
                 if (allowsStrictAny(complex)) {
-                    return new ComplexTypeWithStrictAny(name, complex, this, inherited);
+                    return new ComplexTypeWithStrictAny(definition, structuredType.get(),  this, inherited);
                 }
-                return new ComplexTypeAware(name, complex, this, inherited);
+                return new ComplexTypeAware(definition, structuredType.get(),  this, inherited);
             }
-            return new SimpleType(name, typeName, inherited, this);
-        }
+            return new SimpleType(definition, definition.getTypeName(), inherited, this);
 
+        }
 
         @Override
         public @NotNull XNodeDefinition withType(QName typeName) {
-            return fromType(getName(), typeName, false);
+            return fromType(itemDefinition(), typeName, false);
         }
 
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
+            var baseNs = registry.staticNamespaceContext().defaultNamespace();
+            if (Strings.isNullOrEmpty(defaultNs) && baseNs.isPresent()) {
+                var maybe = registry.findItemDefinitionByElementName(ItemName.from(baseNs.get(), localName));
+                if (maybe != null) {
+                    return awareFrom(maybe.getItemName(), maybe, true);
+                }
+            }
             return null;
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             ItemDefinition<?> def = registry.findObjectDefinitionByElementName(name);
             if(def == null) {
                 try {
@@ -292,39 +329,75 @@ public abstract class XNodeDefinition {
         }
 
         @Override
+        public ItemDefinition<?> itemDefinition() {
+            return null;
+        }
+
+        @Override
         public Optional<QName> getType() {
             return Optional.empty();
         }
 
         @Override
-        protected XNodeDefinition unawareFrom(QName name) {
-            return new SimpleType(name, null, false, this);
+        protected XNodeDefinition unawareFrom(ItemName name) {
+            return new SimpleType(name, null, false, this, false);
         }
 
         @Override
         public XNodeDefinition metadataDef() {
             var def = registry.getValueMetadataDefinition();
-            return awareFrom(JsonInfraItems.PROP_METADATA_QNAME, def.getTypeName(), def.structuredType(), true);
+            return new ComplexTypeAware(JsonInfraItems.PROP_METADATA_QNAME, def, def.structuredType().get(), this, true);
         }
 
     }
 
+    private static class SchemaRootExpectingItem extends SchemaRoot {
+
+        private final ItemDefinition<?> expectedItem;
+
+        public SchemaRootExpectingItem(SchemaRegistry reg, ItemDefinition<?> expectedItem) {
+            super(reg);
+            this.expectedItem = expectedItem;
+        }
+
+        @Override
+        protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
+            if (expectedItem.getItemName().getLocalPart().equals(localName)) {
+                return awareFrom(expectedItem.getItemName(), expectedItem, true);
+            }
+            return super.resolveLocally(localName, defaultNs);
+        }
+
+        @Override
+        protected XNodeDefinition resolveLocally(ItemName name) {
+            if (expectedItem.getItemName().equals(name)) {
+                return awareFrom(expectedItem.getItemName(), expectedItem, true);
+            }
+            return super.resolveLocally(name);
+        }
+    }
+
     private static class ComplexTypeAware extends SchemaAware {
 
-        protected final ComplexTypeDefinition definition;
+        protected final ComplexTypeDefinition typeDefinition;
 
-        public ComplexTypeAware(QName name, ComplexTypeDefinition definition, SchemaRoot root, boolean inherited) {
-            super(name, root, inherited);
-            this.definition = definition;
+        public ComplexTypeAware(ItemDefinition<?> itemDef, ComplexTypeDefinition typeDef, SchemaRoot root, boolean inherited) {
+            super(itemDef, root, inherited);
+            this.typeDefinition = typeDef;
+        }
+
+        public ComplexTypeAware(ItemName name, ItemDefinition<?> itemDef, ComplexTypeDefinition typeDef, SchemaRoot root, boolean inherited) {
+            super(name, itemDef, root, inherited);
+            this.typeDefinition = typeDef;
         }
 
         @Override
         public Optional<QName> getType() {
-            return Optional.of(definition.getTypeName());
+            return Optional.of(typeDefinition.getTypeName());
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             return awareFrom(name, findDefinition(name), true);
         }
 
@@ -341,21 +414,21 @@ public abstract class XNodeDefinition {
          * @param name
          * @return
          */
-        protected ItemDefinition<?> findDefinition(QName name) {
-            ItemDefinition ret = definition.findLocalItemDefinition(name);
+        protected ItemDefinition<?> findDefinition(ItemName name) {
+            ItemDefinition ret = typeDefinition.findLocalItemDefinition(name);
             if (ret != null) {
                 return ret;
             }
             // Definition may be renamed, lets look schema migrations;
-            if ( definition.getSchemaMigrations() == null) {
+            if ( typeDefinition.getSchemaMigrations() == null) {
                 return null;
             }
-            for(SchemaMigration migration : definition.getSchemaMigrations()) {
+            for(SchemaMigration migration : typeDefinition.getSchemaMigrations()) {
                 if (migration.getOperation() == SchemaMigrationOperation.MOVED
                         && QNameUtil.match(name, migration.getElementQName())
                         && migration.getReplacement() != null) {
                     QName replacement = migration.getReplacement();
-                    return definition.findLocalItemDefinition(replacement);
+                    return typeDefinition.findLocalItemDefinition(replacement);
                 }
             }
             return null;
@@ -363,35 +436,41 @@ public abstract class XNodeDefinition {
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
-            QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
+            var proposed = ItemName.from(typeDefinition.getTypeName().getNamespaceURI(),localName);
             ItemDefinition<?> childDef = findDefinition(proposed);
 
             // If child definition is dynamic and default namespace is specified and parent definition generates
             // it with constant type - use default namespace (do not assume definition exists in parent).
             // for example shadow/associations
-            if (childDef != null && childDef.isDynamic() && definition.getDefaultItemTypeName() != null && defaultNs != null) {
-                var maybeDef = findDefinition(new QName(defaultNs, localName));
+            var defaultNsName = ItemName.from(defaultNs, localName);
+            if (childDef != null && childDef.isDynamic() && typeDefinition.getDefaultItemTypeName() != null && defaultNs != null) {
+                var maybeDef = findDefinition(defaultNsName);
                 if (maybeDef != null) {
                     childDef = maybeDef;
                 }
             }
             if (childDef == null) {
-                childDef = findDefinition(new QName(defaultNs,localName));
+                childDef = findDefinition(defaultNsName);
             }
             if (childDef == null) {
-                childDef = findDefinition(new QName(localName));
+                childDef = findDefinition(new ItemName(localName));
             }
             if (childDef != null) {
                 return awareFrom(proposed, childDef, true);
             }
+            // Fallback to infra properties such as id, version serialized without @ prefix
+            if (PrismConstants.T_ID.getLocalPart().equals(localName)) {
+                return unawareFrom(PrismConstants.T_ID);
+            }
+
             return null;
         }
 
         @Override
         public @NotNull XNodeDefinition moreSpecific(@NotNull XNodeDefinition other) {
             if(other instanceof ComplexTypeAware) {
-                ComplexTypeDefinition localType = this.definition;
-                ComplexTypeDefinition otherType = ((ComplexTypeAware) other).definition;
+                ComplexTypeDefinition localType = this.typeDefinition;
+                ComplexTypeDefinition otherType = ((ComplexTypeAware) other).typeDefinition;
                 if(localType == otherType) {
                     return other;
                 }
@@ -405,32 +484,32 @@ public abstract class XNodeDefinition {
 
     private static class ComplexTypeWithSubstitutions extends ComplexTypeAware {
 
-        public ComplexTypeWithSubstitutions(QName name, ComplexTypeDefinition definition, SchemaRoot root, boolean inherited) {
-            super(name, definition, root, inherited);
+        public ComplexTypeWithSubstitutions(ItemDefinition<?> definition, ComplexTypeDefinition typeDef, SchemaRoot root, boolean inherited) {
+            super(definition, typeDef,  root, inherited);
         }
 
         @Override
-        protected ItemDefinition<?> findDefinition(QName name) {
+        protected ItemDefinition<?> findDefinition(ItemName name) {
             // TODO: Add schemaMigrations lookup
-            return definition.itemOrSubstitution(name).orElse(null);
+            return typeDefinition.itemOrSubstitution(name).orElse(null);
         }
     }
 
     private static class ComplexTypeWithStrictAny extends ComplexTypeAware {
 
-        public ComplexTypeWithStrictAny(QName name, ComplexTypeDefinition definition, SchemaRoot root, boolean inherited) {
-            super(name, definition, root, inherited);
+        public ComplexTypeWithStrictAny(ItemDefinition<?> definition, ComplexTypeDefinition typeDef,  SchemaRoot root, boolean inherited) {
+            super(definition, typeDef, root, inherited);
         }
 
         @Override
         protected XNodeDefinition resolveLocally(String localName, String defaultNs) {
-            QName proposed = new QName(definition.getTypeName().getNamespaceURI(),localName);
+            var proposed = ItemName.from(typeDefinition.getTypeName().getNamespaceURI(),localName);
             ItemDefinition<?> def = findDefinition(proposed);
             if(def == null && !Strings.isNullOrEmpty(defaultNs)) {
-                def = findDefinition(new QName(defaultNs, localName));
+                def = findDefinition(ItemName.from(typeDefinition.getTypeName().getNamespaceURI(),localName));
             }
             if(def == null) {
-                def = findDefinition(new QName(localName));
+                def = findDefinition(new ItemName(localName));
             }
             if(def != null) {
                 return awareFrom(proposed, def, true);
@@ -439,7 +518,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected ItemDefinition<?> findDefinition(QName name) {
+        protected ItemDefinition<?> findDefinition(ItemName name) {
             var maybe = super.findDefinition(name);
             if (maybe == null) {
                 maybe = root.registry.findItemDefinitionByElementName(name);
@@ -450,7 +529,7 @@ public abstract class XNodeDefinition {
 
     private static class SchemaIgnorant extends Root {
 
-        public SchemaIgnorant(QName name) {
+        public SchemaIgnorant(ItemName name) {
             super(name);
         }
 
@@ -470,7 +549,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition unawareFrom(QName name) {
+        protected XNodeDefinition unawareFrom(ItemName name) {
             return new SchemaIgnorant(name);
         }
 
@@ -482,6 +561,11 @@ public abstract class XNodeDefinition {
         @Override
         public @NotNull PrismNamespaceContext staticNamespaceContext() {
             return PrismNamespaceContext.EMPTY;
+        }
+
+        @Override
+        public ItemDefinition<?> itemDefinition() {
+            return null;
         }
     }
 
@@ -500,7 +584,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected @Nullable XNodeDefinition resolveLocally(@NotNull QName name) {
+        protected @Nullable XNodeDefinition resolveLocally(@NotNull ItemName name) {
             return delegate.resolveLocally(name);
         }
 
@@ -515,7 +599,7 @@ public abstract class XNodeDefinition {
         }
 
         @Override
-        protected XNodeDefinition unawareFrom(QName name) {
+        protected XNodeDefinition unawareFrom(ItemName name) {
             return delegate.unawareFrom(name);
         }
 
@@ -524,18 +608,28 @@ public abstract class XNodeDefinition {
             return delegate.metadataDef();
         }
 
+        @Override
+        public ItemDefinition<?> itemDefinition() {
+            return delegate.itemDefinition();
+        }
     }
 
     private static class SimpleType extends SchemaAware {
 
         private boolean xmlAttribute;
 
-        public SimpleType(QName name, QName type, boolean inherited, SchemaRoot root) {
-            this(name, type, inherited, root, false);
+        public SimpleType(ItemName name, QName type, boolean inherited, SchemaRoot root, boolean xmlAttribute) {
+            super(name, null, root, inherited);
+            this.type = type;
+            this.xmlAttribute = false;
         }
 
-        public SimpleType(QName name, QName type, boolean inherited, SchemaRoot root, boolean xmlAttribute) {
-            super(name, root, inherited);
+        public SimpleType(ItemDefinition<?> def, QName type, boolean inherited, SchemaRoot root) {
+            this(def, type, inherited, root, false);
+        }
+
+        public SimpleType(ItemDefinition<?> definition, QName type, boolean inherited, SchemaRoot root, boolean xmlAttribute) {
+            super(definition, root, inherited);
             this.type = type;
             this.xmlAttribute = xmlAttribute;
         }
@@ -552,26 +646,33 @@ public abstract class XNodeDefinition {
             return xmlAttribute;
         }
 
+        @Override
+        public @NotNull XNodeDefinition withType(QName typeName) {
+            if (itemDefinition != null) {
+                return super.withType(typeName);
+            }
+            return new SimpleType(getName(), typeName, definedInParent(), root, isXmlAttribute());
+        }
     }
 
     private static class ObjectReference extends ComplexTypeAware {
 
-        public ObjectReference(QName name, ComplexTypeDefinition definition, SchemaRoot root, boolean inherited) {
-            super(name, definition, root, inherited);
+        public ObjectReference(ItemDefinition<?> def, ComplexTypeDefinition typeDef, SchemaRoot root, boolean inherited) {
+            super(def, typeDef, root, inherited);
         }
 
         @Override
-        protected XNodeDefinition resolveLocally(QName name) {
+        protected XNodeDefinition resolveLocally(ItemName name) {
             // TODO: Since CTD now contains attributes section this could be reworked
             // into ComplexTypeAware as search in attributes section
             if (PrismConstants.ATTRIBUTE_OID_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_STRING, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_OID, DOMUtil.XSD_STRING, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_REF_TYPE_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_TYPE, DOMUtil.XSD_QNAME, true, root, true);
             }
             if (PrismConstants.ATTRIBUTE_RELATION_LOCAL_NAME.equals(name.getLocalPart())) {
-                return new SimpleType(new QName(name.getLocalPart()), DOMUtil.XSD_QNAME, true, root, true);
+                return new SimpleType(XNodeImpl.KEY_REFERENCE_RELATION, DOMUtil.XSD_QNAME, true, root, true);
             }
             return super.resolveLocally(name);
         }

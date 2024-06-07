@@ -18,6 +18,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
+
 /**
  * The triple of values (added, unchanged, deleted) that represents difference between two collections of values.
  * <p>
@@ -327,12 +329,25 @@ public class DeltaSetTripleImpl<T> implements DeltaSetTriple<T> {
         foreachSet(processor, minusSet);
     }
 
+    @Override
+    public void foreach(SetAwareProcessor<T> processor) {
+        foreachSet(PlusMinusZero.ZERO, processor, zeroSet);
+        foreachSet(PlusMinusZero.PLUS, processor, plusSet);
+        foreachSet(PlusMinusZero.MINUS, processor, minusSet);
+    }
+
     private void foreachSet(Processor<T> processor, Collection<T> set) {
         if (set == null) {
             return;
         }
         for (T element: set) {
             processor.process(element);
+        }
+    }
+
+    private void foreachSet(PlusMinusZero set, SetAwareProcessor<T> processor, Collection<T> elements) {
+        for (T element : emptyIfNull(elements)) {
+            processor.process(set, element);
         }
     }
 

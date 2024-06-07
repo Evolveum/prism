@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism.impl.lex.json;
 
+import com.evolveum.midpoint.prism.path.ItemName;
+
 import javax.xml.namespace.QName;
 
 /**
@@ -53,12 +55,12 @@ public class JsonInfraItems {
      *
      */
     public static final String PROP_VALUE = "@value";
-    public static final QName PROP_VALUE_QNAME = new QName(PROP_VALUE);
+    public static final ItemName PROP_VALUE_QNAME = ItemName.interned(null, PROP_VALUE);
     /**
      * Metadata item
      */
     public static final String PROP_METADATA = "@metadata";
-    public static final QName PROP_METADATA_QNAME = new QName(PROP_METADATA);
+    public static final ItemName PROP_METADATA_QNAME = ItemName.interned(null, PROP_METADATA);
 
     /**
      * Namespace context definition.

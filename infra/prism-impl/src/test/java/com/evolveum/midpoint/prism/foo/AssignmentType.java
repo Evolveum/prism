@@ -54,17 +54,27 @@ public class AssignmentType
 
     private static final long serialVersionUID = 201202081233L;
 
-    public static final ItemName F_DESCRIPTION = new ItemName(ObjectType.NS_FOO, "description");
-    public static final ItemName F_NOTE = new ItemName(ObjectType.NS_FOO, "note");
-    public static final ItemName F_ACCOUNT_CONSTRUCTION = new ItemName(ObjectType.NS_FOO, "accountConstruction");
-    public static final ItemName F_ACTIVATION = new ItemName(ObjectType.NS_FOO, "activation");
+    public static final ItemName F_IDENTIFIER = ItemName.from(ObjectType.NS_FOO, "identifier");
+    public static final ItemName F_DESCRIPTION = ItemName.from(ObjectType.NS_FOO, "description");
+    public static final ItemName F_NOTE = ItemName.from(ObjectType.NS_FOO, "note");
+    public static final ItemName F_ACCOUNT_CONSTRUCTION = ItemName.from(ObjectType.NS_FOO, "accountConstruction");
+    public static final ItemName F_ACTIVATION = ItemName.from(ObjectType.NS_FOO, "activation");
 
+    protected String identifier;
     protected String description;
     protected String note;
     protected AccountConstructionType accountConstruction;
 
     @XmlAttribute(name = "id")
     protected String id;
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
 
     /**
      * Gets the value of the description property.

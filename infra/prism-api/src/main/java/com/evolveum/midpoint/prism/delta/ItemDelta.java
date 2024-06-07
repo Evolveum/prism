@@ -308,9 +308,8 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     /**
      * Merge specified delta to this delta. This delta is assumed to be
      * chronologically earlier, delta provided in the parameter is chronologically later.
-     * <p>
-     * TODO do we expect that the paths of "this" delta and deltaToMerge are the same?
-     * From the code it seems so.
+     *
+     * Both deltas must have the same path, i.e., they must refer to the same item.
      */
     void merge(ItemDelta<V, D> deltaToMerge);
 
@@ -322,9 +321,12 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
      */
     void simplify();
 
-    void applyTo(PrismContainerValue containerValue) throws SchemaException;
+    void applyTo(PrismContainerValue<?> containerValue) throws SchemaException;
 
-    void applyTo(Item item) throws SchemaException;
+    /** Applies this delta to given PCV; putting the values at `targetPath` (which must not be empty). */
+    void applyTo(@NotNull PrismContainerValue<?> containerValue, @NotNull ItemPath targetPath) throws SchemaException;
+
+    void applyTo(Item<?, ?> item) throws SchemaException;
 
     /**
      * Applies delta to item. Assumes that path of the delta and path of the item matches

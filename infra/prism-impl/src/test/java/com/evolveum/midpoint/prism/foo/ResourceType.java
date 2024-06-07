@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.SchemaDefinitionType;
 
+import javax.xml.namespace.QName;
 
 /**
  * <p>Java class for ResourceType complex type.
@@ -50,9 +51,19 @@ import com.evolveum.prism.xml.ns._public.types_3.SchemaDefinitionType;
 public class ResourceType extends ObjectType implements Serializable {
     private static final long serialVersionUID = 201202081233L;
 
-    public static final ItemName F_SCHEMA = new ItemName(NS_FOO, "schema");
+    public static final ItemName F_SCHEMA = ItemName.from(NS_FOO, "schema");
+
+    protected ObjectReferenceType connectorRef;
 
     protected SchemaDefinitionType schema;
+
+    public ObjectReferenceType getConnectorRef() {
+        return connectorRef;
+    }
+
+    public void setConnectorRef(ObjectReferenceType connectorRef) {
+        this.connectorRef = connectorRef;
+    }
 
     /**
      * Gets the value of the schema property.
@@ -78,4 +89,13 @@ public class ResourceType extends ObjectType implements Serializable {
         this.schema = value;
     }
 
+    @Override
+    protected QName prismGetContainerName() {
+        return null;
+    }
+
+    @Override
+    protected QName prismGetContainerType() {
+        return null;
+    }
 }

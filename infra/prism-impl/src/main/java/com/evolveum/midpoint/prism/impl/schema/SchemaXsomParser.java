@@ -195,6 +195,8 @@ class SchemaXsomParser {
         DF_SCHEMA_MIGRATIONS.parse(ctdBuilder, sourceComplexType);
         DF_DIAGRAMS.parse(ctdBuilder, sourceComplexType);
 
+        SCHEMA_CONTEXT.parseIfApplicable(ctdBuilder, sourceComplexType.getAnnotation());
+
         XSContentType content = sourceComplexType.getContentType();
         if (content != null) {
             XSParticle particle = content.asParticle();
@@ -237,7 +239,7 @@ class SchemaXsomParser {
     private void parseXmlAttributes(ComplexTypeDefinitionLikeBuilder ctdBuilder, XSComplexType complexType) throws SchemaException {
         for (XSAttributeUse attributeUse : complexType.getAttributeUses()) {
             var attributeDecl = attributeUse.getDecl();
-            ItemName name = new ItemName(ctdBuilder.getTypeName().getNamespaceURI(), attributeDecl.getName());
+            ItemName name = ItemName.from(ctdBuilder.getTypeName().getNamespaceURI(), attributeDecl.getName());
             QName type = getTypeNameRequired(attributeDecl.getType());
             var attributeDef = new PrismPropertyDefinitionImpl<>(name, type, null);
             attributeDef.mutator().setMinOccurs(0);

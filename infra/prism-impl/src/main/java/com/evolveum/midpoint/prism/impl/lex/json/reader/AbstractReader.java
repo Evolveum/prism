@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.json.reader;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.ParserSource;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
@@ -25,6 +26,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 import java.io.File;
@@ -66,8 +68,9 @@ public abstract class AbstractReader {
     }
 
     @NotNull
-    public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException {
-        List<RootXNodeImpl> nodes = readInternal(source, parsingContext, false);
+    public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext,
+            @Nullable ItemDefinition<?> definition) throws SchemaException, IOException {
+        List<RootXNodeImpl> nodes = readInternal(source, parsingContext, definition, false);
         if (nodes.isEmpty()) {
             throw new SchemaException("No data at input");
         } else if (nodes.size() > 1) {
@@ -81,18 +84,19 @@ public abstract class AbstractReader {
      * Honors multi-document files and multiple objects in a single document (list-as-root mechanisms).
      */
     @NotNull
-    public List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException {
-        return readInternal(source, parsingContext, true);
+    public List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext,
+            @Nullable ItemDefinition<?> definition) throws SchemaException, IOException {
+        return readInternal(source, parsingContext, definition, true);
     }
 
     @NotNull
     private List<RootXNodeImpl> readInternal(@NotNull ParserSource source, @NotNull ParsingContext parsingContext,
-            boolean expectingMultipleObjects) throws SchemaException, IOException {
+            ItemDefinition<?> definition, boolean expectingMultipleObjects) throws SchemaException, IOException {
         InputStream is = source.getInputStream();
         try {
             JsonParser parser = createJacksonParser(is);
             List<RootXNodeImpl> rv = new ArrayList<>();
-            readFromStart(parser, parsingContext, rv::add, expectingMultipleObjects);
+            readFromStart(parser, parsingContext, definition, rv::add, expectingMultipleObjects);
             return rv;
         } finally {
             if (source.closeStreamAfterParsing()) {
@@ -111,12 +115,12 @@ public abstract class AbstractReader {
         }
     }
 
-    public void readObjectsIteratively(@NotNull ParserSource source, @NotNull ParsingContext parsingContext,
+    public void readObjectsIteratively(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition,
             LexicalProcessor.RootXNodeHandler handler) throws SchemaException, IOException {
         InputStream is = source.getInputStream();
         try {
             JsonParser parser = createJacksonParser(is);
-            readFromStart(parser, parsingContext, handler, true);
+            readFromStart(parser, parsingContext, definition, handler, true);
         } finally {
             if (source.closeStreamAfterParsing()) {
                 closeQuietly(is);
@@ -131,11 +135,11 @@ public abstract class AbstractReader {
         QName tagToTypeName(Object tid, JsonReadingContext ctx) throws IOException, SchemaException;
     }
 
-    private void readFromStart(JsonParser unconfiguredParser, ParsingContext parsingContext,
+    private void readFromStart(JsonParser unconfiguredParser, ParsingContext parsingContext, ItemDefinition<?> definition,
             LexicalProcessor.RootXNodeHandler handler, boolean expectingMultipleObjects) throws SchemaException, IOException {
         JsonParser configuredParser = configureParser(unconfiguredParser);
         JsonReadingContext ctx = new JsonReadingContext(configuredParser, (ParsingContextImpl) parsingContext,
-                handler, this::tagToTypeName, schemaRegistry);
+                handler, this::tagToTypeName, schemaRegistry, definition);
         readTreatingExceptions(expectingMultipleObjects, configuredParser, ctx);
     }
 

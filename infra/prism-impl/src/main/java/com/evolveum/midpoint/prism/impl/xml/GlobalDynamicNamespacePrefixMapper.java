@@ -75,7 +75,7 @@ public class GlobalDynamicNamespacePrefixMapper extends NamespacePrefixMapper im
         }
     }
 
-    private static synchronized void registerPrefixGlobal(String namespace, String prefix) {
+    public static synchronized void registerPrefixGlobal(String namespace, String prefix) {
         GLOBAL_NAMESPACE_PREFIX_MAP.put(namespace, prefix);
     }
 

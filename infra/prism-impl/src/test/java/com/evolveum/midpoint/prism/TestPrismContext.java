@@ -14,6 +14,7 @@ import java.io.IOException;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.assertj.core.api.Assertions;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
@@ -145,7 +146,7 @@ public class TestPrismContext extends AbstractPrismTest {
         PrismAsserts.assertDefinition(assignmentContainer, USER_ASSIGNMENT_QNAME, ASSIGNMENT_TYPE_QNAME, 0, -1);
         assertFalse("Assignment is runtime", assignmentContainer.isRuntimeSchema());
         assertEquals("Wrong compile time class for assignment container", AssignmentType.class, assignmentContainer.getCompileTimeClass());
-        assertEquals("Assignment size", 4, assignmentContainer.getDefinitions().size());
+        assertEquals("Assignment size", 5, assignmentContainer.getDefinitions().size());
         PrismAsserts.assertPropertyDefinition(assignmentContainer, USER_DESCRIPTION_QNAME, DOMUtil.XSD_STRING, 0, 1);
         PrismAsserts.assertPropertyDefinition(assignmentContainer, USER_ACCOUNT_CONSTRUCTION_QNAME, ACCOUNT_CONSTRUCTION_TYPE_QNAME, 0, 1);
 
@@ -208,5 +209,22 @@ public class TestPrismContext extends AbstractPrismTest {
 
         // THEN
         assertNotNull("No foo XSD DOM", fooXsd);
+    }
+
+    @Test
+    public void testNaturalKeyAnnotation() throws SchemaException, SAXException, IOException {
+        PrismContext prismContext = constructInitializedPrismContext();
+        PrismObjectDefinition objectDefinition = prismContext.getSchemaRegistry()
+                .findObjectDefinitionByCompileTimeClass(UserType.class);
+
+        PrismContainerDefinition assignmentDefinition = objectDefinition.findContainerDefinition(UserType.F_ASSIGNMENT);
+        Assertions.assertThat(assignmentDefinition.getNaturalKeyConstituents())
+                .hasSize(1)
+                .containsExactly(AssignmentType.F_IDENTIFIER);
+
+        PrismContainerDefinition uselessAssignmentDefinition = objectDefinition.findContainerDefinition(UserType.F_USELESS_ASSIGNMENT);
+        Assertions.assertThat(uselessAssignmentDefinition.getNaturalKeyConstituents())
+                .hasSize(1)
+                .containsExactly(AssignmentType.F_NOTE);
     }
 }

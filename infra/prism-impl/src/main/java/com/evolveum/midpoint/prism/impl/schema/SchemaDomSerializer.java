@@ -23,19 +23,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.evolveum.midpoint.prism.EnumerationTypeDefinition;
+import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures;
 import com.evolveum.midpoint.prism.impl.schema.features.EnumerationValuesInfoXsomParser;
 import com.evolveum.midpoint.prism.impl.schema.features.EnumerationValuesXsomParser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.PrismReferenceValue;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.*;
 import com.evolveum.midpoint.prism.schema.DefinitionFeatureSerializer.SerializationTarget;
@@ -391,6 +389,7 @@ public class SchemaDomSerializer {
 
         var appInfo = createAppInfoAnnotationsTarget(simpleType);
         addCommonDefinitionAnnotations(definition, appInfo);
+        appInfo.appInfoElement.appendChild(createElement(EnumerationValuesXsomParser.TYPESAFE_ENUM_CLASS));
         appInfo.removeIfNotNeeded();
 
         Element restriction = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "restriction"));
@@ -406,22 +405,20 @@ public class SchemaDomSerializer {
     private Element createValueDefinitionChild(EnumerationTypeDefinition.ValueDefinition valueDefinition) {
         Element enumeration = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "enumeration"));
         setAttribute(enumeration, "value", valueDefinition.getValue());
-        Element annotation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "annotation"));
-        enumeration.appendChild(annotation);
+
+        AppInfoSerializationTarget aia = createAppInfoAnnotationsTarget(enumeration);
 
         if (valueDefinition.getDocumentation().isPresent()) {
-            Element documentation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "documentation"));
-            documentation.setTextContent(valueDefinition.getDocumentation().get());
-            annotation.appendChild(documentation);
+            aia.documentation.setTextContent(DOMUtil.getContentOfDocumentation(valueDefinition.getDocumentation().get()));
         }
 
-        Element appinfo = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"));
-        annotation.appendChild(appinfo);
         if (valueDefinition.getConstantName().isPresent()) {
             Element typeSafeEnum = createElement(EnumerationValuesXsomParser.TYPESAFE_ENUM_MEMBER);
             setAttribute(typeSafeEnum, "name", valueDefinition.getConstantName().get());
-            appinfo.appendChild(typeSafeEnum);
+            aia.appInfoElement.appendChild(typeSafeEnum);
         }
+
+        aia.removeIfNotNeeded();
 
         return enumeration;
     }
@@ -441,7 +438,27 @@ public class SchemaDomSerializer {
         addAnnotation(A_DISPLAY_NAME, definition.getDisplayName(), appInfo);
         addToStringAnnotation(A_DISPLAY_ORDER, definition.getDisplayOrder(), appInfo);
         addAnnotation(A_HELP, definition.getHelp(), appInfo);
-        addTrueAnnotation(A_EMPHASIZED, definition.isEmphasized(), appInfo);
+        addDisplayHint(definition, appInfo);
+
+        addDocumentation(definition, aie);
+    }
+
+    private void addDocumentation(SerializableDefinition definition, AppInfoSerializationTarget ais) {
+        if (definition.getDocumentation() != null) {
+            ais.documentation.setTextContent(DOMUtil.getContentOfDocumentation(definition.getDocumentation()));
+        }
+    }
+
+    private void addDisplayHint(SerializableDefinition definition, Element parent) {
+        DisplayHint displayHint = definition.getDisplayHint();
+        if (displayHint != null) {
+            addAnnotation(A_DISPLAY_HINT, displayHint.getValue(), parent);
+            if (displayHint.equals(DisplayHint.EMPHASIZED)) {
+                return;
+            }
+        }
+
+        addTrueAnnotation(A_EMPHASIZED, definition.isEmphasized(), parent);
     }
 
     /**
@@ -505,7 +522,7 @@ public class SchemaDomSerializer {
 
     @SuppressWarnings("SameParameterValue")
     private void addAnnotationToDefinition(Element definitionElement, QName qname) {
-        addAnnotationToDefinition(definitionElement, qname, null);
+        addAnnotationToDefinition(definitionElement, qname, (QName) null);
     }
 
     private void addAnnotationToDefinition(Element definitionElement, QName qname, QName value) {
@@ -606,14 +623,17 @@ public class SchemaDomSerializer {
         // We need to append this element to the tree for QName resolution to work.
         // Even if we will remove it later (if it's empty) - in "removeIfNotNeeded" method below.
         element.appendChild(annotation);
+        Element documentation = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "documentation"));
+        annotation.appendChild(documentation);
         Element appinfo = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "appinfo"));
         annotation.appendChild(appinfo);
-        return new AppInfoSerializationTarget(element, annotation, appinfo, this);
+        return new AppInfoSerializationTarget(element, annotation, documentation, appinfo, this);
     }
 
     private record AppInfoSerializationTarget(
             Element parent,
             Element annotationElement,
+            Element documentation,
             Element appInfoElement,
             SchemaDomSerializer schemaSerializer)
             implements SerializationTarget {
@@ -661,6 +681,12 @@ public class SchemaDomSerializer {
 
         void removeIfNotNeeded() {
             if (!appInfoElement.hasChildNodes()) {
+                annotationElement.removeChild(appInfoElement);
+            }
+            if (StringUtils.isEmpty(documentation.getTextContent())) {
+                annotationElement.removeChild(documentation);
+            }
+            if (!annotationElement.hasChildNodes()) {
                 parent.removeChild(annotationElement); // remove empty <annotation> element
             }
         }

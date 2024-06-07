@@ -110,6 +110,13 @@
     </xsd:element>
 
     <xsd:simpleType name="AccessAnnotationType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Item annotation: access restrictions. This annotation specifies the allowed
+                operations for an item. If no access annotation is present then all
+                operations are allowed.
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="read"/>
             <xsd:enumeration value="update"/>
@@ -984,6 +991,38 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:complexType name="SchemaContextType">
+        <xsd:sequence>
+            <xsd:element name="type" type="xsd:QName" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Name object type.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="typePath" type="xsd:QName" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Name of element which have path to object type.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="algorithm" type="xsd:QName" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Algorithm for handling schema context definition.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="schemaContext" type="tns:SchemaContextType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Schema context defines semantics information about annotated element.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
 </xsd:schema>
-
-

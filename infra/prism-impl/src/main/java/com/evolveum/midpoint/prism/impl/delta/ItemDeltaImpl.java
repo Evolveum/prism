@@ -333,7 +333,9 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         if (valuesToAdd == null) {
             valuesToAdd = newValueCollection();
         }
-        if (!PrismValueCollectionsUtil.containsRealValue(valuesToAdd, newValue)) {
+        // Equivalent PCVs with different IDs should be considered different.
+        // Otherwise we cannot create e.g. multiple empty assignments via swallowing deltas.
+        if (!PrismValueCollectionsUtil.contains(valuesToAdd, newValue, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS)) {
             valuesToAdd.add(newValue);
             newValue.setParent(this);
             newValue.recompute();
@@ -1112,21 +1114,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         return -1;
     }
 
-    /**
-     * Merge specified delta to this delta. This delta is assumed to be
-     * chronologically earlier, delta provided in the parameter is chronologically later.
-     * <p>
-     * TODO do we expect that the paths of "this" delta and deltaToMerge are the same?
-     * From the code it seems so.
-     */
     @Override
     public void merge(ItemDelta<V, D> deltaToMerge) {
         checkMutable();
-//        if (!getPath().equivalent(deltaToMerge.getPath())) {
-//            throw new AssertionError("Different paths in itemDelta merge: this=" + this + ", deltaToMerge=" + deltaToMerge);
-//        }
+
+        assert getPath().equivalent(deltaToMerge.getPath()) :
+                "Different paths in itemDelta merge: this=" + this + ", deltaToMerge=" + deltaToMerge;
+
         if (deltaToMerge.isEmpty()) {
-            return;
+            return; // Don't we want to try merging old values here? (Just for completeness.)
         }
         if (deltaToMerge.getValuesToReplace() != null) {
             mergeValuesToReplace(PrismValueCollectionsUtil.cloneValues(deltaToMerge.getValuesToReplace()));
@@ -1139,28 +1135,26 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             }
         }
 
-        // merge old values only if anything present. Merge them just first time
-        if (deltaToMerge.getEstimatedOldValues() != null) {
-            mergeOldValues(PrismValueCollectionsUtil.cloneValues(deltaToMerge.getEstimatedOldValues()));
-        }
+        // Merge old values only if anything present. Merge them just first time.
+        establishOldValues(deltaToMerge);
 
         // We do not want to clean up the sets during merging (e.g. in removeValue methods) because the set
         // may become empty and the a values may be added later. So just clean it up when all is done.
         removeEmptySets();
     }
 
-    private void mergeOldValues(Collection<V> oldValues) {
-        // there are situations when we don't know old value when firstly create delta
-        // so if there estimatedOldValues are null we try to merge them from current delta
-        // if estimatedOldValues != null we don't do anything
-        if (estimatedOldValues != null) {
+    /**
+     * There are situations when we don't know old value when firstly create delta.
+     * So we can get them from the "delta to merge".
+     */
+    private void establishOldValues(ItemDelta<V, D> deltaToMerge) {
+        if (estimatedOldValues != null || deltaToMerge.getEstimatedOldValues() == null) {
             return;
         }
-
         estimatedOldValues = newValueCollection();
-
-        for (V oldValue : oldValues) {
-            estimatedOldValues.add(oldValue);
+        for (V oldValue : deltaToMerge.getEstimatedOldValues()) {
+            estimatedOldValues.add(
+                    CloneUtil.clone(oldValue));
         }
     }
 
@@ -1269,30 +1263,36 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
-    public void applyTo(PrismContainerValue containerValue) throws SchemaException {
-        ItemPath deltaPath = getPath();
-        if (ItemPath.isEmpty(deltaPath)) {
-            throw new IllegalArgumentException("Cannot apply empty-path delta " + this + " directly to a PrismContainerValue " + containerValue);
+    public void applyTo(PrismContainerValue<?> containerValue) throws SchemaException {
+        applyTo(containerValue, getPath());
+    }
+
+    @Override
+    public void applyTo(@NotNull PrismContainerValue<?> containerValue, @NotNull ItemPath targetPath) throws SchemaException {
+        if (ItemPath.isEmpty(targetPath)) {
+            throw new IllegalArgumentException(
+                    "Cannot apply delta " + this + " directly to a PrismContainerValue " + containerValue);
         }
-        Item subItem = containerValue.findOrCreateItem(deltaPath, getItemClass(), getDefinition());
+        //noinspection unchecked
+        var subItem = containerValue.findOrCreateItem(targetPath, getItemClass(), getDefinition());
         if (subItem == null) {
-            throw new SchemaException("Couldn't create sub item for '" + deltaPath + "' in '" + containerValue + "'");
+            throw new SchemaException("Couldn't create sub item for '" + targetPath + "' in '" + containerValue + "'");
         }
         applyToMatchingPath(subItem);
     }
 
     @Override
-    public void applyTo(@NotNull Item item) throws SchemaException {
+    public void applyTo(Item<?, ?> item) throws SchemaException {
         ItemPath itemPath = item.getPath();
         ItemPath deltaPath = getPath();
         CompareResult compareComplex = itemPath.compareComplex(deltaPath);
         if (compareComplex == CompareResult.EQUIVALENT) {
             applyToMatchingPath(item);
         } else if (compareComplex == CompareResult.SUBPATH) {
-            if (item instanceof PrismContainer<?>) {
-                PrismContainer<?> container = (PrismContainer<?>) item;
+            if (item instanceof PrismContainer<?> container) {
                 ItemPath remainderPath = deltaPath.remainder(itemPath);
-                Item subItem = container.findOrCreateItem(remainderPath, getItemClass(), getDefinition());
+                //noinspection unchecked
+                var subItem = container.findOrCreateItem(remainderPath, getItemClass(), getDefinition());
                 if (subItem != null) {
                     applyToMatchingPath(subItem);
                 } else {

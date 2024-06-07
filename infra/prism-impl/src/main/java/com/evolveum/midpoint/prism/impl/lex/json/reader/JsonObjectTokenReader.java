@@ -170,6 +170,7 @@ class JsonObjectTokenReader {
     private void processFieldValue(XNodeDefinition name) throws IOException, SchemaException {
         assert name != null;
         XNodeImpl value = readValue(name);
+        value.setDefinition(name.itemDefinition());
         PROCESSORS.getOrDefault(name.getName(), STANDARD_PROCESSOR).apply(this, name.getName(), value);
 
     }
