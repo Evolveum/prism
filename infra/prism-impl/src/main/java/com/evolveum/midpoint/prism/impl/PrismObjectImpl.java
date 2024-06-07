@@ -106,7 +106,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    protected boolean addInternal(@NotNull PrismContainerValue newValue, boolean checkEquivalents, EquivalenceStrategy strategy) throws SchemaException {
+    protected ItemModifyResult<PrismContainerValue<O>> addInternal(@NotNull PrismContainerValue newValue, boolean checkEquivalents, EquivalenceStrategy strategy) throws SchemaException {
         if (!(newValue instanceof PrismObjectValue)) {
             throw new IllegalArgumentException("Couldn't add non-PrismObjectValue to a PrismObject: value = "
                     + newValue + ", object = " + this);

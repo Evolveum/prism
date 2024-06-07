@@ -216,7 +216,7 @@ public class ItemDeltaCollectionsUtil {
         if (deltasToMerge == null) {
             return;
         }
-        for (ItemDelta deltaToMerge: deltasToMerge) {
+        for (var deltaToMerge: deltasToMerge) {
             merge(modifications, deltaToMerge);
         }
     }

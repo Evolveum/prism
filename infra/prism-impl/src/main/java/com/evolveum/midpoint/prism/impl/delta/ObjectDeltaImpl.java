@@ -622,7 +622,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public void mergeModifications(Collection<? extends ItemDelta> modificationsToMerge) throws SchemaException {
-        for (ItemDelta<?, ?> propDelta : modificationsToMerge) {
+        for (ItemDelta<?, ?> propDelta : emptyIfNull(modificationsToMerge)) {
             mergeModification(propDelta);
         }
     }

@@ -54,6 +54,16 @@ public interface Containerable extends Serializable, DebugDumpable, Freezable, C
         return clone;
     }
 
+    /** Creates a clone but with ID and value metadata removed. Useful for assignments. */
+    @Experimental
+    default <C extends Containerable> C cloneWithoutIdAndMetadata() {
+        //noinspection unchecked
+        C clone = (C) CloneUtil.clone(this);
+        clone.asPrismContainerValue().setId(null);
+        clone.asPrismContainerValue().deleteValueMetadata();
+        return clone;
+    }
+
     /**
      * Setup value to the containerable representation. This is used to after (empty) containerable is created to
      * initialize it with a correct prism container value.

@@ -156,13 +156,13 @@ public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?
     }
 
     @Override
-    public void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
-        delegate().addRespectingMetadataAndCloning(value, strategy, metadataEquivalenceStrategy);
+    public ItemModifyResult<V> addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
+        return delegate().addRespectingMetadataAndCloning(value, strategy, metadataEquivalenceStrategy);
     }
 
     @Override
-    public void removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) {
-        delegate().removeRespectingMetadata(value, strategy, metadataEquivalenceStrategy);
+    public ItemModifyResult<V> removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) {
+        return delegate().removeRespectingMetadata(value, strategy, metadataEquivalenceStrategy);
     }
 
     public final boolean remove(V value, @NotNull EquivalenceStrategy strategy) {

@@ -73,6 +73,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     protected Collection<V> valuesToDelete = null;
     private Collection<V> estimatedOldValues = null;
 
+    protected transient Collection<ItemModifyResult<V>> applyResults = null;
+
     ItemDeltaImpl(D itemDefinition) {
         if (itemDefinition == null) {
             throw new IllegalArgumentException("Attempt to create item delta without a definition");
@@ -1317,6 +1319,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
      */
     @Override
     public void applyToMatchingPath(@NotNull Item item) throws SchemaException {
+        applyResults = null;
         if (valuesToReplace != null) {
             item.clear();
             // In some cases, the "replace" delta can change the item type and definition. That's why we clear the item first
@@ -1353,10 +1356,14 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                     item.clear();
                 }
             }
-
+            if (applyResults == null) {
+                applyResults = new ArrayList<>(valuesToAdd.size());
+            }
             for (V valueToAdd : valuesToAdd) {
                 //noinspection unchecked
-                item.addRespectingMetadataAndCloning(valueToAdd, FOR_DELTA_ADD_APPLICATION, getProvenanceEquivalenceStrategy());
+                var result = item.addRespectingMetadataAndCloning(valueToAdd, FOR_DELTA_ADD_APPLICATION, getProvenanceEquivalenceStrategy());
+                applyResults.add(result);
+                // We should collect what actually happened.
             }
         }
     }
@@ -1366,9 +1373,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     private void applyValuesToDelete(Item item) {
+        if (valuesToDelete != null) {
+            if (applyResults == null) {
+                applyResults = new ArrayList<>(valuesToDelete.size());
+            }
+        }
         for (V valueToDelete : emptyIfNull(valuesToDelete)) {
             //noinspection unchecked
-            item.removeRespectingMetadata(valueToDelete, FOR_DELTA_DELETE_APPLICATION, getProvenanceEquivalenceStrategy());
+            var result = item.removeRespectingMetadata(valueToDelete, FOR_DELTA_DELETE_APPLICATION, getProvenanceEquivalenceStrategy());
+            applyResults.add(result);
         }
     }
 
@@ -2148,5 +2161,10 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                 ((PrismValue) visitable).setOriginType(originType);
             }
         });
+    }
+
+    @Override
+    public Collection<ItemModifyResult<V>> applyResults() {
+        return applyResults;
     }
 }

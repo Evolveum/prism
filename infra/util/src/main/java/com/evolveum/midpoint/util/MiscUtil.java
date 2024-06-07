@@ -1154,6 +1154,14 @@ public class MiscUtil {
         }
     }
 
+    public static <T> T assertNonNull(T value, String template, Object... arguments) {
+        if (value != null) {
+            return value;
+        } else {
+            throw new AssertionError(Strings.lenientFormat(template, arguments));
+        }
+    }
+
     public static <C extends Collection<?>> C stateNonEmpty(C collection, String template, Object... arguments) {
         if (collection != null && !collection.isEmpty()) {
             return collection;

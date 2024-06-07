@@ -317,7 +317,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         checkMutable();
         boolean changed = false;
         for (V val : newValues) {
-            if (addInternal(val, checkUniqueness, strategy)) {
+            if (addInternal(val, checkUniqueness, strategy).isChanged()) {
                 changed = true;
             }
         }
@@ -326,6 +326,10 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
     @Override
     public boolean add(@NotNull V newValue, @NotNull EquivalenceStrategy equivalenceStrategy) throws SchemaException {
+        return addInternal(newValue, true, equivalenceStrategy).isChanged();
+    }
+
+    public ItemModifyResult<V> addWithResult(@NotNull V newValue, @NotNull EquivalenceStrategy equivalenceStrategy) throws SchemaException {
         return addInternal(newValue, true, equivalenceStrategy);
     }
 
@@ -336,7 +340,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
     // The checkUniqueness parameter is redundant but let's keep it for robustness.
     @Contract("_, true, null -> fail; _, false, !null -> fail")
-    protected boolean addInternal(@NotNull V newValue, boolean checkEquivalents, EquivalenceStrategy equivalenceStrategy) throws SchemaException {
+    protected ItemModifyResult<V> addInternal(@NotNull V newValue, boolean checkEquivalents, EquivalenceStrategy equivalenceStrategy) throws SchemaException {
 
         if (checkEquivalents && equivalenceStrategy == null) {
             throw new IllegalArgumentException("Equivalence strategy must be present if checkEquivalents is true");
@@ -351,38 +355,39 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         newValue.setParent(this);
 
         if (checkEquivalents) {
-            boolean exactEquivalentFound = false;
-            boolean somethingRemoved = false;
+            V exactEquivalentFound = null;
+            V somethingRemoved = null;
             Iterator<V> iterator = values.iterator();
             while (iterator.hasNext()) {
                 V currentValue = iterator.next();
                 if (equivalenceStrategy.equals(currentValue, newValue)) {
-                    if (!exactEquivalentFound &&
+                    if (exactEquivalentFound == null &&
                             (DEFAULT_FOR_EQUALS.equals(equivalenceStrategy) || DEFAULT_FOR_EQUALS.equals(currentValue, newValue))) {
-                        exactEquivalentFound = true;
+                        exactEquivalentFound = currentValue;
                     } else {
                         iterator.remove();
                         valueRemoved(currentValue);
                         currentValue.setParent(null);
-                        somethingRemoved = true;
+                        somethingRemoved = currentValue;
                     }
                 }
             }
 
-            if (exactEquivalentFound && !somethingRemoved) {
+            if (exactEquivalentFound != null && somethingRemoved == null) {
                 newValue.setParent(originalParent);
-                return false;
+                return ItemModifyResult.unmodified(newValue);
             }
         }
 
         D definition = getDefinition();
         if (definition != null) {
             if (!values.isEmpty() && definition.isSingleValue()) {
-                throw new SchemaException("Attempt to put more than one value to single-valued item " + this + "; newly added value: " + newValue);
+                throw new SchemaException("Attempt to put more than one value to sin1gle-valued item " + this + "; newly added value: " + newValue);
             }
             newValue.applyDefinitionLegacy(definition, false);
         }
-        return addInternalExecution(newValue);
+        addInternalExecution(newValue);
+        return ItemModifyResult.added(newValue, newValue);
     }
 
     protected void valueRemoved(V currentValue) {
@@ -404,16 +409,19 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy,
+    public ItemModifyResult<V> addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy,
             EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException {
         if (!value.hasValueMetadata()) {
-            add(CloneUtil.clone(value), strategy);
+            var cloned = CloneUtil.clone(value);
+            return addWithResult(cloned, strategy);
         } else {
             V existingValue = findValue(value, strategy);
             if (existingValue == null) {
-                addInternal(CloneUtil.clone(value), false, null);
+                var cloned = CloneUtil.clone(value);
+                return addInternal(cloned, false, null);
             } else {
                 addMetadataValues(existingValue, value.getValueMetadata(), metadataEquivalenceStrategy);
+                return ItemModifyResult.modified(value, existingValue);
             }
         }
     }
@@ -432,28 +440,30 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy,
+    public ItemModifyResult<V> removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy,
             EquivalenceStrategy metadataEquivalenceStrategy) {
         if (!value.hasValueMetadata()) {
-            remove(value, strategy);
+            return removeWithResult(value, strategy);
+
         } else {
             // We do not support the case when we are deleting by ID but only selected metadata.
             // I.e. if we want to delete metadata we must supply the correct (matching) value.
             V existingValue = findValue(value, strategy);
             if (existingValue != null) {
-                removeMetadataValues(existingValue, value.getValueMetadata(), metadataEquivalenceStrategy);
-            } else {
-                // nothing to do here, the value does not exist
+                return removeMetadataValues(value, existingValue, value.getValueMetadata(), metadataEquivalenceStrategy);
             }
         }
+        return ItemModifyResult.unmodified(value);
     }
 
-    private void removeMetadataValues(V existingValue, ValueMetadata metadataToRemove, EquivalenceStrategy metadataEquivalenceStrategy) {
+    private ItemModifyResult<V> removeMetadataValues(V requestValue, V existingValue, ValueMetadata metadataToRemove, EquivalenceStrategy metadataEquivalenceStrategy) {
         ValueMetadata existingValueMetadata = existingValue.getValueMetadata();
         existingValueMetadata.removeAll(metadataToRemove.getValues(), metadataEquivalenceStrategy);
         if (existingValueMetadata.hasNoValues()) {
             remove(existingValue, DATA.exceptForValueMetadata());
+            return ItemModifyResult.removed(requestValue, existingValue);
         }
+        return ItemModifyResult.modified(requestValue, existingValue);
     }
 
     @Override
@@ -470,8 +480,12 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
     @Override
     public boolean remove(V value, @NotNull EquivalenceStrategy strategy) {
+        return !removeWithResult(value, strategy).isUnmodified();
+    }
+
+    public ItemModifyResult<V> removeWithResult(V value, @NotNull EquivalenceStrategy strategy) {
         checkMutable();
-        boolean changed = false;
+        V removedValue = null;
         Iterator<V> iterator = values.iterator();
         while (iterator.hasNext()) {
             V val = iterator.next();
@@ -479,10 +493,13 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
                 iterator.remove();
                 valueRemoved(val);
                 val.setParent(null);
-                changed = true;
+                removedValue = val;
             }
         }
-        return changed;
+        if (removedValue != null) {
+            return ItemModifyResult.removed(value, removedValue);
+        }
+        return ItemModifyResult.unmodified(value);
     }
 
     public V remove(int index) {

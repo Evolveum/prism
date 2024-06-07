@@ -443,7 +443,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      *
      * If a value is to be added as a whole, it is cloned.
      */
-    void addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException;
+    ItemModifyResult<V> addRespectingMetadataAndCloning(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy) throws SchemaException;
 
     /**
      * Removes values equivalent to given value from the item; under specified equivalence strategy
@@ -451,8 +451,10 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      *
      * Respects metadata, i.e. if value to be removed has metadata specified, this method removes
      * only particular metadata. Only if this means that all metadata are gone, then the value is deleted.
+     *
+     * @return null if value was removed, otherwise value which was modified.
      */
-    void removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy);
+    ItemModifyResult<V> removeRespectingMetadata(V value, @NotNull EquivalenceStrategy strategy, EquivalenceStrategy metadataEquivalenceStrategy);
 
     /**
      * Removes all given values from the item. It is basically a shortcut for repeated

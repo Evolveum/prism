@@ -603,8 +603,15 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         }
 
         Itemable parent = getParent();
+
+        QName xsdType = null;
         if (parent != null && parent.getDefinition() != null) {
-            QName xsdType = parent.getDefinition().getTypeName();
+            xsdType = parent.getDefinition().getTypeName();
+        }
+        if (xsdType == null) {
+            xsdType =  PrismContext.get().getDefaultReferenceTypeName();
+        }
+        if (xsdType != null) {
             Class<?> clazz = PrismContext.get().getSchemaRegistry().getCompileTimeClass(xsdType);
             if (clazz != null) {
                 try {
@@ -616,9 +623,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
                 referencable.setupReferenceValue(this);
                 return referencable;
             }
-
         }
-
         // A hack, just to avoid crashes. TODO think about this!
         return new DefaultReferencableImpl(this);
     }

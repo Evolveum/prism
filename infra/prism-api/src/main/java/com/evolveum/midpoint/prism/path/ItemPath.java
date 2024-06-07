@@ -723,6 +723,16 @@ public interface ItemPath extends ShortDumpable, Serializable {
     default boolean startsWithName(QName name) {
         return !isEmpty() && QNameUtil.match(name, firstToNameOrNull());
     }
+
+    /**
+     * Returns `true` if this path points to a value metadata.
+     *
+     * Limitations: APPROXIMATE IMPLEMENTATION. It does not detect unqualified metadata paths. It is perhaps safer
+     * to skip these than to return false positive information (e.g. when an attribute is called "metadata").
+     */
+    default boolean isMetadataRelated() {
+        return containsNameExactly(InfraItemName.METADATA);
+    }
     //endregion
 
     //region Misc

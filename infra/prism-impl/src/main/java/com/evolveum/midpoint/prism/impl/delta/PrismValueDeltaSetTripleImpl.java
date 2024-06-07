@@ -201,25 +201,22 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
     }
 
     public void checkConsistence() {
-        Visitor visitor = visitable -> {
-            if (visitable instanceof PrismValue) {
-                if (((PrismValue)visitable).isEmpty()) {
-                    throw new IllegalStateException("Empty value "+visitable+" in triple "+PrismValueDeltaSetTripleImpl.this);
-                }
-            }
-        };
-        accept(visitor);
-
-        Processor<V> processor = pval -> {
+        foreach(pval -> {
             if (pval.getParent() != null) {
                 if (pval instanceof PrismObjectValue) {
                     // Object values are exceptions from this rule. They could have a parent. TODO reconsider this.
                 } else {
-                    throw new IllegalStateException("Value " + pval + " in triple " + PrismValueDeltaSetTripleImpl.this + " has parent, looks like it was not cloned properly");
+                    throw new IllegalStateException(
+                            "Value %s in triple %s has parent, looks like it was not cloned properly".formatted(
+                                    pval, this));
+                }
+                // Note that we do not check for empty values recursively. The reason is that, generally, empty PCVs are legal.
+                // We just don't want them to be in the delta set. And even this may change in future.
+                if (pval.isEmpty()) {
+                    throw new IllegalStateException("Empty value %s in triple %s".formatted(pval, this));
                 }
             }
-        };
-        foreach(processor);
+        });
     }
 
     @Override
