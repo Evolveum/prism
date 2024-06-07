@@ -11,8 +11,6 @@ import java.io.Serial;
 import java.util.*;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryStateAware;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,10 +18,11 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.impl.key.NaturalKeyDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.schema.SchemaRegistryStateAware;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 /**
  * Abstract definition in the schema.
@@ -117,7 +116,12 @@ public abstract class DefinitionImpl
     @Override
     public @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         // todo how to create proper NaturalKey instance, implementations could be outside of prism api/impl
-        return naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty() ? NaturalKeyDefinitionImpl.of(naturalKeyConstituents) : null;
+        List<QName> naturalKeyConstituents = getNaturalKeyConstituents();
+        if (naturalKeyConstituents != null && !naturalKeyConstituents.isEmpty()) {
+            return NaturalKeyDefinitionImpl.of(naturalKeyConstituents);
+        }
+
+        return null;
     }
 
     @Override
