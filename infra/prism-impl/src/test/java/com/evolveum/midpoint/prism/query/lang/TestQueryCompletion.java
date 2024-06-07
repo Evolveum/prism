@@ -1,22 +1,22 @@
 package com.evolveum.midpoint.prism.query.lang;
 
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
+
+import java.io.IOException;
+import java.util.*;
+import javax.xml.namespace.QName;
+
+import org.testng.Assert;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
+
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Test;
-import org.xml.sax.SAXException;
-import org.testng.Assert;
-
-import javax.xml.namespace.QName;
-import java.io.IOException;
-import java.util.*;
-
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
 
 /**
  * Created by Dominik.
@@ -34,7 +34,6 @@ public class TestQueryCompletion extends AbstractPrismTest {
         axiomQueryLangServiceImpl = new AxiomQueryLangServiceImpl(PrismContext.get());
         schemaRegistry = PrismContext.get().getSchemaRegistry();
     }
-
 
     // Basic filters
     @Test

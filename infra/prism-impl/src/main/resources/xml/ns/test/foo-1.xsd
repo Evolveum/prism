@@ -350,12 +350,34 @@
         <xsd:complexContent>
             <xsd:extension base="tns:ObjectType">
                 <xsd:sequence>
-                    <xsd:element name="schema" type="t:SchemaDefinitionType" minOccurs="0" maxOccurs="1"/>
+                    <xsd:element name="connectorRef" type="tns:ObjectReferenceType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:ConnectorType</a:objectReferenceTargetType>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="schema" type="t:SchemaDefinitionType" minOccurs="0"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
     <xsd:element name="resource" type="tns:ResourceType"/>
+
+    <xsd:complexType name="ConnectorType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="connectorType" type="xsd:string"/>
+                    <xsd:element name="connectorVersion" type="xsd:string" minOccurs="0"/>
+                    <xsd:element minOccurs="0" name="available" type="xsd:boolean"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:element name="connector" type="tns:ConnectorType"/>
+
 
     <!-- The following is currently not supported by prism. Keeping it here if needed in the future... -->
     <xsd:complexType name="EventHandlerType">
@@ -447,6 +469,354 @@
         <xsd:sequence>
             <xsd:element name="code" type="xsd:string"/>
         </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="RoleType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:AbstractRoleType">
+                <xsd:sequence>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="role" type="tns:RoleType"/>
+
+    <xsd:element name="documentation" type="xsd:string">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:since>4.1</a:since>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="ObjectSelectorType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:merger>ObjectSelectorType</a:merger>
+                <a:schemaContext>
+                    <a:typePath>type</a:typePath>
+                </a:schemaContext>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="name" minOccurs="0" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.name</a:displayName>
+                        <a:since>4.8</a:since>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="tns:description" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.description</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element ref="tns:documentation" minOccurs="0"/>
+            <xsd:element name="type" minOccurs="0" type="xsd:QName">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.type</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="subtype" minOccurs="0" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.subtype</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="archetypeRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:objectReferenceTargetType>tns:ArchetypeType</a:objectReferenceTargetType>
+                        <a:since>4.0</a:since>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="orgRef" type="tns:ObjectReferenceType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:objectReferenceTargetType>tns:OrgType</a:objectReferenceTargetType>
+                        <a:displayName>ObjectSelectorType.orgRef</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="filter" type="q:SearchFilterType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Filter that an object must match to be considered selected by this statement.
+                        This filter MUST NOT contain organization unit clauses. It may only contain
+                        property clauses, logical operations and so on.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.filter</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="parent" type="tns:ObjectParentSelectorType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>ObjectSelectorType.parent</a:displayName>
+                        <a:elaborate>true</a:elaborate> <!-- because of recursion -->
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="SubjectedObjectSelectorType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Selects some objects from all the objects in midPoint.
+                This is an extension of ObjectSelectorType that adds
+                criteria that relate objects to a specific subject
+                (logged-in user).
+            </xsd:documentation>
+            <xsd:appinfo>
+                <a:container/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectSelectorType">
+                <xsd:sequence>
+                    <xsd:element name="allowInactive" type="xsd:boolean" minOccurs="0" default="false">
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="OwnedObjectSelectorType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:SubjectedObjectSelectorType">
+                <xsd:sequence>
+                    <xsd:element name="owner" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                    <xsd:element name="delegator" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                    <xsd:element name="requester" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                    <xsd:element name="assignee" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                    <xsd:element name="candidateAssignee" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                    <xsd:element name="relatedObject" type="tns:SubjectedObjectSelectorType" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="FocusType" abstract="true">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:object/>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:complexType>
+
+    <xsd:complexType name="RelationDefinitionType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Definition of a single (custom) relation.
+            </xsd:documentation>
+            <xsd:appinfo>
+                <a:container>true</a:container>
+                <a:since>3.9</a:since>
+                <a:displayName>RelationDefinitionType.relation</a:displayName>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="ref" type="xsd:QName">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Relations identifier (QName)
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.ref</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="description" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Free-form description of relation purpose. This field can be used as a comment.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.description</a:displayName>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="processedOnLogin" type="xsd:boolean" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this relation is processed during login. The default value is true for member, meta and delegation
+                        kinds, false otherwise. EXPERIMENTAL.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.processedOnLogin</a:displayName>
+                        <a:experimental>true</a:experimental>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="processedOnRecompute" type="xsd:boolean" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this relation is (by default) processed during recomputation. The default value is true
+                        for member, meta, manager and delegation kinds, false otherwise. EXPERIMENTAL.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.processedOnRecompute</a:displayName>
+                        <a:experimental>true</a:experimental>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="storedIntoParentOrgRef" type="xsd:boolean" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this relation is stored into parentOrgRef item. The default value is true
+                        for member kind, false otherwise. EXPERIMENTAL.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.storedIntoParentOrgRef</a:displayName>
+                        <a:experimental>true</a:experimental>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="automaticallyMatched" type="xsd:boolean" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this relation is automatically matched by order constraints (without the need to explicitly
+                        list them). The default value is true for member, meta and delegation kinds, false otherwise.
+                        EXPERIMENTAL.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:displayName>RelationDefinitionType.automaticallyMatched</a:displayName>
+                        <a:experimental>true</a:experimental>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="staticallyDefined" type="xsd:boolean" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Whether this relation was statically defined in midPoint code. Do not set this flag explicitly,
+                        it is filled-in when relations are parsed.
+                    </xsd:documentation>
+                    <xsd:appinfo>
+                        <a:since>3.9</a:since>
+                        <a:operational>true</a:operational>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="AuthorizationType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+                <a:naturalKey>name</a:naturalKey>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+            <xsd:element ref="tns:description" minOccurs="0"/>
+            <xsd:element ref="tns:documentation" minOccurs="0"/>
+            <xsd:element name="action" type="xsd:anyURI" maxOccurs="unbounded"/>
+            <xsd:element name="object" type="tns:OwnedObjectSelectorType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="item" type="t:ItemPathType"  minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="exceptItem" type="t:ItemPathType"  minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="relation" type="xsd:QName" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="AbstractRoleType" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="displayName" type="t:PolyStringType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.displayName</a:displayName>
+                                <a:displayOrder>9</a:displayOrder>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="identifier" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.identifier</a:displayName>
+                                <a:displayOrder>110</a:displayOrder>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="inducement" type="tns:AssignmentType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.inducement</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="authorization" type="tns:AuthorizationType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:element name="requestable" type="xsd:boolean" minOccurs="0" default="false">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.requestable</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="delegable" type="xsd:boolean" minOccurs="0" default="false">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.delegable</a:displayName>
+                                <a:since>3.5</a:since>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="riskLevel" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>AbstractRoleType.riskLevel</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="abstractRole" type="tns:AbstractRoleType"/>
+    <xsd:complexType name="ObjectParentSelectorType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:OwnedObjectSelectorType">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="path" type="t:ItemPathType">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Specification of a path from the parent to the current object (item).
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
     </xsd:complexType>
 
 </xsd:schema>

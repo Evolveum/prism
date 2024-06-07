@@ -47,10 +47,12 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
     private final PrismQuerySerializerImpl.SimpleBuilder target;
     private final PrismQueryExpressionFactory expressionFactory;
 
+    private final boolean forceDefaultPrefix;
 
-    public QueryWriter(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory) {
+    public QueryWriter(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory, boolean forceDefaultPrefix) {
         this.target = target;
         this.expressionFactory = expressionFactory;
+        this.forceDefaultPrefix = forceDefaultPrefix;
     }
 
     public void writeSelf() {
@@ -63,7 +65,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
     }
 
     public void writePath(ItemPath path) {
-        ItemPathSerialization pathSer = ItemPathSerialization.serialize(UniformItemPath.from(path), target.context());
+        ItemPathSerialization pathSer = ItemPathSerialization.serialize(UniformItemPath.from(path), target.context(), false, true);
         target.addPrefixes(pathSer.undeclaredPrefixes());
         target.emitSpace();
         target.emit(pathSer.getXPathWithoutDeclarations());
@@ -175,7 +177,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
     }
 
     QueryWriter negated() {
-        return new Negated(target, expressionFactory);
+        return new Negated(target, expressionFactory, forceDefaultPrefix);
     }
 
     private <T> void writeList(Collection<? extends T> values, Consumer<? super T> writer) {
@@ -256,8 +258,8 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
 
     class Negated extends QueryWriter {
 
-        public Negated(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory) {
-            super(target, expressionFactory);
+        public Negated(PrismQuerySerializerImpl.SimpleBuilder target, PrismQueryExpressionFactory expressionFactory, boolean forceDefaultPrefix) {
+            super(target, expressionFactory, forceDefaultPrefix);
         }
 
         @Override

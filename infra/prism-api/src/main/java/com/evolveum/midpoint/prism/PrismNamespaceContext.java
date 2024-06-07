@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -532,8 +533,9 @@ public abstract class PrismNamespaceContext implements Serializable {
             @Override
             List<String> apply(Impl context, String namespace) {
                 Collection<String> localCandidates = context.nsToPrefix().get(namespace);
-                List<String> ret = new ArrayList<>(localCandidates);
 
+                // Sort them by alphabet to prefer first.
+                List<String> ret = new ArrayList<>(localCandidates.stream().sorted().collect(Collectors.toList()));
                 List<String> parentCandidates = context.parentPrefixesFor(namespace, this);
                 for (String parentPrefix : parentCandidates) {
                     String localNamespace = context.localPrefixes().get(parentPrefix);
@@ -541,7 +543,7 @@ public abstract class PrismNamespaceContext implements Serializable {
                         ret.add(parentPrefix);
                     }
                 }
-
+                // Shortest first
                 return ret;
             }
         };

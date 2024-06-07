@@ -61,7 +61,9 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
         PrismContext prismContext = getPrismContext();
 
         // WHEN
-        PrismObject<UserType> user = prismContext.parseObject(getFile(USER_JACK_FILE_BASENAME));
+        PrismObject<UserType> user = prismContext.parserFor(getFile(USER_JACK_FILE_BASENAME))
+                .preserveNamespaceContext()
+                .parse();
 
         // THEN
         System.out.println("User:");
@@ -69,6 +71,7 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
         assertNotNull(user);
 
         assertUserJack(user, true, true);
+        assertNotNull(user.getNamespaceContext());
     }
 
     @Test

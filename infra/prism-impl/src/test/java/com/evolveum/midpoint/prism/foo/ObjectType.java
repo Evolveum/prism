@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismObject;
+import com.evolveum.midpoint.prism.impl.binding.AbstractMutableObjectable;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectReferenceType;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -57,6 +58,7 @@ import java.util.List;
     UserType.class
 })
 public abstract class ObjectType
+    extends AbstractMutableObjectable
     implements Serializable, Objectable
 {
 

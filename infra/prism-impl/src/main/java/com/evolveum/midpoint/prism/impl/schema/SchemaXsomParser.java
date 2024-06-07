@@ -195,6 +195,8 @@ class SchemaXsomParser {
         DF_SCHEMA_MIGRATIONS.parse(ctdBuilder, sourceComplexType);
         DF_DIAGRAMS.parse(ctdBuilder, sourceComplexType);
 
+        SCHEMA_CONTEXT.parseIfApplicable(ctdBuilder, sourceComplexType.getAnnotation());
+
         XSContentType content = sourceComplexType.getContentType();
         if (content != null) {
             XSParticle particle = content.asParticle();

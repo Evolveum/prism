@@ -21,6 +21,8 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.path.ItemName;
 
+import javax.xml.namespace.QName;
+
 /**
  * <p>Java class for AccountType complex type.
  *
@@ -72,4 +74,13 @@ public class AccountType
         this.attributes = value;
     }
 
+    @Override
+    protected QName prismGetContainerName() {
+        return null;
+    }
+
+    @Override
+    protected QName prismGetContainerType() {
+        return null;
+    }
 }

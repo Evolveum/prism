@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -125,6 +127,8 @@ public interface Definition
 
     @Nullable NaturalKeyDefinition getNaturalKeyInstance();
 
+    @Nullable SchemaContextDefinition getSchemaContextDefinition();
+
     @NotNull Definition clone();
 
     default String debugDump(int indent, IdentityHashMap<Definition, Object> seen) {
@@ -163,6 +167,8 @@ public interface Definition
         void setNaturalKeyConstituents(List<QName> naturalKeyConstituents);
 
         <A> void setAnnotation(QName qname, A value);
+
+        void setSchemaContextDefinition(SchemaContextDefinition schemaContextDefinition);
     }
 
     interface DefinitionBuilder extends DefinitionFragmentBuilder {

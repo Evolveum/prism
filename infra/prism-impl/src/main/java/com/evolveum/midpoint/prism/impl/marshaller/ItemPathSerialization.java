@@ -87,10 +87,13 @@ public final class ItemPathSerialization {
     }
 
     public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context) {
-        return serialize(itemPath, context, false);
+        return serialize(itemPath, context, false, false);
+    }
+    public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context, boolean overriddeNs) {
+        return serialize(itemPath, context, overriddeNs,  false);
     }
 
-    public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context, boolean overriddeNs) {
+    public static ItemPathSerialization serialize(@NotNull UniformItemPath itemPath, PrismNamespaceContext context, boolean overriddeNs, boolean useDefaultPrefix) {
         Map<String, String> usedPrefixToNs = new HashMap<>();
         BiMap<String, String> undeclaredNsToPrefix = HashBiMap.create();
 
@@ -100,10 +103,10 @@ public final class ItemPathSerialization {
             PathHolderSegment xsegment;
             if (segment instanceof NameItemPathSegment) {
                 QName name = ((NameItemPathSegment) segment).getName();
-                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs));
+                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs, useDefaultPrefix));
             } else if (segment instanceof VariableItemPathSegment) {
                 QName name = ((VariableItemPathSegment) segment).getName();
-                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs), true);
+                xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs, useDefaultPrefix), true);
             } else if (segment instanceof IdItemPathSegment) {
                 xsegment = new PathHolderSegment(idToString(((IdItemPathSegment) segment).getId()));
             } else if (segment instanceof ObjectReferencePathSegment) {
@@ -119,13 +122,13 @@ public final class ItemPathSerialization {
         }
 
         StringBuilder xpath = new StringBuilder();
-        ItemPathHolder.addPureXpath(false, segments, xpath);
+        ItemPathHolder.addPureXpath(false, segments, xpath, useDefaultPrefix);
 
         return new ItemPathSerialization(xpath.toString(), context, usedPrefixToNs, undeclaredNsToPrefix.inverse());
     }
 
     private static QName assignPrefix(@NotNull QName name, PrismNamespaceContext global,
-            Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs) {
+            Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs, boolean useDefaultPrefix) {
         String namespace = name.getNamespaceURI();
         String explicitPrefix = name.getPrefix();
 
@@ -145,7 +148,7 @@ public final class ItemPathSerialization {
             return name;
         }
 
-        String proposedPrefix = assignPrefix(namespace, explicitPrefix, global, localNamespaceToPrefix, prefixToNs, overrideNs);
+        String proposedPrefix = assignPrefix(namespace, explicitPrefix, global, localNamespaceToPrefix, prefixToNs, overrideNs, useDefaultPrefix);
         if (explicitPrefix.equals(proposedPrefix)) {
             return name;
         }
@@ -154,7 +157,7 @@ public final class ItemPathSerialization {
     }
 
     private static String assignPrefix(String namespace, String explicitPrefix, PrismNamespaceContext global,
-            Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs) {
+            Map<String, String> localNamespaceToPrefix, Map<String, String> prefixToNs, boolean overrideNs, boolean useDefaultPrefix) {
 
         // First we try to use existing prefix
         if (!Strings.isNullOrEmpty(explicitPrefix)) {
@@ -179,7 +182,7 @@ public final class ItemPathSerialization {
             // We already created local prefix for specified namespace
             return localPrefix;
         }
-        Optional<String> globalPrefix = global.prefixFor(namespace, PrefixPreference.GLOBAL_FIRST_SKIP_DEFAULTS);
+        Optional<String> globalPrefix = global.prefixFor(namespace, useDefaultPrefix ? PrefixPreference.LOCAL_FIRST : PrefixPreference.GLOBAL_FIRST_SKIP_DEFAULTS);
         if (globalPrefix.isPresent()) {
             // We are reusing inherited prefix
             prefixToNs.put(globalPrefix.get(), namespace);

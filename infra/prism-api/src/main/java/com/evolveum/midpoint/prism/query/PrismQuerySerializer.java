@@ -12,7 +12,12 @@ import com.evolveum.midpoint.prism.PrismNamespaceContext;
 
 public interface PrismQuerySerializer {
 
-    PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context) throws PrismQuerySerialization.NotSupportedException;
+    default PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context) throws PrismQuerySerialization.NotSupportedException {
+        return serialize(filter, context, false);
+    }
+
+    PrismQuerySerialization serialize(ObjectFilter filter, PrismNamespaceContext context, boolean forceDefaultPrefix) throws PrismQuerySerialization.NotSupportedException;
+
 
     default PrismQuerySerialization serialize(ObjectFilter filter) throws PrismQuerySerialization.NotSupportedException {
         return serialize(filter, PrismNamespaceContext.EMPTY);
@@ -23,8 +28,11 @@ public interface PrismQuerySerializer {
     }
 
     default Optional<PrismQuerySerialization> trySerialize(ObjectFilter filter, PrismNamespaceContext namespaceContext) {
+        return trySerialize(filter, namespaceContext, false);
+    }
+    default Optional<PrismQuerySerialization> trySerialize(ObjectFilter filter, PrismNamespaceContext namespaceContext, boolean forceDefaultPrefix) {
         try {
-            return Optional.of(serialize(filter, namespaceContext));
+            return Optional.of(serialize(filter, namespaceContext, forceDefaultPrefix));
         } catch (PrismQuerySerialization.NotSupportedException e) {
             return Optional.empty();
         }

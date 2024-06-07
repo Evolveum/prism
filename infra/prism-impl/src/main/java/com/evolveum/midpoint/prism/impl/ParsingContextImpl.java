@@ -26,6 +26,7 @@ public class ParsingContextImpl implements ParsingContext {
     private final List<String> warnings = new ArrayList<>();
     /** Not checking for duplicates when adding parsed data. For trusted sources. */
     private boolean fastAddOperations;
+    private boolean preserveNamespaceContext;
 
     private ParsingContextImpl() {
     }
@@ -127,6 +128,17 @@ public class ParsingContextImpl implements ParsingContext {
         clone.allowMissingRefTypes = allowMissingRefTypes;
         clone.warnings.addAll(warnings);
         return clone;
+    }
+
+    @Override
+    public ParsingContext preserveNamespaceContext() {
+        this.preserveNamespaceContext = true;
+        return this;
+    }
+
+    @Override
+    public boolean isPreserveNamespaceContext() {
+        return preserveNamespaceContext;
     }
 
     @Override

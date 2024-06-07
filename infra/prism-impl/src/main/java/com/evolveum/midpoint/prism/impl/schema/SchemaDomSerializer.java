@@ -522,7 +522,7 @@ public class SchemaDomSerializer {
 
     @SuppressWarnings("SameParameterValue")
     private void addAnnotationToDefinition(Element definitionElement, QName qname) {
-        addAnnotationToDefinition(definitionElement, qname, null);
+        addAnnotationToDefinition(definitionElement, qname, (QName) null);
     }
 
     private void addAnnotationToDefinition(Element definitionElement, QName qname, QName value) {
