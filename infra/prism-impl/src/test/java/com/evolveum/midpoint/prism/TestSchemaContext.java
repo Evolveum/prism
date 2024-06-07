@@ -20,20 +20,29 @@ import static org.testng.AssertJUnit.assertEquals;
  */
 public class TestSchemaContext extends AbstractPrismTest {
 
+    Item<?, ?> objectItem;
+    QName userType, roleType;
+
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
+        PrismObject<RoleType> roleProxy = getPrismContext().parseObject(new File(PrismInternalTestUtil.COMMON_DIR_XML, "role-proxy.xml"));
+        userType = new QName(PrismInternalTestUtil.NS_FOO, "UserType");
+        roleType = new QName(PrismInternalTestUtil.NS_FOO, "RoleType");
+        objectItem = roleProxy.findItem(ItemPath.create(new QName("authorization"), 1L, new QName("object")));
     }
 
     @Test
-    public void typePropertyContextResolverTest() throws SchemaException, IOException {
-        QName userType = new QName(PrismInternalTestUtil.NS_FOO, "UserType");
-        QName roleType = new QName(PrismInternalTestUtil.NS_FOO, "RoleType");
+    public void typeContextResolverTest() {
+        if (objectItem.find(ItemPath.create(1L, new QName("parent"))) instanceof Item<?, ?> filterItem) {
+            PrismValue filterPrismValue = filterItem.getAnyValue();
+            assertEquals(filterPrismValue.getSchemaContext().getItemDefinition().getTypeName(), roleType);
+        }
+    }
 
-        PrismObject<RoleType> roleProxy = getPrismContext().parseObject(new File(PrismInternalTestUtil.COMMON_DIR_XML, "role-proxy.xml"));
-        Item<?, ?> objectItem = roleProxy.findItem(ItemPath.create(new QName("authorization"), 1L, new QName("object")));
+    @Test
+    public void typePropertyContextResolverTest() {
         PrismValue objectPrismValue = objectItem.getAnyValue();
-
         assertEquals(objectPrismValue.getSchemaContext().getItemDefinition().getTypeName(), userType);
 
         if (objectItem.find(ItemPath.create(1L, new QName("filter"))) instanceof Item<?, ?> filterItem) {
