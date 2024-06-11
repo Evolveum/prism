@@ -45,6 +45,8 @@
             <class name="com.evolveum.midpoint.prism.TestPropertyArrayList"/>
             <class name="com.evolveum.midpoint.prism.match.FuzzyStringMatchFilterImplTest"/>
             <class name="com.evolveum.midpoint.prism.query.lang.TestBasicQueryConversions"/>
+            <class name="com.evolveum.midpoint.prism.query.lang.TestQueryCompletion"/>
+            <class name="com.evolveum.midpoint.prism.query.lang.TestQueryValidation"/>
         </classes>
     </test>
 </suite>

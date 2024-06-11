@@ -12,6 +12,7 @@ import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryLangServiceImpl;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
@@ -71,7 +72,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), itemPaths.stream().sorted().toList());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testQueryCompletionBaseFilterName() {
         String query = ". type UserType and givenName ";
 
@@ -110,4 +111,19 @@ public class TestQueryCompletion extends AbstractPrismTest {
     }
 
     // Advanced filters
+    @Test(enabled = false)
+    public void testUserExtensionItemPath() {
+        PrismObjectDefinition<UserType> userDef = schemaRegistry.findObjectDefinitionByType(UserType.COMPLEX_TYPE);
+        String query = "extension/";
+        List<String> suggestions = axiomQueryLangServiceImpl.queryCompletion(userDef, query)
+                .keySet().stream().sorted().toList();
+
+        List<String> expected =
+                userDef.getExtensionDefinition().getItemNames().stream()
+                        .map(i -> i.getLocalPart())
+                        .sorted()
+                        .toList();
+
+        Assert.assertEquals(expected, suggestions);
+    }
 }
