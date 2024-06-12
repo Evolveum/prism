@@ -4,7 +4,9 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.PrismContainerDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
@@ -36,9 +38,16 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     }
 
     @Override
-    public Object visitTerminal(TerminalNode node) {
+    public Void visitTerminal(TerminalNode node) {
+
         if (node.getSymbol().getType() == AxiomQueryParser.SEP) {
             lastSeparator = node;
+            return null;
+        }
+
+        if (node.getSymbol().getType() == AxiomQueryParser.EOF) {
+            lastSeparator = node;
+            return null;
         }
 
         return null;
@@ -52,7 +61,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     @Override
     public Object visitItemComponent(AxiomQueryParser.ItemComponentContext ctx) {
         // FIXME: Is this correct? This is actually also executed for item paths
-        var maybeQName = new QName(ctx.getText());
+        QName maybeQName = new QName(ctx.getText());
         var maybeType = schemaRegistry.findTypeDefinitionByType(maybeQName);
         if (maybeType != null) {
             lastType = maybeType.getTypeName();
@@ -62,7 +71,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
 
     public Map<String, String> generateSuggestion() {
         Map<String, String> suggestions = new HashMap<>();
-        final ParseTree lastNode = getLastNode();
+        final ParseTree lastNode = getLastNode(lastSeparator);
 
         if (lastNode instanceof AxiomQueryParser.ItemPathComponentContext ctx) {
             suggestions = getFilters(lastNode.getText());
@@ -115,6 +124,18 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
                 suggestions = getAllPath();
                 suggestions.put(DOT, null);
             }
+
+            if (ctx.getSymbol().getType() == AxiomQueryParser.SLASH) {
+                ParseTree pathAfterSlash = getPreviousToken(ctx.getParent());
+                if (pathAfterSlash != null) {
+                    if (schemaRegistry.findContainerDefinitionByType(lastType) instanceof PrismContainerDefinitionImpl<?> containerValue) {
+                        ItemName itemName = new ItemName(containerValue.getItemName().getNamespaceURI(), pathAfterSlash.getText());
+                        for (ItemName item :  containerValue.findContainerDefinition(itemName).getItemNames()) {
+                            suggestions.put(item.getLocalPart(), item.getLocalPart());
+                        }
+                    }
+                }
+            }
         } else if (lastNode instanceof ErrorNode ctx) {
             // TODO solve Error token
         }
@@ -122,12 +143,12 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         return suggestions;
     }
 
-    private ParseTree getLastNode() {
+    private ParseTree getLastNode(ParseTree node) {
         int separatorIndex = -1;
 
-        if (lastSeparator == null) return null;
+        if (node == null) return null;
 
-        ParseTree lastSeparatorParent = lastSeparator.getParent();
+        ParseTree lastSeparatorParent = node.getParent();
 
         for (int i = 0; i < lastSeparatorParent.getChildCount(); i++) {
             if (lastSeparatorParent.getChild(i) instanceof TerminalNode terminalNode && terminalNode.getSymbol().getType() == AxiomQueryParser.SEP) {
@@ -136,6 +157,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         }
 
         if (separatorIndex > 0) separatorIndex = separatorIndex - 1;
+        if (separatorIndex == -1) separatorIndex = 0;
 
         ParseTree lastNode = lastSeparatorParent.getChild(separatorIndex);
         int count = lastSeparatorParent.getChild(separatorIndex).getChildCount();
@@ -160,13 +182,13 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         return parseTree;
     }
 
-    private ParseTree getNextToken(@NotNull ParserRuleContext ctx) {
-        int count = ctx.getChildCount();
+    private ParseTree getNextToken(@NotNull ParseTree ctx) {
+        int count = ctx.getChildCount() - 1;
         return count >= 1 ? ctx.getChild(count + 1) : null;
     }
 
-    private ParseTree getPreviousToken(@NotNull ParserRuleContext ctx) {
-        int count = ctx.getChildCount();
+    private ParseTree getPreviousToken(@NotNull ParseTree ctx) {
+        int count = ctx.getChildCount() - 1;
         return count >= 1 ? ctx.getChild(count - 1) : null;
     }
 
