@@ -189,9 +189,21 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     }
 
     private Map<String, String> getAllPath() {
+        Map<String, String> suggestionPaths = new HashMap<>();
         TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(defineObjectType());
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
-        return objectDefinition.getItemNames().stream().map(QName::getLocalPart).collect(Collectors.toMap(filterName -> filterName, alias -> alias));
+
+        for (ItemName itemName : objectDefinition.getItemNames()) {
+            if (getPathAfterSlash(itemName.getLocalPart()) != null) {
+                getPathAfterSlash(itemName.getLocalPart()).forEach((key, value) -> {
+                    suggestionPaths.put(itemName.getLocalPart() + "/" + value, itemName.getLocalPart() + "/" + value);
+                });
+            }
+
+            suggestionPaths.put(itemName.getLocalPart(), itemName.getLocalPart());
+        }
+
+        return suggestionPaths;
     }
 
     private Map<String, String> getFilters(@NotNull String stringItemPath) {
@@ -205,8 +217,12 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     private Map<String, String> getPathAfterSlash(@NotNull String path) {
         if (schemaRegistry.findContainerDefinitionByType(lastType) instanceof PrismContainerDefinitionImpl<?> containerValue) {
             ItemName itemName = new ItemName(containerValue.getItemName().getNamespaceURI(), path);
-            return containerValue.findContainerDefinition(itemName).getItemNames()
-                    .stream().collect(Collectors.toMap(ItemName::getLocalPart, ItemName::getLocalPart));
+            try {
+                return containerValue.findContainerDefinition(itemName).getItemNames()
+                        .stream().collect(Collectors.toMap(ItemName::getLocalPart, ItemName::getLocalPart));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
 
         return null;

@@ -65,7 +65,34 @@ public class TestQueryCompletion extends AbstractPrismTest {
         TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(new QName("UserType"));
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         List<String> itemPaths = new ArrayList<>(objectDefinition.getItemNames().stream().map(QName::getLocalPart).toList());
+        itemPaths.add("singleActivation/enabled");
+        itemPaths.add("uselessAssignment/activation");
+        itemPaths.add("extension/intType");
+        itemPaths.add("activation/validTo");
+        itemPaths.add("uselessAssignment/note");
+        itemPaths.add("multiActivation/validFrom");
+        itemPaths.add("extension/indexedString");
+        itemPaths.add("activation/validFrom");
+        itemPaths.add("activation/enabled");
+        itemPaths.add("extension/num");
+        itemPaths.add("singleActivation/validFrom");
+        itemPaths.add("multiActivationCopy/enabled");
+        itemPaths.add("multiActivation/enabled");
+        itemPaths.add("uselessAssignment/description");
+        itemPaths.add("uselessAssignment/accountConstruction");
+        itemPaths.add("assignment/note");
+        itemPaths.add("multiActivationCopy/validTo");
+        itemPaths.add("assignment/accountConstruction");
+        itemPaths.add("uselessAssignment/identifier");
+        itemPaths.add("assignment/identifier");
+        itemPaths.add("multiActivationCopy/validFrom");
+        itemPaths.add("assignment/description");
+        itemPaths.add("extension/dateTime");
+        itemPaths.add("multiActivation/validTo");
+        itemPaths.add("singleActivation/validTo");
+        itemPaths.add("assignment/activation");
         itemPaths.add(".");
+
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), itemPaths.stream().sorted().toList());
     }
 
