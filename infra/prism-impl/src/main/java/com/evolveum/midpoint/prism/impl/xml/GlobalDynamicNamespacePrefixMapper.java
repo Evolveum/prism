@@ -172,6 +172,17 @@ public class GlobalDynamicNamespacePrefixMapper extends NamespacePrefixMapper im
         return clone;
     }
 
+    @Override
+    public boolean containsPrefix(String prefix) {
+        if (GLOBAL_NAMESPACE_PREFIX_MAP.containsValue(prefix)) {
+            return true;
+        }
+        if (localNamespacePrefixMap.containsValue(prefix)) {
+            return true;
+        }
+        return prefixesDeclaredByDefault.contains(prefix);
+    }
+
     private Map<String, String> clonePrefixMap(Map<String, String> map) {
         if (map == null) {
             return null;

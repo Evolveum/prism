@@ -45,4 +45,6 @@ public interface DynamicNamespacePrefixMapper extends DebugDumpable {
 
     // non-null
     Map<String,String> getNamespacesDeclaredByDefault();
+
+    boolean containsPrefix(String prefix);
 }

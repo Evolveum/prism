@@ -238,4 +238,5 @@ public interface SchemaRegistry extends DebugDumpable, SchemaRegistryState {
     }
 
     void registerDynamicSchemaExtensions(Map<String, Element> dbSchemaExtensions) throws SchemaException;
+    boolean existDynamicSchemaExtensions();
 }
