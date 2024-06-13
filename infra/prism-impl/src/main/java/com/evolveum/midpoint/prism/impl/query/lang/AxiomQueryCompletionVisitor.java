@@ -10,7 +10,6 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -39,7 +38,6 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
 
     @Override
     public Void visitTerminal(TerminalNode node) {
-
         if (node.getSymbol().getType() == AxiomQueryParser.SEP) {
             lastSeparator = node;
             return null;
@@ -128,14 +126,12 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             if (ctx.getSymbol().getType() == AxiomQueryParser.SLASH) {
                 ParseTree pathAfterSlash = getPreviousToken(ctx.getParent());
                 if (pathAfterSlash != null) {
-                    if (schemaRegistry.findContainerDefinitionByType(lastType) instanceof PrismContainerDefinitionImpl<?> containerValue) {
-                        ItemName itemName = new ItemName(containerValue.getItemName().getNamespaceURI(), pathAfterSlash.getText());
-                        for (ItemName item :  containerValue.findContainerDefinition(itemName).getItemNames()) {
-                            suggestions.put(item.getLocalPart(), item.getLocalPart());
-                        }
-                    }
+                    suggestions = getPathAfterSlash(pathAfterSlash.getText());
                 }
             }
+        } else if(lastNode instanceof AxiomQueryParser.FilterContext) {
+            suggestions = getAllPath();
+            suggestions.put(DOT, null);
         } else if (lastNode instanceof ErrorNode ctx) {
             // TODO solve Error token
         }
@@ -204,6 +200,16 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
         PrismObjectDefinition<?> objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         ItemDefinition<?> itemDefinition = objectDefinition.findItemDefinition(itemPath, ItemDefinition.class);
         return FilterNamesProvider.findFilterNamesByItemDefinition(itemDefinition, new AxiomQueryParser.FilterContext());
+    }
+
+    private Map<String, String> getPathAfterSlash(@NotNull String path) {
+        if (schemaRegistry.findContainerDefinitionByType(lastType) instanceof PrismContainerDefinitionImpl<?> containerValue) {
+            ItemName itemName = new ItemName(containerValue.getItemName().getNamespaceURI(), path);
+            return containerValue.findContainerDefinition(itemName).getItemNames()
+                    .stream().collect(Collectors.toMap(ItemName::getLocalPart, ItemName::getLocalPart));
+        }
+
+        return null;
     }
 
     // remove after implementing schemaContext annotation

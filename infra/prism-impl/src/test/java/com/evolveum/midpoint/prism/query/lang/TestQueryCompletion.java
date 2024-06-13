@@ -58,7 +58,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         Assert.assertEquals(suggestions.keySet().stream().sorted().toList(), objectTypes);
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testQueryCompletionBasePathsOfUserType() {
         String query = ". type UserType and ";
         Map<String, String> suggestions = axiomQueryLangServiceImpl.queryCompletion(userDef, query);
