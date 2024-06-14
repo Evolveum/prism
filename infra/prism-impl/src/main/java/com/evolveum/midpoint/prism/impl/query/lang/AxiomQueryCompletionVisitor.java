@@ -1,32 +1,39 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
+import static com.evolveum.midpoint.prism.impl.query.lang.PrismQueryLanguageParserImpl.*;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.PrismContainerDefinitionImpl;
-import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
-import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.xml.namespace.QName;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
 
-import javax.xml.namespace.QName;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.evolveum.midpoint.prism.impl.query.lang.PrismQueryLanguageParserImpl.*;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.TypeDefinition;
+import com.evolveum.midpoint.prism.impl.PrismContainerDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 /**
  * Created by Dominik.
  */
 public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Object> {
+
     private final SchemaRegistry schemaRegistry;
+
     private ParseTree lastSeparator = null;
+
     private QName lastType = null;
 
     public AxiomQueryCompletionVisitor(ItemDefinition<?> rootDef, PrismContext prismContext) {
@@ -73,28 +80,28 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
 
         if (lastNode instanceof AxiomQueryParser.ItemPathComponentContext ctx) {
             suggestions = getFilters(lastNode.getText());
-            suggestions.put(FilterNames.NOT.getLocalPart(), null);
+            suggestions.put(Filter.Name.NOT.getLocalPart(), null);
         } else if (lastNode instanceof AxiomQueryParser.SelfPathContext ctx) {
             // TODO solve SelfPathContext
         } else if (lastNode instanceof AxiomQueryParser.FilterNameContext ctx) {
             // TODO maybe to add suggestion for value
             // value for @type || . type
-            if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_TYPE) || ctx.getText().equals(FilterNames.TYPE.getLocalPart())) {
+            if (findNode(ctx).getChild(0).getText().equals(Filter.Meta.TYPE.getName()) || ctx.getText().equals(Filter.Name.TYPE.getLocalPart())) {
                 TypeDefinition typeDefinition = schemaRegistry.findTypeDefinitionByType(defineObjectType());
                 suggestions = schemaRegistry.getAllSubTypesByTypeDefinition(List.of(typeDefinition)).stream()
                         .collect(Collectors.toMap(item -> item.getTypeName().getLocalPart(), item -> item.getTypeName().getLocalPart(), (existing, replacement) -> existing));
             }
 
             // value for @path
-            if (findNode(ctx).getChild(0).getText().equals(FilterNames.META_PATH) || ctx.getText().equals(LPAR)) {
+            if (findNode(ctx).getChild(0).getText().equals(Filter.Meta.PATH.getName()) || ctx.getText().equals(LPAR)) {
                 suggestions = getAllPath();
             }
             // value for @relation
-            if (ctx.getText().equals(FilterNames.META_RELATION)) {
+            if (ctx.getText().equals(Filter.Meta.RELATION.getName())) {
                 // TODO add value for @relation to suggestions list
             }
 
-            if (ctx.getText().equals(FilterNames.MATCHES.getLocalPart()) || ctx.getText().equals(FilterNames.REFERENCED_BY.getLocalPart()) || ctx.getText().equals(FilterNames.OWNED_BY.getLocalPart())) {
+            if (ctx.getText().equals(Filter.Name.MATCHES.getLocalPart()) || ctx.getText().equals(Filter.Name.REFERENCED_BY.getLocalPart()) || ctx.getText().equals(Filter.Name.OWNED_BY.getLocalPart())) {
                 suggestions.put(LPAR, null);
             }
         } else if (lastNode instanceof AxiomQueryParser.GenFilterContext ctx) {
@@ -102,7 +109,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
                 suggestions = getFilters(lastNode.getText());
             } else {
                 suggestions = getFilters(lastNode.getText());
-                suggestions.put(FilterNames.NOT.getLocalPart(), null);
+                suggestions.put(Filter.Name.NOT.getLocalPart(), null);
             }
         } else if (lastNode instanceof AxiomQueryParser.DescendantPathContext ctx) {
             // TODO solve DescendantPathContext
@@ -115,8 +122,8 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
                 }
             }
 
-            suggestions.put(FilterNames.AND.getLocalPart(), null);
-            suggestions.put(FilterNames.OR.getLocalPart(), null);
+            suggestions.put(Filter.Name.AND.getLocalPart(), null);
+            suggestions.put(Filter.Name.OR.getLocalPart(), null);
         } else if (lastNode instanceof TerminalNode ctx) {
             if (ctx.getSymbol().getType() == AxiomQueryParser.SEP || ctx.getSymbol().getType() == AxiomQueryParser.AND_KEYWORD || ctx.getSymbol().getType() == AxiomQueryParser.OR_KEYWORD) {
                 suggestions = getAllPath();
@@ -129,7 +136,7 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
                     suggestions = getPathAfterSlash(pathAfterSlash.getText());
                 }
             }
-        } else if(lastNode instanceof AxiomQueryParser.FilterContext) {
+        } else if (lastNode instanceof AxiomQueryParser.FilterContext) {
             suggestions = getAllPath();
             suggestions.put(DOT, null);
         } else if (lastNode instanceof ErrorNode ctx) {
@@ -142,7 +149,9 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
     private ParseTree getLastNode(ParseTree node) {
         int separatorIndex = -1;
 
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
 
         ParseTree lastSeparatorParent = node.getParent();
 
@@ -152,8 +161,12 @@ public class AxiomQueryCompletionVisitor extends AxiomQueryParserBaseVisitor<Obj
             }
         }
 
-        if (separatorIndex > 0) separatorIndex = separatorIndex - 1;
-        if (separatorIndex == -1) separatorIndex = 0;
+        if (separatorIndex > 0) {
+            separatorIndex = separatorIndex - 1;
+        }
+        if (separatorIndex == -1) {
+            separatorIndex = 0;
+        }
 
         ParseTree lastNode = lastSeparatorParent.getChild(separatorIndex);
         int count = lastSeparatorParent.getChild(separatorIndex).getChildCount();

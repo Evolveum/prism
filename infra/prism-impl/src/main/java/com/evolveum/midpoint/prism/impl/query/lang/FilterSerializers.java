@@ -29,18 +29,16 @@ import com.evolveum.midpoint.prism.impl.query.UndefinedFilterImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.query.AndFilter;
-import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.FuzzyMatchingMethod;
 import com.evolveum.midpoint.prism.query.FuzzyStringMatchFilter.ThresholdMatchingMethod;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.OrFilter;
 import com.evolveum.midpoint.prism.query.OrgFilter.Scope;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 
 import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
-import static com.evolveum.midpoint.prism.impl.query.lang.FilterNames.*;
+import static com.evolveum.midpoint.prism.impl.query.lang.Filter.Name.*;
 
 
 import java.util.Map;
@@ -53,7 +51,6 @@ import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismReferenceValue;
 
@@ -235,12 +232,12 @@ public class FilterSerializers {
 
         // @type = QName
 
-        writeProperty(target, META_TYPE, source.getType().getTypeName(), false, false);
+        writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), false, false);
         // and @path = ItemPath
-        writeProperty(target, META_PATH, source.getPath(), false, true);
+        writeProperty(target, Filter.Meta.PATH.getName(), source.getPath(), false, true);
 
         // and @relation =
-        writeProperty(target, META_RELATION, source.getRelation(), true, true);
+        writeProperty(target, Filter.Meta.RELATION.getName(), source.getRelation(), true, true);
         var nested = source.getFilter();
         if(nested != null) {
             target.writeFilterName(AND);
@@ -260,9 +257,9 @@ public class FilterSerializers {
 
         // @type = QName
 
-        boolean notFirst = writeProperty(target, META_TYPE, source.getType().getTypeName(), true, false);
+        boolean notFirst = writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), true, false);
         // and @path = ItemPath
-        notFirst = writeProperty(target, META_PATH, source.getPath(), true, notFirst);
+        notFirst = writeProperty(target, Filter.Meta.PATH.getName(), source.getPath(), true, notFirst);
 
         var nested = source.getFilter();
         if(nested != null) {
@@ -346,9 +343,8 @@ public class FilterSerializers {
         return source.getRightHandSidePath() == null && (source.getValues() == null || source.getValues().isEmpty());
     }
 
-    static void substringFilter(SubstringFilterImpl<?> source, QueryWriter target)
-            throws NotSupportedException {
-        final QName name;
+    static void substringFilter(SubstringFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
+        final Filter.Name name;
         if (source.isAnchorStart() && source.isAnchorEnd()) {
             name = EQUAL;
         } else if (source.isAnchorStart()) {
@@ -418,7 +414,9 @@ public class FilterSerializers {
         return true;
     }
 
-    private static void valueFilter(QName name, PropertyValueFilterImpl<?> source, QueryWriter target) throws NotSupportedException {
+    private static void valueFilter(Filter.Name name, PropertyValueFilterImpl<?> source, QueryWriter target)
+            throws NotSupportedException {
+
         target.writePath(source.getFullPath());
         target.writeFilterName(name);
         target.writeMatchingRule(source.getDeclaredMatchingRule());
@@ -435,5 +433,4 @@ public class FilterSerializers {
             target.writeValues(source.getValues());
         }
     }
-
 }

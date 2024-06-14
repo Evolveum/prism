@@ -1,20 +1,23 @@
 package com.evolveum.midpoint.prism.impl.query.lang;
 
-import com.evolveum.axiom.lang.antlr.AxiomQueryError;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.*;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
-import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.xml.namespace.QName;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser.ItemFilterContext;
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismObjectDefinition;
+import com.evolveum.midpoint.prism.TypeDefinition;
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
 /**
  * Created by Dominik.
@@ -32,7 +35,6 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
         }
         if (itemDefinition != null && itemDefinition.getTypeName() != null) {
 
-
             typeDefinition = schemaRegistry.findTypeDefinitionByType(itemDefinition.getTypeName());
         }
     }
@@ -40,15 +42,15 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
     @Override
     public Object visitItemFilter(ItemFilterContext ctx) {
         if (ctx.path() != null) {
-            if (ctx.path().getText().equals(".")){
-                if (ctx.filterName().getText().equals(FilterNames.TYPE.getLocalPart())) {
+            if (ctx.path().getText().equals(".")) {
+                if (ctx.filterName().getText().equals(Filter.Name.TYPE.getLocalPart())) {
                     // checking . type ObjectType
-                   typeDefinition = checkType(ctx.subfilterOrValue());
+                    typeDefinition = checkType(ctx.subfilterOrValue());
                 }
-            } else if (ctx.path().getText().equals(FilterNames.META_TYPE) || ctx.path().getText().equals(PrismQueryLanguageParserImpl.REF_TYPE)) {
+            } else if (ctx.path().getText().equals(Filter.Meta.TYPE.getName()) || ctx.path().getText().equals(PrismQueryLanguageParserImpl.REF_TYPE)) {
                 // checking path context META @type
                 typeDefinition = checkType(ctx.subfilterOrValue());
-            } else if (ctx.path().getText().equals(FilterNames.META_PATH) || ctx.path().getText().equals(FilterNames.META_RELATION)) {
+            } else if (ctx.path().getText().equals(Filter.Meta.PATH.getName()) || ctx.path().getText().equals(Filter.Meta.RELATION.getName())) {
                 // checking path context META @path & @relation
                 itemDefinition = checkItemPath(ctx.subfilterOrValue());
             } else {
@@ -61,7 +63,7 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
         }
 
         if (ctx.filterNameAlias() != null) {
-            if (!ctx.path().getText().equals(FilterNames.META_PATH) || ctx.path().getText().equals(FilterNames.META_RELATION)) {
+            if (!ctx.path().getText().equals(Filter.Meta.PATH.getName()) || ctx.path().getText().equals(Filter.Meta.RELATION.getName())) {
                 checkFilterName(itemDefinition, ctx.filterNameAlias());
             }
         }
@@ -86,7 +88,7 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
                     null)
             );
         } else {
-            if (this.typeDefinition == null) this.typeDefinition = typeDefinition;
+            if (this.typeDefinition == null) {this.typeDefinition = typeDefinition;}
             List<TypeDefinition> objectTypes = schemaRegistry.getAllSubTypesByTypeDefinition(List.of(this.typeDefinition));
 
             if (!objectTypes.contains(this.typeDefinition) && !objectTypes.contains(typeDefinition)) {
@@ -107,8 +109,8 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
         ItemPath itemPath = null;
         int itemPathCount = ctx.getChildCount();
 
-        if(typeDefinition != null) {
-           objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
+        if (typeDefinition != null) {
+            objectDefinition = schemaRegistry.findObjectDefinitionByCompileTimeClass((Class) typeDefinition.getCompileTimeClass());
         }
 
         if (objectDefinition != null) {
@@ -125,10 +127,10 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
 
                 if (itemDefinition == null) {
                     errorList.add(new AxiomQueryError(null,
-                        null,
-                        ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
-                        "Path " + itemPath + " is not present in type " + objectDefinition.getTypeName().getLocalPart(),
-                        null)
+                            null,
+                            ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                            "Path " + itemPath + " is not present in type " + objectDefinition.getTypeName().getLocalPart(),
+                            null)
                     );
                 } else {
                     if (i != (itemPathCount - 1)) {
@@ -140,10 +142,10 @@ public class AxiomQueryValidationVisitor extends AxiomQueryParserBaseVisitor<Obj
             }
         } else {
             errorList.add(new AxiomQueryError(null,
-                null,
-                ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
-                "Missing object definition",
-                null)
+                    null,
+                    ctx.getStart().getLine(), ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex(),
+                    "Missing object definition",
+                    null)
             );
         }
 

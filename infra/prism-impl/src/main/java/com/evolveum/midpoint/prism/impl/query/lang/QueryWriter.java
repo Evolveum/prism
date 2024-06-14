@@ -15,27 +15,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
-
-import com.evolveum.midpoint.prism.PrismContext;
-import com.evolveum.midpoint.prism.binding.TypeSafeEnum;
-import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
-
-import com.evolveum.midpoint.util.exception.SchemaException;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.axiom.concepts.Builder;
 import com.evolveum.axiom.lang.antlr.AxiomStrings;
+import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.PrismPropertyValue;
+import com.evolveum.midpoint.prism.binding.TypeSafeEnum;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerialization;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
+import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
+import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQueryExpressionFactory.ExpressionWriter {
 
@@ -82,13 +78,17 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
 
     }
 
+    public void writeFilterName(Filter.Name filter) {
+        writeFilterName(filter.getName());
+    }
+
     public void writeFilterName(QName filter) {
         var alias = lookupAlias(filter);
         target.emitSpace();
         if (alias.isPresent()) {
             target.emit(alias.get());
         } else {
-            emitQName(filter, FilterNames.QUERY_NS);
+            emitQName(filter, Filter.QUERY_NS);
         }
     }
 
@@ -153,7 +153,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
     }
 
     private Optional<String> lookupAlias(QName filter) {
-        return FilterNames.aliasFor(filter);
+        return Filter.aliasFor(filter);
     }
 
     private void emitQName(QName filter, String additionalDefaultNs) {
@@ -213,7 +213,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
             target.emitSpace();
             expressionFactory.serializeExpression(this, wrapper);
         } catch (SchemaException e) {
-            throw new NotSupportedException("External serialization failed.",e);
+            throw new NotSupportedException("External serialization failed.", e);
         }
     }
 

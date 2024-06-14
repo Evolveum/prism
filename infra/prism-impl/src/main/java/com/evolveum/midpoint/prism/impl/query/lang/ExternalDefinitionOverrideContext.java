@@ -37,7 +37,7 @@ class ExternalDefinitionOverrideContext implements DefinitionOverrideContext {
         boolean isApplicable(ItemFilterContext itemFilter) {
             // only matches with subfilter specified is acceptable
 
-            return FilterNames.MATCHES.equals(parser.filterName(itemFilter))
+            return Filter.Name.MATCHES.getName().equals(parser.filterName(itemFilter))
                 && itemFilter.subfilterOrValue() != null
                 && itemFilter.subfilterOrValue().subfilterSpec() != null;
         }
@@ -48,7 +48,7 @@ class ExternalDefinitionOverrideContext implements DefinitionOverrideContext {
 
         boolean isApplicable(ItemFilterContext itemFilter) {
             // Only equal filter with single value is acceptable
-            return FilterNames.EQUAL.equals(parser.filterName(itemFilter))
+            return Filter.Name.EQUAL.getName().equals(parser.filterName(itemFilter))
                     && itemFilter.subfilterOrValue() != null
                     && itemFilter.subfilterOrValue().singleValue() != null;
         }
