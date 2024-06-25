@@ -51,6 +51,11 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
      */
     <O extends Objectable> PrismObject<O> getObject();
 
+    default Objectable getObjectable() {
+        PrismObject<Objectable> prismObject = getObject();
+        return prismObject != null ? prismObject.asObjectable() : null;
+    }
+
     void setObject(PrismObject<?> object);
 
     /**

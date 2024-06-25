@@ -98,6 +98,9 @@ public interface ComplexTypeDefinition
     /** Type name for items that are not explicitly defined in this CTD. */
     @Nullable QName getDefaultItemTypeName();
 
+    /** Default target type name for references typed using {@link #getDefaultItemTypeName()} set to "reference type". */
+    @Nullable QName getDefaultReferenceTargetTypeName();
+
     /**
      * When resolving unqualified names for items contained in this CTD, what should be the default namespace
      * to look into at first. Currently does NOT apply recursively (to inner CTDs).
@@ -232,6 +235,7 @@ public interface ComplexTypeDefinition
 
         void setExtensionForType(QName typeName);
         void setDefaultItemTypeName(QName value);
+        void setDefaultReferenceTargetTypeName(QName value);
         void setDefaultNamespace(String value);
         void setIgnoredNamespaces(List<String> ignoredNamespaces);
         void setXsdAnyMarker(boolean value);

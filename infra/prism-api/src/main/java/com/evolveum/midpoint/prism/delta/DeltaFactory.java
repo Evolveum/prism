@@ -261,9 +261,8 @@ public interface DeltaFactory {
                 QName propertyName,
                 String... targetOids);
 
-        <O extends Objectable> ObjectDelta<O> createModificationDeleteReference(Class<O> type, String oid,
-                QName propertyName,
-                PrismReferenceValue... referenceValues);
+        <O extends Objectable> ObjectDelta<O> createModificationDeleteReference(
+                Class<O> type, String oid, ItemPath itemPath, PrismReferenceValue... referenceValues);
 
         @SuppressWarnings("unchecked")
         <O extends Objectable, X> ObjectDelta<O> createModificationDeleteProperty(Class<O> type, String oid,
@@ -273,12 +272,11 @@ public interface DeltaFactory {
         <O extends Objectable, X> ObjectDelta<O> createModificationAddProperty(Class<O> type, String oid,
                 ItemPath propertyPath, X... propertyValues);
 
-        <O extends Objectable> ObjectDelta<O> createModificationAddReference(Class<O> type, String oid,
-                QName propertyName,
-                String... targetOids);
+        <O extends Objectable> ObjectDelta<O> createModificationAddReference(
+                Class<O> type, String oid, QName propertyName, String... targetOids);
 
         <O extends Objectable> ObjectDelta<O> createModificationAddReference(Class<O> type, String oid,
-                QName propertyName,
+                ItemPath propertyName,
                 PrismReferenceValue... referenceValues);
 
         <O extends Objectable> ObjectDelta<O> createModificationAddReference(Class<O> type, String oid,

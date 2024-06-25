@@ -122,7 +122,7 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         };
     }
 
-    /** Values that are added or potentially added by this delta. */
+    /** Values that are added or potentially added by this delta. Returns live values; the collection may not be live. */
     default @NotNull Collection<V> getNewValues() {
         var valuesToReplace = getValuesToReplace();
         //noinspection ReplaceNullCheck

@@ -78,8 +78,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     public PrismPropertyValueImpl(T value, OriginType type, Objectable source, @Nullable ExpressionWrapper expression) {
         super(type, source, null);
         if (value instanceof PrismPropertyValue) {
-            throw new IllegalArgumentException("Probably problem somewhere, encapsulating property " +
-                    "value object to another property value.");
+            throw new IllegalArgumentException(
+                    "Probably problem somewhere, encapsulating property value object to another property value.");
         }
         this.value = value;
         this.expression = expression;

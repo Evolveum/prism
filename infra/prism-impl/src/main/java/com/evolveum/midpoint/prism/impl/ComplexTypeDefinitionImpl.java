@@ -74,6 +74,9 @@ public class ComplexTypeDefinitionImpl
     /** @see ComplexTypeDefinition#getDefaultItemTypeName() */
     private QName defaultItemTypeName;
 
+    /** @see ComplexTypeDefinition#getDefaultReferenceTargetTypeName() */
+    private QName defaultReferenceTargetTypeName;
+
     /** @see ComplexTypeDefinition#getDefaultNamespace() */
     private String defaultNamespace;
 
@@ -217,6 +220,17 @@ public class ComplexTypeDefinitionImpl
     public void setDefaultItemTypeName(QName defaultItemTypeName) {
         checkMutable();
         this.defaultItemTypeName = defaultItemTypeName;
+    }
+
+    @Override
+    public @Nullable QName getDefaultReferenceTargetTypeName() {
+        return defaultReferenceTargetTypeName;
+    }
+
+    @Override
+    public void setDefaultReferenceTargetTypeName(QName defaultReferenceTargetTypeName) {
+        checkMutable();
+        this.defaultReferenceTargetTypeName = defaultReferenceTargetTypeName;
     }
 
     @Override
@@ -390,14 +404,30 @@ public class ComplexTypeDefinitionImpl
         if (defaultTypeName == null) {
             return null;
         }
-        ComplexTypeDefinition typeDef = getSchemaLookup().findComplexTypeDefinitionByType(defaultTypeName);
-        var stateNonNullTypeDef = MiscUtil.stateNonNull(typeDef, "No complex type definition for %s", defaultTypeName);
-        var pcd = new PrismContainerDefinitionImpl<>(firstName, stateNonNullTypeDef);
-        pcd.setMinOccurs(0);
-        pcd.setMaxOccurs(-1);
-        pcd.setDynamic(true); // TODO ok?
-        //noinspection unchecked
-        return (ID) pcd;
+        var typeDef = MiscUtil.stateNonNull(
+                getSchemaLookup().findTypeDefinitionByType(defaultTypeName),
+                "No type definition for %s", defaultTypeName);
+        if (!(typeDef instanceof ComplexTypeDefinition ctd)) {
+            throw new IllegalStateException("Unsupported type definition: " + typeDef);
+        }
+        if (ctd.isContainerMarker()) {
+            var pcd = new PrismContainerDefinitionImpl<>(firstName, ctd);
+            pcd.setMinOccurs(0);
+            pcd.setMaxOccurs(-1);
+            pcd.setDynamic(true); // TODO ok?
+            //noinspection unchecked
+            return (ID) pcd;
+        } else if (ctd.isReferenceMarker()) {
+            var prd = new PrismReferenceDefinitionImpl(firstName, ctd.getTypeName());
+            prd.setMinOccurs(0);
+            prd.setMaxOccurs(-1);
+            prd.setDynamic(true); // TODO ok?
+            prd.setTargetTypeName(getDefaultReferenceTargetTypeName());
+            //noinspection unchecked
+            return (ID) prd;
+        } else {
+            throw new IllegalStateException("Unsupported type definition: " + ctd);
+        }
     }
 
     private <ID extends ItemDefinition<?>> ID findNamedItemDefinition(
@@ -509,6 +539,7 @@ public class ComplexTypeDefinitionImpl
         xsdAnyMarker = source.isXsdAnyMarker();
         extensionForType = source.getExtensionForType();
         defaultItemTypeName = source.getDefaultItemTypeName();
+        defaultReferenceTargetTypeName = source.getDefaultReferenceTargetTypeName();
         defaultNamespace = source.getDefaultNamespace();
         ignoredNamespaces = new ArrayList<>(source.getIgnoredNamespaces());
         itemDefinitions.addAll(source.getDefinitions());

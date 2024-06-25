@@ -14,7 +14,6 @@ import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -347,7 +346,17 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (object.getDefinition() != null && !force) {
             return;
         }
-        var objectDefinitionToApply = determineObjectDefinitionToApply(definition);
+        if (definition.getTargetObjectDefinition() != null) {
+            // Temporary hack
+            //noinspection unchecked,rawtypes
+            object.applyDefinition((PrismObjectDefinition) definition.getTargetObjectDefinition(), force);
+        }
+        if (object.getDefinition() != null) {
+            // All we can get here is a static definition from the schema. We do not want to override the current one,
+            // which is presumably at least as good as the static one.
+            return;
+        }
+        var objectDefinitionToApply = determineObjectDefinitionFromSchemaRegistry(definition);
         if (objectDefinitionToApply != null) {
             //noinspection unchecked,rawtypes
             object.applyDefinition((PrismObjectDefinition) objectDefinitionToApply, force);
@@ -355,16 +364,13 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     /** If not found, either returns `null` (meaning "ignore this"), or throws an exception. */
-    private PrismObjectDefinition<? extends Objectable> determineObjectDefinitionToApply(PrismReferenceDefinition definition)
+    private PrismObjectDefinition<? extends Objectable> determineObjectDefinitionFromSchemaRegistry(
+            PrismReferenceDefinition definition)
             throws SchemaException {
-        if (definition.getTargetObjectDefinition() != null) {
-            return definition.getTargetObjectDefinition();
-        }
 
         SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
         //noinspection ConstantConditions
-        PrismObjectDefinition<? extends Objectable> byClass =
-                schemaRegistry.findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
+        var byClass = schemaRegistry.findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
         if (byClass != null) {
             return byClass;
         }
