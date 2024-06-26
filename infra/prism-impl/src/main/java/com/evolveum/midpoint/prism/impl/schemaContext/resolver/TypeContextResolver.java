@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
+import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismContext;

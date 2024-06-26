@@ -5,11 +5,12 @@ import java.util.Map;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.impl.schemaContext.ContextResolverFactory;
+import com.evolveum.midpoint.prism.schemaContext.resolver.ContextResolverFactory;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 
 /**
- * 3
+ *
  * Created by Dominik.
  */
 public class SchemaContextResolverRegistry {
