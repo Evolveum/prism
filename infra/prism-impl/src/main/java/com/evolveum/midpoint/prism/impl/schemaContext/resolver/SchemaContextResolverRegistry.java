@@ -2,11 +2,10 @@ package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.schemaContext.resolver.ContextResolverFactory;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.resolver.AlgorithmName;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 
 /**
@@ -15,10 +14,10 @@ import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
  */
 public class SchemaContextResolverRegistry {
 
-    private static final Map<QName, ContextResolverFactory> SCHEMA_CONTEXT_RESOLVER = new HashMap<>();
+    private static final Map<AlgorithmName, ContextResolverFactory> SCHEMA_CONTEXT_RESOLVER = new HashMap<>();
 
-    public static void register(QName nameResolver, ContextResolverFactory resolver) {
-        SCHEMA_CONTEXT_RESOLVER.put(nameResolver, resolver);
+    public static void register(AlgorithmName algorithmName, ContextResolverFactory resolver) {
+        SCHEMA_CONTEXT_RESOLVER.put(algorithmName, resolver);
     }
 
     public static SchemaContextResolver createResolver(SchemaContextDefinition schemaContextDefinition) {
@@ -30,10 +29,14 @@ public class SchemaContextResolverRegistry {
             return new TypePropertyContextResolver(schemaContextDefinition);
         }
 
-        if (Objects.equals(schemaContextDefinition.getAlgorithm(), new QName("ResourceObjectContextResolver"))) {
-            return new ResourceObjectContextResolver(schemaContextDefinition);
+        if (schemaContextDefinition.getAlgorithm() != null) {
+            ContextResolverFactory resolverFactory = SCHEMA_CONTEXT_RESOLVER.get(AlgorithmName.valueOf(schemaContextDefinition.getAlgorithm().getLocalPart()));
+
+            if (resolverFactory != null) {
+                return resolverFactory.createResolver(schemaContextDefinition);
+            }
         }
 
-        return SCHEMA_CONTEXT_RESOLVER.get(schemaContextDefinition.getAlgorithm()).createResolver(schemaContextDefinition);
+        return null;
     }
 }

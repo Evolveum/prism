@@ -9,7 +9,9 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
  */
 public interface ContextResolverFactory {
 
-    QName getAlgorithmName();
+    void register(AlgorithmName name, SchemaContextResolver resolver);
+
+    AlgorithmName getAlgorithmName();
 
     SchemaContextResolver createResolver(SchemaContextDefinition schemaContext);
 
