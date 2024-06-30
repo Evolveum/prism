@@ -1,19 +1,28 @@
 package com.evolveum.midpoint.prism.schemaContext.resolver;
 
+import java.util.Objects;
+
 /**
  * List of implemented resolver algorithms for schema context.
  */
-public enum AlgorithmName {
+public enum Algorithm {
 
     RESOURCE_OBJECT_CONTEXT_RESOLVER("ResourceObjectContextResolver");
 
     public final String name;
 
-    AlgorithmName(String name) {
+    Algorithm(String name) {
         this.name = name;
     }
 
     public String getName() {
         return name;
+    }
+
+    public static Algorithm getAlgorithmNameByValue(String name) {
+        for (Algorithm algorithm : values()) {
+            return Objects.equals(name, algorithm.getName()) ? algorithm : null;
+        }
+        return null;
     }
 }

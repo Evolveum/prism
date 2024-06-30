@@ -1,7 +1,7 @@
 package com.evolveum.midpoint.prism.impl.schemaContext.resolver;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
-import com.evolveum.midpoint.prism.schemaContext.resolver.AlgorithmName;
+import com.evolveum.midpoint.prism.schemaContext.resolver.Algorithm;
 import com.evolveum.midpoint.prism.schemaContext.resolver.ContextResolverFactory;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolverRegistry;
@@ -22,7 +22,7 @@ public class ContextResolverFactoryImpl implements ContextResolverFactory {
         }
 
         if (schemaContextDefinition.getAlgorithm() != null) {
-            return SchemaContextResolverRegistry.getRegistry().get(AlgorithmName.valueOf(schemaContextDefinition.getAlgorithm().getLocalPart()));
+            return SchemaContextResolverRegistry.getRegistry().get(Algorithm.getAlgorithmNameByValue(schemaContextDefinition.getAlgorithm().getLocalPart()));
         }
 
         return null;
