@@ -9,9 +9,9 @@ import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolverR
 /**
  * Created by Dominik.
  */
-public class ContextResolverFactoryImpl implements ContextResolverFactory {
+public class ContextResolverFactoryImpl {
 
-    public SchemaContextResolver createResolver(SchemaContextDefinition schemaContextDefinition) {
+    public static SchemaContextResolver createResolver(SchemaContextDefinition schemaContextDefinition) {
 
         if (schemaContextDefinition.getType() != null) {
             return new TypeContextResolver(schemaContextDefinition);
@@ -22,7 +22,8 @@ public class ContextResolverFactoryImpl implements ContextResolverFactory {
         }
 
         if (schemaContextDefinition.getAlgorithm() != null) {
-            return SchemaContextResolverRegistry.getRegistry().get(Algorithm.getAlgorithmNameByValue(schemaContextDefinition.getAlgorithm().getLocalPart()));
+            ContextResolverFactory contextResolverFactory = SchemaContextResolverRegistry.getRegistry().get(Algorithm.getAlgorithmNameByValue(schemaContextDefinition.getAlgorithm().getLocalPart()));
+            return contextResolverFactory.createResolver(schemaContextDefinition);
         }
 
         return null;

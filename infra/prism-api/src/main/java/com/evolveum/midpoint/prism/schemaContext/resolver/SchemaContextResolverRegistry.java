@@ -10,13 +10,13 @@ import java.util.Map;
  */
 public class SchemaContextResolverRegistry {
 
-    private static final Map<Algorithm, SchemaContextResolver> SCHEMA_CONTEXT_RESOLVER = new HashMap<>();
+    private static final Map<Algorithm, ContextResolverFactory> SCHEMA_CONTEXT_RESOLVER = new HashMap<>();
 
-    public static void register(Algorithm algorithm, SchemaContextResolver resolver) {
-        SCHEMA_CONTEXT_RESOLVER.put(algorithm, resolver);
+    public static void register(Algorithm algorithm, ContextResolverFactory contextResolverFactory) {
+        SCHEMA_CONTEXT_RESOLVER.put(algorithm, contextResolverFactory);
     }
 
-    public static Map<Algorithm, SchemaContextResolver> getRegistry() {
+    public static Map<Algorithm, ContextResolverFactory> getRegistry() {
         return SCHEMA_CONTEXT_RESOLVER;
     }
 }
