@@ -15,10 +15,7 @@ import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefi
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
 import com.evolveum.midpoint.prism.schema.DefinitionFeature;
 
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
-
 import com.sun.xml.xsom.XSComplexType;
-import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -207,7 +204,12 @@ public interface ComplexTypeDefinition
         return props;
     }
 
-    /** A hook to migrate the value after this definition was applied to it. */
+    /**
+     * A hook to migrate the value after this definition was applied to it.
+     *
+     * Similar to {@link PrismReferenceDefinition#migrateIfNeeded(PrismReferenceValue)} with the difference that
+     * the implementation for references is simpler. See the discussion in the default implementation.
+     */
     @Experimental
     default @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value) {
         return value;
@@ -303,8 +305,7 @@ public interface ComplexTypeDefinition
         }
     }
 
-    /** TODO decide about this */
-    @Experimental
+    /** Provides the functionality for {@link ComplexTypeDefinition#migrateIfNeeded(PrismContainerValue)}. */
     interface ValueMigrator {
         @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value);
     }

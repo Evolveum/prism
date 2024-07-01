@@ -174,7 +174,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     PrismReference findReference(QName elementName);
 
-    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemPath itemName, Class<I> type);
+    <IV extends PrismValue, ID extends ItemDefinition<?>, I extends Item<IV, ID>> I findItem(ItemPath itemPath, Class<I> type);
 
 //    <IV extends PrismValue,ID extends ItemDefinition> Item<IV,ID> findItem(String itemName);
 

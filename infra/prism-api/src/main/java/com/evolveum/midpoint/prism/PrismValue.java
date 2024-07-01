@@ -127,7 +127,10 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     /** Definition application MAY change the value (currently only for container values). The caller must deal with that. */
     PrismValue applyDefinition(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException;
 
-    /** Definition application MAY change the value (currently only for container values). The caller must deal with that. */
+    /**
+     * Definition application MAY change the value (currently only for container/reference values).
+     * The caller must deal with that.
+     */
     default void applyDefinitionLegacy(@NotNull ItemDefinition<?> definition, boolean force) throws SchemaException {
         if (applyDefinition(definition, force) != this) {
             throw new UnsupportedOperationException(

@@ -793,6 +793,10 @@ public class ComplexTypeDefinitionImpl
         return this;
     }
 
+    /**
+     * Similar to migration for prism references; although this one is more flexible - using pluggable {@link ValueMigrator}
+     * because of client (midPoint) requirements.
+     */
     @Override
     public @NotNull <C extends Containerable> PrismContainerValue<C> migrateIfNeeded(@NotNull PrismContainerValue<C> value) {
         return valueMigrator != null ? valueMigrator.migrateIfNeeded(value) : value;

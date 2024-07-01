@@ -139,7 +139,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
 
     <IV extends PrismValue, ID extends ItemDefinition<?>> PartiallyResolvedItem<IV, ID> findPartial(ItemPath path);
 
-    void applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException;
+    PrismReferenceValue applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException;
 
     /**
      * Returns a version of this value that is canonical, that means it has the minimal form.
