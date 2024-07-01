@@ -5,6 +5,7 @@ import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 
 import javax.xml.namespace.QName;
 
