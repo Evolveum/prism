@@ -20,7 +20,7 @@ public enum Algorithm {
         return name;
     }
 
-    public static Algorithm getAlgorithmNameByValue(String name) {
+    public static Algorithm getAlgorithmByName(String name) {
         for (Algorithm algorithm : values()) {
             return Objects.equals(name, algorithm.getName()) ? algorithm : null;
         }
