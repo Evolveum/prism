@@ -7,7 +7,7 @@ import java.util.Objects;
  */
 public enum Algorithm {
 
-    RESOURCE_OBJECT_CONTEXT_RESOLVER("ResourceObject"),
+    RESOURCE_OBJECT_CONTEXT_RESOLVER("ResourceObjectContextResolver"),
     SHADOW_CONSTRUCTION_CONTEXT_RESOLVER("ShadowConstructionContextResolver");
 
     public final String name;
