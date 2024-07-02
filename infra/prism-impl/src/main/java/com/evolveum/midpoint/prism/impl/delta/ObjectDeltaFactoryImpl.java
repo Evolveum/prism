@@ -237,7 +237,7 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
         for (int i=0; i < targetOids.length; i++) {
             referenceValues[i] = prismContext.itemFactory().createReferenceValue(targetOids[i]);
         }
-        return createModificationDeleteReference(type, oid, propertyName, referenceValues);
+        return createModificationDeleteReference(type, oid, ItemName.fromQName(propertyName), referenceValues);
     }
 
     /**
@@ -245,19 +245,14 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
      * to justify a separate method.
      */
     @Override
-    public <O extends Objectable> ObjectDelta<O> createModificationDeleteReference(Class<O> type, String oid,
-            QName propertyName,
-            PrismReferenceValue... referenceValues) {
+    public <O extends Objectable> ObjectDelta<O> createModificationDeleteReference(
+            Class<O> type, String oid, ItemPath itemPath, PrismReferenceValue... referenceValues) {
         ObjectDelta<O> objectDelta = create(type, ChangeType.MODIFY);
         objectDelta.setOid(oid);
         PrismObjectDefinition<O> objDef = prismContext.getSchemaRegistry().findObjectDefinitionByCompileTimeClass(type);
-        PrismReferenceDefinition refDef = objDef.findReferenceDefinition(ItemName.fromQName(propertyName));
-        ReferenceDelta referenceDelta = objectDelta.createReferenceModification(ItemName.fromQName(propertyName), refDef);
-        Collection<PrismReferenceValue> valuesToDelete = new ArrayList<>(referenceValues.length);
-        for (PrismReferenceValue refVal: referenceValues) {
-            valuesToDelete.add(refVal);
-        }
-        referenceDelta.addValuesToDelete(valuesToDelete);
+        PrismReferenceDefinition refDef = objDef.findReferenceDefinition(itemPath);
+        ReferenceDelta referenceDelta = objectDelta.createReferenceModification(itemPath, refDef);
+        referenceDelta.addValuesToDelete(referenceValues);
         return objectDelta;
     }
 
@@ -280,14 +275,13 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
     }
 
     @Override
-    public <O extends Objectable> ObjectDelta<O> createModificationAddReference(Class<O> type, String oid,
-            QName propertyName,
-            String... targetOids) {
+    public <O extends Objectable> ObjectDelta<O> createModificationAddReference(
+            Class<O> type, String oid, QName propertyName, String... targetOids) {
         PrismReferenceValue[] referenceValues = new PrismReferenceValue[targetOids.length];
         for(int i=0; i < targetOids.length; i++) {
             referenceValues[i] = prismContext.itemFactory().createReferenceValue(targetOids[i]);
         }
-        return createModificationAddReference(type, oid, propertyName, referenceValues);
+        return createModificationAddReference(type, oid, ItemName.fromQName(propertyName), referenceValues);
     }
 
     /**
@@ -295,19 +289,14 @@ public class ObjectDeltaFactoryImpl implements DeltaFactory.Object {
      * to justify a separate method.
      */
     @Override
-    public <O extends Objectable> ObjectDelta<O> createModificationAddReference(Class<O> type, String oid,
-            QName propertyName,
-            PrismReferenceValue... referenceValues) {
+    public <O extends Objectable> ObjectDelta<O> createModificationAddReference(
+            Class<O> type, String oid, ItemPath itemPath, PrismReferenceValue... referenceValues) {
         ObjectDelta<O> objectDelta = create(type, ChangeType.MODIFY);
         objectDelta.setOid(oid);
         PrismObjectDefinition<O> objDef = prismContext.getSchemaRegistry().findObjectDefinitionByCompileTimeClass(type);
-        PrismReferenceDefinition refDef = objDef.findReferenceDefinition(ItemName.fromQName(propertyName));
-        ReferenceDelta referenceDelta = objectDelta.createReferenceModification(ItemName.fromQName(propertyName), refDef);
-        Collection<PrismReferenceValue> valuesToAdd = new ArrayList<>(referenceValues.length);
-        for (PrismReferenceValue refVal: referenceValues) {
-            valuesToAdd.add(refVal);
-        }
-        referenceDelta.addValuesToAdd(valuesToAdd);
+        PrismReferenceDefinition refDef = objDef.findReferenceDefinition(itemPath);
+        ReferenceDelta referenceDelta = objectDelta.createReferenceModification(itemPath, refDef);
+        referenceDelta.addValuesToAdd(referenceValues);
         return objectDelta;
     }
 

@@ -15,6 +15,8 @@ import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -60,8 +62,14 @@ public interface PrismItemMatchingDefinition<T> {
             // This is the default for PolyString properties
             return PrismContext.get().getDefaultPolyStringNormalizer();
         } else {
-            throw new UnsupportedOperationException("Cannot get string normalizer for non-PolyString property " + this);
+            throw new UnsupportedOperationException(
+                    "Asking for a string normalizer is not supported for non-PolyString property " + this);
         }
+    }
+
+    default @Nullable Normalizer<String> getStringNormalizerIfApplicable() {
+        return PolyString.class.equals(getTypeClass()) ? // TODO is this OK?
+                getStringNormalizerForPolyStringProperty() : null;
     }
 
     /** TODO */

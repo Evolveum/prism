@@ -215,6 +215,7 @@ class SchemaXsomParser {
 
         DF_INSTANTIATION_ORDER.parse(ctdBuilder, sourceComplexType);
         DF_DEFAULT_ITEM_TYPE_NAME.parse(ctdBuilder, sourceComplexType);
+        DF_DEFAULT_REFERENCE_TARGET_TYPE_NAME.parse(ctdBuilder, sourceComplexType);
         DF_DEFAULT_NAMESPACE.parse(ctdBuilder, sourceComplexType);
         DF_IGNORED_NAMESPACES.parse(ctdBuilder, sourceComplexType);
         DF_IS_ANY_XSD.parse(ctdBuilder, sourceComplexType);

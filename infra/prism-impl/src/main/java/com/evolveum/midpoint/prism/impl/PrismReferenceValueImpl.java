@@ -14,7 +14,6 @@ import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
@@ -327,27 +326,46 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         if (!(definition instanceof PrismReferenceDefinition referenceDefinition)) {
             throw new IllegalArgumentException("Cannot apply " + definition + " to a reference value");
         }
-        applyDefinition(referenceDefinition, force);
-        return this;
+        return applyDefinition(referenceDefinition, force);
     }
 
     @Override
-    public void applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException {
+    public PrismReferenceValue applyDefinition(PrismReferenceDefinition definition, boolean force) throws SchemaException {
         checkMutable();
 
+        var migrated = definition.migrateIfNeeded(this);
+        applyDefinitionTo(migrated, definition, force);
+        return migrated;
+    }
+
+    private static void applyDefinitionTo(PrismReferenceValue value, PrismReferenceDefinition definition, boolean force)
+            throws SchemaException {
+
         var defTargetType = definition.getTargetTypeName();
+        var targetType = value.getTargetType();
         if (targetType != null && defTargetType != null) {
             // Check if targetType is type or subtype of defTargetType
             PrismContext.get().getSchemaRegistry().isAssignableFrom(defTargetType, targetType);
 
         }
+        var object = value.getObject();
         if (object == null) {
             return;
         }
         if (object.getDefinition() != null && !force) {
             return;
         }
-        var objectDefinitionToApply = determineObjectDefinitionToApply(definition);
+        if (definition.getTargetObjectDefinition() != null) {
+            // Temporary hack
+            //noinspection unchecked,rawtypes
+            object.applyDefinition((PrismObjectDefinition) definition.getTargetObjectDefinition(), force);
+        }
+        if (object.getDefinition() != null) {
+            // All we can get here is a static definition from the schema. We do not want to override the current one,
+            // which is presumably at least as good as the static one.
+            return;
+        }
+        var objectDefinitionToApply = determineObjectDefinitionFromSchemaRegistry(object, definition);
         if (objectDefinitionToApply != null) {
             //noinspection unchecked,rawtypes
             object.applyDefinition((PrismObjectDefinition) objectDefinitionToApply, force);
@@ -355,16 +373,13 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     /** If not found, either returns `null` (meaning "ignore this"), or throws an exception. */
-    private PrismObjectDefinition<? extends Objectable> determineObjectDefinitionToApply(PrismReferenceDefinition definition)
+    private static PrismObjectDefinition<? extends Objectable> determineObjectDefinitionFromSchemaRegistry(
+            PrismObject<Objectable> object, PrismReferenceDefinition definition)
             throws SchemaException {
-        if (definition.getTargetObjectDefinition() != null) {
-            return definition.getTargetObjectDefinition();
-        }
 
         SchemaRegistry schemaRegistry = PrismContext.get().getSchemaRegistry();
         //noinspection ConstantConditions
-        PrismObjectDefinition<? extends Objectable> byClass =
-                schemaRegistry.findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
+        var byClass = schemaRegistry.findObjectDefinitionByCompileTimeClass(object.getCompileTimeClass());
         if (byClass != null) {
             return byClass;
         }
@@ -377,7 +392,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
                 return null;
             } else {
                 throw new SchemaException(
-                        "Cannot apply definition to composite object in reference " + getParent()
+                        "Cannot apply definition to composite object in reference " + definition
                                 + ": the object has no present definition; it's definition cannot be determined from it's class;"
                                 + "and target type name is not specified in the reference schema");
             }
@@ -388,7 +403,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         }
         throw SchemaException.of(
                 "Cannot apply definition to composite object in reference %s: no definition for object type %s",
-                getParent(), targetTypeName);
+                definition, targetTypeName);
     }
 
     @Override

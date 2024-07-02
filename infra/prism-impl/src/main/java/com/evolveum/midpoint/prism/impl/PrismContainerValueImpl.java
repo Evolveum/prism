@@ -788,8 +788,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         if (type.isAssignableFrom(newItem.getClass())) {
             return newItem;
         } else {
-            throw new IllegalStateException("The " + type.getSimpleName() + " cannot be created because the item should be of type "
-                    + newItem.getClass().getSimpleName() + " (item: " + newItem.getElementName() + ")");
+            throw new IllegalStateException(
+                    "The new item '%s' of type %s could not be created because the provided definition produced an object of type %s; definition = %s"
+                            .formatted(newItem.getElementName(), type.getSimpleName(), newItem.getClass().getSimpleName(), itemDefinition));
         }
     }
 

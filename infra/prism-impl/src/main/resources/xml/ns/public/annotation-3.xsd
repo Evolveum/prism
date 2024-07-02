@@ -649,7 +649,16 @@
         <xsd:annotation>
             <xsd:documentation>
                 Type name for items that are not explicitly defined in the complex type definition to which this annotation
-                applies. Currently, only statically typed container complex type definitions are supported here.
+                applies. Currently, only statically typed container and reference complex type definitions are supported here.
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="defaultReferenceTargetTypeName" type="xsd:string">
+        <xsd:annotation>
+            <xsd:documentation>
+                When defaultItemTypeName points to a reference type, this annotation can provide the default target type name
+                for such a reference.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

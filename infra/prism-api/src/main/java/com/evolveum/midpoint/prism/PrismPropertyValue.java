@@ -13,6 +13,8 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DebugDumpable;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -77,6 +79,10 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
     @Nullable
     @Override
     T getRealValue();
+
+    default @NotNull T getRealValueRequired() {
+        return MiscUtil.stateNonNull(getRealValue(), "No real value in %s", this);
+    }
 
     static <T> T getRealValue(PrismPropertyValue<T> propertyValue) {
         return propertyValue != null ? propertyValue.getRealValue() : null;

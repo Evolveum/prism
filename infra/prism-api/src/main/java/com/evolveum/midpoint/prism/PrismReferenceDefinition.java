@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
 
+import com.evolveum.midpoint.util.exception.SchemaException;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +46,10 @@ public interface PrismReferenceDefinition extends ItemDefinition<PrismReference>
     PrismReferenceDefinition clone();
 
     PrismReferenceDefinitionMutator mutator();
+
+    default @NotNull PrismReferenceValue migrateIfNeeded(@NotNull PrismReferenceValue value) throws SchemaException {
+        return value;
+    }
 
     interface PrismReferenceDefinitionMutator extends ItemDefinitionMutator {
 

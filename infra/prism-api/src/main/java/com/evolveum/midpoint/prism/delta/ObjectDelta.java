@@ -84,6 +84,7 @@ public interface ObjectDelta<O extends Objectable>
 
     void setObjectToAdd(PrismObject<O> objectToAdd);
 
+    /** Directly updatable. */
     @NotNull
     Collection<? extends ItemDelta<?, ?>> getModifications();
 

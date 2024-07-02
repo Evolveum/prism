@@ -69,6 +69,13 @@ public class DefinitionFeatures {
                     ComplexTypeDefinitionLikeBuilder::setDefaultItemTypeName,
                     XsomParsers.qNameInherited(A_DEFAULT_ITEM_TYPE_NAME));
 
+    public static final DefinitionFeature<QName, ComplexTypeDefinitionLikeBuilder, XSType, ?> DF_DEFAULT_REFERENCE_TARGET_TYPE_NAME =
+            DefinitionFeature.of(
+                    QName.class,
+                    ComplexTypeDefinitionLikeBuilder.class,
+                    ComplexTypeDefinitionLikeBuilder::setDefaultReferenceTargetTypeName,
+                    XsomParsers.qNameInherited(A_DEFAULT_REFERENCE_TARGET_TYPE_NAME));
+
     public static final DefinitionFeature<String, ComplexTypeDefinitionLikeBuilder, XSType, ?> DF_DEFAULT_NAMESPACE =
             DefinitionFeature.of(
                     String.class,
