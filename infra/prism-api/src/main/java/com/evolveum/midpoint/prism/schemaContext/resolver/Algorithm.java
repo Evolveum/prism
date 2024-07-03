@@ -1,7 +1,5 @@
 package com.evolveum.midpoint.prism.schemaContext.resolver;
 
-import java.util.Objects;
-
 /**
  * List of implemented resolver algorithms for schema context.
  */
@@ -20,10 +18,11 @@ public enum Algorithm {
         return name;
     }
 
-    public static Algorithm getAlgorithmByName(String name) {
+    public static Algorithm findAlgorithmByName(String name) {
         for (Algorithm algorithm : values()) {
-            return Objects.equals(name, algorithm.getName()) ? algorithm : null;
+            if (algorithm.getName().equals(name)) return algorithm;
         }
+
         return null;
     }
 }
