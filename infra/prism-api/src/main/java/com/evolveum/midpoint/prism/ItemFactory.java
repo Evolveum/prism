@@ -15,6 +15,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import javax.xml.namespace.QName;
+import java.util.Collection;
 
 /**
  *  Factory for items (property, reference, container, object) and item values.
@@ -30,6 +31,12 @@ public interface ItemFactory {
     <T> PrismProperty<T> createProperty(QName itemName, PrismPropertyDefinition<T> definition);
 
     <T> PrismPropertyValue<T> createPropertyValue();
+
+    default <T> Collection<PrismPropertyValue<T>> createPropertyValues(Collection<T> content) {
+        return content.stream()
+                .map(this::createPropertyValue)
+                .toList();
+    }
 
     <T> PrismPropertyValue<T> createPropertyValue(T content);
 
@@ -50,6 +57,12 @@ public interface ItemFactory {
     PrismReferenceValue createReferenceValue(String oid, OriginType originType, Objectable originObject);
 
     PrismReferenceValue createReferenceValue(String oid, QName targetType);
+
+    default Collection<PrismReferenceValue> createReferenceValues(Collection<Referencable> content) {
+        return content.stream()
+                .map(Referencable::asReferenceValue)
+                .toList();
+    }
 
     <C extends Containerable> PrismContainer<C> createContainer(QName name);
 

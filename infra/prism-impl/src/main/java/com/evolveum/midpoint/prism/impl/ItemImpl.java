@@ -382,7 +382,7 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         D definition = getDefinition();
         if (definition != null) {
             if (!values.isEmpty() && definition.isSingleValue()) {
-                throw new SchemaException("Attempt to put more than one value to sin1gle-valued item " + this + "; newly added value: " + newValue);
+                throw new SchemaException("Attempt to put more than one value to single-valued item " + this + "; newly added value: " + newValue);
             }
             //noinspection unchecked
             newValue = (V) newValue.applyDefinition(definition, false);
