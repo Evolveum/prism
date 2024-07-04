@@ -54,6 +54,7 @@ public class PrismValueCollectionsUtil {
         return false;
     }
 
+    @Deprecated // use PrismContext.get().itemFactory().createPropertyValues
     public static <T> Collection<PrismPropertyValue<T>> createCollection(Collection<T> realValueCollection) {
         Collection<PrismPropertyValue<T>> pvalCol = new ArrayList<>(realValueCollection.size());
         for (T realValue: realValueCollection) {
