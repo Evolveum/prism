@@ -9,14 +9,14 @@ package com.evolveum.midpoint.prism.impl.query;
 import java.util.*;
 import java.util.function.Consumer;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.TypedItemPath;
+
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
-import com.evolveum.midpoint.prism.PrismContainer;
-import com.evolveum.midpoint.prism.PrismContainerValue;
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.InOidFilter;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -224,5 +224,10 @@ public final class InOidFilterImpl extends ObjectFilterImpl implements InOidFilt
     @Override
     public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
         // inOid does not use data paths
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        // NOOP
     }
 }

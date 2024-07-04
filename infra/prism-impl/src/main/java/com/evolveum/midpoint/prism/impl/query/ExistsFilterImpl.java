@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 
 import com.evolveum.midpoint.prism.path.TypedItemPath;
 
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -23,23 +25,16 @@ import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFilter {
+public final class ExistsFilterImpl extends AbstractItemFilter implements ExistsFilter {
 
-    @NotNull private final ItemPath fullPath;
     private final ItemDefinition<?> definition;
     private ObjectFilter filter;
 
     private ExistsFilterImpl(@NotNull ItemPath fullPath, ItemDefinition<?> definition, ObjectFilter filter) {
-        this.fullPath = fullPath;
+        super(fullPath);
         this.definition = definition;
         this.filter = filter;
         checkConsistence(true);
-    }
-
-    @NotNull
-    @Override
-    public ItemPath getFullPath() {
-        return fullPath;
     }
 
     @Override
@@ -205,6 +200,15 @@ public final class ExistsFilterImpl extends ObjectFilterImpl implements ExistsFi
         var newBase = base.append(getFullPath()).emitTo(pathConsumer, expandReferences);
         if (getFilter() != null) {
             getFilter().collectUsedPaths(newBase, pathConsumer, expandReferences);
+        }
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        super.transformItemPaths(parentPath, parentDef, transformer);
+        // If this is dereference, we should break it somehow.
+        if (filter != null) {
+            filter.transformItemPaths(ItemPath.create(parentPath, fullPath), definition, transformer);
         }
     }
 }

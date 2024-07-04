@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism.query;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition;
@@ -45,4 +48,5 @@ public interface RefFilter extends ValueFilter<PrismReferenceValue, PrismReferen
     default ObjectFilter getFilter() {
         throw new UnsupportedOperationException("Not implemented");
     }
+
 }

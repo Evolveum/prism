@@ -15,6 +15,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.path.TypedItemPath;
 
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,11 +32,9 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition<?>>
-        extends ObjectFilterImpl implements ValueFilter<V, D> {
+        extends AbstractItemFilter implements ValueFilter<V, D> {
 
     private static final long serialVersionUID = 1L;
-
-    @NotNull private final ItemPath fullPath;
 
     /**
      * This is a definition of the item pointed to by "fullPath".
@@ -57,7 +57,7 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     protected ValueFilterImpl(@NotNull ItemPath fullPath, @Nullable D definition, @Nullable QName matchingRule,
             @Nullable List<V> values, @Nullable ExpressionWrapper expression,
             @Nullable ItemPath rightHandSidePath, @Nullable ItemDefinition<?> rightHandSideDefinition) {
-        this.fullPath = fullPath;
+        super(fullPath);
         this.definition = definition;
         this.matchingRule = matchingRule;
         this.expression = expression;
@@ -70,12 +70,6 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
             }
         }
         checkConsistence(false);
-    }
-
-    @NotNull
-    @Override
-    public ItemPath getFullPath() {
-        return fullPath;
     }
 
     @Override

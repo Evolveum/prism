@@ -67,4 +67,6 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
 
     void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences);
 
+    void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer);
+
 }

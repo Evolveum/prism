@@ -10,7 +10,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.TypedItemPath;
+
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.NotNull;
@@ -150,5 +153,10 @@ public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter
         if (filter != null) {
             filter.collectUsedPaths(TypedItemPath.of(typeName), pathConsumer, expandReferences);
         }
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 }

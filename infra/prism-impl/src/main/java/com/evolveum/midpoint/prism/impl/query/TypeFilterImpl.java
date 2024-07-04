@@ -9,14 +9,14 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.TypedItemPath;
+
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.PrismContainer;
-import com.evolveum.midpoint.prism.PrismContainerDefinition;
-import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.TypeFilter;
@@ -192,6 +192,13 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
         var retyped = TypedItemPath.of(getType(), base.getPath()).emitTo(pathConsumer, expandReferences);
         if (getFilter() != null) {
             getFilter().collectUsedPaths(retyped, pathConsumer, expandReferences);
+        }
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        if (filter != null) {
+            filter.transformItemPaths(parentPath, parentDef, transformer);
         }
     }
 }

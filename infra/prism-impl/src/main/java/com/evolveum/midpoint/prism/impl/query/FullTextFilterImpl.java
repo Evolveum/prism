@@ -11,7 +11,11 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.TypedItemPath;
+
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
@@ -158,5 +162,9 @@ public final class FullTextFilterImpl extends ObjectFilterImpl implements FullTe
     @Override
     public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
 
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
     }
 }

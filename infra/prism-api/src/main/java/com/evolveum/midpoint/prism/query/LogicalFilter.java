@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism.query;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.TypedItemPath;
 
@@ -54,4 +55,10 @@ public interface LogicalFilter extends ObjectFilter {
         }
     }
 
+    @Override
+    default void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        for (var condition : getConditions()) {
+            condition.transformItemPaths(parentPath, parentDef, transformer);
+        }
+    }
 }

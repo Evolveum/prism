@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -224,5 +226,19 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
         ret.setOidNullAsAny(oidNullAsAny);
         ret.setTargetTypeNullAsAny(targetTypeNullAsAny);
         return ret;
+    }
+
+    @Override
+    public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
+        super.transformItemPaths(parentPath, parentDef, transformer);
+        if (filter != null) {
+            var targetDef = getDefinition().getTargetObjectDefinition();
+            if (targetDef == null) {
+                targetDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(getDefinition().getTypeName());
+            }
+            // targetObjectDefinition
+            filter.transformItemPaths(ItemPath.EMPTY_PATH, targetDef, transformer);
+        }
+
     }
 }
