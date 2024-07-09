@@ -22,7 +22,7 @@ public class AxiomQueryATNTraverse {
 
     AxiomQueryParser parser;
 
-    public AxiomQueryATNTraverse(AxiomQueryParser parser, List<LangService> langServices) {
+    public AxiomQueryATNTraverse(AxiomQueryParser parser) {
         this.parser = parser;
     }
 
