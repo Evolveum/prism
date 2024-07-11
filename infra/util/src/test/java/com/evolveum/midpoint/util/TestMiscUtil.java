@@ -55,7 +55,7 @@ public class TestMiscUtil extends AbstractUnitTest {
     }
 
     @Test
-    public void testCarthesian() {
+    public void testCartesian() {
         // GIVEN
         List<Collection<String>> dimensions = new ArrayList<>();
         Collection<String> dim1 = new ArrayList<>();
@@ -81,7 +81,7 @@ public class TestMiscUtil extends AbstractUnitTest {
         };
 
         // WHEN
-        MiscUtil.carthesian(dimensions, processor);
+        MiscUtil.cartesian(dimensions, processor);
 
         // THEN
         System.out.println(combinations);

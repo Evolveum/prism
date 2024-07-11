@@ -361,17 +361,17 @@ public class MiscUtil {
      * This method sequentially creates all n-tuples of these values (one value from each dimension)
      * and invokes tupleProcessor on them.
      */
-    public static <T> void carthesian(List<? extends Collection<T>> valuesForDimensions, Processor<List<T>> tupleProcessor) {
-        carthesian(new ArrayList<>(valuesForDimensions.size()), valuesForDimensions, tupleProcessor);
+    public static <T> void cartesian(List<? extends Collection<T>> valuesForDimensions, Processor<List<T>> tupleProcessor) {
+        cartesian(new ArrayList<>(valuesForDimensions.size()), valuesForDimensions, tupleProcessor);
     }
 
-    private static <T> void carthesian(List<T> tupleBeingCreated, List<? extends Collection<T>> valuesForDimensions, Processor<List<T>> tupleProcessor) {
+    private static <T> void cartesian(List<T> tupleBeingCreated, List<? extends Collection<T>> valuesForDimensions, Processor<List<T>> tupleProcessor) {
         int currentDimension = tupleBeingCreated.size();
         Collection<T> valuesForCurrentDimension = valuesForDimensions.get(currentDimension);
         for (T value : valuesForCurrentDimension) {
             tupleBeingCreated.add(value);
             if (currentDimension < valuesForDimensions.size() - 1) {
-                carthesian(tupleBeingCreated, valuesForDimensions, tupleProcessor);
+                cartesian(tupleBeingCreated, valuesForDimensions, tupleProcessor);
             } else {
                 tupleProcessor.process(tupleBeingCreated);
             }
