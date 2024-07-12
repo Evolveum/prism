@@ -1512,7 +1512,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         return equalsItems((PrismContainerValue<C>) other, strategy);
     }
 
-    private boolean equalsItems(PrismContainerValue<C> other, ParameterizedEquivalenceStrategy strategy) {
+    protected boolean equalsItems(PrismContainerValue<C> other, ParameterizedEquivalenceStrategy strategy) {
         Collection<? extends ItemDelta<?, ?>> deltas = FailOnAddList.INSTANCE;
         try {
             boolean different = diffItems(this, other, deltas, strategy, EARLY_EXIT);

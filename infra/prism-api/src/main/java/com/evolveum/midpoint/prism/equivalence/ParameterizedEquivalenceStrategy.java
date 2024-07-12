@@ -299,6 +299,7 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
         this.consideringDifferentContainerIds = consideringDifferentContainerIds;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isConsideringOperationalData() {
         return consideringOperationalData;
     }
@@ -376,9 +377,8 @@ public class ParameterizedEquivalenceStrategy implements EquivalenceStrategy, Cl
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof ParameterizedEquivalenceStrategy))
+        if (!(o instanceof ParameterizedEquivalenceStrategy that))
             return false;
-        ParameterizedEquivalenceStrategy that = (ParameterizedEquivalenceStrategy) o;
         return literalDomComparison == that.literalDomComparison &&
                 consideringOperationalData == that.consideringOperationalData &&
                 consideringContainerIds == that.consideringContainerIds &&
