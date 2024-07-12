@@ -1337,13 +1337,13 @@ public class MiscUtil {
     }
 
     @Deprecated // please use List.of directly
-    public static <T> List<? extends T> asListExceptForNull() {
+    public static <T> List<T> asListExceptForNull() {
         return List.of();
     }
 
     /** Separate method for efficiency */
     @Experimental
-    public static <T> @NotNull List<? extends T> asListExceptForNull(T value) {
+    public static <T> @NotNull List<T> asListExceptForNull(T value) {
         return value != null ? List.of(value) : List.of();
     }
 
