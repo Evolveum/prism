@@ -653,6 +653,15 @@ public class ValueMetadataAdapter implements ValueMetadata {
 
     @Override
     public Object find(ItemPath path) {
+        if (path.firstToIdOrNull() == null) {
+            // Special case for single value metadata where container ID may be ommited.
+            if (delegate.size() == 1) {
+                return delegate.getValue().find(path);
+            }
+            if (delegate.isEmpty()) {
+                return null;
+            }
+        }
         return delegate.find(path);
     }
 
