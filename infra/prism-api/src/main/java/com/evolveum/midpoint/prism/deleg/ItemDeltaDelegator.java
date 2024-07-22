@@ -101,6 +101,11 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
+    default void applyTransformer(@NotNull Transformer<V, D> transformer) throws SchemaException {
+        delegate().applyTransformer(transformer);
+    }
+
+    @Override
     default boolean hasCompleteDefinition() {
         return delegate().hasCompleteDefinition();
     }

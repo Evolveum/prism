@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism.impl.delta;
 
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
+
 import static java.util.Collections.emptyList;
 
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.*;
@@ -1905,6 +1907,33 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             if (newVal != val) {
                 set.remove(val);
                 set.add(newVal);
+            }
+        }
+    }
+
+    @Override
+    public void applyTransformer(@NotNull Transformer<V, D> transformer) throws SchemaException {
+        checkMutable();
+        applyTransformerToSet(valuesToAdd, transformer);
+        applyTransformerToSet(valuesToReplace, transformer);
+        applyTransformerToSet(valuesToDelete, transformer);
+    }
+
+    private void applyTransformerToSet(Collection<V> set, Transformer<V, D> transformer) throws SchemaException {
+        if (set == null) {
+            return;
+        }
+        for (V val : List.copyOf(set)) {
+            V newVal = transformer.transformValue(val);
+            if (newVal != val) {
+                set.remove(val);
+                if (newVal != null) {
+                    stateCheck(
+                            newVal.getParent() == null,
+                            "Replacement value should be parent-less: %s", newVal);
+                    newVal.setParent(this);
+                    set.add(newVal);
+                }
             }
         }
     }

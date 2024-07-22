@@ -12,7 +12,6 @@ import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -84,6 +83,8 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     /** Note: this may change the implementation of the prism values in the delta. */
     void applyDefinition(@NotNull D definition) throws SchemaException;
+
+    void applyTransformer(@NotNull Transformer<V, D> transformer) throws SchemaException;
 
     /** TODO do we need this method publicly? */
     void setDefinition(@NotNull D definition);
@@ -430,5 +431,11 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     @Nullable
     default  Collection<ItemModifyResult<V>> applyResults() {
         return null;
+    }
+
+    interface Transformer<V extends PrismValue, D extends ItemDefinition<?>> {
+
+        /** Transforms a given value; returns null if the value should be removed. */
+        @Nullable V transformValue(@NotNull V value) throws SchemaException;
     }
 }
