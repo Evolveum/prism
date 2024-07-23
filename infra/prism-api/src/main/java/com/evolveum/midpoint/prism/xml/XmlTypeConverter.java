@@ -22,6 +22,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.commons.codec.binary.Base64;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.TestOnly;
 import org.w3c.dom.Element;
 
@@ -159,8 +160,8 @@ public class XmlTypeConverter {
         return getDatatypeFactory().newXMLGregorianCalendar(cal);
     }
 
-    public static XMLGregorianCalendar createXMLGregorianCalendar(ZonedDateTime zdt) {
-        return createXMLGregorianCalendar(GregorianCalendar.from(zdt));
+    public static XMLGregorianCalendar createXMLGregorianCalendar(@Nullable ZonedDateTime zdt) {
+        return zdt != null ? createXMLGregorianCalendar(GregorianCalendar.from(zdt)) : null;
     }
 
     public static ZonedDateTime toZonedDateTime(XMLGregorianCalendar xcal) {
