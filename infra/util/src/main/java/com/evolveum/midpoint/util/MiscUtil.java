@@ -717,11 +717,30 @@ public class MiscUtil {
             throw exceptionSupplier.get();
         }
     }
+
+    public static <T, E extends Throwable> T extractSingleton(
+            Collection<T> collection, Predicate<T> predicate, Supplier<E> exceptionSupplier) throws E {
+        if (predicate == null || collection == null) {
+            return extractSingleton(collection, exceptionSupplier);
+        } else {
+            return extractSingleton(
+                    collection.stream().filter(predicate).toList(),
+                    exceptionSupplier);
+        }
+    }
     // similar to the above ... todo deduplicate
 
     public static <T, E extends Throwable> @NotNull T extractSingletonRequired(
             Collection<T> collection, Supplier<E> multiExceptionSupplier, Supplier<E> noneExceptionSupplier) throws E {
-        T singleton = extractSingleton(collection, multiExceptionSupplier);
+        return extractSingletonRequired(collection, null, multiExceptionSupplier, noneExceptionSupplier);
+    }
+
+    public static <T, E extends Throwable> @NotNull T extractSingletonRequired(
+            @Nullable Collection<T> collection,
+            @Nullable Predicate<T> predicate,
+            @NotNull Supplier<E> multiExceptionSupplier,
+            @NotNull Supplier<E> noneExceptionSupplier) throws E {
+        T singleton = extractSingleton(collection, predicate, multiExceptionSupplier);
         if (singleton != null) {
             return singleton;
         } else {
@@ -736,8 +755,20 @@ public class MiscUtil {
                 () -> new IllegalArgumentException("No values"));
     }
 
+    public static <T> @NotNull T extractSingletonRequired(@Nullable Collection<T> collection, @Nullable Predicate<T> predicate) {
+        Collection<T> filteredCollection;
+        if (predicate != null && collection != null) {
+            filteredCollection = collection.stream().filter(predicate).toList();
+        } else {
+            filteredCollection = collection;
+        }
+        return extractSingletonRequired(filteredCollection,
+                () -> new IllegalArgumentException("Multiple values in " + filteredCollection),
+                () -> new IllegalArgumentException("No values"));
+    }
+
     public static <T> T getSingleValue(Collection<T> values, T defaultValue, String contextDescription) {
-        if (values.size() == 0) {
+        if (values.isEmpty()) {
             return defaultValue;
         } else if (values.size() > 1) {
             throw new IllegalStateException("Expected exactly one value; got "
