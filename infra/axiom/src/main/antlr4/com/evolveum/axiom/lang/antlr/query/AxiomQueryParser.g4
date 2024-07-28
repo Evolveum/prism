@@ -7,7 +7,7 @@ root: SEP* filter SEP* EOF | EOF; // Needed for trailing spaces if multiline
 
 stringLiteral : STRING_SINGLEQUOTE #singleQuoteString
     | STRING_DOUBLEQUOTE #doubleQuoteString
-    | STRING_MULTILINE # multilineString;
+    | STRING_MULTILINE #multilineString;
 
 
 literalValue:
@@ -85,8 +85,7 @@ filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter
 
 subfilterSpec: ROUND_BRACKET_LEFT SEP* filter SEP* ROUND_BRACKET_RIGHT;
 
-itemFilter: (path SEP* usedAlias=filterNameAlias (matchingRule)? SEP* (subfilterOrValue))
-    | (path (SEP+ negation)? SEP+ usedFilter=filterName (matchingRule)? (SEP+ (subfilterOrValue))?);
+itemFilter: (path ((SEP* usedAlias=filterNameAlias) | ((SEP+ negation)? SEP+ usedFilter=filterName)) (matchingRule? SEP* subfilterOrValue)?);
 
 subfilterOrValue : subfilterSpec | expression | singleValue | valueSet | placeholder;
 
