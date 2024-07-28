@@ -47,10 +47,10 @@ itemPathComponent: SHARP #IdentifierComponent
     | itemName #ItemComponent
     ;
 
-path: DOT #SelfPath
+path: itemPathComponent ( SLASH itemPathComponent)* #DescendantPath
     | parent ( SLASH parent)* ( SLASH itemPathComponent)* #ParentPath
-    | itemPathComponent ( SLASH itemPathComponent)* #DescendantPath
-    | axiomPath #PathAxiomPath;
+    | axiomPath #PathAxiomPath
+    | DOT #SelfPath;
 
 
 
