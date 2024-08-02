@@ -514,7 +514,27 @@ public class PrismAsserts {
     private static <T> Visitor createOriginVisitor(final Visitable visitableItem, final Objectable expectedOriginObject, final OriginType... expectedOriginTypes) {
         return (visitable) -> {
                 if (visitable instanceof PrismValue) {
+                    var valueMetadataType = PrismContext.get().getValueMetadataFactory().getDefinition().getTypeName();
                     PrismValue pval = (PrismValue)visitable;
+
+                    PrismValue maybeMetadata = pval;
+                    while (maybeMetadata != null) {
+                        var maybeParent = maybeMetadata.getParent();
+                        maybeMetadata = null;
+                        if (maybeParent instanceof Item<?,?> parent) {
+                            var def = parent.getDefinition();
+                            if (def != null) {
+                                if (valueMetadataType.equals(def.getTypeName())) {
+                                    return;
+                                }
+                            }
+                            maybeMetadata = parent.getParent();
+                        }
+                    }
+
+                    if (!MiscUtil.contains(pval.getOriginType(), expectedOriginTypes)) {
+                        throw new AssertionError();
+                    }
 
                     assert MiscUtil.contains(pval.getOriginType(), expectedOriginTypes) : "Wrong origin type in "+visitable+" in "+visitableItem+
                             "; expected "+Arrays.asList(expectedOriginTypes)+", was "+pval.getOriginType();
