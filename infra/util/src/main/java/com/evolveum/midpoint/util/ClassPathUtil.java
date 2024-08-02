@@ -162,17 +162,16 @@ public class ClassPathUtil {
         }
         URI srcUrl = src.toURI();
 
-        // TODO: reconsider after removing WAR.
-        String[] parts = srcUrl.toString().split("!/");
-        if (parts.length == 3
-                && parts[1].equals("WEB-INF/classes")) {
-            // jar:file:<ABSOLUTE_PATH>/midpoint.war!/WEB-INF/classes!/initial-midpoint-home
-            srcUrl = URI.create(parts[0] + "!/" + parts[1] + "/" + parts[2]);
-        }
-
         LOGGER.trace("URL: {}", srcUrl);
+        // TODO make nicer using spring boot NestedJarFile or something
         if (srcUrl.toString().contains("!/")) {
-            String uri = srcUrl.toString().split("!/")[0].replace("jar:", "");
+            String uri = srcUrl.toString().split("!")[0].replace("jar:", "");
+            if (uri.endsWith("/")) {
+                uri = uri.substring(0, uri.length() - 1);
+            }
+            if (uri.startsWith("nested:")) {
+                uri = uri.replaceFirst("nested:", "file:");
+            }
             // file:<ABSOLUTE_PATH>/midpoint.war
             URI srcFileUri = URI.create(uri);
             File srcFile = new File(srcFileUri);
@@ -182,6 +181,7 @@ public class ClassPathUtil {
             while (entries.hasMoreElements()) {
                 jarEntry = entries.nextElement();
 
+                // TODO this is not very nice "contains" instead of proper "startWith" or something to match only exact path
                 // skip other files
                 if (!jarEntry.getName().contains(srcPath)) {
                     LOGGER.trace("Not relevant: {}", jarEntry.getName());
