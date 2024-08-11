@@ -539,10 +539,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, "@type", andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
 
-                    QName relation = consumeFromAnd(QName.class, "@relation", andChildren);
+                    QName relation = consumeFromAnd(QName.class, Filter.Meta.RELATION.getName(), andChildren);
 
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     var reffererCont = context.findContainerDefinitionByType(type);
@@ -562,8 +562,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, "@type", andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, "@path", andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     ObjectFilter filter = andFilter(context.referenced(null, referrerSchema), andChildren);
                     return OwnedByFilterImpl.create(type, path, allFilterToNull(filter));
