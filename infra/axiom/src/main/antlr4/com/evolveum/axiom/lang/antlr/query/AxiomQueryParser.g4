@@ -85,7 +85,7 @@ filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter
 
 subfilterSpec: ROUND_BRACKET_LEFT SEP* filter SEP* ROUND_BRACKET_RIGHT;
 
-itemFilter: path ((SEP+ negation)? (SEP* usedAlias=filterNameAlias) | (SEP+ usedFilter=filterName)) (matchingRule? SEP* subfilterOrValue)?;
+itemFilter: path (SEP+ negation)? ((SEP* usedAlias=filterNameAlias) | (SEP+ usedFilter=filterName)) (matchingRule? SEP* subfilterOrValue)?;
 
 subfilterOrValue : subfilterSpec | expression | singleValue | valueSet | placeholder;
 
