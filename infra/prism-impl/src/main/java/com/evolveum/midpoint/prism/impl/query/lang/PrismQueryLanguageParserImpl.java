@@ -44,21 +44,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     public static final String QUERY_NS = "http://prism.evolveum.com/xml/ns/public/query-3";
     public static final String MATCHING_RULE_NS = "http://prism.evolveum.com/xml/ns/public/matching-rule-3";
 
-    private static final String POLYSTRING_ORIG = "orig";
-    private static final String POLYSTRING_NORM = "norm";
-
-    protected static final String REF_OID = "oid";
-    protected static final String REF_TYPE = "targetType";
-    protected static final String REF_REL = "relation";
-    protected static final String REF_TARGET_ALIAS = "@";
-    protected static final String REF_TARGET = "target";
-    protected static final String DOT = ".";
-    protected static final String LPAR = "(";
-
     private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
-            .put(POLYSTRING_ORIG, String.class).put(POLYSTRING_NORM, String.class).build();
+            .put(Filter.PolystringKeyword.ORIG.getName(), String.class).put(Filter.PolystringKeyword.NORM.getName(), String.class).build();
 
     public interface ItemFilterFactory {
         ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -1190,8 +1179,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
             FilterContext filter) throws SchemaException {
         Map<String, Object> props = valuesFromFilter("PolyString", POLYSTRING_PROPS, filter, new HashMap<>(), true);
-        String orig = (String) props.get(POLYSTRING_ORIG);
-        String norm = (String) props.get(POLYSTRING_NORM);
+        String orig = (String) props.get(Filter.PolystringKeyword.ORIG.getName());
+        String norm = (String) props.get(Filter.PolystringKeyword.NORM.getName());
         schemaCheck(orig != null || norm != null, "orig or norm must be defined in matches polystring filter.");
         if (orig != null && norm != null) {
             return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME, new PolyString(orig, norm));
@@ -1239,12 +1228,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         List<FilterContext> andChildren = new ArrayList<>();
         expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(filter));
 
-        boolean oidNullAsAny = !andContains(REF_OID, andChildren);
-        boolean typeNullAsAny = !andContains(REF_TYPE, andChildren);
+        boolean oidNullAsAny = !andContains(Filter.ReferencedKeyword.OID.getName(), andChildren);
+        boolean typeNullAsAny = !andContains(Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
-        String oid = consumeFromAnd(String.class, REF_OID, andChildren);
-        QName relation = consumeFromAnd(QName.class, REF_REL, andChildren);
-        QName type = consumeFromAnd(QName.class, REF_TYPE, andChildren);
+        String oid = consumeFromAnd(String.class, Filter.ReferencedKeyword.OID.getName(), andChildren);
+        QName relation = consumeFromAnd(QName.class, Filter.ReferencedKeyword.RELATION.getName(), andChildren);
+        QName type = consumeFromAnd(QName.class, Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
         QName targetType = definition.getTargetTypeName();
         if (targetType == null) {
@@ -1254,9 +1243,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         }
         ObjectFilter targetFilter = null;
         if (andChildren.size() == 1) {
-            var targetCtx = consumeFromAnd(REF_TARGET_ALIAS, MATCHES.getName(), andChildren);
+            var targetCtx = consumeFromAnd(Filter.Token.REF_TARGET_ALIAS.getName(), MATCHES.getName(), andChildren);
             if (targetCtx == null) {
-                targetCtx = consumeFromAnd(REF_TARGET, MATCHES.getName(), andChildren);
+                targetCtx = consumeFromAnd(Filter.ReferencedKeyword.TARGET.getName(), MATCHES.getName(), andChildren);
             }
             if (targetCtx == null) {
                 throw new SchemaException("Additional unsupported filter specified: " + andChildren.get(0).getText());

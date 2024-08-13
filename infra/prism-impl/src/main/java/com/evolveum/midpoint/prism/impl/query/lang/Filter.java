@@ -99,6 +99,58 @@ public class Filter {
         }
     }
 
+    public enum ReferencedKeyword {
+
+        OID("oid"),
+        TARGET_TYPE("targetType"),
+        RELATION("relation"),
+        TARGET("target");
+
+        private final String name;
+
+        ReferencedKeyword(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public enum PolystringKeyword {
+
+        ORIG("orig"),
+        NORM("norm");
+
+        private final String name;
+
+        PolystringKeyword(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public enum Token {
+
+        REF_TARGET_ALIAS("@"),
+        DOT("."),
+        LPAR("("),
+        RPAR(")");
+
+        private final String name;
+
+        Token(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
     static final BiMap<Alias, Name> ALIAS_TO_NAME = ImmutableBiMap.<Alias, Name>builder()
             .put(Alias.EQUAL, Name.EQUAL)
             .put(Alias.LESS, Name.LESS)
