@@ -768,7 +768,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     @Override
     public ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException {
-        return parseQuery(definition, AxiomQuerySource.from(query));
+        AxiomQuerySource source = AxiomQuerySource.from(query);
+
+        if (source.root().filter() == null) {
+            throw new IllegalArgumentException("Unable to parse query: " + query);
+        }
+
+        return parseQuery(definition, source);
     }
 
 
@@ -792,7 +798,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     @Override
     public PreparedPrismQuery parse(ItemDefinition<?> definition, String query) throws SchemaException {
-        return parse(definition, AxiomQuerySource.from(query), true);
+        AxiomQuerySource source = AxiomQuerySource.from(query);
+
+        if (source.root().filter() == null) {
+            throw new IllegalArgumentException("Unable to parse query: " + query);
+        }
+
+        return parse(definition, source, true);
     }
 
     protected PreparedPrismQuery parse(ItemDefinition<?> contextDef, AxiomQuerySource source, boolean placeholdersEnabled) throws SchemaException {

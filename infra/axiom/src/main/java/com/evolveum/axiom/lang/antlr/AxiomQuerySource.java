@@ -31,13 +31,9 @@ public class AxiomQuerySource {
         AxiomQueryParser parser = new AxiomQueryParser(tokenStream);
         AxiomQueryErrorStrategy errorStrategy = new AxiomQueryErrorStrategy();
         parser.setErrorHandler(errorStrategy);
-        var root = parser.root();
-        if (root.filter() == null) {
-            throw new IllegalArgumentException("Unable to parse query: " + query);
-        }
         // Get all tokens from the token stream
         tokenStream.fill();
-        return new AxiomQuerySource(root, parser, errorStrategy.getErrorTokenContext());
+        return new AxiomQuerySource(parser.root(), parser, errorStrategy.getErrorTokenContext());
     }
 
     public AxiomQueryParser.RootContext root() {
