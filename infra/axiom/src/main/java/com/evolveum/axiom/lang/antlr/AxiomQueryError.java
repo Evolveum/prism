@@ -1,52 +1,38 @@
 package com.evolveum.axiom.lang.antlr;
 
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-
 /**
  * Created by Dominik.
  */
 public class AxiomQueryError {
-    private final Recognizer<?, ?> recognizer;
-    private final Object offendingSymbol;
-    private final int line;
+    private final int lineStart;
+    private final int lineStop;
     private final int charPositionInLineStart;
     private final int charPositionInLineStop;
 
     private final String message;
-    private final RecognitionException e;
 
-    public AxiomQueryError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLineStart, int charPositionInLineStop, String msg, RecognitionException e)
+    public AxiomQueryError(int lineStart, int lineStop, int charPositionInLineStart, int charPositionInLineStop, String msg)
     {
-        this.recognizer = recognizer;
-        this.offendingSymbol = offendingSymbol;
-        this.line = line;
+        this.lineStart = lineStart;
+        this.lineStop = lineStop;
         this.charPositionInLineStart = charPositionInLineStart;
         this.charPositionInLineStop = charPositionInLineStop;
         this.message = msg;
-        this.e = e;
     }
 
-    public Recognizer<?, ?> getRecognizer()
+    public int getLineStart()
     {
-        return recognizer;
+        return lineStart;
     }
-
-    public Object getOffendingSymbol()
+    public int getLineStop()
     {
-        return offendingSymbol;
+        return lineStop;
     }
-
-    public int getLine()
-    {
-        return line;
-    }
-    public int getCharPositionInLineStart()
+    public int getCharPositionStart()
     {
         return charPositionInLineStart;
     }
-
-    public int getCharPositionInLineStop()
+    public int getCharPositionStop()
     {
         return charPositionInLineStop;
     }
@@ -54,11 +40,6 @@ public class AxiomQueryError {
     public String getMessage()
     {
         return message;
-    }
-
-    public RecognitionException getException()
-    {
-        return e;
     }
 
     @Override
@@ -71,13 +52,11 @@ public class AxiomQueryError {
             return false;
         }
 
-        if (axiomQueryError.recognizer == recognizer &&
-                axiomQueryError.offendingSymbol == offendingSymbol &&
-                axiomQueryError.line == line &&
+        if (axiomQueryError.lineStart == lineStart &&
+                axiomQueryError.lineStop == lineStop &&
                 axiomQueryError.charPositionInLineStart == charPositionInLineStart &&
                 axiomQueryError.charPositionInLineStop == charPositionInLineStop &&
-                axiomQueryError.message.equals(message) &&
-                axiomQueryError.e == e
+                axiomQueryError.message.equals(message)
         ) {
             return true;
         }

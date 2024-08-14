@@ -5,42 +5,50 @@ import org.antlr.v4.runtime.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AxiomQuerySource {
 
     private final AxiomQueryParser.RootContext root;
-    private final List<AxiomQueryError> syntaxErrorList;
+    private final AxiomQueryParser parser;
+    private final AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext;
 
-    public AxiomQuerySource(AxiomQueryParser.RootContext root, List<AxiomQueryError> syntaxErrorList) {
+    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext) {
         this.root = root;
-        this.syntaxErrorList = syntaxErrorList;
+        this.parser = parser;
+        this.errorTokenContext = errorTokenContext;
     }
 
-    public static final AxiomQuerySource from(String query) {
+    public static AxiomQuerySource from(String query) {
         CodePointCharStream stream = CharStreams.fromString(query);
         AxiomQueryLexer lexer = new AxiomQueryLexer(stream);
-        AxiomQueryParser parser = new AxiomQueryParser(new CommonTokenStream(lexer));
-        AxiomQuerySyntaxErrorListener axiomQuerySyntaxErrorListener = new AxiomQuerySyntaxErrorListener();
-        // DO NOT log to STDIN
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(axiomQuerySyntaxErrorListener);
-        parser.removeErrorListeners();
-        parser.addErrorListener(axiomQuerySyntaxErrorListener);
-
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        AxiomQueryParser parser = new AxiomQueryParser(tokenStream);
+        AxiomQueryErrorStrategy errorStrategy = new AxiomQueryErrorStrategy();
+        parser.setErrorHandler(errorStrategy);
         var root = parser.root();
         if (root.filter() == null) {
             throw new IllegalArgumentException("Unable to parse query: " + query);
         }
-
-        return new AxiomQuerySource(root, axiomQuerySyntaxErrorListener.errorList);
+        // Get all tokens from the token stream
+        tokenStream.fill();
+        return new AxiomQuerySource(root, parser, errorStrategy.getErrorTokenContext());
     }
 
     public AxiomQueryParser.RootContext root() {
         return root;
     }
 
-    public List<AxiomQueryError> getSyntaxError() {
-        return syntaxErrorList;
+    public AxiomQueryParser getParser() {
+        return parser;
+    }
+
+    public AxiomQueryErrorStrategy.ErrorTokenContext getErrorTokenContextMap() {
+        return errorTokenContext;
     }
 }

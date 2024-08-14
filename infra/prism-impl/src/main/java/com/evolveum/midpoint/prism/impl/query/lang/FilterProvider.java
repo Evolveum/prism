@@ -6,23 +6,18 @@ import static com.evolveum.midpoint.prism.impl.query.lang.Filter.Name.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.DOMUtil;
 
 /**
  * Created by Dominik.
  */
-public class FilterNamesProvider {
+public class FilterProvider {
 
-    public static Map<String, String> findFilterNamesByItemDefinition(ItemDefinition<?> itemDefinition, ParserRuleContext ruleContext) {
+    public static Map<String, String> findFilterByItemDefinition(ItemDefinition<?> itemDefinition, int ruleIndex) {
         Map<String, String> suggestions = new HashMap<>();
 
-        if (ruleContext instanceof FilterNameContext
-                || ruleContext instanceof FilterNameAliasContext
-                || ruleContext instanceof FilterContext) {
-
+        if (ruleIndex == RULE_filterName || ruleIndex == RULE_filterNameAlias) {
             if (itemDefinition instanceof PrismPropertyDefinition) {
                 addFilterSuggestion(EQUAL, suggestions);
                 addFilterSuggestion(LESS, suggestions);
@@ -62,16 +57,20 @@ public class FilterNamesProvider {
             }
         }
 
-        if (ruleContext instanceof SubfilterOrValueContext) {
+        if (ruleIndex == RULE_subfilterOrValue) {
             addFilterSuggestion(AND, suggestions);
             addFilterSuggestion(OR, suggestions);
             addFilterSuggestion(NOT, suggestions);
         }
 
-        if (ruleContext instanceof ItemPathComponentContext) {
+        if (ruleIndex == RULE_itemPathComponent) {
             suggestions.put(Filter.Meta.TYPE.getName(), null);
             suggestions.put(Filter.Meta.PATH.getName(), null);
             suggestions.put(Filter.Meta.RELATION.getName(), null);
+        }
+
+        if (ruleIndex == RULE_negation) {
+            addFilterSuggestion(NOT, suggestions);
         }
 
         return suggestions;
