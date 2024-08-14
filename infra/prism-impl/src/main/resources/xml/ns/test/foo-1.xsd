@@ -273,10 +273,79 @@
             <xsd:element name="note" type="xsd:string" minOccurs="0"/>
             <xsd:element name="accountConstruction" type="tns:AccountConstructionType" minOccurs="0"/>
             <xsd:element name="activation" type="tns:ActivationType" minOccurs="0"/>
+            <xsd:element name="targetRef" type="tns:ObjectReferenceType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>AssignmentType.target</a:displayName>
+                        <a:help>AssignmentType.target.help</a:help>
+                        <a:objectReferenceTargetType>tns:AssignmentHolderType</a:objectReferenceTargetType>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:string" use="optional"/>
         <xsd:attribute name="incomplete" type="xsd:boolean" use="optional"/>
     </xsd:complexType>
+
+    <xsd:complexType name="AssignmentHolderType" abstract="true">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:object/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="assignment" type="tns:AssignmentType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>FocusType.assignmentKey</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="iteration" type="xsd:int" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:operational>true</a:operational>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="iterationToken" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:operational>true</a:operational>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="archetypeRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:ArchetypeType</a:objectReferenceTargetType>
+                                <a:operational>true</a:operational>
+                                <a:displayName>AssignmentHolderType.archetypeRef</a:displayName>
+                                <a:since>4.0</a:since>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+
+                    <xsd:element name="roleMembershipRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:AbstractRoleType</a:objectReferenceTargetType>
+                                <a:operational>true</a:operational>
+                                <a:displayName>FocusType.roleMembershipRef</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+
+
 
     <xsd:complexType name="AccountConstructionType">
         <xsd:annotation>

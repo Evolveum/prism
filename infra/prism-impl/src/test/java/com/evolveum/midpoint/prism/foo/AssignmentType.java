@@ -15,10 +15,8 @@
 package com.evolveum.midpoint.prism.foo;
 
 import java.io.Serializable;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlType;
+
+import jakarta.xml.bind.annotation.*;
 
 import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
@@ -47,7 +45,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 @XmlType(name = "AssignmentType", propOrder = {
         "description",
         "note",
-        "accountConstruction"
+        "accountConstruction",
+        "targetRef"
 })
 public class AssignmentType
         implements Serializable, Containerable {
@@ -59,11 +58,13 @@ public class AssignmentType
     public static final ItemName F_NOTE = ItemName.from(ObjectType.NS_FOO, "note");
     public static final ItemName F_ACCOUNT_CONSTRUCTION = ItemName.from(ObjectType.NS_FOO, "accountConstruction");
     public static final ItemName F_ACTIVATION = ItemName.from(ObjectType.NS_FOO, "activation");
+    public static final ItemName F_TARGET_REF = ItemName.from(ObjectType.NS_FOO, "targetRef");
 
     protected String identifier;
     protected String description;
     protected String note;
     protected AccountConstructionType accountConstruction;
+    protected ObjectReferenceType targetRef;
 
     @XmlAttribute(name = "id")
     protected String id;
@@ -158,5 +159,10 @@ public class AssignmentType
     @Override
     public void setupContainerValue(PrismContainerValue container) {
         throw new UnsupportedOperationException();
+    }
+
+    @XmlElement(name = "targetRef")
+    public ObjectReferenceType getTargetRef() {
+        return targetRef;
     }
 }
