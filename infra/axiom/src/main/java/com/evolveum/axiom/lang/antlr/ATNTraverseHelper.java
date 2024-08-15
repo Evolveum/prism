@@ -19,6 +19,12 @@ import java.util.*;
  */
 public class ATNTraverseHelper {
 
+    /**
+     * Method find all possible following rules based on the cursor position.
+     * @param atn rule network
+     * @param positionCtx position node
+     * @return rule index list
+     */
     public static List<Integer> findFollowingRulesByPositionContext(ATN atn, PositionContext positionCtx) {
         List<Integer> rules = new ArrayList<>();
         int positionCtxIndex = positionCtx.cursorIndex();
@@ -51,6 +57,12 @@ public class ATNTraverseHelper {
         return rules;
     }
 
+    /**
+     * Method find all possible following rules based on the input token.
+     * @param state
+     * @param token
+     * @return
+     */
     public static List<Integer> findRuleContextByToken(ATNState state, Token token) {
         Stack<ATNState> states = new Stack<>();
         Stack<ATNState> passedStates = new Stack<>();
@@ -86,50 +98,7 @@ public class ATNTraverseHelper {
         return rules;
     }
 
-    private static ParseTree findPreviousNode(ParseTree node) {
-        if (node instanceof TerminalNode) {
-            return null;
-        }
-
-        ParseTree parentNode;
-        int count = node.getChildCount();
-
-        while (count > 0) {
-            node = node.getChild(count - 1);
-            if (node instanceof TerminalNode terminalNode) {
-                parentNode = terminalNode.getParent();
-                while (parentNode.getChildCount() == 1) {
-                    node = parentNode;
-                    parentNode = node.getParent();
-                    if (parentNode.getChildCount() > 1) {
-                        return node;
-                    }
-                }
-            }
-            count = node.getChildCount();
-        }
-        return node;
-    }
-
-    private static TerminalNode getTerminalNode(ParseTree parseTree) {
-        if (parseTree instanceof TerminalNode terminalNode) {
-            return terminalNode;
-        }
-
-        if (parseTree != null) {
-            while (parseTree.getChildCount() > 0) {
-                parseTree = parseTree.getChild(parseTree.getChildCount() - 1);
-
-                if (parseTree instanceof TerminalNode node) {
-                    return node;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public static void findFollowingRulesInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<Integer> rules) {
+    private static void findFollowingRulesInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<Integer> rules) {
         Stack<ATNState> states = new Stack<>();
         Stack<ATNState> passedStates = new Stack<>();
         ATNState nextState;
@@ -185,6 +154,49 @@ public class ATNTraverseHelper {
                 }
             }
         }
+    }
+
+    private static ParseTree findPreviousNode(ParseTree node) {
+        if (node instanceof TerminalNode) {
+            return null;
+        }
+
+        ParseTree parentNode;
+        int count = node.getChildCount();
+
+        while (count > 0) {
+            node = node.getChild(count - 1);
+            if (node instanceof TerminalNode terminalNode) {
+                parentNode = terminalNode.getParent();
+                while (parentNode.getChildCount() == 1) {
+                    node = parentNode;
+                    parentNode = node.getParent();
+                    if (parentNode.getChildCount() > 1) {
+                        return node;
+                    }
+                }
+            }
+            count = node.getChildCount();
+        }
+        return node;
+    }
+
+    private static TerminalNode getTerminalNode(ParseTree parseTree) {
+        if (parseTree instanceof TerminalNode terminalNode) {
+            return terminalNode;
+        }
+
+        if (parseTree != null) {
+            while (parseTree.getChildCount() > 0) {
+                parseTree = parseTree.getChild(parseTree.getChildCount() - 1);
+
+                if (parseTree instanceof TerminalNode node) {
+                    return node;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static ATNState findStartBlockStateItemFilterRule(List<ATNState> states, int ruleCtx, int state) {
