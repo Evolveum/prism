@@ -857,7 +857,7 @@ public class PrismAsserts {
 
     public static <T> void assertValues(String message, MatchingRule<T> matchingRule, Collection<PrismPropertyValue<T>> actualPValues, T... expectedValues) throws SchemaException {
         if (expectedValues == null) {
-            assertNull("Unexpected set in" +message+": "+actualPValues, actualPValues);
+            assertNull("Unexpected set in " +message+": "+actualPValues, actualPValues);
         } else {
             assertNotNull("Null set in " + message, actualPValues);
             if (expectedValues.length != actualPValues.size()) {
