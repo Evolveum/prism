@@ -22,6 +22,9 @@ import javax.xml.validation.Validator;
 
 import com.evolveum.axiom.concepts.CheckedFunction;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
+
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.resolver.Catalog;
@@ -57,7 +60,7 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
  *
  * @author Radovan Semancik
  */
-public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
+public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, SchemaLookup {
 
     private static final Trace LOGGER = TraceManager.getTrace(SchemaRegistryImpl.class);
 
@@ -1278,5 +1281,20 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry {
     @Override
     public <R, E extends Exception> R getDerivedObject(DerivationKey<R> derivationKey, CheckedFunction<SchemaRegistryState, R, E> mapping) throws E {
         return schemaRegistryState.getDerivedObject(derivationKey, mapping);
+    }
+
+    @Override
+    public SchemaContextResolver resolverFor(SchemaContextDefinition schemaContextDefinition) {
+        return schemaRegistryState.resolverFor(schemaContextDefinition);
+    }
+
+    @Override
+    public DefinitionFactory definitionFactory() {
+        return schemaRegistryState.definitionFactory();
+    }
+
+    @Override
+    public SchemaLookup getCurrentLookup() {
+        return schemaRegistryState;
     }
 }

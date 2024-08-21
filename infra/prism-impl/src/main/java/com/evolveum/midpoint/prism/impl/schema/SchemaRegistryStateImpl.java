@@ -20,11 +20,13 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import com.evolveum.axiom.concepts.CheckedFunction;
+import com.evolveum.midpoint.prism.impl.schemaContext.resolver.ContextResolverFactoryImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
+import com.evolveum.midpoint.prism.schema.*;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 
 import com.google.common.collect.HashMultimap;
@@ -37,9 +39,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.*;
-import com.evolveum.midpoint.prism.schema.DefinitionStoreUtils;
-import com.evolveum.midpoint.prism.schema.PrismSchema;
-import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.*;
@@ -55,7 +54,7 @@ import org.xml.sax.SAXException;
  * Contains caches and provides definitions.
  *
  */
-public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugDumpable, SchemaRegistryState {
+public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugDumpable, SchemaLookup {
 
     private static final Trace LOGGER = TraceManager.getTrace(SchemaRegistryStateImpl.class);
 
@@ -141,6 +140,8 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
      * but found no matching definition.
      */
     private static final PrismObjectDefinition<?> NO_OBJECT_DEFINITION = new DummyPrismObjectDefinition();
+
+    private final DefinitionFactoryImpl definitionFactory = new DefinitionFactoryImpl(this);
 
     /**
      * A prism context this schema registry is part of.
@@ -733,6 +734,17 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
         return sb.toString();
     }
 
+    @Override
+    public SchemaContextResolver resolverFor(SchemaContextDefinition schemaContextDefinition) {
+        // FIXME: Factory should be here
+        return ContextResolverFactoryImpl.createResolver(schemaContextDefinition);
+    }
+
+    @Override
+    public DefinitionFactoryImpl definitionFactory() {
+        return definitionFactory;
+    }
+
     /**
      * Builder for SchemaRegistryState. Builder parse schemas to prism parsed schemas.
      */
@@ -842,12 +854,12 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                         schemaRegistryState.findContainerDefinitionByType(valueMetadataTypeNameBuilder),
                         () -> "no definition for value metadata type " + valueMetadataTypeNameBuilder);
             } else {
-                return createDefaultValueMetadataDefinition();
+                return createDefaultValueMetadataDefinition(schemaRegistryState);
             }
         }
 
-        private PrismContainerDefinition<?> createDefaultValueMetadataDefinition() {
-            var pcd = prismContextBuilder.definitionFactory().newContainerDefinitionWithoutTypeDefinition(
+        private PrismContainerDefinition<?> createDefaultValueMetadataDefinition(SchemaRegistryStateImpl schemaRegistryState) {
+            var pcd = schemaRegistryState.definitionFactory.newContainerDefinitionWithoutTypeDefinition(
                     DEFAULT_VALUE_METADATA_NAME, DEFAULT_VALUE_METADATA_TYPE_NAME);
             pcd.mutator().setMinOccurs(0);
             pcd.mutator().setMaxOccurs(1);
@@ -902,7 +914,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     PrismSchemaImpl schema = new PrismSchemaImpl(namespace, description.getCompileTimeClassesPackage());
                     schema.setRuntime(description.getCompileTimeClassesPackage() == null);
                     schema.setSourceDescription(description.getSourceDescription());
-                    schema.setSchemaRegistryState(schemaRegistryState);
+                    schema.setSchemaLookup(schemaRegistryState);
                     parsedPrismSchemas.add(schema);
                     wrappedSchemas.add(schema);
                 }
@@ -966,7 +978,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
             LOGGER.trace("Parsing schema {}, namespace: {}, isRuntime: {}",
                     schemaDescription.getSourceDescription(), namespace, isRuntime);
             PrismSchemaImpl schema = new PrismSchemaImpl(DOMUtil.getSchemaTargetNamespace(domElement));
-            schema.setSchemaRegistryState(schemaRegistryState);
+            schema.setSchemaLookup(schemaRegistryState);
             SchemaParsingUtil.parse(schema, domElement, isRuntime, schemaDescription.getSourceDescription(), true, schemaRegistryState);
             if (StringUtils.isEmpty(namespace)) {
                 namespace = schema.getNamespace();
@@ -1048,7 +1060,7 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                     } else {
                         @NotNull ComplexTypeDefinition clone = def.clone();
                         if (clone instanceof ComplexTypeDefinitionImpl clonedComplexDef) {
-                            clonedComplexDef.setSchemaRegistryState(schemaRegistryState);
+                            clonedComplexDef.setSchemaLookup(schemaRegistryState);
                         }
                         extensionSchemasBuilder.put(typeBeingExtended, clone);
                     }

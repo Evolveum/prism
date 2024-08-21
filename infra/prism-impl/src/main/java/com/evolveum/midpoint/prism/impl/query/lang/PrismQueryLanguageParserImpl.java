@@ -910,7 +910,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
         @Override
         public void apply(QueryParsingContext.Local context) {
-            context.typeDef(PrismContext.get().getSchemaRegistry().findComplexTypeDefinitionByType(toFilter().getType()));
+            context.typeDef(context.schemaLookup().findComplexTypeDefinitionByType(toFilter().getType()));
         }
 
         @Override

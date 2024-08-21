@@ -47,7 +47,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable>
 
     private PrismObjectDefinitionImpl(QName itemName, QName typeName, ComplexTypeDefinition ctd, Class<O> compileTimeClass) {
         // Object definition can only be top-level, hence SCHEMA ROOT parent
-        super(itemName, typeName, ctd, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT);
+        super(itemName, typeName, ctd, compileTimeClass, PrismConstants.VIRTUAL_SCHEMA_ROOT, ctd.schemaLookup());
     }
 
     @Override

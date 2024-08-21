@@ -11,6 +11,7 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.Suggestion;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
@@ -37,7 +38,7 @@ import javax.xml.namespace.QName;
 public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisitor<Object> {
     public final List<AxiomQueryError> errorList = new ArrayList<>();
 
-    private final SchemaRegistry schemaRegistry;
+    private final SchemaLookup schemaRegistry;
     private final ItemDefinition<?> rootItemDefinition;
     private Definition currentItemDefinition;
     private ComplexTypeDefinition metaTypeDefinition;
@@ -50,7 +51,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     public AxiomQueryContentAssistantVisitor(SchemaRegistry schemaRegistry, @NotNull ItemDefinition<?> rootItem,
             AxiomQueryParser parser, int positionCursor) {
-        this.schemaRegistry = schemaRegistry;
+        this.schemaRegistry = rootItem.schemaLookup();
         this.rootItemDefinition = rootItem;
         this.currentItemDefinition = rootItem;
         this.parser = parser;

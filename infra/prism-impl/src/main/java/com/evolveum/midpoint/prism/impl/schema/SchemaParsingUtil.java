@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.schema.SchemaBuilder;
 import com.evolveum.midpoint.prism.schema.SchemaRegistryState;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -60,7 +61,7 @@ public class SchemaParsingUtil {
             boolean isRuntime,
             String shortDescription,
             boolean allowDelayedItemDefinitions) throws SchemaException {
-        parse(schemaBuilder, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, null);
+        parse(schemaBuilder, sourceXsdElement, isRuntime, shortDescription, allowDelayedItemDefinitions, PrismContext.get().getDefaultSchemaLookup());
     }
 
     static void parse(

@@ -189,6 +189,7 @@ public interface SchemaRegistry extends DebugDumpable, SchemaRegistryState {
      * TODO The utility of this method is questionable. Reconsider its removal/update.
      */
     boolean isContainerable(QName typeName);
+    SchemaLookup getCurrentLookup();
 
     enum ComparisonResult {
         EQUAL, // types are equal

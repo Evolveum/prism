@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.QNameUtil;
@@ -23,7 +24,7 @@ import java.util.Collection;
  *
  * @see ItemDefinition
  */
-public interface TypeDefinition extends Definition, AbstractTypeDefinition {
+public interface TypeDefinition extends Definition, AbstractTypeDefinition, SchemaLookup.Aware {
 
     /**
      * Returns compile-time class, if this type has any. For example, UserType.class, ObjectType.class, ExtensionType.class.

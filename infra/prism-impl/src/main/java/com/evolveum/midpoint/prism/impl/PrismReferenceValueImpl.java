@@ -806,7 +806,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         }
 
         if (targetType != null) {
-            var targetDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(targetType);
+            var targetDef = schemaLookup().findObjectDefinitionByType(targetType);
             if (targetDef != null) {
                 return new SchemaContextImpl(targetDef);
             }

@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
@@ -178,5 +179,13 @@ public interface PrismContainerDefinition<C extends Containerable>
         default void setAlwaysUseForEquals(@NotNull Collection<QName> keysElem) {
             // NOOP
         }
+    }
+
+    @Override
+    default SchemaLookup schemaLookup() {
+        if (getComplexTypeDefinition() != null) {
+            return getComplexTypeDefinition().schemaLookup();
+        }
+        return ItemDefinition.super.schemaLookup();
     }
 }

@@ -203,7 +203,7 @@ public class PrismSchemaImpl
             }
             typeDefinitionMap.put(typeName, typeDef);
             if (def instanceof TypeDefinitionImpl typeImplDef && !def.isImmutable()) {
-                typeImplDef.setSchemaRegistryState(getSchemaRegistryState());
+                typeImplDef.setSchemaLookup(schemaLookup());
             }
         } else {
             throw new IllegalArgumentException("Unsupported type to be added to this schema: " + def);
@@ -214,7 +214,7 @@ public class PrismSchemaImpl
 
     void setupCompileTimeClass(@NotNull TypeDefinition typeDef) {
         // Not caching the negative result, as this is called during schema parsing.
-        Class<Object> compileTimeClass = getSchemaLookup().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
+        Class<Object> compileTimeClass = schemaLookup().determineCompileTimeClassInternal(typeDef.getTypeName(), false);
         if (typeDef instanceof TypeDefinitionImpl typeDefImpl) {
             typeDefImpl.setCompileTimeClass(compileTimeClass); // FIXME do better!
         }
@@ -223,7 +223,7 @@ public class PrismSchemaImpl
 
     @Override
     public @NotNull ComplexTypeDefinitionLikeBuilder newComplexTypeDefinitionLikeBuilder(String localTypeName) {
-        return prismContext.definitionFactory()
+        return schemaLookup().definitionFactory()
                 .newComplexTypeDefinition(qualify(localTypeName));
     }
 
@@ -378,7 +378,7 @@ public class PrismSchemaImpl
                     found.add((ItemDefinition<?>) def);
                 }
             } else if (def instanceof PrismPropertyDefinition) {
-                Class<?> fondClass = getSchemaLookup().determineClassForType(def.getTypeName());
+                Class<?> fondClass = schemaLookup().determineClassForType(def.getTypeName());
                 if (compileTimeClass.equals(fondClass)) {
                     found.add((ItemDefinition<?>) def);
                 }
@@ -567,5 +567,10 @@ public class PrismSchemaImpl
 
     public Package getCompileTimePackage() {
         return compileTimePackage;
+    }
+
+    @Override
+    public SchemaRegistryStateImpl schemaLookup() {
+        return (SchemaRegistryStateImpl) super.schemaLookup();
     }
 }

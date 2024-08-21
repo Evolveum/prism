@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.util.annotation.Unused;
 import com.evolveum.midpoint.util.exception.CommonException;
 
@@ -363,5 +364,14 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
         public String getErrorTypeMessage() {
             return "Removed item definition problem"; // irrelevant
         }
+    }
+
+    @Override
+    default SchemaLookup schemaLookup() {
+        if (getDefinition() != null) {
+            return getDefinition().schemaLookup();
+        }
+
+        return PrismValue.super.schemaLookup();
     }
 }

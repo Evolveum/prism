@@ -2,6 +2,7 @@ package com.evolveum.midpoint.prism.impl.schemaContext;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 /**
@@ -42,4 +43,5 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
     public void setAlgorithm(QName algorithm) {
         this.algorithm = algorithm;
     }
+
 }
