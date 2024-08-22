@@ -14,7 +14,7 @@ import com.evolveum.midpoint.util.DOMUtil;
  */
 public class FilterProvider {
 
-    public static Map<String, String> findFilterByItemDefinition(ItemDefinition<?> itemDefinition, int ruleIndex) {
+    public static Map<String, String> findFilterByItemDefinition(Definition itemDefinition, int ruleIndex) {
         Map<String, String> suggestions = new HashMap<>();
 
         if (ruleIndex == RULE_filterName || ruleIndex == RULE_filterNameAlias) {

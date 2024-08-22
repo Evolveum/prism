@@ -15,7 +15,10 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import com.evolveum.midpoint.prism.Objectable;
 import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismReferenceValue;
+import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 
@@ -55,7 +58,7 @@ import org.jetbrains.annotations.NotNull;
  *
  *
  */
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlType(name = "UserType", propOrder = {
     "fullName",
     "givenName",
@@ -74,8 +77,8 @@ import org.jetbrains.annotations.NotNull;
     "password"
 })
 public class UserType
-    extends ObjectType
-    implements Serializable
+    extends FocusType
+    implements Objectable
 {
 
     // This is NOT GENERATED. It is supplied here manually for the testing.
@@ -378,5 +381,31 @@ public class UserType
 
     public void setPassword(ProtectedStringType password) {
         this.password = password;
+    }
+
+    public UserType linkRef(ObjectReferenceType value) {
+        getLinkRef().add(value);
+        return this;
+    }
+
+    public UserType linkRef(String oid, QName type) {
+        PrismReferenceValue refVal = new PrismReferenceValueImpl(oid, type);
+        ObjectReferenceType ort = new ObjectReferenceType();
+        ort.setupReferenceValue(refVal);
+        return linkRef(ort);
+    }
+
+    public UserType linkRef(String oid, QName type, QName relation) {
+        PrismReferenceValue refVal = new PrismReferenceValueImpl(oid, type);
+        refVal.setRelation(relation);
+        ObjectReferenceType ort = new ObjectReferenceType();
+        ort.setupReferenceValue(refVal);
+        return linkRef(ort);
+    }
+
+    public ObjectReferenceType beginLinkRef() {
+        ObjectReferenceType value = new ObjectReferenceType();
+        linkRef(value);
+        return value;
     }
 }

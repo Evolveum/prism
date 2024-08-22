@@ -19,6 +19,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.evolveum.midpoint.prism.Referencable;
+import com.evolveum.midpoint.prism.impl.binding.AbstractReferencable;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.util.Producer;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAnyAttribute;
@@ -28,6 +34,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 
+import static com.evolveum.midpoint.prism.foo.ObjectType.NS_FOO;
 
 /**
  *
@@ -80,14 +87,34 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ObjectReferenceType", propOrder = {
     "description",
+    "documentation",
     "filter",
-    "object"
+    "resolutionTime",
+    "referentialIntegrity",
+    "targetName"
 })
-public class ObjectReferenceType
-    implements Serializable
+public class ObjectReferenceType extends AbstractReferencable<ObjectReferenceType>
+        implements Referencable
 {
+    public static final QName COMPLEX_TYPE = new QName(NS_FOO, "ObjectReferenceType");
+    public static final ItemName F_TYPE = ItemName.interned(NS_FOO, "type");
+    public static final ItemName F_OID = ItemName.interned(NS_FOO, "oid");
+    public static final ItemName F_RELATION = ItemName.interned(NS_FOO, "relation");
+    public static final ItemName F_DESCRIPTION = ItemName.interned(NS_FOO, "description");
+    public static final ItemName F_DOCUMENTATION = ItemName.interned(NS_FOO, "documentation");
+    public static final ItemName F_FILTER = ItemName.interned(NS_FOO, "filter");
+    public static final ItemName F_RESOLUTION_TIME = ItemName.interned(NS_FOO, "resolutionTime");
+    public static final ItemName F_REFERENTIAL_INTEGRITY = ItemName.interned(NS_FOO, "referentialIntegrity");
+    public static final ItemName F_TARGET_NAME = ItemName.interned(NS_FOO, "targetName");
+    public static final Producer<ObjectReferenceType> FACTORY = new Producer<ObjectReferenceType>() {
 
-    private static final long serialVersionUID = 201202081233L;
+        private static final long serialVersionUID = 201105211233L;
+
+        public ObjectReferenceType run() {
+            return new ObjectReferenceType();
+        }
+
+    };
     protected String description;
     protected ObjectReferenceType.Filter filter;
     protected ObjectReferenceType.Object object;
@@ -120,16 +147,9 @@ public class ObjectReferenceType
         this.description = value;
     }
 
-    /**
-     * Gets the value of the filter property.
-     *
-     * @return
-     *     possible object is
-     *     {@link ObjectReferenceType.Filter }
-     *
-     */
-    public ObjectReferenceType.Filter getFilter() {
-        return filter;
+    @Override
+    public AbstractReferencable<ObjectReferenceType> clone() {
+        return null;
     }
 
     /**
@@ -142,18 +162,6 @@ public class ObjectReferenceType
      */
     public void setFilter(ObjectReferenceType.Filter value) {
         this.filter = value;
-    }
-
-    /**
-     * Gets the value of the object property.
-     *
-     * @return
-     *     possible object is
-     *     {@link ObjectReferenceType.Object }
-     *
-     */
-    public ObjectReferenceType.Object getObject() {
-        return object;
     }
 
     /**
@@ -190,6 +198,11 @@ public class ObjectReferenceType
      */
     public void setOid(String value) {
         this.oid = value;
+    }
+
+    @Override
+    protected ObjectReferenceType thisInstance() {
+        return null;
     }
 
     /**

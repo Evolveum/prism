@@ -78,6 +78,11 @@ public abstract class AssignmentHolderType extends ObjectType implements Objecta
         return this.prismGetPropertyValue(F_ITERATION_TOKEN, String.class);
     }
 
+    @XmlElement(name = "roleMembershipRef")
+    public List<ObjectReferenceType> getRoleMembershipRef() {
+        return this.prismGetReferencableList(ObjectReferenceType.FACTORY, F_ROLE_MEMBERSHIP_REF, ObjectReferenceType.class);
+    }
+
     public void setIterationToken(String value) {
         this.prismSetPropertyValue(F_ITERATION_TOKEN, value);
     }
