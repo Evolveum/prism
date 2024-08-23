@@ -287,6 +287,67 @@
         <xsd:attribute name="incomplete" type="xsd:boolean" use="optional"/>
     </xsd:complexType>
 
+    <xsd:complexType name="FocusType" abstract="true">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:object/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:complexContent>
+            <xsd:extension base="tns:AssignmentHolderType">
+                <xsd:sequence>
+                    <!--<xsd:element name="identities" type="tns:FocusIdentitiesType" minOccurs="0" />-->
+                    <xsd:element name="linkRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>FocusType.linkRef</a:displayName>
+                                <a:objectReferenceTargetType>tns:ShadowType</a:objectReferenceTargetType>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="personaRef" type="tns:ObjectReferenceType" minOccurs="0" maxOccurs="unbounded" />
+                    <xsd:element name="activation" type="tns:ActivationType" minOccurs="0" />
+                    <xsd:element name="jpegPhoto" type="xsd:base64Binary" minOccurs="0" />
+                    <xsd:element name="costCenter" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="locality" type="t:PolyStringType" minOccurs="0" />
+                    <xsd:element name="preferredLanguage" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="locale" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="timezone" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="emailAddress" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="telephoneNumber" type="xsd:string" minOccurs="0" />
+                    <xsd:element name="credentials" type="tns:CredentialsType" minOccurs="0" />
+                    <xsd:element name="behavior" type="tns:BehaviorType" minOccurs="0" />
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="focus" type="tns:FocusType"/>
+
+    <xsd:complexType name="CredentialsType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:container/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <!--<xsd:element name="password" type="tns:PasswordType" minOccurs="0" />-->
+            <!--<xsd:element name="nonce" type="tns:NonceType" minOccurs="0" />-->
+            <!--<xsd:element name="securityQuestions" type="tns:SecurityQuestionsCredentialsType" minOccurs="0" />-->
+            <!--<xsd:element name="attributeVerification" type="tns:AttributeVerificationCredentialsType" minOccurs="0" />-->
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+    <xsd:element name="credentials" type="tns:CredentialsType"/>
+
+    <xsd:complexType name="BehaviorType">
+        <xsd:annotation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <!--<xsd:element name="authentication" type="tns:AuthenticationBehavioralDataType" minOccurs="0" maxOccurs="unbounded" />-->
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:long"/>
+    </xsd:complexType>
+
     <xsd:complexType name="AssignmentHolderType" abstract="true">
         <xsd:annotation>
             <xsd:appinfo>
@@ -343,9 +404,6 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
-
-
-
 
     <xsd:complexType name="AccountConstructionType">
         <xsd:annotation>
@@ -681,14 +739,6 @@
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
-    </xsd:complexType>
-
-    <xsd:complexType name="FocusType" abstract="true">
-        <xsd:annotation>
-            <xsd:appinfo>
-                <a:object/>
-            </xsd:appinfo>
-        </xsd:annotation>
     </xsd:complexType>
 
     <xsd:complexType name="RelationDefinitionType">

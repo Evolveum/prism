@@ -33,4 +33,14 @@ public class TestQueryCompletion extends AbstractPrismTest {
         schemaRegistry = getPrismContext().getSchemaRegistry();
         userDef = schemaRegistry.findObjectDefinitionByType(UserType.COMPLEX_TYPE);
     }
+
+    @Test
+    public void testTesting() {
+        String query = "name equal and";
+        List<Suggestion> suggestions = axiomQueryLangServiceImpl.process(userDef, query, 3).autocomplete();
+
+        System.out.println("RESULT_TESTING: " );
+        suggestions.forEach(s -> System.out.println(s));
+    }
+
 }
