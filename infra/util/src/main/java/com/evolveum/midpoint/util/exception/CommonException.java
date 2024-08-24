@@ -8,10 +8,6 @@ package com.evolveum.midpoint.util.exception;
 
 import com.evolveum.midpoint.util.LocalizableMessage;
 
-import com.evolveum.midpoint.util.annotation.Experimental;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Objects;
 
 /**
@@ -20,7 +16,7 @@ import java.util.Objects;
  *
  * @author Radovan Semancik
  */
-public abstract class CommonException extends Exception {
+public abstract class CommonException extends Exception implements SeverityAwareException {
 
     /**
      * User-friendly localizable detail message.
@@ -125,15 +121,6 @@ public abstract class CommonException extends Exception {
         this.localizedUserFriendlyMessage = localizedUserFriendlyMessage;
     }
 
-    /**
-     * Not all exceptions are fatal. This method returns the (estimated) severity of this exception.
-     * The final decision is up to the exception handling code, of course. It may or may not accept this value.
-     */
-    @Experimental
-    public @NotNull CommonException.Severity getSeverity() {
-        return Severity.FATAL_ERROR;
-    }
-
     @Override
     public String toString() {
         if (userFriendlyMessage == null) {
@@ -150,9 +137,5 @@ public abstract class CommonException extends Exception {
             // TODO consider if we really want to display short dump of userFriendlyMessage even if localized and/or english message is present
             return super.toString() + technicalMessagePart + " [" + userFriendlyMessage.shortDump() + "]";
         }
-    }
-
-    public enum Severity {
-        FATAL_ERROR, PARTIAL_ERROR, WARNING, HANDLED_ERROR, SUCCESS, NOT_APPLICABLE
     }
 }

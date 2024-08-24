@@ -27,7 +27,7 @@ public class ObjectNotFoundException extends CommonException {
     private final String oid;
 
     /** Estimated severity. */
-    private final CommonException.Severity severity;
+    private final Severity severity;
 
     public ObjectNotFoundException() {
         this((String) null, null, null, null, false);
@@ -135,7 +135,7 @@ public class ObjectNotFoundException extends CommonException {
     }
 
     @Override
-    public @NotNull CommonException.Severity getSeverity() {
+    public @NotNull Severity getSeverity() {
         return severity;
     }
 
