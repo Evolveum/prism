@@ -23,7 +23,9 @@ public class ContextResolverFactoryImpl {
 
         if (schemaContextDefinition.getAlgorithm() != null) {
             ContextResolverFactory contextResolverFactory = SchemaContextResolverRegistry.getRegistry().get(Algorithm.findAlgorithmByName(schemaContextDefinition.getAlgorithm().getLocalPart()));
-            return contextResolverFactory.createResolver(schemaContextDefinition);
+            if (contextResolverFactory != null) {
+                return contextResolverFactory.createResolver(schemaContextDefinition);
+            }
         }
 
         return null;
