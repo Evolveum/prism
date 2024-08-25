@@ -59,11 +59,84 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidPathComponent() {
         String query = "badPath = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-
         assertTrue(errorList.containsAll(List.of(
                 new AxiomQueryError(1, 1, 0, 7, "Invalid item component 'badPath' definition."),
                 new AxiomQueryError(1, 1, 8, 9, "Invalid '=' filter alias.")))
         );
+    }
+
+    @Test
+    public void testValidPropFilter() {
+        String query = "name endsWith \"LAST\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = "givenName = \"John\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = "familyName startsWith \"Wo\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+    }
+
+    @Test
+    public void testInvalidPropFilter() {
+        String query = "badName endsWith \"LAST\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 7, "Invalid item component 'badName' definition."),
+                new AxiomQueryError(1, 1, 8, 16, "Invalid 'endsWith' filter.")))
+        );
+
+        query = "badGivenName = \"John\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 12, "Invalid item component 'badGivenName' definition."),
+                new AxiomQueryError(1, 1, 13, 14, "Invalid '=' filter alias.")))
+        );
+
+        query = "badFamilyName startsWith \"Wo\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 13, "Invalid item component 'badFamilyName' definition."),
+                new AxiomQueryError(1, 1, 14, 24, "Invalid 'startsWith' filter.")))
+        );
+    }
+
+    @Test
+    public void testValidSelfPath() {
+        String query = ". matches (targetType = RoleType)";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = ". referencedBy (@type = UserType AND @path = assignment/targetRef)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+    }
+
+    @Test
+    public void testInvalidSelfPath() {
+        String query = ". equal (targetType = RoleType)";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 2, 7, "Invalid 'equal' filter for self path.")))
+        );
+
+        query = ". = (targetType = RoleType)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 2, 3, "Invalid '=' filter alias for self path.")))
+        );
+    }
+
+    @Test(enabled = false)
+    public void testValidParentPath() {
+        // TODO test for parent path
     }
 
     @Test
@@ -112,21 +185,6 @@ public class TestQueryValidation extends AbstractPrismTest {
         query = "archetypeRef/@/name = \"External Users\" and givenName = \"John\"";
         query = "assignment/targetRef/@ matches (\n"
                 + ". type RoleType and extension/sapType=\"SAP555\")";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidPropFilter() {
-        String query = "name startsWith \"gallery\"";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidContainerFilter() {
-        String query = ". startsWith \"gallery\"";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidReferenceFilter() {
-        String query = "targetRef startsWith \"gallery\"";
     }
 
     @Test(enabled = false)
