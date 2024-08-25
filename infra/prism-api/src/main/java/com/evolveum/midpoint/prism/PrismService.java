@@ -7,27 +7,49 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.axiom.concepts.Lazy;
+
+import java.util.Objects;
+import java.util.function.Supplier;
+
 /**
  * Statically holds an instance of PrismContext (and maybe other beans later).
  */
-public class PrismService {
+public abstract class PrismService {
 
-    private static final PrismService INSTANCE = new PrismService();
+    private static final PrismService DEFAULT_INSTANCE = new Mutable();
 
-    private static PrismContext prismContext;
+    private static Supplier<PrismService> serviceSupplier = defaultSupplier();
 
     private PrismService() {
     }
 
     public static PrismService get() {
-        return INSTANCE;
+        return serviceSupplier.get();
     }
 
-    public PrismContext prismContext() {
-        return prismContext;
+    public static Supplier<PrismService> defaultSupplier() {
+        return () -> DEFAULT_INSTANCE;
     }
 
-    public void prismContext(PrismContext prismContext) {
-        PrismService.prismContext = prismContext;
+    public static void overrideSupplier(Supplier<PrismService> supplier) {
+        serviceSupplier = Objects.requireNonNull(supplier);
+    }
+
+    public abstract PrismContext prismContext();
+
+    public abstract void prismContext(PrismContext prismContext);
+    public static class Mutable extends PrismService {
+        private PrismContext context;
+
+        @Override
+        public void prismContext(PrismContext prismContext) {
+            context = prismContext;
+        }
+
+        @Override
+        public PrismContext prismContext() {
+            return context;
+        }
     }
 }
