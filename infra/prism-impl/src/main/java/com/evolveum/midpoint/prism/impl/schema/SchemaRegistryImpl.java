@@ -1294,7 +1294,12 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, Schema
     }
 
     @Override
-    public SchemaLookup getCurrentLookup() {
+    public SchemaLookup.Mutable getCurrentLookup() {
         return schemaRegistryState;
+    }
+
+    @Override
+    public <T extends Based> @Nullable T schemaSpecific(@NotNull Class<T> type) {
+        return schemaRegistryState.schemaSpecific(type);
     }
 }

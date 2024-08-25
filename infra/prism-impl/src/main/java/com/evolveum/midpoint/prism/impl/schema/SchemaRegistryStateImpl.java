@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
@@ -21,6 +22,7 @@ import javax.xml.validation.SchemaFactory;
 
 import com.evolveum.axiom.concepts.CheckedFunction;
 import com.evolveum.midpoint.prism.impl.schemaContext.resolver.ContextResolverFactoryImpl;
+import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
@@ -29,8 +31,10 @@ import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 
+import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MutableClassToInstanceMap;
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +58,7 @@ import org.xml.sax.SAXException;
  * Contains caches and provides definitions.
  *
  */
-public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugDumpable, SchemaLookup {
+public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugDumpable, SchemaLookup.Mutable {
 
     private static final Trace LOGGER = TraceManager.getTrace(SchemaRegistryStateImpl.class);
 
@@ -154,6 +158,14 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
      * It is lazily evaluated, because the schema registry has to be initialized to resolve type name to definition.
      */
     private PrismContainerDefinition<?> valueMetadataDefinition;
+
+    /**
+     * Factories for services specific to schema state, usually this services somehow compute or transform current schema
+     * into new schema based on data
+     */
+    private Map<Class<? extends SchemaLookup.Based>, Function<SchemaLookup,? extends Based>> schemaSpecificFactories = new ConcurrentHashMap<>();
+
+    private ClassToInstanceMap<SchemaLookup.Based> schemaSpecifics = MutableClassToInstanceMap.create();
 
     private SchemaRegistryStateImpl(
             DynamicNamespacePrefixMapper namespacePrefixMapper, List<SchemaDescriptionImpl> schemaDescriptions,
@@ -743,6 +755,27 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
     @Override
     public DefinitionFactoryImpl definitionFactory() {
         return definitionFactory;
+    }
+
+    @Override
+    public <T extends SchemaLookup.Based> void registerSchemaSpecific(Class<T> serviceClass, Function<SchemaLookup, T> factory) {
+        schemaSpecificFactories.put(serviceClass, factory);
+    }
+
+    @Override
+    public <T extends SchemaLookup.Based> T schemaSpecific(@NotNull Class<T> type) {
+        T instance = schemaSpecifics.getInstance(type);
+        if (instance == null) {
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            var factory = (Function<SchemaLookup,T>) (Function) schemaSpecificFactories.get(type);
+            if (factory != null) {
+                instance = factory.apply(this);
+                if (instance != null) {
+                    schemaSpecifics.put(type, instance);
+                }
+            }
+        }
+        return instance;
     }
 
     /**

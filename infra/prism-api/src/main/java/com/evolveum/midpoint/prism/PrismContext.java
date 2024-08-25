@@ -471,7 +471,7 @@ public interface PrismContext extends ProtectorCreator {
         return PrismService.get().prismContext();
     }
 
-    default SchemaLookup getDefaultSchemaLookup() {
+    default SchemaLookup.Mutable getDefaultSchemaLookup() {
         return getSchemaRegistry().getCurrentLookup();
     }
 }
