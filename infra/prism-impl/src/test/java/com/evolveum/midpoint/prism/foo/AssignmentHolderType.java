@@ -22,10 +22,14 @@ import java.util.List;
         "iteration",
         "iterationToken",
         "archetypeRef",
-        "roleMembershipRef"
+        "roleMembershipRef",
+        "delegatedRef",
+        "roleInfluenceRef"
 })
 @XmlSeeAlso({
         ConnectorType.class,
+        ResourceType.class,
+        FocusType.class,
         ResourceType.class,
         FocusType.class,
 })
@@ -38,6 +42,8 @@ public abstract class AssignmentHolderType extends ObjectType implements Objecta
     public static final ItemName F_ITERATION_TOKEN = ItemName.interned(NS_FOO, "iterationToken");
     public static final ItemName F_ARCHETYPE_REF = ItemName.interned(NS_FOO, "archetypeRef");
     public static final ItemName F_ROLE_MEMBERSHIP_REF = ItemName.interned(NS_FOO, "roleMembershipRef");
+    public static final ItemName F_DELEGATED_REF = ItemName.interned(NS_FOO, "delegatedRef");
+    public static final ItemName F_ROLE_INFLUENCE_REF = ItemName.interned(NS_FOO, "roleInfluenceRef");
     public static final QName CONTAINER_NAME = new QName("http://midpoint.evolveum.com/xml/ns/public/common/common-3", "assignmentHolder");
 
     public AssignmentHolderType() {
@@ -81,6 +87,21 @@ public abstract class AssignmentHolderType extends ObjectType implements Objecta
     @XmlElement(name = "roleMembershipRef")
     public List<ObjectReferenceType> getRoleMembershipRef() {
         return this.prismGetReferencableList(ObjectReferenceType.FACTORY, F_ROLE_MEMBERSHIP_REF, ObjectReferenceType.class);
+    }
+
+    @XmlElement(name = "archetypeRef")
+    public List<ObjectReferenceType> getArchetypeRef() {
+        return this.prismGetReferencableList(ObjectReferenceType.FACTORY, F_ARCHETYPE_REF, ObjectReferenceType.class);
+    }
+
+    @XmlElement(name = "delegatedRef")
+    public List<ObjectReferenceType> getDelegatedRef() {
+        return this.prismGetReferencableList(ObjectReferenceType.FACTORY, F_DELEGATED_REF, ObjectReferenceType.class);
+    }
+
+    @XmlElement(name = "roleInfluenceRef")
+    public List<ObjectReferenceType> getRoleInfluenceRef() {
+        return this.prismGetReferencableList(ObjectReferenceType.FACTORY, F_ROLE_INFLUENCE_REF, ObjectReferenceType.class);
     }
 
     public void setIterationToken(String value) {
