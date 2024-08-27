@@ -82,11 +82,15 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     @Override
     public Object visitDereferenceComponent(AxiomQueryParser.DereferenceComponentContext ctx) {
         if (itemDefinitions.get(findIdentifierDefinition(ctx)) instanceof PrismReferenceDefinition referenceDefinition) {
-            if (referenceDefinition.getTargetTypeName() != null) {
-                itemDefinitions.put(ctx, prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(referenceDefinition.getTargetTypeName()));
+            if (referenceDefinition.getTargetObjectDefinition() != null) {
+                itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+            } else if (referenceDefinition.getTargetTypeName() != null) {
+                itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+            } else {
+                errorRegister(false, ctx, "Invalid dereference path is null.");
             }
         } else {
-            errorRegister(false, ctx, "Invalid dereference path.");
+            errorRegister(false, ctx, "Invalid dereference path because reference definition is null.");
         }
 
         return super.visitDereferenceComponent(ctx);
@@ -136,6 +140,23 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 // TODO relation semantic control
             } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
                 // TODO oid semantic control
+            } else if (Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText())) {
+                PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+                List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
+
+                objectSubTypes.stream().map(item -> {
+                    if (item.getTypeName().getLocalPart().equals(ctx.getText())) return item;
+                    else {
+                        var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(ctx.getText())).findFirst();
+                        if (subItem.isPresent()) return subItem.get();
+                    }
+
+                    return null;
+                }).filter(Objects::nonNull).findFirst();
+
+                System.out.println(ctx.getText() + " SDSKDKKS>> " + objectSubTypes);
+
+                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
             } else {
                 itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
