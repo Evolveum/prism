@@ -19,8 +19,7 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.PrismContainerDefinition.PrismContainerDefinitionMutator;
 import com.evolveum.midpoint.prism.path.ItemName;
 
-import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
-import com.evolveum.midpoint.prism.schema.SerializableContainerDefinition;
+import com.evolveum.midpoint.prism.schema.*;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
@@ -31,8 +30,6 @@ import com.evolveum.midpoint.prism.annotation.ItemDiagramSpecification;
 import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.impl.delta.ContainerDeltaImpl;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.PrismSchema;
-import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.util.DefinitionUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -81,18 +78,18 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
     protected PrismContainerDefinitionImpl(@NotNull QName itemName, @NotNull ComplexTypeDefinition complexTypeDefinition) {
         //noinspection unchecked
         this(itemName, complexTypeDefinition.getTypeName(), complexTypeDefinition,
-                (Class<C>) complexTypeDefinition.getCompileTimeClass(), null);
+                (Class<C>) complexTypeDefinition.getCompileTimeClass(), null, complexTypeDefinition.schemaLookup());
     }
 
     PrismContainerDefinitionImpl(@NotNull QName itemName, @NotNull ComplexTypeDefinition complexTypeDefinition, QName definedInType) {
         //noinspection unchecked
         this(itemName, complexTypeDefinition.getTypeName(), complexTypeDefinition,
-                (Class<C>) complexTypeDefinition.getCompileTimeClass(), definedInType);
+                (Class<C>) complexTypeDefinition.getCompileTimeClass(), definedInType, complexTypeDefinition.schemaLookup());
     }
 
     /** Special case, having no complex type definition. */
-    PrismContainerDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName) {
-        this(itemName, typeName, null, null, null);
+    PrismContainerDefinitionImpl(@NotNull QName itemName, @NotNull QName typeName, SchemaLookup lookup) {
+        this(itemName, typeName, null, null, null, lookup);
     }
 
     PrismContainerDefinitionImpl(
@@ -100,7 +97,8 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
             @NotNull QName typeName,
             ComplexTypeDefinition complexTypeDefinition,
             Class<C> compileTimeClass,
-            QName definedInType) {
+            QName definedInType,
+            SchemaLookup lookup) {
         super(name, typeName, definedInType);
         this.complexTypeDefinition = complexTypeDefinition;
         if (complexTypeDefinition == null) {
@@ -111,6 +109,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
             //super.setDynamic(isRuntimeSchema);  // todo is this really ok?
         }
         this.compileTimeClass = compileTimeClass;
+        setSchemaLookup(lookup);
     }
 
     private static QName determineTypeName(ComplexTypeDefinition complexTypeDefinition) {
@@ -315,7 +314,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
     @Override
     public PrismContainerDefinitionImpl<C> clone() {
         PrismContainerDefinitionImpl<C> clone = // TODO should we copy also "defined in type"?
-                new PrismContainerDefinitionImpl<>(itemName, typeName, complexTypeDefinition, compileTimeClass, null);
+                new PrismContainerDefinitionImpl<>(itemName, typeName, complexTypeDefinition, compileTimeClass, null, schemaLookup());
         clone.copyDefinitionDataFrom(this);
         return clone;
     }
@@ -330,14 +329,14 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
         PrismContainerDefinitionImpl<C> clone =
                 (PrismContainerDefinitionImpl<C>)
                         new PrismContainerDefinitionImpl<>(itemName, newTypeName, newCtd,
-                                (Class<? extends Containerable>) newCtd.getCompileTimeClass(), null);
+                                (Class<? extends Containerable>) newCtd.getCompileTimeClass(), null, schemaLookup());
         clone.copyDefinitionDataFrom(this);
         return clone;
     }
 
     @Override
     public @NotNull PrismContainerDefinition<C> cloneWithNewName(@NotNull ItemName newItemName) {
-        var clone = new PrismContainerDefinitionImpl<>(newItemName, typeName, complexTypeDefinition, compileTimeClass, null);
+        var clone = new PrismContainerDefinitionImpl<>(newItemName, typeName, complexTypeDefinition, compileTimeClass, null, schemaLookup());
         clone.copyDefinitionDataFrom(this);
         return clone;
     }

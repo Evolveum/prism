@@ -9,11 +9,19 @@ package com.evolveum.midpoint.prism.impl;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
 
 public class DefinitionFactoryImpl implements DefinitionFactory {
+
+    private final SchemaLookup lookup;
+
+    public DefinitionFactoryImpl(SchemaLookup lookup) {
+        this.lookup = lookup;
+    }
 
     @Override
     public ComplexTypeDefinitionImpl newComplexTypeDefinition(QName name) {
@@ -38,7 +46,7 @@ public class DefinitionFactoryImpl implements DefinitionFactory {
     @Override
     public @NotNull PrismContainerDefinition<?> newContainerDefinitionWithoutTypeDefinition(
             @NotNull QName name, @NotNull QName typeName) {
-        return new PrismContainerDefinitionImpl<>(name, typeName);
+        return  new PrismContainerDefinitionImpl<>(name, typeName, lookup);
     }
 
     @Override

@@ -15,6 +15,8 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -467,5 +469,9 @@ public interface PrismContext extends ProtectorCreator {
 
     static PrismContext get() {
         return PrismService.get().prismContext();
+    }
+
+    default SchemaLookup.Mutable getDefaultSchemaLookup() {
+        return getSchemaRegistry().getCurrentLookup();
     }
 }

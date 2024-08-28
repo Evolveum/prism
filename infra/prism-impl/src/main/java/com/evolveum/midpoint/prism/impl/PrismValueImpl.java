@@ -442,11 +442,13 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public SchemaContext getSchemaContext() {
-        if (getParent() == null) return null;
-
-        if (getParent().getDefinition().getSchemaContextDefinition() != null) {
+        var def = getDefinition();
+        if (def == null) {
+            return null;
+        }
+        if (def.getSchemaContextDefinition() != null) {
             SchemaContextDefinition schemaContextDefinition = getParent().getDefinition().getSchemaContextDefinition();
-            SchemaContextResolver schemaContextResolver = ContextResolverFactoryImpl.createResolver(schemaContextDefinition);
+            var schemaContextResolver = schemaLookup().resolverFor(schemaContextDefinition);
             return schemaContextResolver.computeContext(this);
         }
 

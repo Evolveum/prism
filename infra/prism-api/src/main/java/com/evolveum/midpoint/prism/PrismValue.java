@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.metadata.MidpointOriginMetadata;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.InfraItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -33,7 +34,7 @@ import java.util.Optional;
  * @author semancik
  *
  */
-public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata {      // todo ShortDumpable?
+public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata, SchemaLookup.Aware {      // todo ShortDumpable?
 
     Map<String, Object> getUserData();
 
@@ -308,4 +309,9 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     }
 
     SchemaContext getSchemaContext();
+
+    @Override
+    default SchemaLookup schemaLookup() {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 }

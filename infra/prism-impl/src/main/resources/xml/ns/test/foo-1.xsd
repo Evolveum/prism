@@ -247,7 +247,7 @@
         </xsd:attribute>
         <xsd:attribute name="incomplete" type="xsd:boolean" use="optional"/>
     </xsd:complexType>
-
+    <xsd:element name="objectRef" type="tns:ObjectReferenceType"/>
 
     <xsd:complexType name="AccountType">
         <xsd:complexContent>
@@ -286,6 +286,7 @@
         <xsd:attribute name="id" type="xsd:string" use="optional"/>
         <xsd:attribute name="incomplete" type="xsd:boolean" use="optional"/>
     </xsd:complexType>
+    <xsd:element name="assignment" type="tns:AssignmentType"/>
 
     <xsd:complexType name="FocusType" abstract="true">
         <xsd:annotation>
@@ -404,6 +405,7 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+    <xsd:element name="assignmentHolder" type="tns:AssignmentHolderType" />
 
     <xsd:complexType name="AccountConstructionType">
         <xsd:annotation>
@@ -991,4 +993,263 @@
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
+
+    <xsd:complexType name="ShadowType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:ObjectType">
+                <xsd:sequence>
+                    <xsd:element name="resourceRef" type="tns:ObjectReferenceType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:ResourceType</a:objectReferenceTargetType>
+                                <a:displayName>ShadowType.resource</a:displayName>
+                                <a:diagram>
+                                    <a:name>user-shadow-resource</a:name>
+                                    <!-- default is to include this item, therefore no "inclusion" specification is needed here -->
+                                </a:diagram>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <!--<xsd:element name="shadowLifecycleState" type="tns:ShadowLifecycleStateType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.shadowLifecycleState</a:displayName>-->
+                    <!--            <a:experimental>true</a:experimental>-->
+                    <!--            <a:since>4.4</a:since>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <!--<xsd:element name="purpose" type="tns:ShadowPurposeType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.purpose</a:displayName>-->
+                    <!--            <a:since>4.8</a:since>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="dead" type="xsd:boolean" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.dead</a:displayName>
+                                <a:displayHint>emphasized</a:displayHint>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="deathTimestamp" type="xsd:dateTime" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.deathTimestamp</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <!--<xsd:element name="pendingOperation" type="tns:PendingOperationType" minOccurs="0" maxOccurs="unbounded">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.pendingOperation</a:displayName>-->
+                    <!--            <a:since>3.6</a:since>-->
+                    <!--            <a:index>presence</a:index>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <!--<xsd:element name="synchronizationSituation" type="tns:SynchronizationSituationType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.synchronizationSituation</a:displayName>-->
+                    <!--            <a:displayHint>emphasized</a:displayHint>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="synchronizationTimestamp" type="xsd:dateTime" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.synchronizationTimestamp</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="fullSynchronizationTimestamp" type="xsd:dateTime" minOccurs="0">
+                        <xsd:annotation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <!--<xsd:element name="synchronizationSituationDescription" type="tns:SynchronizationSituationDescriptionType" minOccurs="0" maxOccurs="unbounded">-->
+                    <!--    <xsd:annotation>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <!--<xsd:element name="correlation" type="tns:ShadowCorrelationStateType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:since>4.5</a:since>-->
+                    <!--            <a:container>true</a:container>-->
+                    <!--            <a:experimental>true</a:experimental>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="objectClass" type="xsd:QName" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.objectClass</a:displayName>
+                                <a:displayHint>emphasized</a:displayHint>
+                                <a:diagram>
+                                    <a:name>user-shadow-resource</a:name>
+                                </a:diagram>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="primaryIdentifierValue" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.primaryIdentifierValue</a:displayName>
+                                <a:since>4.0</a:since>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="auxiliaryObjectClass" type="xsd:QName" minOccurs="0" maxOccurs="unbounded">
+                    </xsd:element>
+                    <!--<xsd:element name="kind" type="tns:ShadowKindType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.kind</a:displayName>-->
+                    <!--            <a:diagram>-->
+                    <!--                <a:name>user-shadow-resource</a:name>-->
+                    <!--            </a:diagram>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="intent" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.intent</a:displayName>
+                                <a:displayHint>emphasized</a:displayHint>
+                                <a:diagram>
+                                    <a:name>user-shadow-resource</a:name>
+                                </a:diagram>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="tag" type="xsd:string" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Tag value used to discriminate multiple accounts that have the same resource+kind+intent combination.
+                            </xsd:documentation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.tag</a:displayName>
+                                <a:since>4.0</a:since>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="protectedObject" type="xsd:boolean" minOccurs="0" default="false">
+                    </xsd:element>
+                    <xsd:element name="ignored" type="xsd:boolean" minOccurs="0" default="false">
+                        <xsd:annotation>
+                            <xsd:documentation>
+                                Ignored shadows will not be processed during synchronization.
+                            </xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="assigned" type="xsd:boolean" minOccurs="0" default="false" />
+                    <xsd:element name="exists" type="xsd:boolean" minOccurs="0" default="true" />
+                    <xsd:element name="iteration" type="xsd:int" minOccurs="0" />
+                    <xsd:element name="iterationToken" type="xsd:string" minOccurs="0" />
+                    <!--<xsd:element name="attributes" type="tns:ShadowAttributesType" minOccurs="0" />-->
+                    <!--<xsd:element name="referenceAttributes" type="tns:ShadowReferenceAttributesType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.referenceAttributes</a:displayName>-->
+                    <!--            <a:since>4.9</a:since>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <!--<xsd:element name="associations" type="tns:ShadowAssociationsType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.association</a:displayName>-->
+                    <!--            <a:since>4.9</a:since>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <!--<xsd:element name="association" type="tns:ShadowAssociationType" minOccurs="0" maxOccurs="unbounded">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ShadowType.association</a:displayName>-->
+                    <!--            <a:deprecated>true</a:deprecated>-->
+                    <!--            <a:deprecatedSince>4.9</a:deprecatedSince>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="activation" type="tns:ActivationType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ShadowType.activation</a:displayName>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <xsd:element name="credentials" type="tns:CredentialsType" minOccurs="0" />
+                    <!--<xsd:element ref="tns:cachingMetadata" minOccurs="0" />-->
+                    <!--<xsd:element name="contentDescription" type="tns:ShadowContentDescriptionType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:since>4.9</a:since>-->
+                    <!--            <a:operational>true</a:operational>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="shadow" type="tns:ShadowType" substitutionGroup="tns:object">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:schemaMigration>
+                    <a:element>tns:account</a:element>
+                    <a:version>4.0</a:version>
+                    <a:operation>renamedParent</a:operation>
+                    <a:replacement>tns:shadow</a:replacement>
+                </a:schemaMigration>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="ArchetypeType">
+        <xsd:complexContent>
+            <xsd:extension base="tns:AbstractRoleType">
+                <xsd:sequence>
+                    <!--<xsd:element name="archetypePolicy" type="tns:ArchetypePolicyType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ArchetypeType.archetypePolicy</a:displayName>-->
+                    <!--            <a:displayOrder>120</a:displayOrder>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="superArchetypeRef" type="tns:ObjectReferenceType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:displayName>ArchetypeType.superArchetypeRef</a:displayName>
+                                <a:help>AssignmentType.superArchetypeRef.help</a:help>
+                                <a:objectReferenceTargetType>tns:ArchetypeType</a:objectReferenceTargetType>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                    <!--<xsd:element name="archetypeType" type="tns:ArchetypeTypeType" minOccurs="0">-->
+                    <!--    <xsd:annotation>-->
+                    <!--        <xsd:appinfo>-->
+                    <!--            <a:displayName>ArchetypeType.archetypeType</a:displayName>-->
+                    <!--            <a:displayOrder>120</a:displayOrder>-->
+                    <!--        </xsd:appinfo>-->
+                    <!--    </xsd:annotation>-->
+                    <!--</xsd:element>-->
+                    <xsd:element name="securityPolicyRef" type="tns:ObjectReferenceType" minOccurs="0">
+                        <xsd:annotation>
+                            <xsd:appinfo>
+                                <a:objectReferenceTargetType>tns:SecurityPolicyType</a:objectReferenceTargetType>
+                                <a:displayName>ArchetypeType.securityPolicy</a:displayName>
+                                <a:since>4.7</a:since>
+                            </xsd:appinfo>
+                        </xsd:annotation>
+                    </xsd:element>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="archetype" type="tns:ArchetypeType" substitutionGroup="tns:object"/>
 </xsd:schema>

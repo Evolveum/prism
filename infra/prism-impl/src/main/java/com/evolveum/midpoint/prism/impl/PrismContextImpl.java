@@ -135,7 +135,7 @@ public final class PrismContextImpl implements PrismContext {
     private PrismContextImpl(@NotNull SchemaRegistryImpl schemaRegistry) {
         this.schemaRegistry = schemaRegistry;
         schemaRegistry.setPrismContext(this);
-        this.definitionFactory = new DefinitionFactoryImpl();
+        this.definitionFactory = new DefinitionFactoryImpl(schemaRegistry);
         this.queryConverter = new QueryConverterImpl(this);
         this.lexicalProcessorRegistry = new LexicalProcessorRegistry(schemaRegistry);
         PrismBeanInspector inspector = new PrismBeanInspector(this);

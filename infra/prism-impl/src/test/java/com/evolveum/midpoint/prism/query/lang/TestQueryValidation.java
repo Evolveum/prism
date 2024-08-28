@@ -59,11 +59,84 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidPathComponent() {
         String query = "badPath = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-
         assertTrue(errorList.containsAll(List.of(
                 new AxiomQueryError(1, 1, 0, 7, "Invalid item component 'badPath' definition."),
                 new AxiomQueryError(1, 1, 8, 9, "Invalid '=' filter alias.")))
         );
+    }
+
+    @Test
+    public void testValidPropFilter() {
+        String query = "name endsWith \"LAST\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = "givenName = \"John\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = "familyName startsWith \"Wo\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+    }
+
+    @Test
+    public void testInvalidPropFilter() {
+        String query = "badName endsWith \"LAST\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 7, "Invalid item component 'badName' definition."),
+                new AxiomQueryError(1, 1, 8, 16, "Invalid 'endsWith' filter.")))
+        );
+
+        query = "badGivenName = \"John\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 12, "Invalid item component 'badGivenName' definition."),
+                new AxiomQueryError(1, 1, 13, 14, "Invalid '=' filter alias.")))
+        );
+
+        query = "badFamilyName startsWith \"Wo\"";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.containsAll(List.of(
+                new AxiomQueryError(1, 1, 0, 13, "Invalid item component 'badFamilyName' definition."),
+                new AxiomQueryError(1, 1, 14, 24, "Invalid 'startsWith' filter.")))
+        );
+    }
+
+    @Test(enabled = false)
+    public void testValidSelfPath() {
+        String query = ". matches (targetType = RoleType)";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = ". referencedBy (@type = UserType AND @path = assignment/targetRef)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+
+        query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
+    }
+
+    @Test
+    public void testInvalidSelfPath() {
+        String query = ". equal value";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.contains(
+                new AxiomQueryError(1, 1, 2, 7, "Invalid 'equal' filter for self path."))
+        );
+
+        query = ". = value";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.contains(
+                new AxiomQueryError(1, 1, 2, 3, "Invalid '=' filter alias for self path."))
+        );
+    }
+
+    @Test(enabled = false)
+    public void testValidParentPath() {
+        // TODO test for parent path
     }
 
     @Test
@@ -106,31 +179,73 @@ public class TestQueryValidation extends AbstractPrismTest {
     }
 
     @Test(enabled = false)
-    public void testInvalidDereferenceComponent() {
-        String query = "@/displayName startsWith \"gallery\"";
-        query = "@/archetypeRef/@/name=\"Application\"";
-        query = "archetypeRef/@/name = \"External Users\" and givenName = \"John\"";
-        query = "assignment/targetRef/@ matches (\n"
-                + ". type RoleType and extension/sapType=\"SAP555\")";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidPropFilter() {
-        String query = "name startsWith \"gallery\"";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidContainerFilter() {
-        String query = ". startsWith \"gallery\"";
-    }
-
-    @Test(enabled = false)
-    public void testInvalidReferenceFilter() {
-        String query = "targetRef startsWith \"gallery\"";
+    public void testValidDereferenceComponent() {
+        String query = "assignment/targetRef/@/name = \"End user\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        assertTrue(errorList.isEmpty());
     }
 
     @Test(enabled = false)
     public void testItemFilter() {
+        // filters for prop definition
+        String query = "name equal \"End user\"";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        query = "name less \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name greater \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name lessOrEqual \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name greaterOrEqual \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name notEqual \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name exists \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name levenshtein \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name similarity \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name ownedByOid \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name anyIn \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name startsWith \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name endsWith \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name contains \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = "name fullText \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+//        query = ". fullText \"End user\"";
+//        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        assertTrue(errorList.isEmpty());
+
+        // filters for ref & container definition
+        query = "assignment/targetRef matches \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". referencedBy (\n"
+                + "  @type = AbstractRoleType\n"
+                + "  and @path = inducement/targetRef\n"
+                + ")";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". ownedBy \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". inOrg \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". inOid \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". isRoot \"End user\"";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        query = ". type ShadowType";
+        errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
+        errorList.forEach(s -> System.out.println(s.getMessage() + " --- " + s.getLineStart() + " - "  + s.getLineStop() + " -- " + s.getCharPositionStart() + " - "  + s.getCharPositionStop()));
+        assertTrue(errorList.isEmpty());
+    }
+
+    @Test(enabled = false)
+    public void testItemFilterAlias() {
         Assert.assertTrue(true, "String message");
     }
 
@@ -147,35 +262,35 @@ public class TestQueryValidation extends AbstractPrismTest {
     }
 
     @Test(enabled = false)
-    public void testSubFilterSpec() {
+    public void testValidSubFilterSpec() {
         typeDefinition = PrismContext.get().getSchemaRegistry().findItemDefinitionByType(new QName("FocusType"));
 
-//        String query = "linkRef/@ matches (. type ShadowType and resourceRef matches (oid = \"093ba5b5-7b15-470a-a147-889d09c2850f\") and intent = \"default\" )";
-//        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+        String query = "linkRef/@ matches (. type ShadowType and resourceRef matches (oid = \"093ba5b5-7b15-470a-a147-889d09c2850f\") and intent = \"default\" )";
+        List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
 
-//        query = "roleMembershipRef not matches (targetType = ServiceType)";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+        query = "roleMembershipRef not matches (targetType = ServiceType)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
 
-//        query = "roleMembershipRef not matches (targetType = RoleType) AND roleMembershipRef not matches (targetType = ServiceType)";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
-//
-//        query = "assignment/targetRef not matches ( targetType = RoleType) AND assignment/targetRef not matches ( targetType = ServiceType)";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
-//
-//        query = "assignment/targetRef matches (targetType=RoleType and relation=owner)";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
-//
-//        query = ". referencedBy (@type = UserType AND name = \"adam\" AND @path = assignment/targetRef)";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
-//
-//        query = "assignment/targetRef/@ matches ( type RoleType and extension/sapType=\"SAP555\")";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+        query = "roleMembershipRef not matches (targetType = RoleType) AND roleMembershipRef not matches (targetType = ServiceType)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+
+        query = "assignment/targetRef not matches ( targetType = RoleType) AND assignment/targetRef not matches ( targetType = ServiceType)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+
+        query = "assignment/targetRef matches (targetType=RoleType and relation=owner)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+
+        query = ". referencedBy (@type = UserType AND name = \"adam\" AND @path = assignment/targetRef)";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
+
+        query = "assignment/targetRef/@ matches ( type RoleType and extension/sapType=\"SAP555\")";
+        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
+        errorList.forEach(c -> System.out.println(c.getCharPositionStop() + " : " + c.getMessage()));
     }
 }

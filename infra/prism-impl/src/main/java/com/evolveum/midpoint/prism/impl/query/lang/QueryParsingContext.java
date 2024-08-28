@@ -12,6 +12,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PreparedPrismQuery;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 import org.jetbrains.annotations.NotNull;
@@ -220,6 +221,16 @@ class QueryParsingContext {
 
         public Local nested(ItemDefinition<?> origItemDef, @Nullable ComplexTypeDefinition overwriteTypeDef) {
             return new Local(origItemDef, overwriteTypeDef);
+        }
+
+        public SchemaLookup schemaLookup() {
+            if (itemDef != null) {
+                return itemDef.schemaLookup();
+            }
+            if (typeDef != null) {
+                return typeDef.schemaLookup();
+            }
+            throw new IllegalStateException("Context should have item def or type def");
         }
     }
 

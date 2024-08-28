@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
+
 import com.sun.xml.xsom.XSAnnotation;
 import com.sun.xml.xsom.XSComponent;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +35,8 @@ public interface ItemDefinition<I extends Item<?, ?>>
         PrismItemBasicDefinition,
         PrismItemStorageDefinition,
         PrismItemAccessDefinition,
-        LivePrismItemDefinition {
+        LivePrismItemDefinition,
+        SchemaLookup.Aware {
 
     ItemProcessing getProcessing();
 

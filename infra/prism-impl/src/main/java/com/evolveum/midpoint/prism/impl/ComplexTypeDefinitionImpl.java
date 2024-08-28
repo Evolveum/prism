@@ -335,11 +335,11 @@ public class ComplexTypeDefinitionImpl
                 path = path.rest();
             } else if (ItemPath.isParent(first)) {
                 ItemPath rest = path.rest();
-                ComplexTypeDefinition parent = getSchemaLookup().determineParentDefinition(this, rest);
+                ComplexTypeDefinition parent = schemaLookup().determineParentDefinition(this, rest);
                 if (rest.isEmpty()) {
                     // requires that the parent is defined as an item (container, object)
                     //noinspection unchecked
-                    return (ID) getSchemaLookup().findItemDefinitionByType(parent.getTypeName());
+                    return (ID) schemaLookup().findItemDefinitionByType(parent.getTypeName());
 
                 } else {
                     return parent.findItemDefinition(rest, clazz);
@@ -405,7 +405,7 @@ public class ComplexTypeDefinitionImpl
             return null;
         }
         var typeDef = MiscUtil.stateNonNull(
-                getSchemaLookup().findTypeDefinitionByType(defaultTypeName),
+                schemaLookup().findTypeDefinitionByType(defaultTypeName),
                 "No type definition for %s", defaultTypeName);
         if (!(typeDef instanceof ComplexTypeDefinition ctd)) {
             throw new IllegalStateException("Unsupported type definition: " + typeDef);
@@ -455,7 +455,7 @@ public class ComplexTypeDefinitionImpl
             }
         }
         if (isXsdAnyMarker()) {
-            ItemDefinition<?> def = getSchemaLookup().findItemDefinitionByElementName(firstName);
+            ItemDefinition<?> def = schemaLookup().findItemDefinitionByElementName(firstName);
             if (def != null) {
                 return def.findItemDefinition(rest, clazz);
             }
@@ -765,7 +765,7 @@ public class ComplexTypeDefinitionImpl
 //    }
 
     public Class<?> getTypeClass() {
-        return getSchemaLookup().determineClassForType(getTypeName());
+        return schemaLookup().determineClassForType(getTypeName());
     }
 
     @Override

@@ -27,7 +27,7 @@ public class TypePropertyContextResolver implements SchemaContextResolver {
 
             if (typeProp != null && typeProp.getAnyValue() != null) {
                 if (typeProp.getAnyValue().getRealValue() instanceof QName typeName) {
-                    PrismObjectDefinition<?> objectDefinition = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(typeName);
+                    PrismObjectDefinition<?> objectDefinition = container.schemaLookup().findObjectDefinitionByType(typeName);
                     return new SchemaContextImpl(objectDefinition);
                 }
             }
