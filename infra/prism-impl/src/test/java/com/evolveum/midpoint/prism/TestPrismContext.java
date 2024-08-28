@@ -204,6 +204,7 @@ public class TestPrismContext extends AbstractPrismTest {
         PrismContext prismContext = constructInitializedPrismContext();
         PrismSchema fooSchema = prismContext.getSchemaRegistry().findSchemaByNamespace(NS_FOO);
 
+        System.out.println("KDKSKDKKSD>>> " + fooSchema.serializeToXsd());
         // WHEN
         Document fooXsd = fooSchema.serializeToXsd();
 
