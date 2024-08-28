@@ -192,18 +192,22 @@
             </xsd:appinfo>
         </xsd:annotation>
         <xsd:sequence>
-            <xsd:element ref="tns:description" minOccurs="0"/>
-            <xsd:element ref="tns:documentation" minOccurs="0"/>
-            <xsd:element name="filter" type="q:SearchFilterType" minOccurs="0" />
-            <xsd:element name="resolutionTime" type="t:EvaluationTimeType" minOccurs="0" default="import" />
-            <xsd:element name="referentialIntegrity" type="t:ReferentialIntegrityType" minOccurs="0" default="default" />
-            <xsd:element name="targetName" type="t:PolyStringType" minOccurs="0" />
+            <xsd:element name="description" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="filter" minOccurs="0" maxOccurs="1" type="q:SearchFilterType" />
+            <xsd:element name="object" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+                    </xsd:sequence>
+                    <xsd:anyAttribute namespace="##any" processContents="lax"/>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
-        <xsd:attribute name="oid" type="xsd:string" />
-        <xsd:attribute name="type" type="xsd:QName" />
-        <xsd:attribute name="relation" type="xsd:QName" />
+        <xsd:attribute name="oid" type="xsd:string" use="optional" />
+        <xsd:attribute name="type" type="xsd:QName" use="optional" />
+        <xsd:attribute name="incomplete" type="xsd:boolean" use="optional"/>
     </xsd:complexType>
-    <xsd:element name="objectRef" type="tns:ObjectReferenceType"/>
+    <!--<xsd:element name="objectRef" type="tns:ObjectReferenceType"/>-->
 
     <xsd:complexType name="AccountType">
         <xsd:complexContent>
