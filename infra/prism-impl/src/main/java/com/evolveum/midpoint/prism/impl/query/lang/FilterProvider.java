@@ -47,17 +47,13 @@ public class FilterProvider {
 
             if (itemDefinition instanceof PrismContainerDefinition
                     || itemDefinition instanceof PrismReferenceDefinition) {
+                addFilterSuggestion(OWNED_BY, suggestions);
                 addFilterSuggestion(MATCHES, suggestions);
                 addFilterSuggestion(REFERENCED_BY, suggestions);
                 addFilterSuggestion(IN_ORG, suggestions);
                 addFilterSuggestion(IN_OID, suggestions);
                 addFilterSuggestion(IS_ROOT, suggestions);
-
-                // item filter only for self path
-                if (itemDefinition.getTypeName().getLocalPart().equals(Filter.Token.DOT.getName())) {
-                    addFilterSuggestion(OWNED_BY, suggestions);
-                    addFilterSuggestion(TYPE, suggestions);
-                }
+                addFilterSuggestion(TYPE, suggestions);
             }
         }
 
