@@ -46,7 +46,8 @@ public class FilterProvider {
             }
 
             if (itemDefinition instanceof PrismContainerDefinition
-                    || itemDefinition instanceof PrismReferenceDefinition) {
+                    || itemDefinition instanceof PrismReferenceDefinition
+                    || itemDefinition instanceof ComplexTypeDefinition) {
                 addFilterSuggestion(OWNED_BY, suggestions);
                 addFilterSuggestion(MATCHES, suggestions);
                 addFilterSuggestion(REFERENCED_BY, suggestions);

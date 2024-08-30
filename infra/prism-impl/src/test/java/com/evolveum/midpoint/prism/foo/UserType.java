@@ -408,4 +408,30 @@ public class UserType
         linkRef(value);
         return value;
     }
+
+    public UserType archetypeRef(ObjectReferenceType value) {
+        getArchetypeRef().add(value);
+        return this;
+    }
+
+    public UserType archetypeRef(String oid, QName type) {
+        PrismReferenceValue refVal = new PrismReferenceValueImpl(oid, type);
+        ObjectReferenceType ort = new ObjectReferenceType();
+        ort.setupReferenceValue(refVal);
+        return archetypeRef(ort);
+    }
+
+    public UserType archetypeRef(String oid, QName type, QName relation) {
+        PrismReferenceValue refVal = new PrismReferenceValueImpl(oid, type);
+        refVal.setRelation(relation);
+        ObjectReferenceType ort = new ObjectReferenceType();
+        ort.setupReferenceValue(refVal);
+        return archetypeRef(ort);
+    }
+
+    public ObjectReferenceType beginArchetypeRef() {
+        ObjectReferenceType value = new ObjectReferenceType();
+        archetypeRef(value);
+        return value;
+    }
 }

@@ -36,11 +36,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private final PrismContext prismContext;
     private final ItemDefinition<?> rootItemDefinition;
     private final HashMap<ParserRuleContext, Definition> itemDefinitions = new HashMap<>();
-    private Definition definitionForAutocomplete;
+    private Definition infraPathDefinition = null;
 
-    int positionCursor;
+    private final int positionCursor;
     private PositionContext positionContext;
-
     private final AxiomQueryParser parser;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
@@ -113,11 +112,15 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             if (metaFilters.containsKey(itemFilterContext.getChild(0).getText())) {
                 if (Filter.Meta.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
                     itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(ctx.getText())));
-                    errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type %s.", ctx.getText());
+                    errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid meta type '%s'.", ctx.getText());
                 } else if (Filter.Meta.PATH.getName().equals(itemFilterContext.getChild(0).getText())) {
-                    itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
-                    errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
-                            "Invalid type '%s'.", ctx.getText());
+                    if (infraPathDefinition == null) {
+                        infraPathDefinition = itemDefinitions.get(findIdentifierDefinition(ctx));
+                    }
+
+                    infraPathDefinition = findDefinition(infraPathDefinition, new QName(ctx.getText()));
+                    errorRegister(infraPathDefinition != null, ctx,
+                            "Invalid meta path '%s'.", ctx.getText());
                 } else if (Filter.Meta.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
                     // TODO @relation meta filter
                 }
@@ -153,6 +156,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
                     return null;
                 }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
+
+
+                System.out.println("DSKDK>> " + itemDefinitions.get(findIdentifierDefinition(findIdentifierDefinition(ctx))));
+
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
             } else {
                 itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
@@ -185,9 +192,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         "Invalid '%s' filter. Only the assignment sign (=) is correct for '%s'.", ctx.getText(), itemFilterContext.getChild(0).getText());
             } else {
                 if(itemFilterContext.getChild(0) instanceof AxiomQueryParser.SelfPathContext) {
-                    errorRegister((FilterProvider.findFilterByItemDefinition(
-                                    itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
-                            "Invalid '%s' filter for self path.", ctx.getText());
+                    if (!itemFilterContext.getChild(2).getText().equals(Filter.Name.TYPE.getName().getLocalPart())) {
+                        errorRegister((FilterProvider.findFilterByItemDefinition(
+                                        itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
+                                "Invalid '%s' filter for self path.", ctx.getText());
+                    }
                 } else {
                     errorRegister((FilterProvider.findFilterByItemDefinition(
                                     itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
@@ -225,6 +234,12 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     @Override
+    public Object visitSubfilterSpec(AxiomQueryParser.SubfilterSpecContext ctx) {
+        infraPathDefinition = null;
+        return super.visitSubfilterSpec(ctx);
+    }
+
+    @Override
     public Object visitErrorNode(ErrorNode node) {
 //        Token token  = node.getSymbol();
 //        if (errorTokenContextMap.getErrorToken().equals(token)) {
@@ -241,6 +256,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      */
     public List<Suggestion> generateSuggestions() {
         List<Suggestion> suggestions = new ArrayList<>();
+        Definition definition = null;
 
         if (positionContext != null) {
             ATN atn = parser.getATN();
@@ -252,7 +268,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         if (i == AxiomQueryLexer.IDENTIFIER) {
                             // handle rules for IDENTIFIER
                             if (ruleIndex == AxiomQueryParser.RULE_filterName) {
-                                FilterProvider.findFilterByItemDefinition(rootItemDefinition, ruleIndex)
+                                FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
                                         .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
                             } else if (ruleIndex == AxiomQueryParser.RULE_matchingRule) {
                                 // find path for matching rule
@@ -270,7 +286,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         }
                         // handle rules for other cases
                         if (ruleIndex == AxiomQueryParser.RULE_negation) {
-                            FilterProvider.findFilterByItemDefinition(rootItemDefinition, ruleIndex)
+                            FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
                                     .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
                         }
                     }

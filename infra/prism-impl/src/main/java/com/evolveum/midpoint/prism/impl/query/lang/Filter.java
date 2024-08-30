@@ -136,7 +136,7 @@ public class Filter {
     public enum Token {
 
         REF_TARGET_ALIAS("@"),
-        DOT("."),
+        SELF_PATH("."),
         LPAR("("),
         RPAR(")");
 
