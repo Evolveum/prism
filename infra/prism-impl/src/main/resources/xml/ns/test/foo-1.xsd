@@ -107,7 +107,7 @@
 
     <xsd:complexType name="UserType">
         <xsd:complexContent>
-            <xsd:extension base="tns:ObjectType">
+            <xsd:extension base="tns:AssignmentHolderType">
                 <xsd:sequence>
                     <!-- Single-valued properties -->
                     <xsd:element name="fullName" type="xsd:string">

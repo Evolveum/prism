@@ -379,9 +379,7 @@ public class TestQueryValidation extends AbstractPrismTest {
 //        ));
     }
 
-
-    // FIXME problem to find archetypeRef in UserType definition
-    @Test(enabled = false)
+    @Test
     public void testValidInfraFilter() {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
