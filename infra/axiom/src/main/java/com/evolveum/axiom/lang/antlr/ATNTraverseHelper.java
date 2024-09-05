@@ -4,6 +4,7 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.*;
@@ -96,6 +97,30 @@ public class ATNTraverseHelper {
         }
 
         return rules;
+    }
+
+    public static List<TokenContextPair> findTokenContextByRecognizer(Parser recognizer) {
+        ATN atn = recognizer.getATN();
+        Stack<ATNState> states = new Stack<>();
+        Stack<ATNState> passedStates = new Stack<>();
+        ATNState nextState;
+
+        for (int tokenType : atn.getExpectedTokens(recognizer.getState(), recognizer.getContext()).toArray()) {
+
+//            System.out.println("TESTING: " + atn.states.get(recognizer.getState()).getTransitions());
+
+            states.push(atn.states.get(recognizer.getState()));
+//            while (!states.isEmpty()) {
+//                nextState = states.pop();
+//                passedStates.push(nextState);
+//                for (Transition transition : nextState.getTransitions()) {
+//                    states.push(transition.target);
+//                }
+//            }
+
+            System.out.println("STATE: " + recognizer.getState() + " Token: " + tokenType);
+        }
+        return null;
     }
 
     private static void findFollowingRulesInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<Integer> rules) {

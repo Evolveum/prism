@@ -4,7 +4,6 @@ import java.util.*;
 
 import com.evolveum.axiom.lang.antlr.ATNTraverseHelper;
 import com.evolveum.axiom.lang.antlr.PositionContext;
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.Suggestion;
@@ -15,6 +14,7 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.google.common.base.Strings;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATN;
+import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -41,13 +41,21 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private final int positionCursor;
     private PositionContext positionContext;
     private final AxiomQueryParser parser;
+    public IntervalSet recognitionsSet;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
-            AxiomQueryParser parser, int positionCursor) {
+            AxiomQueryParser parser, int positionCursor, IntervalSet recognitionsSet) {
         this.prismContext = prismContext;
         this.rootItemDefinition = rootItem;
         this.parser = parser;
         this.positionCursor = positionCursor;
+        this.recognitionsSet = recognitionsSet;
+    }
+
+    @Override
+    public Object visitErrorNode(ErrorNode node) {
+        System.out.println("Error node encountered: " + parser.getATN().getExpectedTokens(parser.getState(), parser.getContext()));
+        return super.visitErrorNode(node);
     }
 
     @Override
@@ -156,10 +164,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
                     return null;
                 }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
-
-
-                System.out.println("DSKDK>> " + itemDefinitions.get(findIdentifierDefinition(findIdentifierDefinition(ctx))));
-
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
             } else {
                 itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
@@ -239,56 +243,50 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return super.visitSubfilterSpec(ctx);
     }
 
-    @Override
-    public Object visitErrorNode(ErrorNode node) {
-//        Token token  = node.getSymbol();
-//        if (errorTokenContextMap.getErrorToken().equals(token)) {
-//            if (node.getParent() instanceof AxiomQueryParser.ItemFilterContext itemFilter) {
-//
-//            }
-//        }
-        return super.visitErrorNode(node);
-    }
-
     /**
      * Generate auto completions suggestion for AxiomQuery language by context.
      * @return List {@link Suggestion}
      */
     public List<Suggestion> generateSuggestions() {
         List<Suggestion> suggestions = new ArrayList<>();
-        Definition definition = null;
 
         if (positionContext != null) {
+
+            System.out.println("DLSLDLSLD> ");
+
+
+
             ATN atn = parser.getATN();
 
+            System.out.println("GENERATE FOR: " + positionContext.node().getChild(positionContext.cursorIndex()));
+
             for (int ruleIndex : ATNTraverseHelper.findFollowingRulesByPositionContext(atn, positionContext)) {
-                atn.nextTokens(atn.states.get(atn.ruleToStartState[ruleIndex].stateNumber)).getIntervals().forEach(interval -> {
+                atn.nextTokens(atn.ruleToStartState[ruleIndex]).getIntervals().forEach(interval -> {
                     for (int i = interval.a; i <= interval.b; i++) {
                         // handle tokens
-                        if (i == AxiomQueryLexer.IDENTIFIER) {
+//                        if (i == AxiomQueryLexer.IDENTIFIER) {
+//                            FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
+//                                    .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
                             // handle rules for IDENTIFIER
-                            if (ruleIndex == AxiomQueryParser.RULE_filterName) {
-                                FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
-                                        .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
-                            } else if (ruleIndex == AxiomQueryParser.RULE_matchingRule) {
-                                // find path for matching rule
-                            } else if (ruleIndex == AxiomQueryParser.RULE_path || ruleIndex == AxiomQueryParser.RULE_filter) {
-                                // find path
-                            }
-                        } if (i == AxiomQueryLexer.NOT_KEYWORD) {
-                            suggestions.add(new Suggestion(Filter.Name.NOT.name(), Filter.Name.NOT.name(), -1));
-                        } else {
-                            // skip filter alias
-                            if (ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
-                                suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(i),
-                                        AxiomQueryLexer.VOCABULARY.getDisplayName(i), -1));
-                            }
-                        }
-                        // handle rules for other cases
-                        if (ruleIndex == AxiomQueryParser.RULE_negation) {
-                            FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
-                                    .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
-                        }
+//                            if (ruleIndex == AxiomQueryParser.RULE_filterName || ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
+//                                FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
+//                                        .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
+//                            } else if (ruleIndex == AxiomQueryParser.RULE_matchingRule) {
+//                                // find path for matching rule
+//                            } else if (ruleIndex == AxiomQueryParser.RULE_path || ruleIndex == AxiomQueryParser.RULE_filter) {
+//                                // find path
+//                            } else if (ruleIndex == AxiomQueryParser.RULE_subfilterOrValue) {
+//
+//                            }
+//                        } if (i == AxiomQueryLexer.NOT_KEYWORD) {
+//                            suggestions.add(new Suggestion(Filter.Name.NOT.name(), Filter.Name.NOT.name(), -1));
+//                        } else {
+//                            // skip filter alias
+//                            if (ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
+//                                suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(i),
+//                                        AxiomQueryLexer.VOCABULARY.getDisplayName(i), -1));
+//                            }
+//                        }
                     }
                 });
             }

@@ -6,6 +6,7 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.HashMap;
@@ -17,10 +18,12 @@ public class AxiomQuerySource {
     private final AxiomQueryParser.RootContext root;
     private final AxiomQueryParser parser;
     private final AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext;
+    private final IntervalSet recognitionsSet;
 
-    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext) {
+    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, IntervalSet recognitionsSet, AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext) {
         this.root = root;
         this.parser = parser;
+        this.recognitionsSet = recognitionsSet;
         this.errorTokenContext = errorTokenContext;
     }
 
@@ -33,7 +36,7 @@ public class AxiomQuerySource {
         parser.setErrorHandler(errorStrategy);
         // Get all tokens from the token stream
         tokenStream.fill();
-        return new AxiomQuerySource(parser.root(), parser, errorStrategy.getErrorTokenContext());
+        return new AxiomQuerySource(parser.root(), parser, errorStrategy.recognitionsSet, errorStrategy.getErrorTokenContext());
     }
 
     public AxiomQueryParser.RootContext root() {
@@ -46,5 +49,9 @@ public class AxiomQuerySource {
 
     public AxiomQueryErrorStrategy.ErrorTokenContext getErrorTokenContextMap() {
         return errorTokenContext;
+    }
+
+    public IntervalSet getRecognitionsSet() {
+        return recognitionsSet;
     }
 }

@@ -5,6 +5,8 @@ import java.util.*;
 
 import com.evolveum.midpoint.prism.foo.*;
 
+import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
+import com.evolveum.midpoint.prism.query.ContentAssist;
 import com.evolveum.midpoint.prism.query.Suggestion;
 
 import org.testng.annotations.BeforeSuite;
@@ -22,25 +24,35 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  */
 public class TestQueryCompletion extends AbstractPrismTest {
 
-    private AxiomQueryContentAssistImpl axiomQueryLangServiceImpl;
+    AxiomQueryContentAssist axiomQueryContentAssist;
     private SchemaRegistry schemaRegistry;
     private PrismObjectDefinition<UserType> userDef;
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
-        axiomQueryLangServiceImpl = new AxiomQueryContentAssistImpl(PrismContext.get());
+        axiomQueryContentAssist = new AxiomQueryContentAssistImpl(getPrismContext());
         schemaRegistry = getPrismContext().getSchemaRegistry();
         userDef = schemaRegistry.findObjectDefinitionByType(UserType.COMPLEX_TYPE);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testTesting() {
-        String query = "name equal and";
-        List<Suggestion> suggestions = axiomQueryLangServiceImpl.process(userDef, query, 3).autocomplete();
+        String query = "name equal and ";
+//        query = """
+//                . referencedBy ( \s
+//                   @type = A@ssignmentType\s
+//                   and @path = targetRef
+//                   and . ownedBy (
+//                      @atype = UserType
+//                      and @path = assignment
+//                      and archetypeRef/@/name = "System user"
+//                   )
+//                )
+//                """;
 
+        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 14).autocomplete();
         System.out.println("RESULT_TESTING: " );
         suggestions.forEach(s -> System.out.println(s));
     }
-
 }

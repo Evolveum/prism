@@ -38,7 +38,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         PrettyPrinter.addDefaultNamespacePrefix(DEFAULT_NAMESPACE_PREFIX);
         PrismTestUtil.resetPrismContext(new PrismInternalTestUtil());
         PrismObject<RoleType> roleProxy = getPrismContext().parseObject(new File(PrismInternalTestUtil.COMMON_DIR_XML, "role-proxy.xml"));
-        axiomQueryContentAssist = new AxiomQueryContentAssistImpl(PrismContext.get());
+        axiomQueryContentAssist = new AxiomQueryContentAssistImpl(getPrismContext());
         Item<?, ?> filterItem = roleProxy.findItem(ItemPath.create(new QName("authorization"), 1L, new QName("object"), 1L, new QName("filter")));
         PrismValue filterPrismValue = filterItem.getAnyValue();
         typeDefinition = filterPrismValue.getSchemaContext().getItemDefinition();
