@@ -17,14 +17,12 @@ public class AxiomQuerySource {
 
     private final AxiomQueryParser.RootContext root;
     private final AxiomQueryParser parser;
-    private final AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext;
-    private final IntervalSet recognitionsSet;
+    private final Map<ParserRuleContext, RecognitionsSet> recognitionsSet;
 
-    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, IntervalSet recognitionsSet, AxiomQueryErrorStrategy.ErrorTokenContext errorTokenContext) {
+    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, Map<ParserRuleContext, RecognitionsSet> recognitionsSet) {
         this.root = root;
         this.parser = parser;
         this.recognitionsSet = recognitionsSet;
-        this.errorTokenContext = errorTokenContext;
     }
 
     public static AxiomQuerySource from(String query) {
@@ -36,7 +34,7 @@ public class AxiomQuerySource {
         parser.setErrorHandler(errorStrategy);
         // Get all tokens from the token stream
         tokenStream.fill();
-        return new AxiomQuerySource(parser.root(), parser, errorStrategy.recognitionsSet, errorStrategy.getErrorTokenContext());
+        return new AxiomQuerySource(parser.root(), parser, errorStrategy.recognitionsSet);
     }
 
     public AxiomQueryParser.RootContext root() {
@@ -47,11 +45,7 @@ public class AxiomQuerySource {
         return parser;
     }
 
-    public AxiomQueryErrorStrategy.ErrorTokenContext getErrorTokenContextMap() {
-        return errorTokenContext;
-    }
-
-    public IntervalSet getRecognitionsSet() {
+    public Map<ParserRuleContext, RecognitionsSet> getRecognitionsSet() {
         return recognitionsSet;
     }
 }
