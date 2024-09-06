@@ -1,10 +1,9 @@
 package com.evolveum.axiom.lang.antlr;
 
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.misc.Interval;
 
 /**
  * Created by Dominik.
  */
-public record TokenContextPair(Token token, int ruleCtxIndex) {
+public record TokenContextPair(Interval token, int ruleCtxIndex) {
 }
