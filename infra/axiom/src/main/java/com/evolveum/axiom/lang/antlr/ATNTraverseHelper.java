@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.*;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -58,69 +59,51 @@ public class ATNTraverseHelper {
         return rules;
     }
 
-    /**
-     * Method find all possible following rules based on the input token.
-     * @param state
-     * @param token
-     * @return
-     */
-    public static List<Integer> findRuleContextByToken(ATNState state, Token token) {
+    public static List<TokenContextPair> findTokenContextByRecognizer(ATN atn, RecognitionsSet recognizer) {
+        List<TokenContextPair> listTokenContextPair = new ArrayList<>();
         Stack<ATNState> states = new Stack<>();
         Stack<ATNState> passedStates = new Stack<>();
-        List<Integer> rules = new ArrayList<>();
-        states.push(state);
+        ATNState nextState;
 
-        while (!states.isEmpty()) {
-            ATNState followState = states.pop();
-            passedStates.push(followState);
+        for (Interval interval : recognizer.recognizedTokens().getIntervals()) {
+            for (int i = interval.a; i <= interval.b; i++) {
 
-            // TODO if will using other transition is necessary take into account NoSetTransition | WildcardTransition | PredicateTransition !!!
-            for (Transition transition : followState.getTransitions()) {
-                if (transition instanceof EpsilonTransition epsilonTransition) {
-                    // check looping
-                    if (!passedStates.contains(epsilonTransition.target)) {
-                        states.push(epsilonTransition.target);
-                    }
-                } else if (transition instanceof RuleTransition ruleTransition) {
-                    // check looping
-                    if (!passedStates.contains(ruleTransition.target)) {
-                        states.push(ruleTransition.target);
-                    }
-                    rules.add(ruleTransition.ruleIndex);
-                } else if (transition instanceof AtomTransition || transition instanceof SetTransition) {
-                    if (transition.label().contains(token.getType())) {
-                        states.clear();
-                        break;
+                states.push(atn.states.get(recognizer.startState()));
+                while (!states.isEmpty()) {
+                    nextState = states.pop();
+                    passedStates.push(nextState);
+                    for (Transition transition : nextState.getTransitions()) {
+                        // check looping
+                        if (!passedStates.contains(transition.target)) {
+                            states.push(transition.target);
+                        }
+
+                        if (transition instanceof RuleTransition ruleTransition) {
+                            states.push(ruleTransition.target);
+                            states.push(ruleTransition.followState);
+                        } else if (transition instanceof AtomTransition atomTransition) {
+                            if (atomTransition.label == i) {
+                                listTokenContextPair.add(new TokenContextPair(
+                                    i, nextState.ruleIndex
+                                ));
+                                states.clear();
+                                passedStates.clear();
+                            }
+                        } else if (transition instanceof SetTransition setTransition) {
+                            if (setTransition.label().contains(i)) {
+                                listTokenContextPair.add(new TokenContextPair(
+                                    i, nextState.ruleIndex
+                                ));
+                                states.clear();
+                                passedStates.clear();
+                            }
+                        }
                     }
                 }
             }
         }
 
-        return rules;
-    }
-
-    public static List<TokenContextPair> findTokenContextByRecognizer(Parser recognizer) {
-        ATN atn = recognizer.getATN();
-        Stack<ATNState> states = new Stack<>();
-        Stack<ATNState> passedStates = new Stack<>();
-        ATNState nextState;
-
-        for (int tokenType : atn.getExpectedTokens(recognizer.getState(), recognizer.getContext()).toArray()) {
-
-//            System.out.println("TESTING: " + atn.states.get(recognizer.getState()).getTransitions());
-
-            states.push(atn.states.get(recognizer.getState()));
-//            while (!states.isEmpty()) {
-//                nextState = states.pop();
-//                passedStates.push(nextState);
-//                for (Transition transition : nextState.getTransitions()) {
-//                    states.push(transition.target);
-//                }
-//            }
-
-            System.out.println("STATE: " + recognizer.getState() + " Token: " + tokenType);
-        }
-        return null;
+        return listTokenContextPair;
     }
 
     private static void findFollowingRulesInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<Integer> rules) {
