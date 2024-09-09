@@ -9,7 +9,7 @@ LEFT_BRACE : '{';
 RIGHT_BRACE : '}';
 COLON : ':';
 PLUS : '+';
-COMMENT:   ( '//' ~[\r\n]* '\r'? '\n'
+LINE_COMMENT:   ( '//' ~[\r\n]* '\r'? '\n'
         | '/*' .*? '*/'
         ) -> channel(HIDDEN);
 SEP: [ \n\r\t]+;
