@@ -11,7 +11,7 @@ COLON : ':';
 PLUS : '+';
 COMMENT:   ( '//' ~[\r\n]* '\r'? '\n'
         | '/*' .*? '*/'
-        ) -> skip;
+        ) -> channel(HIDDEN);
 SEP: [ \n\r\t]+;
 
 AND_KEYWORD: 'and'|'AND';
