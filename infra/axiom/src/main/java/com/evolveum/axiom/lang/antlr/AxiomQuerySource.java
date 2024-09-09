@@ -8,6 +8,7 @@ import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +18,9 @@ public class AxiomQuerySource {
 
     private final AxiomQueryParser.RootContext root;
     private final AxiomQueryParser parser;
-    private final Map<ParserRuleContext, RecognitionsSet> recognitionsSet;
+    private final Map<ParseTree, RecognitionsSet> recognitionsSet;
 
-    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, Map<ParserRuleContext, RecognitionsSet> recognitionsSet) {
+    public AxiomQuerySource(AxiomQueryParser.RootContext root, AxiomQueryParser parser, Map<ParseTree, RecognitionsSet> recognitionsSet) {
         this.root = root;
         this.parser = parser;
         this.recognitionsSet = recognitionsSet;
@@ -45,7 +46,7 @@ public class AxiomQuerySource {
         return parser;
     }
 
-    public Map<ParserRuleContext, RecognitionsSet> getRecognitionsSet() {
+    public Map<ParseTree, RecognitionsSet> getRecognitionsSet() {
         return recognitionsSet;
     }
 }

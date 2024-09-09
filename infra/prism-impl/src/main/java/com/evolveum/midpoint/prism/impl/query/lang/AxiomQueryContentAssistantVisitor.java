@@ -37,10 +37,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private final int positionCursor;
     private PositionContext positionContext;
     private final AxiomQueryParser parser;
-    public Map<ParserRuleContext, RecognitionsSet> recognitionsSet;
+    public Map<ParseTree, RecognitionsSet> recognitionsSet;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
-            AxiomQueryParser parser, int positionCursor, Map<ParserRuleContext, RecognitionsSet> recognitionsSet) {
+            AxiomQueryParser parser, int positionCursor, Map<ParseTree, RecognitionsSet> recognitionsSet) {
         this.prismContext = prismContext;
         this.rootItemDefinition = rootItem;
         this.parser = parser;
@@ -240,8 +240,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public List<Suggestion> generateSuggestions() {
         List<Suggestion> suggestions = new ArrayList<>();
 
-        if (positionContext != null) {
-            toPairTokenWithContext(positionContext).forEach(token -> {
+//        if (positionContext != null) {
+//            toPairTokenWithContext(positionContext).forEach(token -> {
                 //            for (int i = interval.a; i <= interval.b; i++) {
 //                // handle tokens
 //                if (i == AxiomQueryLexer.IDENTIFIER) {
@@ -268,8 +268,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 //                    }
 //                }
 //            }
-            });
-        }
+//            });
+//        }
 
         return suggestions;
     }
@@ -282,16 +282,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private List<TokenContextPair> toPairTokenWithContext(PositionContext positionContext) {
         List<TokenContextPair> pairs = new ArrayList<>();
         ATN atn = parser.getATN();
+        RecognitionsSet recognitionSet = recognitionsSet.get(positionContext.node().getChild(positionContext.cursorIndex()));
 
-        if (recognitionsSet.get(positionContext.node().getChild(positionContext.cursorIndex())) != null) {
-            // find rule context for tokens from recognitionsSet.get(positionContext.node().getChild(positionContext.cursorIndex()))
-            return null;
-        } else {
-            for (int ruleIndex : ATNTraverseHelper.findFollowingRulesByPositionContext(atn, positionContext)) {
-                atn.nextTokens(atn.ruleToStartState[ruleIndex]).getIntervals().forEach(interval -> {
-                    pairs.add(new TokenContextPair(interval, ruleIndex));
-                });
-            }
+        if (recognitionSet != null) {
+            pairs = ATNTraverseHelper.findTokenContextByRecognizer(atn, recognitionSet);
         }
 
         return pairs;

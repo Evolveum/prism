@@ -1,6 +1,11 @@
 package com.evolveum.axiom.lang.antlr;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
+
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.Interval;
+import org.antlr.v4.runtime.tree.ParseTree;
+
 import java.util.*;
 
 /**
@@ -8,7 +13,7 @@ import java.util.*;
  */
 public class AxiomQueryErrorStrategy extends DefaultErrorStrategy {
 
-    public Map<ParserRuleContext, RecognitionsSet> recognitionsSet = new HashMap<>();
+    public Map<ParseTree, RecognitionsSet> recognitionsSet = new HashMap<>();
 
     @Override
     public void recover(Parser recognizer, RecognitionException e) {
