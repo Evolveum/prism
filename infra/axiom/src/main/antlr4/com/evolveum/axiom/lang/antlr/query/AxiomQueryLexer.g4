@@ -9,9 +9,7 @@ LEFT_BRACE : '{';
 RIGHT_BRACE : '}';
 COLON : ':';
 PLUS : '+';
-LINE_COMMENT:   ( '//' ~[\r\n]* '\r'? '\n'
-        | '/*' .*? '*/'
-        ) -> channel(HIDDEN);
+COMMENT: ( '//' ~[\r\n]* | '/*' .*? '*/') -> skip;
 SEP: [ \n\r\t]+;
 
 AND_KEYWORD: 'and'|'AND';
