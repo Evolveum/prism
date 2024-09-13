@@ -1,9 +1,9 @@
 package com.evolveum.axiom.lang.antlr;
 
-import org.antlr.v4.runtime.misc.Interval;
+import java.util.Stack;
 
 /**
  * Created by Dominik.
  */
-public record TokenContextPair(int token, int ruleCtxIndex) {
+public record TokenContextPair(int token, Stack<Integer> ruleCtxIndex) {
 }
