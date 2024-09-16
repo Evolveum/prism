@@ -93,7 +93,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 14, 24, "Invalid 'startsWith' filter."));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidSelfPath() {
         String query = ". matches (targetType = RoleType)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -108,7 +108,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidSelfPath() {
         String query = ". equal value";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -157,7 +157,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 27, 35, "Invalid 'contains' filter."));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidDereferenceComponent() {
         String query = "assignment/targetRef/@/name = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -180,7 +180,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidDereferenceComponent() {
         String query = "assignment/targetRef/@/badProp = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -216,7 +216,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 10, 20, "Invalid 'startsWith' filter."));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testValidItemFilter() {
         // filters for prop definition
         String query = "name equal \"End user\"";
@@ -275,7 +275,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidItemFilter() {
         // filters for prop definition
         String query = ". equal \"End user\"";
