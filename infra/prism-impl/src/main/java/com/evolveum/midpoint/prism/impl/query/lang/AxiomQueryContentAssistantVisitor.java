@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
  * Created by Dominik.
  */
 public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisitor<Object> {
+    private final AxiomQueryParser parser;
     public final List<AxiomQueryError> errorList = new ArrayList<>();
 
     private final PrismContext prismContext;
@@ -37,16 +38,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     private final int positionCursor;
     private PositionContext positionContext;
-    private final AxiomQueryParser parser;
-    public Map<ParseTree, RecognitionsSet> recognitionsSet;
+    private final Definition positionCtxDefinition = null;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
-            AxiomQueryParser parser, int positionCursor, Map<ParseTree, RecognitionsSet> recognitionsSet) {
+            AxiomQueryParser parser, int positionCursor) {
         this.prismContext = prismContext;
         this.rootItemDefinition = rootItem;
         this.parser = parser;
         this.positionCursor = positionCursor;
-        this.recognitionsSet = recognitionsSet;
     }
 
     @Override
@@ -237,75 +236,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Generate auto completions suggestion for AxiomQuery language by context.
-     * @return List {@link Suggestion}
-     */
-    public List<Suggestion> generateSuggestions() {
-        List<Suggestion> suggestions = new ArrayList<>();
-        Definition definition = null;
-//        RecognitionsSet recognitionSet = recognitionsSet.get(positionContext.node().getChild(positionContext.cursorIndex() + 1));
-
-        if (positionContext != null) {
-//            ATN atn = parser.getATN();
-
-//            for (int ruleIndex : findFollowingRulesByPositionContext(atn, positionContext)) {
-//                atn.nextTokens(atn.ruleToStartState[ruleIndex]).getIntervals().forEach(interval -> {
-//                    for (int i = interval.a; i <= interval.b; i++) {
-//                        // handle tokens
-//                        if (i == AxiomQueryLexer.IDENTIFIER) {
-//                            FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
-//                                    .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
-//                            // handle rules for IDENTIFIER
-//                            if (ruleIndex == AxiomQueryParser.RULE_filterName || ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
-//                                FilterProvider.findFilterByItemDefinition(definition, ruleIndex)
-//                                        .forEach((name, alias) -> suggestions.add(new Suggestion(name, alias, -1)));
-//                            } else if (ruleIndex == AxiomQueryParser.RULE_matchingRule) {
-//                                // find path for matching rule
-//                            } else if (ruleIndex == AxiomQueryParser.RULE_path || ruleIndex == AxiomQueryParser.RULE_filter) {
-//                                // find path
-//                            } else if (ruleIndex == AxiomQueryParser.RULE_subfilterOrValue) {
-//
-//                            }
-//                        } if (i == AxiomQueryLexer.NOT_KEYWORD) {
-//                            suggestions.add(new Suggestion(Filter.Name.NOT.name(), Filter.Name.NOT.name(), -1));
-//                        } else {
-//                            // skip filter alias
-//                            if (ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
-//                                suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(i),
-//                                        AxiomQueryLexer.VOCABULARY.getDisplayName(i), -1));
-//                            }
-//                        }
-//                    }
-//                });
-//            }
-        }
-
-        return suggestions;
-    }
-
-    /**
-     * Method to pair token with rule context index or rule context with token.
-     * @param positionContext
-     * @return token rule context index pair
-     */
-    private List<TokenContextPair> toPairTokenWithContext(PositionContext positionContext) {
-        List<TokenContextPair> pairs = new ArrayList<>();
-        ATN atn = parser.getATN();
-        RecognitionsSet recognitionSet = recognitionsSet.get(positionContext.node().getChild(positionContext.cursorIndex() + 1));
-
-//        if (recognitionSet != null) {
-//        } else {
-//            for (int ruleIndex : findFollowingRulesByPositionContext(atn, positionContext)) {
-//                atn.nextTokens(atn.ruleToStartState[ruleIndex]).getIntervals().forEach(interval -> {
-//                    pairs.add(new TokenContextPair(interval, ruleIndex));
-//                });
-//            }
-//        }
-
-        return pairs;
-    }
-
-    /**
      * Find definition of schema context.
      * @param parentDefinition
      * @param name
@@ -427,13 +357,47 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
+     * Generate auto completions suggestion for AxiomQuery language by context.
+     * @return List {@link Suggestion}
+     */
+    public List<Suggestion> generateSuggestions() {
+        List<Suggestion> suggestions = new ArrayList<>();
+        Definition definition = null;
+
+        if (positionContext != null) {
+            ATN atn = parser.getATN();
+            // foreach expected tokens by positionContext
+            for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
+                if (token.index() == AxiomQueryLexer.IDENTIFIER) {
+                    if (token.rules().contains(AxiomQueryParser.RULE_filterName)) {
+                        suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_path)) {
+//                        suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_matchingRule)) {
+//                        suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_subfilterOrValue)) {
+//                        suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                    }
+                } else if (token.index() == AxiomQueryLexer.NOT_KEYWORD) {
+                    suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                } else {
+                    suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()),
+                            AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()), -1));
+                }
+            }
+        }
+
+        return suggestions;
+    }
+
+    /**
      * Method find all possible following rules based on the cursor position.
      * @param atn rule network
      * @param positionCtx position node
      * @return expected list of pair token with rule ctx
      */
-    public static List<TokenContextPair> findFollowingRulesByPositionContext(ATN atn, PositionContext positionCtx) {
-        List<TokenContextPair> expected = new ArrayList<>();
+    private List<TokenWithCtx> getExpectedTokenCtxByPositionCtx(ATN atn, PositionContext positionCtx) {
+        List<TokenWithCtx> expected = new ArrayList<>();
         ParseTree node = positionCtx.node().getChild(positionCtx.cursorIndex());
 
         if (node instanceof TerminalNode terminalNode) {
@@ -449,26 +413,17 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
 
         if (node instanceof RuleContext ruleContext) {
-//            ParseTree currentNode = ruleContext.getChild(ruleContext.getChildCount() - 1);
-//            ParseTree currentNode = ruleContext;
-
-            RuleContext a = (RuleContext) ruleContext.getChild(ruleContext.getChildCount()-1);
-            findFollowingRulesInATN(atn, a, getTerminalNode(positionCtx.node().getChild(positionCtx.cursorIndex())), expected);
-
-//            while (currentNode.getChildCount() > 0) {
-//                if (currentNode instanceof RuleContext currentRuleContext) {
-//                    findFollowingRulesInATN(atn, currentRuleContext, getTerminalNode(positionCtx.node().getChild(positionCtx.cursorIndex())), expected);
-//                }
-//                currentNode = currentNode.getChild(currentNode.getChildCount() - 1);
-//            }
+            RuleContext a = (RuleContext) ruleContext.getChild(ruleContext.getChildCount() - 1);
+            findTokensWithRuleCtxInATN(atn, a, getTerminalNode(positionCtx.node().getChild(positionCtx.cursorIndex())), expected);
         }
 
         return expected;
     }
 
-    private static void findFollowingRulesInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<TokenContextPair> expected) {
+    private void findTokensWithRuleCtxInATN(ATN atn, RuleContext ruleContext, TerminalNode nextTerminalNode, List<TokenWithCtx> expected) {
         Stack<ATNState> states = new Stack<>();
         Stack<ATNState> passedStates = new Stack<>();
+        Stack<Integer> rules = new Stack<>();
         ATNState nextState;
         int invokingState;
 
@@ -479,14 +434,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
 
         states.push(atn.states.get(invokingState));
-        Stack<Integer> myStack = new Stack<>();
-
 
         while (!states.isEmpty()) {
             nextState = states.pop();
             passedStates.push(nextState);
 
-            myStack.push(nextState.ruleIndex);
+            if (!rules.contains(nextState.ruleIndex)) {
+                rules.push(nextState.ruleIndex);
+            }
 
             for (Transition transition : nextState.getTransitions()) {
                 if (transition instanceof AtomTransition atomTransition) {
@@ -494,15 +449,17 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         states.push(atomTransition.target);
                     } else {
                         if (atomTransition.label != -1) {
-                            expected.add(new TokenContextPair(atomTransition.label, myStack));
+                            if (atomTransition.label == AxiomQueryLexer.IDENTIFIER) {
+                                expected.add(new TokenWithCtx(atomTransition.label, rules));
+                            } else {
+                                expected.add(new TokenWithCtx(atomTransition.label, null));
+                            }
                         }
                     }
                 } else if (transition instanceof SetTransition setTransition) {
-                    int finalRuleIndex = nextState.ruleIndex;
                     setTransition.set.getIntervals().forEach(interval -> {
                         for (int i = interval.a; i <= interval.b; i++) {
-                            expected.add(new TokenContextPair(i, myStack));
-//                            expected.add(new TokenContextPair(i, finalRuleIndex));
+                            expected.add(new TokenWithCtx(i, null));
                         }
                     });
                 } else {
@@ -519,8 +476,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
     }
 
-
-    private static TerminalNode getTerminalNode(ParseTree parseTree) {
+    private TerminalNode getTerminalNode(ParseTree parseTree) {
         if (parseTree instanceof TerminalNode terminalNode) {
             return terminalNode;
         }
