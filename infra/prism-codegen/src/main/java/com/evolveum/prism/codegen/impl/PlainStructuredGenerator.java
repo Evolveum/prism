@@ -184,7 +184,7 @@ public class PlainStructuredGenerator extends StructuredGenerator<PlainStructure
         for (ItemBinding item : toCompare) {
             String field = item.fieldName();
             // Check strategy for field pair, if not equals return false
-            b._if(strategy.invoke("equals").arg(JExpr.ref(field)).arg(casted.ref(field)).not())
+            b._if(strategy.invoke("equals").arg(JExpr._this().ref(field)).arg(casted.ref(field)).not())
                 ._then()._return(FALSE);
         }
 
