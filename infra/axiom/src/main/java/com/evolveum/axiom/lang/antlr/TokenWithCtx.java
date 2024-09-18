@@ -10,4 +10,14 @@ import java.util.Stack;
  *  Rules is stack of related rules with token.
  */
 public record TokenWithCtx(int index, Stack<Integer> rules) {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof TokenWithCtx token)) {
+            return false;
+        }
+        return token.index == this.index && token.rules.equals(this.rules);
+    }
 }
