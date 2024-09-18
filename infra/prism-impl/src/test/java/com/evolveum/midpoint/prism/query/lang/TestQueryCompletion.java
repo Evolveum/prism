@@ -36,9 +36,15 @@ public class TestQueryCompletion extends AbstractPrismTest {
         userDef = schemaRegistry.findObjectDefinitionByType(UserType.COMPLEX_TYPE);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testTesting() {
-        String query = "name equal and ";
+        String query = "name ";
+
+//        query = "name equal and ";
+//        query = "name ";
+//        query = "name equal";
+//        query = "name equal ";
+//        query = "name equal value";
 //        query = """
 //                . referencedBy ( \s
 //                   @type = A@ssignmentType\s
@@ -51,8 +57,8 @@ public class TestQueryCompletion extends AbstractPrismTest {
 //                )
 //                """;
 
-        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 14).autocomplete();
-        System.out.println("RESULT_TESTING: " );
+        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 4).autocomplete();
+        System.out.println("RESULT_TESTING: ");
         suggestions.forEach(s -> System.out.println(s));
     }
 }
