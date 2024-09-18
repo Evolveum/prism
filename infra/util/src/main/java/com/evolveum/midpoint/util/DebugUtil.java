@@ -829,4 +829,20 @@ public class DebugUtil {
     public static @NotNull Object toStringCollectionLazy(Collection<?> values, int indent) {
         return lazy(() -> toStringCollection(values, indent));
     }
+
+    /** Facilitates implementing common-case debugDump() method. Very primitive implementation for now. */
+    public static String standardDebugDump(Object object, int indent, Object... params) {
+        var sb = createTitleStringBuilder(object.getClass(), indent);
+        for (int i = 0; i < params.length; i += 2) {
+            Object label = params[i];
+            Object value = params[i + 1];
+            sb.append("\n");
+            if (value instanceof DebugDumpable dumpable) {
+                debugDumpWithLabel(sb, String.valueOf(label), dumpable, indent + 1);
+            } else {
+                debugDumpWithLabel(sb, String.valueOf(label), String.valueOf(value), indent + 1);
+            }
+        }
+        return sb.toString();
+    }
 }
