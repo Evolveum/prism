@@ -449,12 +449,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     if (nextTerminalNode.getSymbol().getType() == atomTransition.label) {
                         states.push(atomTransition.target);
                     } else {
-                        if (atomTransition.label != -1) {
-                            if (atomTransition.label == AxiomQueryLexer.IDENTIFIER) {
-                                expected.add(new TokenWithCtx(atomTransition.label, rules));
-                            } else {
-                                expected.add(new TokenWithCtx(atomTransition.label, null));
-                            }
+                        TokenWithCtx token = new TokenWithCtx(atomTransition.label, rules);
+                        if (atomTransition.label != -1 && !(expected.contains(token))) {
+                            expected.add(token);
                         }
                     }
                 } else if (transition instanceof SetTransition setTransition) {
@@ -464,47 +461,18 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         }
                     });
                 } else if (transition instanceof RuleTransition ruleTransition) {
-                    if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filter) {
+                    if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filter || ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemFilter) {
                         states.push(ruleTransition.target);
-                    } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemFilter) {
-                        states.push(ruleTransition.target);
-                    }
-
-                    if (ruleContext instanceof AxiomQueryParser.RootContext) {
-                        if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_parent ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_axiomPath ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemPathComponent ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemName) {
-                            states.push(ruleTransition.target);
-                            states.push(ruleTransition.followState);
+                    } else {
+                        if (ruleContext instanceof AxiomQueryParser.RootContext) {
+                            manageTransitionBySemantic(AxiomQueryParser.RULE_path, ruleTransition, states);
+                        } else if (ruleContext instanceof AxiomQueryParser.FilterContext filterContext) {
+                            manageTransitionBySemantic(findMissingConcept(filterContext), ruleTransition, states);
+                        } else if (ruleContext instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
+                            manageTransitionBySemantic(findMissingConcept(itemFilterContext), ruleTransition, states);
+                        } else if (ruleContext instanceof AxiomQueryParser.SubfilterSpecContext) {
+                            // todo ...
                         }
-                    } else if (ruleContext instanceof AxiomQueryParser.FilterContext) {
-                        if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemFilter) {
-                            states.push(ruleTransition.target);
-                        }
-                    } else if (ruleContext instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-                        int missingRuleIndex = findMissingConcept(itemFilterContext);
-                        if (missingRuleIndex == AxiomQueryParser.RULE_path) {
-                            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path ||
-                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_parent ||
-                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_axiomPath ||
-                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemPathComponent ||
-                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ||
-                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemName) {
-                                states.push(ruleTransition.target);
-                                states.push(ruleTransition.followState);
-                            }
-                        } else if (missingRuleIndex == AxiomQueryParser.RULE_filterName) {
-                            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterName ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias ||
-                                ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ) {
-                                states.push(ruleTransition.target);
-                            }
-                        }
-                    } else if (ruleContext instanceof AxiomQueryParser.SubfilterSpecContext) {
-                        // todo ...
                     }
                 } else {
                     // check looping
@@ -535,7 +503,22 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Method find missing concept of itemFilter rule context which has structure -> (path | filterName or filterAlias | subFilterOrValue)
+     * Method find missing concept of filter context.
+     * @param filterContext
+     * @return index of missing rule
+     */
+    private int findMissingConcept(AxiomQueryParser.FilterContext filterContext) {
+        ParseTree ruleContext = filterContext;
+
+        while (!(ruleContext instanceof AxiomQueryParser.ItemFilterContext itemFilterContext)) {
+            ruleContext = ruleContext.getChild(0);
+        }
+
+        return findMissingConcept(itemFilterContext);
+    }
+
+    /**
+     * Method find missing concept of itemFilter rule context which has structure -> (path | filterName or filterAlias | subFilterOrValue).
      * @param itemFilterContext
      * @return index of missing rule
      */
@@ -550,5 +533,40 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
 
         return -1;
+    }
+
+    /**
+     * Method manage transition in ATN network between rule transition.
+     * @param index
+     * @param ruleTransition
+     * @param states
+     */
+    private void manageTransitionBySemantic(int index, RuleTransition ruleTransition, Stack<ATNState> states) {
+        if (index == AxiomQueryParser.RULE_path) {
+            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_parent ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_axiomPath ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemPathComponent ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemName) {
+                states.push(ruleTransition.target);
+            }
+        } else if (index == AxiomQueryParser.RULE_filterName) {
+            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
+                states.push(ruleTransition.followState);
+            } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
+                states.push(ruleTransition.target);
+            } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterName ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ) {
+                states.push(ruleTransition.target);
+            }
+        } else if (index == AxiomQueryParser.RULE_subfilterOrValue) {
+            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterName || ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
+                states.push(ruleTransition.followState);
+            } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
+                states.push(ruleTransition.followState);
+            }
+            // TODO generate suggestion for value
+        }
     }
 }
