@@ -8,9 +8,9 @@
 package com.evolveum.midpoint.prism;
 
 import java.util.Collection;
-import java.util.List;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.DisplayableValue;
 
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +20,8 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 /**
  * Definition of a prism property.
@@ -56,9 +58,15 @@ public interface PrismPropertyDefinition<T>
     @Override
     PrismPropertyDefinitionMutator<T> mutator();
 
-    /** TEMPORARY! Used only for normalization-aware resource attribute storage. FIXME as part of MID-2119. */
-    default @NotNull List<T> adoptRealValues(@NotNull Collection<?> realValues) throws SchemaException {
-        throw new UnsupportedOperationException(); // FIXME
+    /**
+     * Converts {@link String} value to {@link PolyString}. Regular properties use simple {@link PolyString#fromOrig(String)},
+     * but custom normalization-aware properties (midPoint shadow attributes) can use custom strategies here.
+     */
+    default @NotNull T convertStringValueToPolyString(@NotNull String stringValue) throws SchemaException {
+        var type = getTypeClass();
+        stateCheck(PolyString.class.equals(type), "Unexpected type: %s, should be PolyString", type);
+        //noinspection unchecked
+        return (T) PolyString.fromOrig(stringValue);
     }
 
     interface PrismPropertyDefinitionMutator<T>

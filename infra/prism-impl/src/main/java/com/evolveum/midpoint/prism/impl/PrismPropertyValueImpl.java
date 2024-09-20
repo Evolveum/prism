@@ -193,9 +193,9 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                     type = Primitives.wrap(type);
                 }
                 // TEMPORARY HACKS FIXME as part of MID-2119
-                if (PolyString.class.equals(type) && value instanceof String) {
+                if (PolyString.class.equals(type) && value instanceof String stringValue) {
                     //noinspection unchecked
-                    value = (T) propertyDefinition.adoptRealValues(List.of(value)).get(0);
+                    value = (T) propertyDefinition.convertStringValueToPolyString(stringValue);
                 } else if (String.class.equals(type) && value instanceof PolyString polyString) {
                     //noinspection unchecked
                     value = (T) polyString.getOrig();
