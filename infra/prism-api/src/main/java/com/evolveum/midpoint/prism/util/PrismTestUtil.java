@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.evolveum.midpoint.prism.query.*;
+
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
@@ -20,10 +23,6 @@ import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.prism.query.LogicalFilter;
-import com.evolveum.midpoint.prism.query.NaryLogicalFilter;
-import com.evolveum.midpoint.prism.query.ObjectFilter;
-import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -277,5 +276,16 @@ public class PrismTestUtil {
 
     public static ParsingContext createDefaultParsingContext() {
         return getPrismContext().getDefaultParsingContext();
+    }
+
+    public static String serializeFilter(@NotNull ObjectFilter filter) {
+        var prismContext = getPrismContext();
+        try {
+            return prismContext.querySerializer()
+                    .serialize(filter, prismContext.getSchemaRegistry().staticNamespaceContext())
+                    .filterText();
+        } catch (PrismQuerySerialization.NotSupportedException e) {
+            throw new AssertionError("filter not serializable: " + e.getMessage(), e);
+        }
     }
 }
