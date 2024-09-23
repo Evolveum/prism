@@ -9,12 +9,16 @@ package com.evolveum.midpoint.prism.impl.query;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
 import com.google.common.collect.ImmutableList;
 
 import com.evolveum.midpoint.prism.query.LogicalFilter;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.Visitor;
 import com.evolveum.midpoint.util.DebugUtil;
+
+import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 public abstract class LogicalFilterImpl extends ObjectFilterImpl implements LogicalFilter {
 
@@ -122,19 +126,25 @@ public abstract class LogicalFilterImpl extends ObjectFilterImpl implements Logi
             return false;
         }
         LogicalFilterImpl other = (LogicalFilterImpl) obj;
-        if (conditions != null) {
-            if (conditions.size() != other.conditions.size()) {
-                return false;
-            }
-            for (int i = 0; i < conditions.size(); i++) {
-                ObjectFilter of1 = this.conditions.get(i);
-                ObjectFilter of2 = other.conditions.get(i);
-                if (!of1.equals(of2, exact)) {
+        var thisConditions = emptyIfNull(conditions);
+        var otherConditions = emptyIfNull(other.conditions);
+        if (thisConditions.size() != otherConditions.size()) {
+            return false;
+        }
+        if (exact) {
+            for (int i = 0; i < thisConditions.size(); i++) {
+                ObjectFilter of1 = thisConditions.get(i);
+                ObjectFilter of2 = otherConditions.get(i);
+                if (!of1.equals(of2, true)) {
                     return false;
                 }
             }
+            return true;
+        } else {
+            return MiscUtil.unorderedCollectionEquals(
+                    thisConditions, otherConditions,
+                    (of1, of2) -> of1.equals(of2, false));
         }
-        return true;
     }
 
     @Override
