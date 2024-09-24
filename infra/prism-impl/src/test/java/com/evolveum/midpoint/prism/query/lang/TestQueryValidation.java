@@ -93,7 +93,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 14, 24, "Invalid 'startsWith' filter."));
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testValidSelfPath() {
         String query = ". matches (targetType = RoleType)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -108,7 +108,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testInvalidSelfPath() {
         String query = ". equal value";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -119,7 +119,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 2, 3, "Invalid '=' filter alias for self path."));
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testValidParentPath() {
         // TODO test for parent path
     }
@@ -157,7 +157,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 27, 35, "Invalid 'contains' filter."));
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testValidDereferenceComponent() {
         String query = "assignment/targetRef/@/name = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -180,7 +180,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testInvalidDereferenceComponent() {
         String query = "assignment/targetRef/@/badProp = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
@@ -216,7 +216,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertThat(errorList).contains(new AxiomQueryError(1, 1, 10, 20, "Invalid 'startsWith' filter."));
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testValidItemFilter() {
         // filters for prop definition
         String query = "name equal \"End user\"";
@@ -275,7 +275,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testInvalidItemFilter() {
         // filters for prop definition
         String query = ". equal \"End user\"";
@@ -379,7 +379,7 @@ public class TestQueryValidation extends AbstractPrismTest {
 //        ));
     }
 
-    // FIXME problem to find archetypeRef in UserType definition
+    // FIXME problem to find archetypeRef in UserType definition, edit foo schema
     @Test(enabled = false)
     public void testValidInfraFilter() {
         // @path & @type & @relation
@@ -412,7 +412,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         assertTrue(errorList.isEmpty());
     }
 
-    @Test(enabled = false)
+    @Test()
     public void testInvalidInfraFilter() {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = BadAbstractRoleType and @path = inducement)";
@@ -456,7 +456,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     }
 
     // FIXME solve order andFilters
-    @Test(enabled = false)
+    @Test()
     public void testValidSubFilterSpec() {
         ItemDefinition<?> localTypeDefinition = PrismContext.get().getSchemaRegistry().findItemDefinitionByType(new QName("FocusType"));
         String query = """

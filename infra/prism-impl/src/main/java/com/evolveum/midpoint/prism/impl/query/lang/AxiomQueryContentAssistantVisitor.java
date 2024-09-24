@@ -32,11 +32,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private final AxiomQueryParser parser;
     private final PrismContext prismContext;
     private final ItemDefinition<?> rootItemDefinition;
-    private final HashMap<ParserRuleContext, Definition> itemDefinitions = new HashMap<>();
     private Definition infraPathDefinition;
+    private final HashMap<ParserRuleContext, Definition> itemDefinitions = new HashMap<>();
+    public final List<AxiomQueryError> errorList = new ArrayList<>();
     private final int positionCursor;
     private PositionContext positionContext;
-    public final List<AxiomQueryError> errorList = new ArrayList<>();
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
             AxiomQueryParser parser, int positionCursor) {
@@ -139,22 +139,21 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 // TODO relation semantic control
             } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
                 // TODO oid semantic control
+            } else if (itemFilterContext.getChild(2) != null && Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText())) {
+                PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+                List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
+
+                objectSubTypes.stream().map(item -> {
+                    if (item.getTypeName().getLocalPart().equals(ctx.getText())) return item;
+                    else {
+                        var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(ctx.getText())).findFirst();
+                        if (subItem.isPresent()) return subItem.get();
+                    }
+
+                    return null;
+                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
+                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
             }
-//            else if (Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText())) {
-//                PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
-//                List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
-//
-//                objectSubTypes.stream().map(item -> {
-//                    if (item.getTypeName().getLocalPart().equals(ctx.getText())) return item;
-//                    else {
-//                        var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(ctx.getText())).findFirst();
-//                        if (subItem.isPresent()) return subItem.get();
-//                    }
-//
-//                    return null;
-//                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
-//                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
-//            }
             else {
                 itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
