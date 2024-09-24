@@ -113,7 +113,7 @@ public class FilterSerializers {
                 target.writeMatchingRule(new QName(source.getScope().name()));
             }
             PrismReferenceValue orgRef = source.getOrgRef();
-            target.writeRawValue(orgRef.getOid());
+            target.writeRawValue(orgRef.getOid(),true);
         }
     }
 
@@ -212,7 +212,7 @@ public class FilterSerializers {
     static void typeFilter(TypeFilterImpl source, QueryWriter target) throws NotSupportedException {
         target.writeSelf();
         target.writeFilterName(TYPE);
-        target.writeRawValue(source.getType());
+        target.writeRawValue(source.getType(), false);
         var nested = source.getFilter();
         if(nested != null) {
             target.writeFilterName(AND);
@@ -369,8 +369,8 @@ public class FilterSerializers {
         target.startNestedFilter();
         for (PrismReferenceValue value : source.getValues()) {
             var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
-            notFirst = writeProperty(target, "type", value.getTargetType(), source.isTargetTypeNullAsAny(),
-                    notFirst);
+            notFirst = writeProperty(target, "targetType", value.getTargetType(), source.isTargetTypeNullAsAny(),
+                    notFirst, false);
             notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst);
             if (source.getFilter() != null) {
                 if (notFirst) {
@@ -402,6 +402,11 @@ public class FilterSerializers {
 
     private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
             boolean emitAnd) {
+        return writeProperty(target, path, value, skipNull, emitAnd, true);
+    }
+
+    private static boolean writeProperty(QueryWriter target, String path, Object value, boolean skipNull,
+            boolean emitAnd, boolean escapeQName) {
         if (skipNull && value == null) {
             return emitAnd;
         }
@@ -410,7 +415,7 @@ public class FilterSerializers {
         }
         target.writePath(path);
         target.writeFilterName(EQUAL);
-        target.writeRawValue(value);
+        target.writeRawValue(value, escapeQName);
         return true;
     }
 

@@ -120,14 +120,14 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
         target.emit(")");
     }
 
-    public void writeRawValue(Object rawValue) {
+    public void writeRawValue(Object rawValue, boolean escapeQName) {
         target.emitSpace();
         if (rawValue instanceof ItemPath) {
             writePath((ItemPath) rawValue);
             return;
         }
         if (rawValue instanceof QName) {
-            writeQName((QName) rawValue);
+            writeQName((QName) rawValue, escapeQName);
             return;
         }
         if (rawValue instanceof TypeSafeEnum enumValue) {
@@ -144,7 +144,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
     }
 
     public void writeRawValues(Collection<?> oids) {
-        writeList(oids, this::writeRawValue);
+        writeList(oids, v -> writeRawValue(v, true));
     }
 
     @Override
@@ -202,7 +202,7 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
         Object rawValue = prismPropertyValue.getValue();
         //QName typeName = prismPropertyValue.getTypeName();
 
-        writeRawValue(rawValue);
+        writeRawValue(rawValue, true);
     }
 
     public void writeExpression(ExpressionWrapper wrapper) throws NotSupportedException {
@@ -221,8 +221,14 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
         target.emit(AxiomStrings.toSingleQuoted(rawValue.toString()));
     }
 
-    private void writeQName(QName rawValue) {
+    private void writeQName(QName rawValue, boolean escapeQName) {
+        if (escapeQName) {
+            target.emit("'");
+        }
         emitQName(rawValue, null);
+        if (escapeQName) {
+            target.emit("'");
+        }
     }
 
     @Override
