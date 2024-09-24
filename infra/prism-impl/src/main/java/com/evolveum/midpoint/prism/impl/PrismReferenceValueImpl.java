@@ -32,6 +32,7 @@ import javax.xml.namespace.QName;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,6 +45,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     private static final QName F_OID = new QName(PrismConstants.NS_TYPES, "oid");
     private static final QName F_TYPE = new QName(PrismConstants.NS_TYPES, "type");
     private static final QName F_RELATION = new QName(PrismConstants.NS_TYPES, "relation");
+    private static final String NAME_LOCAL_PART = "name";
     private String oid;
     private PrismObject<?> object = null;
     private QName targetType = null;
@@ -813,5 +815,30 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
         }
 
         return super.getSchemaContext();
+    }
+
+    @Override
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
+        if (path.startsWithObjectReference() && getObject() != null) {
+            var rest = path.rest();
+            if (rest.isEmpty()) {
+                return Collections.singletonList(getObject().getValue());
+            }
+            return getObject().getAllValues(rest);
+        }
+        if (path.startsWithObjectReference() && getObject() == null) {
+            var rest = path.rest();
+            if (rest.isSingleName() && NAME_LOCAL_PART.equals(rest.asSingleName().getLocalPart())) {
+                if (targetName != null) {
+                    return Collections.singletonList(PrismContext.get().itemFactory().createPropertyValue(targetName));
+                } else {
+                    return Collections.emptyList();
+                }
+            }
+        }
+        return super.getAllValues(path);
+
+
+
     }
 }

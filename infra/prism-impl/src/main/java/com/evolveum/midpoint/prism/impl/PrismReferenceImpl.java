@@ -23,6 +23,7 @@ import javax.xml.namespace.QName;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -288,6 +289,25 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public @NotNull Collection<PrismValue> getAllValues(ItemPath path) {
+        if (path.isEmpty()) {
+            return Collections.unmodifiableCollection(values);
+        }
+        if (values.isEmpty()) {
+            return List.of();
+        } else if (values.size() == 1) {
+            return values.get(0).getAllValues(path);
+        } else {
+            List<PrismValue> rv = new ArrayList<>();
+            for (PrismReferenceValue prismValue : values) {
+                rv.addAll(
+                        prismValue.getAllValues(path));
+            }
+            return rv;
+        }
     }
 
     /**
