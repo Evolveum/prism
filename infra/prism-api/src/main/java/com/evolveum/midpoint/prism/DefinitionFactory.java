@@ -21,6 +21,11 @@ public interface DefinitionFactory {
 
     ComplexTypeDefinition newComplexTypeDefinition(QName name);
 
+    @Deprecated // used e.g. by Grouper-related code
+    default <T> PrismPropertyDefinition<T> createPropertyDefinition(QName name, QName typeName) {
+        return newPropertyDefinition(name, typeName);
+    }
+
     <T> PrismPropertyDefinition<T> newPropertyDefinition(QName name, QName typeName);
 
     default <T> PrismPropertyDefinition<T> newPropertyDefinition(QName name, QName typeName, int minOccurs, int maxOccurs) {
