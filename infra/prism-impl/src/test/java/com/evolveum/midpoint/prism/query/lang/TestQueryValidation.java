@@ -49,7 +49,7 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidPathComponent() {
         String query = "givenName = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test
@@ -64,15 +64,15 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidPropFilter() {
         String query = "name endsWith \"LAST\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "givenName = \"John\"";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "familyName startsWith \"Wo\"";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test
@@ -97,15 +97,15 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidSelfPath() {
         String query = ". matches (targetType = RoleType)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = ". referencedBy (@type = UserType AND @path = assignment/targetRef)";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test()
@@ -128,15 +128,15 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidReferenceComponent() {
         String query = "activation/validTo < \"2022-01-01\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "assignment/targetRef not matches ( targetType = RoleType )";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "extension/indexedString contains \"mycompanyname.com\"";
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test
@@ -272,7 +272,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
         query = ". type ShadowType";
         errorList.addAll(this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate());
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test()
@@ -385,7 +385,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 . referencedBy (
@@ -395,7 +395,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 . referencedBy (
@@ -409,7 +409,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test()
@@ -417,8 +417,8 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = BadAbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertThat(errorList.contains(new AxiomQueryError(1, 1, 20, 39, "Invalid meta type 'BadAbstractRoleType'.")));
-        assertThat(errorList.contains(new AxiomQueryError(1, 1, 52, 62, "Invalid meta path 'inducement'.")));
+        assertThat(errorList).contains((new AxiomQueryError(1, 1, 20, 39, "Invalid meta type 'BadAbstractRoleType'.")));
+        assertThat(errorList).contains((new AxiomQueryError(1, 1, 52, 62, "Invalid meta path 'inducement'.")));
 
         query = """
                 . referencedBy (
@@ -428,12 +428,12 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertThat(errorList.contains(new AxiomQueryError(3, 3, 61, 73, "Invalid meta path 'badTargetRef'.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 80, 81, "Invalid dereference path because reference definition is null.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 82, 97, "Invalid item component 'badArchetypeRef' definition.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 98, 99, "Invalid dereference path because reference definition is null.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 100, 104, "Invalid item component 'name' definition.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 105, 106, "Invalid '=' filter alias.")));
+        assertThat(errorList).contains((new AxiomQueryError(3, 3, 64, 73, "Invalid meta path 'badTargetRef'.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 80, 81, "Invalid dereference path because reference definition is null.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 82, 97, "Invalid item component 'badArchetypeRef' definition.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 98, 99, "Invalid dereference path because reference definition is null.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 100, 104, "Invalid item component 'name' definition.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 105, 106, "Invalid '=' filter alias.")));
 
 
         query = """
@@ -448,11 +448,11 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertThat(errorList.contains(new AxiomQueryError(2, 2, 28, 45, "Invalid meta type 'BadAssignmentType'.")));
-        assertThat(errorList.contains(new AxiomQueryError(3, 3, 61, 70, "Invalid meta path 'targetRef'.")));
-        assertThat(errorList.contains(new AxiomQueryError(4, 4, 80, 87, "Invalid 'ownedBy' filter for self path.")));
-        assertThat(errorList.contains(new AxiomQueryError(7, 7, 164, 171, "Invalid item component 'badName' definition.")));
-        assertThat(errorList.contains(new AxiomQueryError(7, 7, 172, 173, "Invalid '=' filter alias.")));
+        assertThat(errorList).contains((new AxiomQueryError(2, 2, 28, 45, "Invalid meta type 'BadAssignmentType'.")));
+        assertThat(errorList).contains((new AxiomQueryError(3, 3, 61, 70, "Invalid meta path 'targetRef'.")));
+        assertThat(errorList).contains((new AxiomQueryError(4, 4, 80, 87, "Invalid 'ownedBy' filter for self path.")));
+        assertThat(errorList).contains((new AxiomQueryError(7, 7, 164, 171, "Invalid item component 'badName' definition.")));
+        assertThat(errorList).contains((new AxiomQueryError(7, 7, 172, 173, "Invalid '=' filter alias.")));
     }
 
     // FIXME solve order andFilters
@@ -469,11 +469,11 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "roleMembershipRef not matches (targetType = ServiceType)";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 roleMembershipRef not matches (
@@ -484,7 +484,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 assignment/targetRef not matches (
@@ -495,11 +495,11 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "assignment/targetRef matches (targetType=RoleType and relation=owner)";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 . referencedBy (
@@ -509,7 +509,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = """
                 assignment/targetRef/@ matches (
@@ -518,6 +518,6 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 }

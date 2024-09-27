@@ -263,13 +263,18 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 } else if (token.index() == AxiomQueryLexer.NOT_KEYWORD) {
                     suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
                 } else {
-                    suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()),
-                            AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()), -1));
+                    suggestions.add(suggestionFromVocabulary(token, -1));
                 }
             }
         }
 
         return suggestions;
+    }
+
+    private Suggestion suggestionFromVocabulary(TokenWithCtx token, int priority) {
+        // DisplayName (or LiteralName) is escaped with single qoutes, so we remove them
+        var tokenValue = AxiomStrings.fromSingleQuoted(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()));
+        return new Suggestion(tokenValue, tokenValue, -1);
     }
 
     /**
@@ -298,6 +303,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private void definitionProcessingToPathSuggestion(Definition definition, List<Suggestion> suggestions) {
         if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
             containerDefinition.getDefinitions().forEach(prop -> {
+                suggestions.add(new Suggestion(prop.getItemName().getLocalPart(), prop.getDisplayName(), -1));
                 if (prop instanceof PrismContainerDefinition<?> containerDefinition1) {
                     containerDefinition1.getPropertyDefinitions().forEach( o -> {
                         suggestions.add(new Suggestion(containerDefinition1.getItemName().getLocalPart() + "/" + o.getItemName().getLocalPart(), "prop", -1));
@@ -402,9 +408,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     private void registerItemDefinition(RuleContext key, Definition itemDefinition) {
-        if (!(itemDefinition instanceof PrismPropertyDefinition<?>)) {
+        //if (!(itemDefinition instanceof PrismPropertyDefinition<?>)) {
             itemDefinitions.put(key, itemDefinition);
-        }
+        //}
     }
 
     /**
