@@ -68,4 +68,15 @@ public class AxiomQueryError {
     public int hashCode() {
         return super.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+                .append(lineStart)
+                .append(":")
+                .append(charPositionInLineStart)
+                .append(" ")
+                .append(message)
+                .toString();
+    }
 }

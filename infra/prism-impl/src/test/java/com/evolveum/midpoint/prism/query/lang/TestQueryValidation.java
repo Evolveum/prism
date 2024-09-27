@@ -161,23 +161,23 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidDereferenceComponent() {
         String query = "assignment/targetRef/@/name = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         query = "@/archetypeRef/@/name=\"Application\"";
         errorList = this.axiomQueryContentAssist.process(typeDefinition.findItemDefinition(
                 ItemPath.create("assignment"), ItemDefinition.class).findItemDefinition(
                 ItemPath.create("targetRef"), PrismReferenceDefinition.class), query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         ItemDefinition<?> localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentHolderType"));
         query = "roleMembershipRef/@/name = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
 
         localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentType"));
         query = "@/name startsWith \"gallery\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition.findItemDefinition(ItemPath.create(new QName("targetRef")), PrismReferenceDefinition.class), query, 0).validate();
-        assertTrue(errorList.isEmpty());
+        assertThat(errorList).isEmpty();
     }
 
     @Test()
