@@ -5,6 +5,7 @@ import java.util.*;
 import com.evolveum.axiom.lang.antlr.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+import com.evolveum.axiom.reactor.Rule;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
@@ -16,6 +17,7 @@ import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
+import java.util.function.Function;
 
 import javax.xml.namespace.QName;
 
@@ -32,10 +34,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private final AxiomQueryParser parser;
     private final PrismContext prismContext;
     private final ItemDefinition<?> rootItemDefinition;
-    private Definition infraPathDefinition;
-    private final HashMap<ParserRuleContext, Definition> itemDefinitions = new HashMap<>();
+    private final HashMap<RuleContext, Definition> itemDefinitions = new HashMap<>();
     public final List<AxiomQueryError> errorList = new ArrayList<>();
     private final int positionCursor;
+
+    private Definition infraPathDefinition;
     private PositionContext positionContext;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
@@ -61,7 +64,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         itemDefinitions.clear();
         // Initialization root definition
-        itemDefinitions.put(ctx, rootItemDefinition);
+        registerItemDefinition(ctx, rootItemDefinition);
 
         return super.visitRoot(ctx);
     }
@@ -78,9 +81,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public Object visitDereferenceComponent(AxiomQueryParser.DereferenceComponentContext ctx) {
         if (itemDefinitions.get(findIdentifierDefinition(ctx)) instanceof PrismReferenceDefinition referenceDefinition) {
             if (referenceDefinition.getTargetObjectDefinition() != null) {
-                itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+                registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
             } else if (referenceDefinition.getTargetTypeName() != null) {
-                itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+                registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
             } else {
                 errorRegister(false, ctx, "Invalid dereference path is null.");
             }
@@ -107,7 +110,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         if (findItemFilterCtx(ctx) instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
             if (metaFilters.containsKey(itemFilterContext.getChild(0).getText())) {
                 if (Filter.Meta.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
-                    itemDefinitions.put(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(ctx.getText())));
+                    registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(ctx.getText())));
                     errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid meta type '%s'.", ctx.getText());
                 } else if (Filter.Meta.PATH.getName().equals(itemFilterContext.getChild(0).getText())) {
                     if (infraPathDefinition == null) {
@@ -132,13 +135,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     }
 
                     return null;
-                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
+                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> registerItemDefinition(findIdentifierDefinition(ctx), targetTypeDefinition));
 
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid target type '%s'.", ctx.getText());
-            } else if(Filter.ReferencedKeyword.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
-                // TODO relation semantic control
-            } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
-                // TODO oid semantic control
             } else if (itemFilterContext.getChild(2) != null && Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText())) {
                 PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
                 List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
@@ -151,16 +150,19 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     }
 
                     return null;
-                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> itemDefinitions.put(findIdentifierDefinition(ctx), targetTypeDefinition));
+                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> registerItemDefinition(findIdentifierDefinition(ctx), targetTypeDefinition));
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
-            }
-            else {
-                itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
+            } else if(Filter.ReferencedKeyword.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
+                // TODO relation semantic control
+            } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
+                // TODO oid semantic control
+            } else {
+                registerItemDefinition(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
                 errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
                         "Invalid item component '%s' definition.", ctx.getText());
             }
         } else {
-            itemDefinitions.put(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
+            registerItemDefinition(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
             errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
                     "Invalid item component '%s' definition.", ctx.getText());
         }
@@ -241,34 +243,30 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         if (positionContext != null) {
             ATN atn = parser.getATN();
-            Definition definition = itemDefinitions.get(findIdentifierDefinition((ParserRuleContext) positionContext.node().getChild(positionContext.cursorIndex()).getParent()));
+            Definition definition = itemDefinitions.get(findIdentifierDefinition((RuleContext) positionContext.node().getChild(positionContext.cursorIndex()).getParent()));
 
-            // foreach expected tokens by positionContext
-//            for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
-//                if (token.index() == AxiomQueryLexer.IDENTIFIER) {
-//                    if (token.rules().contains(AxiomQueryParser.RULE_filterName)) {
-//                        FilterProvider.findFilterByItemDefinition(definition, AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
-//                            suggestions.add(new Suggestion(name, alias, -1));
-//                        });
-//                    } else if (token.rules().contains(AxiomQueryParser.RULE_path)) {
-//                        if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
-//                        } else if (definition instanceof PrismReferenceDefinition referenceDefinition) {
-//
-//                        } else if (definition instanceof ComplexTypeDefinition complexTypeDefinition) {
-//
-//                        }
-//                    } else if (token.rules().contains(AxiomQueryParser.RULE_matchingRule)) {
-//                        // generate matching paths to [... ]
-//                    } else if (token.rules().contains(AxiomQueryParser.RULE_subfilterOrValue)) {
-//                        // subfilter path ???
-//                    }
-//                } else if (token.index() == AxiomQueryLexer.NOT_KEYWORD) {
-//                    suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
-//                } else {
-//                    suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()),
-//                            AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()), -1));
-//                }
-//            }
+            for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
+                if (token.index() == AxiomQueryLexer.IDENTIFIER) {
+                    if (token.rules().contains(AxiomQueryParser.RULE_filterName)) {
+                        if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
+                            FilterProvider.findFilterByItemDefinition(containerDefinition.findLocalItemDefinition(new QName(positionContext.node().getChild(positionContext.cursorIndex() - 1).getText())), AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
+                                suggestions.add(new Suggestion(name, alias, -1));
+                            });
+                        }
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_path)) {
+                        definitionProcessingToPathSuggestion(definition, suggestions);
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_matchingRule)) {
+                        // generate matching paths to [... ]
+                    } else if (token.rules().contains(AxiomQueryParser.RULE_subfilterOrValue)) {
+                        // subfilter path ???
+                    }
+                } else if (token.index() == AxiomQueryLexer.NOT_KEYWORD) {
+                    suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), -1));
+                } else {
+                    suggestions.add(new Suggestion(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()),
+                            AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()), -1));
+                }
+            }
         }
 
         return suggestions;
@@ -290,6 +288,31 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             return complexTypeDefinition.findLocalItemDefinition(name);
         }
         return null;
+    }
+
+    /**
+     * Processing definition of all types for generate path suggestion.
+     * @param definition
+     * @param suggestions
+     */
+    private void definitionProcessingToPathSuggestion(Definition definition, List<Suggestion> suggestions) {
+        if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
+            containerDefinition.getDefinitions().forEach(prop -> {
+                if (prop instanceof PrismContainerDefinition<?> containerDefinition1) {
+                    containerDefinition1.getPropertyDefinitions().forEach( o -> {
+                        suggestions.add(new Suggestion(containerDefinition1.getItemName().getLocalPart() + "/" + o.getItemName().getLocalPart(), "prop", -1));
+                    });
+                }
+            });
+        } else if (definition instanceof PrismReferenceDefinition referenceDefinition) {
+            suggestions.add(new Suggestion(referenceDefinition.getItemName().getLocalPart(), "reference", -1));
+        } else if (definition instanceof ComplexTypeDefinition complexTypeDefinition) {
+            complexTypeDefinition.getDefinitions().forEach(d -> {
+                suggestions.add(new Suggestion(d.getItemName().getLocalPart(), "path", -1));
+            });
+        } else if (definition instanceof PrismPropertyDefinition<?> propertyDefinition) {
+            suggestions.add(new Suggestion(propertyDefinition.getItemName().getLocalPart(), "property", -1));
+        }
     }
 
     /**
@@ -369,13 +392,19 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param ctx
      * @return reference object as identifier for {@link AxiomQueryContentAssistantVisitor#itemDefinitions}
      */
-    private ParserRuleContext findIdentifierDefinition(ParserRuleContext ctx) {
+    private RuleContext findIdentifierDefinition(RuleContext ctx) {
         while (!AxiomQueryParser.RootContext.class.equals(ctx.getClass())) {
             if (ctx instanceof AxiomQueryParser.SubfilterSpecContext) break;
             ctx = ctx.getParent();
         }
 
         return ctx;
+    }
+
+    private void registerItemDefinition(RuleContext key, Definition itemDefinition) {
+        if (!(itemDefinition instanceof PrismPropertyDefinition<?>)) {
+            itemDefinitions.put(key, itemDefinition);
+        }
     }
 
     /**
@@ -445,8 +474,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
             for (Transition transition : nextState.getTransitions()) {
                 if (transition instanceof AtomTransition atomTransition) {
-                    if (nextTerminalNode.getSymbol().getType() == atomTransition.label) {
-                        states.push(atomTransition.target);
+                    if (atomTransition.label == AxiomQueryParser.SEP) {
+                        states.add(atomTransition.target);
                     } else {
                         TokenWithCtx token = new TokenWithCtx(atomTransition.label, rules);
                         if (atomTransition.label != -1 && !(expected.contains(token))) {
@@ -464,13 +493,15 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         states.push(ruleTransition.target);
                     } else {
                         if (ruleContext instanceof AxiomQueryParser.RootContext) {
-                            manageTransitionBySemantic(AxiomQueryParser.RULE_path, ruleTransition, states);
+                            manageTransition(AxiomQueryParser.RULE_path, ruleTransition, states);
                         } else if (ruleContext instanceof AxiomQueryParser.FilterContext filterContext) {
-                            manageTransitionBySemantic(findMissingConcept(filterContext), ruleTransition, states);
+                            manageTransition(findMissingConcept(filterContext, nextTerminalNode), ruleTransition, states);
                         } else if (ruleContext instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-                            manageTransitionBySemantic(findMissingConcept(itemFilterContext), ruleTransition, states);
+                            manageTransition(findMissingConcept(itemFilterContext, nextTerminalNode), ruleTransition, states);
                         } else if (ruleContext instanceof AxiomQueryParser.SubfilterSpecContext) {
                             // todo ...
+                        } else {
+                            manageTransition(ruleContext.getRuleIndex(), ruleTransition, states);
                         }
                     }
                 } else {
@@ -506,14 +537,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param filterContext
      * @return index of missing rule
      */
-    private int findMissingConcept(AxiomQueryParser.FilterContext filterContext) {
+    private int findMissingConcept(AxiomQueryParser.FilterContext filterContext, TerminalNode nextTerminalNode) {
         ParseTree ruleContext = filterContext;
 
         while (!(ruleContext instanceof AxiomQueryParser.ItemFilterContext itemFilterContext)) {
             ruleContext = ruleContext.getChild(0);
         }
 
-        return findMissingConcept(itemFilterContext);
+        return findMissingConcept(itemFilterContext, nextTerminalNode);
     }
 
     /**
@@ -521,8 +552,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param itemFilterContext
      * @return index of missing rule
      */
-    private int findMissingConcept(AxiomQueryParser.ItemFilterContext itemFilterContext) {
-        if (itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof AxiomQueryParser.PathContext) {
+    private int findMissingConcept(AxiomQueryParser.ItemFilterContext itemFilterContext, TerminalNode nextTerminalNode) {
+        if (itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof AxiomQueryParser.PathContext &&
+                nextTerminalNode.getSymbol().getType() == AxiomQueryLexer.IDENTIFIER) {
+            return AxiomQueryParser.RULE_path;
+        } else if (itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof AxiomQueryParser.PathContext) {
             return AxiomQueryParser.RULE_filterName;
         } else if (itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof AxiomQueryParser.FilterNameAliasContext ||
                 itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof AxiomQueryParser.FilterNameContext) {
@@ -540,22 +574,26 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param ruleTransition
      * @param states
      */
-    private void manageTransitionBySemantic(int index, RuleTransition ruleTransition, Stack<ATNState> states) {
+    private void manageTransition(int index, RuleTransition ruleTransition, Stack<ATNState> states) {
         if (index == AxiomQueryParser.RULE_path) {
+            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
+                states.push(ruleTransition.followState);
+            }
+
             if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path ||
                     ruleTransition.ruleIndex == AxiomQueryParser.RULE_parent ||
                     ruleTransition.ruleIndex == AxiomQueryParser.RULE_axiomPath ||
                     ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemPathComponent ||
                     ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ||
-                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemName) {
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_itemName ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
                 states.push(ruleTransition.target);
             }
         } else if (index == AxiomQueryParser.RULE_filterName) {
             if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
                 states.push(ruleTransition.followState);
-            } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
-                states.push(ruleTransition.target);
             } else if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterName ||
+                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias ||
                     ruleTransition.ruleIndex == AxiomQueryParser.RULE_prefixedName ) {
                 states.push(ruleTransition.target);
             }
