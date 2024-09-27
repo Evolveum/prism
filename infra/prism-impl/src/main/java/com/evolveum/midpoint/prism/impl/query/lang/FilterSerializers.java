@@ -232,12 +232,12 @@ public class FilterSerializers {
 
         // @type = QName
 
-        writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), false, false);
+        writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), false, false, false);
         // and @path = ItemPath
         writeProperty(target, Filter.Meta.PATH.getName(), source.getPath(), false, true);
 
         // and @relation =
-        writeProperty(target, Filter.Meta.RELATION.getName(), source.getRelation(), true, true);
+        writeProperty(target, Filter.Meta.RELATION.getName(), source.getRelation(), true, true, false);
         var nested = source.getFilter();
         if(nested != null) {
             target.writeFilterName(AND);
@@ -371,7 +371,7 @@ public class FilterSerializers {
             var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
             notFirst = writeProperty(target, "targetType", value.getTargetType(), source.isTargetTypeNullAsAny(),
                     notFirst, false);
-            notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst);
+            notFirst = writeProperty(target, "relation", value.getRelation(), true, notFirst, false);
             if (source.getFilter() != null) {
                 if (notFirst) {
                     target.writeFilterName(AND);
