@@ -5,7 +5,6 @@ import java.util.*;
 import com.evolveum.axiom.lang.antlr.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
-import com.evolveum.axiom.reactor.Rule;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
@@ -17,7 +16,6 @@ import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jetbrains.annotations.NotNull;
-import java.util.function.Function;
 
 import javax.xml.namespace.QName;
 
@@ -40,6 +38,15 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     private Definition infraPathDefinition;
     private PositionContext positionContext;
+
+    /**
+     * itemComponents should be treated as item path
+     */
+    private boolean itemExpected;
+    /**
+     *  is first item path component expected?
+     */
+    private boolean firstItemComponentExpected;
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
             AxiomQueryParser parser, int positionCursor) {
@@ -64,8 +71,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         itemDefinitions.clear();
         // Initialization root definition
-        registerItemDefinition(ctx, rootItemDefinition);
-
+        itemDefinitions.put(ctx, rootItemDefinition);
         return super.visitRoot(ctx);
     }
 
@@ -78,12 +84,69 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     @Override
+    public Object visitItemFilter(AxiomQueryParser.ItemFilterContext ctx) {
+        this.itemExpected = true;
+        return super.visitItemFilter(ctx);
+
+    }
+
+    @Override
+    public Object visitSubfilterOrValue(AxiomQueryParser.SubfilterOrValueContext ctx) {
+        this.itemExpected = false;
+
+        var parent = parentItemFilter(ctx);
+        if (parent.filterName() != null && Filter.Name.MATCHES.getLocalPart().equals(parent.filterName().getText())) {
+            if (ctx.subfilterSpec() != null) {
+                updateItemDefinitionForContext(ctx.subfilterSpec(), itemFilterDefinition(parent));
+            }
+        }
+
+
+        return super.visitSubfilterOrValue(ctx);
+
+
+    }
+
+    @Override
+    public Object visitDescendantPath(AxiomQueryParser.DescendantPathContext ctx) {
+        this.firstItemComponentExpected = true;
+        return super.visitDescendantPath(ctx);
+
+    }
+
+    @Override
+    public Object visitSelfPath(AxiomQueryParser.SelfPathContext ctx) {
+        this.firstItemComponentExpected = false;
+        var filterCtx = parentItemFilter(ctx);
+        updateItemDefinitionForContext(filterCtx, findParentContextDefinition(filterCtx));
+        return super.visitSelfPath(ctx);
+    }
+
+    @Override
+    public Object visitAxiomPath(AxiomQueryParser.AxiomPathContext ctx) {
+        this.firstItemComponentExpected = true;
+        return super.visitAxiomPath(ctx);
+    }
+
+    @Override
+    public Object visitParentPath(AxiomQueryParser.ParentPathContext ctx) {
+        this.firstItemComponentExpected = true;
+        return super.visitParentPath(ctx);
+    }
+
+    @Override
     public Object visitDereferenceComponent(AxiomQueryParser.DereferenceComponentContext ctx) {
-        if (itemDefinitions.get(findIdentifierDefinition(ctx)) instanceof PrismReferenceDefinition referenceDefinition) {
+        var first = firstItemComponentExpected;
+        firstItemComponentExpected = false;
+        var itemFilterContext = parentItemFilter(ctx);
+        if (first) {
+            updateItemDefinitionForContext(itemFilterContext, findParentContextDefinition(itemFilterContext));
+        }
+        if (itemFilterDefinition(itemFilterContext) instanceof PrismReferenceDefinition referenceDefinition) {
             if (referenceDefinition.getTargetObjectDefinition() != null) {
-                registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+                updateItemDefinitionForContext(itemFilterContext, prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
             } else if (referenceDefinition.getTargetTypeName() != null) {
-                registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
+                updateItemDefinitionForContext(itemFilterContext, prismContext.getSchemaRegistry().findObjectDefinitionByType(referenceDefinition.getTargetTypeName()));
             } else {
                 errorRegister(false, ctx, "Invalid dereference path is null.");
             }
@@ -97,77 +160,119 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     @Override
     public Object visitItemComponent(AxiomQueryParser.ItemComponentContext ctx) {
         Map<String, String> metaFilters;
+        var identifier = ctx.getText();
+        var isFirst = firstItemComponentExpected;
+        firstItemComponentExpected = false;
+        if (itemExpected) {
+            // Item path is part of item
+
+        }
 
         if ((metaFilters = FilterProvider.findFilterByItemDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)),
-                ctx.getRuleIndex())).containsKey(ctx.getText())
-                || Filter.ReferencedKeyword.TARGET_TYPE.getName().equals(ctx.getText())
-                || Filter.ReferencedKeyword.TARGET.getName().equals(ctx.getText())
-                || Filter.ReferencedKeyword.RELATION.getName().equals(ctx.getText())
-                || Filter.ReferencedKeyword.OID.getName().equals(ctx.getText())) {
+                ctx.getRuleIndex())).containsKey(identifier)
+                || Filter.ReferencedKeyword.TARGET_TYPE.getName().equals(identifier)
+                || Filter.ReferencedKeyword.TARGET.getName().equals(identifier)
+                || Filter.ReferencedKeyword.RELATION.getName().equals(identifier)
+                || Filter.ReferencedKeyword.OID.getName().equals(identifier)) {
             return super.visitItemComponent(ctx);
         }
 
-        if (findItemFilterCtx(ctx) instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-            if (metaFilters.containsKey(itemFilterContext.getChild(0).getText())) {
-                if (Filter.Meta.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
-                    registerItemDefinition(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(ctx.getText())));
-                    errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid meta type '%s'.", ctx.getText());
-                } else if (Filter.Meta.PATH.getName().equals(itemFilterContext.getChild(0).getText())) {
-                    if (infraPathDefinition == null) {
-                        infraPathDefinition = itemDefinitions.get(findIdentifierDefinition(ctx));
-                    }
-
-                    infraPathDefinition = findDefinition(infraPathDefinition, new QName(ctx.getText()));
-                    errorRegister(infraPathDefinition != null, ctx,
-                            "Invalid meta path '%s'.", ctx.getText());
-                } else if (Filter.Meta.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
-                    // TODO @relation meta filter
+        var itemFilterContext = parentItemFilter(ctx);
+        if (metaFilters.containsKey(itemFilterContext.getChild(0).getText())) {
+            if (Filter.Meta.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
+                updateItemDefinitionForContext(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(identifier)));
+                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid meta type '%s'.", identifier);
+            } else if (Filter.Meta.PATH.getName().equals(itemFilterContext.getChild(0).getText())) {
+                if (infraPathDefinition == null) {
+                    infraPathDefinition = itemDefinitions.get(findIdentifierDefinition(ctx));
                 }
-            }  else if(Filter.ReferencedKeyword.TARGET_TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
-                PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
-                List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
 
-                objectSubTypes.stream().map(item -> {
-                    if (item.getTypeName().getLocalPart().equals(ctx.getText())) return item;
-                    else {
-                        var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(ctx.getText())).findFirst();
-                        if (subItem.isPresent()) return subItem.get();
-                    }
-
-                    return null;
-                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> registerItemDefinition(findIdentifierDefinition(ctx), targetTypeDefinition));
-
-                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid target type '%s'.", ctx.getText());
-            } else if (itemFilterContext.getChild(2) != null && Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText())) {
-                PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
-                List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
-
-                objectSubTypes.stream().map(item -> {
-                    if (item.getTypeName().getLocalPart().equals(ctx.getText())) return item;
-                    else {
-                        var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(ctx.getText())).findFirst();
-                        if (subItem.isPresent()) return subItem.get();
-                    }
-
-                    return null;
-                }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> registerItemDefinition(findIdentifierDefinition(ctx), targetTypeDefinition));
-                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", ctx.getText());
-            } else if(Filter.ReferencedKeyword.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
-                // TODO relation semantic control
-            } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
-                // TODO oid semantic control
-            } else {
-                registerItemDefinition(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
-                errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
-                        "Invalid item component '%s' definition.", ctx.getText());
+                infraPathDefinition = findChildDefinition(infraPathDefinition, new QName(identifier));
+                errorRegister(infraPathDefinition != null, ctx,
+                        "Invalid meta path '%s'.", identifier);
+            } else if (Filter.Meta.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
+                // TODO @relation meta filter
             }
-        } else {
-            registerItemDefinition(findIdentifierDefinition(ctx), findDefinition(itemDefinitions.get(findIdentifierDefinition(ctx)), new QName(ctx.getText())));
-            errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx,
-                    "Invalid item component '%s' definition.", ctx.getText());
-        }
+        }  else if(isTargetTypeFilter(itemFilterContext)) {
+            PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+            List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
 
+            objectSubTypes.stream().map(item -> {
+                if (item.getTypeName().getLocalPart().equals(identifier)) return item;
+                else {
+                    var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(identifier)).findFirst();
+                    if (subItem.isPresent()) return subItem.get();
+                }
+
+                return null;
+            }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> updateItemDefinitionForContext(findIdentifierDefinition(ctx), targetTypeDefinition));
+
+            errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid target type '%s'.", identifier);
+        } else if (isTypeFilter(itemFilterContext)) {
+            PrismObjectDefinition<?> objectTypeDefinition = prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType());
+            List<TypeDefinition> objectSubTypes = new ArrayList<>(prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class).getStaticSubTypes());
+
+            objectSubTypes.stream().map(item -> {
+                if (item.getTypeName().getLocalPart().equals(identifier)) return item;
+                else {
+                    var subItem = item.getStaticSubTypes().stream().filter(sub -> sub.getTypeName().getLocalPart().equals(identifier)).findFirst();
+                    if (subItem.isPresent()) return subItem.get();
+                }
+
+                return null;
+            }).filter(Objects::nonNull).findFirst().ifPresent(targetTypeDefinition -> updateItemDefinitionForContext(findIdentifierDefinition(ctx), targetTypeDefinition));
+            errorRegister(itemDefinitions.get(findIdentifierDefinition(ctx)) != null, ctx, "Invalid type '%s'.", identifier);
+        } else if(Filter.ReferencedKeyword.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
+            // TODO relation semantic control
+        } else if(Filter.ReferencedKeyword.OID.getName().equals(itemFilterContext.getChild(0).getText())) {
+            // TODO oid semantic control
+        } else {
+
+            Definition  contextDefinition;
+            if (isFirst) {
+                // If item component is first we see, we use parent definition
+                contextDefinition = findParentContextDefinition(itemFilterContext);
+            } else {
+                // Otherwise we use current filter definition (may be null if previous item did not existed)
+                contextDefinition = itemFilterDefinition(ctx);
+            }
+            var foundDefinition = findChildDefinition(contextDefinition, new QName(identifier));
+            updateItemDefinitionForContext(itemFilterContext, foundDefinition);
+            errorRegister(foundDefinition != null, ctx,
+                    "Invalid item component '%s' definition.", identifier);
+        }
         return super.visitItemComponent(ctx);
+    }
+
+    /**
+     * Finds context definition - it can be definition in current item filter (if processing descendant paths, or in any parent
+     * item filters and / or root.
+     * @param ctx
+     */
+    private Definition findParentContextDefinition(AxiomQueryParser.ItemFilterContext ctx) {
+        var parentCtx = ctx.getParent();
+        while (parentCtx != null) {
+            var maybe = itemDefinitions.get(parentCtx);
+            if (maybe != null) {
+                return maybe;
+            }
+            if (parentCtx instanceof AxiomQueryParser.ItemFilterContext) {
+                break;
+            }
+            if (parentCtx instanceof AxiomQueryParser.SubfilterSpecContext) {
+                break;
+            }
+            parentCtx = parentCtx.getParent();
+        }
+        return null;
+    }
+
+    private boolean isTargetTypeFilter(AxiomQueryParser.ItemFilterContext itemFilterContext) {
+        return Filter.ReferencedKeyword.TARGET_TYPE.getName().equals(itemFilterContext.getChild(0).getText());
+    }
+
+    private boolean isTypeFilter(AxiomQueryParser.ItemFilterContext itemFilterContext) {
+        return itemFilterContext.getChild(2) != null && Filter.Name.TYPE.getName().getLocalPart().equals(itemFilterContext.getChild(2).getText());
     }
 
     @Override
@@ -178,54 +283,55 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     @Override
     public Object visitFilterName(AxiomQueryParser.FilterNameContext ctx) {
-        if (findItemFilterCtx(ctx) instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-            if (Arrays.stream(Filter.Meta.values())
-                    .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
-                || Arrays.stream(Filter.ReferencedKeyword.values())
-                    .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))) {
-                errorRegister(Filter.Alias.EQUAL.getName().equals(ctx.getText()), ctx,
-                        "Invalid '%s' filter. Only the assignment sign (=) is correct for '%s'.", ctx.getText(), itemFilterContext.getChild(0).getText());
-            } else {
-                if(itemFilterContext.getChild(0) instanceof AxiomQueryParser.SelfPathContext) {
-                    if (!itemFilterContext.getChild(2).getText().equals(Filter.Name.TYPE.getName().getLocalPart())) {
-                        errorRegister((FilterProvider.findFilterByItemDefinition(
-                                        itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
-                                "Invalid '%s' filter for self path.", ctx.getText());
-                    }
-                } else {
+        var itemFilterContext = parentItemFilter(ctx);
+        var itemDefinition = itemFilterDefinition(ctx);
+        if (Arrays.stream(Filter.Meta.values())
+                .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
+            || Arrays.stream(Filter.ReferencedKeyword.values())
+                .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))) {
+            errorRegister(Filter.Alias.EQUAL.getName().equals(ctx.getText()), ctx,
+                    "Invalid '%s' filter. Only the assignment sign (=) is correct for '%s'.", ctx.getText(), itemFilterContext.getChild(0).getText());
+        } else {
+            if(itemFilterContext.getChild(0) instanceof AxiomQueryParser.SelfPathContext) {
+                if (!itemFilterContext.getChild(2).getText().equals(Filter.Name.TYPE.getName().getLocalPart())) {
                     errorRegister((FilterProvider.findFilterByItemDefinition(
-                                    itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
-                            "Invalid '%s' filter.", ctx.getText());
+                                    itemDefinition, ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
+                            "Invalid '%s' filter for self path.", ctx.getText());
                 }
+            } else {
+                errorRegister((FilterProvider.findFilterByItemDefinition(
+                                itemDefinition, ctx.getRuleIndex()).containsKey(ctx.getText())), ctx,
+                        "Invalid '%s' filter.", ctx.getText());
             }
         }
-
         return super.visitFilterName(ctx);
     }
 
     @Override
     public Object visitFilterNameAlias(AxiomQueryParser.FilterNameAliasContext ctx) {
-        if (findItemFilterCtx(ctx) instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-            if (Arrays.stream(Filter.Meta.values())
-                    .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
-                || Arrays.stream(Filter.ReferencedKeyword.values())
-                    .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))) {
-                errorRegister(Filter.Alias.EQUAL.getName().equals(ctx.getText()), ctx,
-                    "Invalid '%s' filter alias. Only the assignment sign (=) is correct for %s.", ctx.getText(), itemFilterContext.getChild(0).getText());
+        var itemFilterContext = parentItemFilter(ctx);
+        if (Arrays.stream(Filter.Meta.values())
+                .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
+            || Arrays.stream(Filter.ReferencedKeyword.values())
+                .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))) {
+            errorRegister(Filter.Alias.EQUAL.getName().equals(ctx.getText()), ctx,
+                "Invalid '%s' filter alias. Only the assignment sign (=) is correct for %s.", ctx.getText(), itemFilterContext.getChild(0).getText());
+        } else {
+            if(itemFilterContext.getChild(0) instanceof AxiomQueryParser.SelfPathContext) {
+                errorRegister((FilterProvider.findFilterByItemDefinition(
+                                itemFilterDefinition(ctx), ctx.getRuleIndex()).containsValue(ctx.getText())), ctx,
+                        "Invalid '%s' filter alias for self path.", ctx.getText());
             } else {
-                if(itemFilterContext.getChild(0) instanceof AxiomQueryParser.SelfPathContext) {
-                    errorRegister((FilterProvider.findFilterByItemDefinition(
-                                    itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsValue(ctx.getText())), ctx,
-                            "Invalid '%s' filter alias for self path.", ctx.getText());
-                } else {
-                    errorRegister((FilterProvider.findFilterByItemDefinition(
-                        itemDefinitions.get(findIdentifierDefinition(ctx)), ctx.getRuleIndex()).containsValue(ctx.getText())), ctx,
-                        "Invalid '%s' filter alias.", ctx.getText());
-                }
+                errorRegister((FilterProvider.findFilterByItemDefinition(
+                                itemFilterDefinition(ctx), ctx.getRuleIndex()).containsValue(ctx.getText())), ctx,
+                    "Invalid '%s' filter alias.", ctx.getText());
             }
         }
-
         return super.visitFilterNameAlias(ctx);
+    }
+
+    private Definition itemFilterDefinition(ParserRuleContext context) {
+        return itemDefinitions.get(parentItemFilter(context));
     }
 
     @Override
@@ -248,8 +354,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
                 if (token.index() == AxiomQueryLexer.IDENTIFIER) {
                     if (token.rules().contains(AxiomQueryParser.RULE_filterName)) {
-                        if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
-                            FilterProvider.findFilterByItemDefinition(containerDefinition.findLocalItemDefinition(new QName(positionContext.node().getChild(positionContext.cursorIndex() - 1).getText())), AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
+                        var itemDefinition = itemDefinitions.get(parentItemFilter(positionContext.node()));
+                        if (itemDefinition != null) {
+                            FilterProvider.findFilterByItemDefinition(itemDefinition, AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
                                 suggestions.add(new Suggestion(name, alias, -1));
                             });
                         }
@@ -283,7 +390,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param name
      * @return Definition found or null
      */
-    private ItemDefinition<?> findDefinition(Definition parentDefinition, QName name) {
+    private ItemDefinition<?> findChildDefinition(Definition parentDefinition, QName name) {
         if (parentDefinition instanceof PrismContainerDefinition<?> containerDefinition) {
             return containerDefinition.getComplexTypeDefinition().findLocalItemDefinition(name);
         } else if (parentDefinition instanceof PrismReferenceDefinition referenceDefinition) {
@@ -377,20 +484,46 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return null;
     }
 
+    private PositionContext findPositionContextAdjusted(ParseTree tree) {
+        int count = tree.getChildCount();
+        ParseTree parent;
+
+        /*
+        if (tree instanceof AxiomQueryParser.RootContext) {
+            return new PositionContext(0, tree);
+        }
+        */
+
+        while (count <= 1) {
+            if ((parent = tree.getParent()).getChildCount() > 1) {
+                for (int i = 0; i < parent.getChildCount(); i++) {
+                    if (parent.getChild(i).equals(tree)) {
+                        return new PositionContext(i, parent);
+                    }
+                }
+            }
+
+            tree = tree.getParent();
+            count = tree.getChildCount();
+        }
+
+        return null;
+    }
+
     /**
      * Found itemFilter context in input parserTree. ItemFilter is main non-terminal for every filter query see you grammar
      * language AxiomQueryParser.g4.
      * @param ctx
      * @return
      */
-    private ParseTree findItemFilterCtx(ParseTree ctx) {
+    private AxiomQueryParser.ItemFilterContext parentItemFilter(ParseTree ctx) {
         if (ctx == null) return null;
 
         while (!ctx.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
             ctx = ctx.getParent();
         }
 
-        return ctx;
+        return AxiomQueryParser.ItemFilterContext.class.cast(ctx);
     }
 
     /**
@@ -407,10 +540,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return ctx;
     }
 
-    private void registerItemDefinition(RuleContext key, Definition itemDefinition) {
-        //if (!(itemDefinition instanceof PrismPropertyDefinition<?>)) {
-            itemDefinitions.put(key, itemDefinition);
-        //}
+    private void updateItemDefinitionForContext(RuleContext key, Definition itemDefinition) {
+        itemDefinitions.put(key, itemDefinition);
     }
 
     /**
