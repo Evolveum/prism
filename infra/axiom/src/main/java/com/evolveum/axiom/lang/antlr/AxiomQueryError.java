@@ -75,6 +75,10 @@ public class AxiomQueryError {
                 .append(lineStart)
                 .append(":")
                 .append(charPositionInLineStart)
+                .append("-")
+                .append(lineStop)
+                .append(":")
+                .append(charPositionInLineStop)
                 .append(" ")
                 .append(message)
                 .toString();

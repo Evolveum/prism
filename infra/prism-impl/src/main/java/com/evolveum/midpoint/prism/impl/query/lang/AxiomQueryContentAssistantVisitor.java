@@ -519,7 +519,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private AxiomQueryParser.ItemFilterContext parentItemFilter(ParseTree ctx) {
         if (ctx == null) return null;
 
-        while (!ctx.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
+        while (ctx != null && !ctx.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
             ctx = ctx.getParent();
         }
 

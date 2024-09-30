@@ -29,7 +29,6 @@ public class FilterProvider {
                 addFilterSuggestion(EXISTS, suggestions);
                 addFilterSuggestion(LEVENSHTEIN, suggestions);
                 addFilterSuggestion(SIMILARITY, suggestions);
-                addFilterSuggestion(OWNED_BY_OID, suggestions);
                 addFilterSuggestion(ANY_IN, suggestions);
 
                 if (itemDefinition.getTypeName().equals(DOMUtil.XSD_STRING)
@@ -55,6 +54,7 @@ public class FilterProvider {
                 addFilterSuggestion(IN_OID, suggestions);
                 addFilterSuggestion(IS_ROOT, suggestions);
                 addFilterSuggestion(TYPE, suggestions);
+                addFilterSuggestion(OWNED_BY_OID, suggestions);
             }
         }
 
