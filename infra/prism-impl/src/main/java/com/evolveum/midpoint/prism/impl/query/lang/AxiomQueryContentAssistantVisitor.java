@@ -380,7 +380,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     private Suggestion suggestionFromVocabulary(TokenWithCtx token, int priority) {
         // DisplayName (or LiteralName) is escaped with single qoutes, so we remove them
-        var tokenValue = AxiomStrings.fromSingleQuoted(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()));
+        var tokenValue = AxiomStrings.fromOptionallySingleQuoted(AxiomQueryLexer.VOCABULARY.getDisplayName(token.index()));
         return new Suggestion(tokenValue, tokenValue, -1);
     }
 

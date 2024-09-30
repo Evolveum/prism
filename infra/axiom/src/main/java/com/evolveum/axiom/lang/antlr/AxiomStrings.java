@@ -45,6 +45,13 @@ public class AxiomStrings {
         return unescape(SQUOTE, SINGLE_QUOTED_UNESCAPE, input);
     }
 
+    public static String fromOptionallySingleQuoted(String input) {
+        if (isQuoted(input, SQUOTE)) {
+            return removeQuotes(SQUOTE, input);
+        }
+        return input;
+    }
+
 
     public static String fromDoubleQuoted(String input) {
         return unescape(DQUOTE, DOUBLE_QUOTED_UNESCAPE, input);
