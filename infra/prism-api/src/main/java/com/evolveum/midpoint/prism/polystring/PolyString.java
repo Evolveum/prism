@@ -439,12 +439,21 @@ public class PolyString implements Matchable<PolyString>, Recomputable, Structur
     }
 
     /**
-     * Returns true if the PolyString form contains only simple string.
-     * I.e. returns true if the polystring can be serialized in a simplified form of a single string.
-     * Returns true in case that there are language mutations, translation, etc.
+     * Returns `true` if the `PolyString` form contains only simple string.
+     * I.e. returns `true` if the polystring can be serialized in a simplified form of a single string.
+     * Returns `false` in case that there are language mutations, translation, etc.
      */
     public boolean isSimple() {
         return translation == null && lang == null;
+    }
+
+    /**
+     * Returns `true` if there is a custom (non-standard) normalization, like for resource shadow attributes.
+     * Note that missing `norm` is considered to be the standard case that will be re-computed later.
+     */
+    public boolean hasCustomNormalization() {
+        var normalizer = PrismContext.get().getDefaultPolyStringNormalizer();
+        return norm != null && !norm.equals(normalizer.normalize(orig));
     }
 
     @Override

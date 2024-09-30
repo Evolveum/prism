@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.midpoint.prism.polystring.PolyString;
+
 import org.jetbrains.annotations.NotNull;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -69,6 +71,13 @@ public class SerializationOptions implements Cloneable {
 //    private NameQualificationStrategy genericQualificationStrategy;
 
     private boolean skipWhitespaces = false;
+
+    /**
+     * Should the normalized form of {@link PolyString} be preserved in the serialized form (if it differs from the
+     * original one normalized using the standard normalizer)? Used e.g. for shadow attributes with normalization
+     * given by matching rules (like LDAP DNs).
+     */
+    private boolean preservePolyStringNorm;
 
     public boolean isSerializeReferenceNames() {
         return serializeReferenceNames;
@@ -250,7 +259,18 @@ public class SerializationOptions implements Cloneable {
     }
 
     public static boolean isUseNsProperty(SerializationOptions opts) {
-        return opts == null || opts.itemNameQualificationStrategy == null || opts.itemNameQualificationStrategy == ItemNameQualificationStrategy.USE_NS_PROPERTY;
+        return opts == null
+                || opts.itemNameQualificationStrategy == null
+                || opts.itemNameQualificationStrategy == ItemNameQualificationStrategy.USE_NS_PROPERTY;
+    }
+
+    public SerializationOptions preservePolyStringNorm(boolean value) {
+        preservePolyStringNorm = value;
+        return this;
+    }
+
+    static boolean isPreservePolyStringNorm(SerializationOptions opts) {
+        return opts != null && opts.preservePolyStringNorm;
     }
 
     public static SerializationOptions getOptions(SerializationContext sc) {
@@ -279,6 +299,7 @@ public class SerializationOptions implements Cloneable {
                 ", serializeForExport=" + serializeForExport +
                 ", escapeInvalidCharacters=" + escapeInvalidCharacters +
                 ", skipContainerIds=" + skipContainerIds +
+                ", preservePolyStringNorm=" + preservePolyStringNorm +
                 '}';
     }
 

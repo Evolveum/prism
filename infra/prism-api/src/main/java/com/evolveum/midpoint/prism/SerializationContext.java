@@ -51,6 +51,10 @@ public class SerializationContext implements Cloneable {
         return ctx != null && SerializationOptions.isSkipWhitespaces(ctx.getOptions());
     }
 
+    public static boolean isPreservePolyStringNorm(SerializationContext ctx) {
+        return ctx != null && SerializationOptions.isPreservePolyStringNorm(ctx.getOptions());
+    }
+
     public static SerializationContext forOptions(SerializationOptions options) {
         return new SerializationContext(options);
     }

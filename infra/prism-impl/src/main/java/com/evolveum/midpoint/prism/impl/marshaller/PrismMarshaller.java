@@ -582,11 +582,11 @@ public class PrismMarshaller {
                 return (XNodeImpl) rawValue.serializeToXNode();
             }
         }
-        if (realValue instanceof PolyString) {
-            return beanMarshaller.marshalPolyString((PolyString) realValue);
+        if (realValue instanceof PolyString polyString) {
+            return beanMarshaller.marshalPolyString(polyString, ctx);
         }
-        if (realValue instanceof PolyStringType) {   // should not occur ...
-            return beanMarshaller.marshalPolyString(((PolyStringType) realValue).toPolyString());
+        if (realValue instanceof PolyStringType polyStringType) { // should not occur ...
+            return beanMarshaller.marshalPolyString(polyStringType.toPolyString(), ctx);
         }
 
         /*

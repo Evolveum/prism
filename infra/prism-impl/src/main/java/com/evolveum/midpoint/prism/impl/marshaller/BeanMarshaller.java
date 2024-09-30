@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism.impl.marshaller;
 
+import static com.evolveum.midpoint.prism.SerializationContext.isPreservePolyStringNorm;
 import static com.evolveum.midpoint.prism.SerializationOptions.getOptions;
 
 import java.lang.reflect.*;
@@ -574,17 +575,21 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
     }
 
     private XNodeImpl marshalPolyString(Object value, SerializationContext sc) throws SchemaException {
-        if (value instanceof PolyString) {
-            return marshalPolyString((PolyString) value);
-        } else if (value instanceof PolyStringType) {
-            return marshalPolyString(((PolyStringType) value).toPolyString());
+        if (value instanceof PolyString polyString) {
+            return marshalPolyString(polyString, sc);
+        } else if (value instanceof PolyStringType polyStringType) {
+            return marshalPolyString(polyStringType.toPolyString(), sc);
         } else {
             throw new IllegalArgumentException("Not a PolyString nor PolyStringType: " + value);
         }
     }
 
-    XNodeImpl marshalPolyString(PolyString realValue) throws SchemaException {
-        if (realValue.isSimple()) {
+    XNodeImpl marshalPolyString(PolyString realValue, SerializationContext sc) throws SchemaException {
+        var useSimpleNormalization =
+                realValue.isSimple()
+                && (!isPreservePolyStringNorm(sc) || !realValue.hasCustomNormalization());
+
+        if (useSimpleNormalization) {
             PrimitiveXNodeImpl<PolyString> xprim = new PrimitiveXNodeImpl<>();
             xprim.setValue(realValue, PolyStringType.COMPLEX_TYPE);
             return xprim;
