@@ -15,7 +15,7 @@ import java.util.List;
  * @param root
  * @param atn
  */
-public record AxiomQuerySource(@NotNull AxiomQueryParser.RootContext root, @NotNull ATN atn) {
+public record AxiomQuerySource(@NotNull AxiomQueryParser.RootContext root, @NotNull ATN atn, List<AxiomQueryError> syntaxErrors) {
 
     public static AxiomQuerySource from(String query) {
         CodePointCharStream stream = CharStreams.fromString(query);
@@ -32,6 +32,6 @@ public record AxiomQuerySource(@NotNull AxiomQueryParser.RootContext root, @NotN
 
         // Get all tokens from the token stream
         tokenStream.fill();
-        return new AxiomQuerySource(parser.root(), parser.getATN());
+        return new AxiomQuerySource(parser.root(), parser.getATN(), axiomQueryErrorListener.getSyntaxErrors());
     }
 }
