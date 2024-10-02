@@ -38,7 +38,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     @Test
     public void testTesting() {
-        String query = "name ";
+        String query = "name eq value and ";
 
 //        query = "name equal and ";
 //        query = "name ";
@@ -57,8 +57,8 @@ public class TestQueryCompletion extends AbstractPrismTest {
 //                )
 //                """;
 
-        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 4).autocomplete();
-        System.out.println("RESULT_TESTING: ");
-        suggestions.forEach(s -> System.out.println(s));
+        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 13).autocomplete();
+//        System.out.println("RESULT_TESTING: ");
+//        suggestions.forEach(s -> System.out.println(s));
     }
 }
