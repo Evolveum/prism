@@ -15,7 +15,6 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 
@@ -48,7 +47,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      */
     private boolean firstItemComponentExpected;
 
-    public AxiomQueryContentAssistantVisitor(PrismContext prismContext, @NotNull ItemDefinition<?> rootItem,
+    public AxiomQueryContentAssistantVisitor(PrismContext prismContext, ItemDefinition<?> rootItem,
             ATN atn, int positionCursor) {
         this.prismContext = prismContext;
         this.rootItemDefinition = rootItem;
@@ -346,16 +345,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         if (positionContext != null) {
             Definition definition = itemDefinitions.get(findIdentifierDefinition((RuleContext) positionContext.node().getChild(positionContext.cursorIndex()).getParent()));
-
-            getExpectedTokenCtxByPositionCtx(atn, positionContext).forEach(s -> {
-                System.out.println("SSS:: " + AxiomQueryParser.tokenNames[s.index()]);
-                if (s.rules() != null) {
-                    System.out.println("RULES: ");
-                    s.rules().forEach(r -> {
-                        System.out.println("    " + AxiomQueryParser.ruleNames[r]);
-                    });
-                }
-            });
 
             for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
                 if (token.index() == AxiomQueryLexer.IDENTIFIER) {
@@ -663,17 +652,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
             for (Transition transition : nextState.getTransitions()) {
                 if (transition instanceof AtomTransition atomTransition) {
-                    // FIXME quality code
+                    TokenWithCtx token = new TokenWithCtx(atomTransition.label, null);
+                    // currently to need rules context only for IDENTIFIER token
                     if (atomTransition.label == AxiomQueryLexer.IDENTIFIER) {
-                        TokenWithCtx token = new TokenWithCtx(atomTransition.label, rules);
-                        if (!expected.contains(token)) {
-                            expected.add(token);
-                        }
-                    } else {
-                        TokenWithCtx token = new TokenWithCtx(atomTransition.label, null);
-                        if (atomTransition.label != -1 && !(expected.contains(token))) {
-                            expected.add(token);
-                        }
+                        token = token.withRules(rules);
+                    }
+
+                    if (atomTransition.label != -1 && !(expected.contains(token))) {
+                        expected.add(token);
                     }
                 } else if (transition instanceof SetTransition setTransition) {
                     setTransition.set.getIntervals().forEach(interval -> {
@@ -682,10 +668,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         }
                     });
                 } else if (transition instanceof RuleTransition ruleTransition) {
-                    if (context instanceof AxiomQueryParser.FilterContext filterContext) {
-                        // FIXME filter context
-                        // filter -~> AND, OR
-                        // And/OrFiltri -> subFilter, Itemfilter(path)
+                    if (context instanceof AxiomQueryParser.FilterContext) {
+                        if (context instanceof AxiomQueryParser.AndFilterContext || context instanceof AxiomQueryParser.OrFilterContext) {
+                            if (ruleTransition.ruleIndex != AxiomQueryParser.RULE_negation) {
+                                states.push(ruleTransition.target);
+                            }
+                        } else {
+                            states.push(ruleTransition.followState);
+                        }
                     } else {
                         states.push(ruleTransition.target);
                     }
