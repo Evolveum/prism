@@ -76,7 +76,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     @Override
     public Object visitIdentifierComponent(AxiomQueryParser.IdentifierComponentContext ctx) {
-        // # can use only for container
+        // '#' can use only for container
         errorRegister((itemDefinitions.get(findIdentifierDefinition(ctx)) instanceof PrismContainerDefinition<?>), ctx,
                 "Invalid '%s' in identifier component.", ctx.getText());
         return super.visitIdentifierComponent(ctx);
@@ -589,7 +589,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return expected;
     }
 
-
     /**
      * The method fill the list of expected tokens with the appropriate rules context in ATN network.
      * first analyzes position context rule -> find all following rules
@@ -604,7 +603,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         Stack<Integer> rules = new Stack<>();
         ATNState nextState;
 
-        states.push(atn.states.get(context.invokingState));
+        if (context.invokingState == -1) {
+            states.push(atn.states.get(0));
+        } else {
+            states.push(atn.states.get(context.invokingState));
+        }
 
         while (!states.isEmpty()) {
             nextState = states.pop();

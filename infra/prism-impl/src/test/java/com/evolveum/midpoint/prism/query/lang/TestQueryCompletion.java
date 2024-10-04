@@ -3,8 +3,11 @@ package com.evolveum.midpoint.prism.query.lang;
 import java.io.IOException;
 import java.util.*;
 
+import com.beust.ah.A;
+
 import com.evolveum.midpoint.prism.foo.*;
 
+import com.evolveum.midpoint.prism.impl.query.lang.AxiomQueryContentAssistantVisitor;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
 import com.evolveum.midpoint.prism.query.ContentAssist;
 import com.evolveum.midpoint.prism.query.Suggestion;
@@ -38,7 +41,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     @Test
     public void testTesting() {
-        String query = "name eq value and ";
+        String query = "name eq value or ";
 
 //        query = "name equal and ";
 //        query = "name ";
@@ -57,7 +60,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
 //                )
 //                """;
 
-        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 13).autocomplete();
+        List<Suggestion> suggestions = axiomQueryContentAssist.process(userDef, query, 13, null).autocomplete();
 //        System.out.println("RESULT_TESTING: ");
 //        suggestions.forEach(s -> System.out.println(s));
     }
