@@ -1,46 +1,13 @@
 package com.evolveum.axiom.lang.antlr;
 
+import java.util.Objects;
+
 /**
  * Created by Dominik.
  */
-public class AxiomQueryError {
-    private final int lineStart;
-    private final int lineStop;
-    private final int charPositionInLineStart;
-    private final int charPositionInLineStop;
-
-    private final String message;
-
-    public AxiomQueryError(int lineStart, int lineStop, int charPositionInLineStart, int charPositionInLineStop, String msg)
-    {
-        this.lineStart = lineStart;
-        this.lineStop = lineStop;
-        this.charPositionInLineStart = charPositionInLineStart;
-        this.charPositionInLineStop = charPositionInLineStop;
-        this.message = msg;
-    }
-
-    public int getLineStart()
-    {
-        return lineStart;
-    }
-    public int getLineStop()
-    {
-        return lineStop;
-    }
-    public int getCharPositionStart()
-    {
-        return charPositionInLineStart;
-    }
-    public int getCharPositionStop()
-    {
-        return charPositionInLineStop;
-    }
-
-    public String getMessage()
-    {
-        return message;
-    }
+public record AxiomQueryError(int lineStart, int lineStop,
+                              int charPositionInLineStart, int charPositionInLineStop,
+                              String message) {
 
     @Override
     public boolean equals(Object obj) {
@@ -61,26 +28,24 @@ public class AxiomQueryError {
             return true;
         }
 
-        return super.equals(obj);
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hash(lineStart, lineStop, charPositionInLineStart, charPositionInLineStop, message);
     }
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append(lineStart)
-                .append(":")
-                .append(charPositionInLineStart)
-                .append("-")
-                .append(lineStop)
-                .append(":")
-                .append(charPositionInLineStop)
-                .append(" ")
-                .append(message)
-                .toString();
+        return lineStart
+                + ":"
+                + charPositionInLineStart
+                + "-"
+                + lineStop
+                + ":"
+                + charPositionInLineStop
+                + " "
+                + message;
     }
 }
