@@ -751,6 +751,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             sb.append(DebugUtil.formatElementName(getTargetType()));
             sb.append(")");
         }
+        var targetName = getTargetName();
         if (targetName != null) {
             sb.append("('").append(targetName).append("')");
         }
