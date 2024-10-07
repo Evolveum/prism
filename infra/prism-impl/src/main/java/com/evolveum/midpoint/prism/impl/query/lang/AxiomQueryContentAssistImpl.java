@@ -23,11 +23,20 @@ public class AxiomQueryContentAssistImpl implements AxiomQueryContentAssist {
     }
 
     @Override
-    public ContentAssist process(@Nullable ItemDefinition<?> rootItem, String query, int positionCursor) {
+    public ContentAssist process(@Nullable ItemDefinition<?> rootItem, String query, int positionCursor, ContentAssist.Options option) {
         AxiomQuerySource source = AxiomQuerySource.from(query);
         AxiomQueryContentAssistantVisitor visitor = new AxiomQueryContentAssistantVisitor(prismContext, rootItem, source.atn(), positionCursor);
         source.root().accept(visitor);
         visitor.errorList.addAll(source.syntaxErrors());
+
+        if (ContentAssist.Options.VALIDATE.equals(option)) {
+            return new ContentAssist(visitor.errorList, null);
+        }
+
+        if (ContentAssist.Options.AUTOCOMPLETE.equals(option)) {
+            return new ContentAssist(null, visitor.generateSuggestions());
+        }
+
         return new ContentAssist(visitor.errorList, visitor.generateSuggestions());
     }
 }
