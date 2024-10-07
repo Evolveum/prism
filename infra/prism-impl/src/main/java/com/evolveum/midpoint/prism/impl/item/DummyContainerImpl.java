@@ -53,8 +53,8 @@ public class DummyContainerImpl<C extends Containerable>
     }
 
     @Override
-    public void addIgnoringEquivalents(@NotNull PrismContainerValue<C> newValue) throws SchemaException {
-        delegate().addIgnoringEquivalents(newValue);
+    public ItemModifyResult<PrismContainerValue<C>> addIgnoringEquivalents(@NotNull PrismContainerValue<C> newValue) throws SchemaException {
+        return delegate().addIgnoringEquivalents(newValue);
     }
 
     @NotNull

@@ -334,8 +334,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    public void addIgnoringEquivalents(@NotNull V newValue) throws SchemaException {
-        addInternal(newValue, false, null);
+    public ItemModifyResult<V> addIgnoringEquivalents(@NotNull V newValue) throws SchemaException {
+        return addInternal(newValue, false, null);
     }
 
     // The checkUniqueness parameter is redundant but let's keep it for robustness.

@@ -499,9 +499,9 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public void addIgnoringEquivalents(
+    public ItemModifyResult<PrismContainerValue<Containerable>> addIgnoringEquivalents(
             @NotNull PrismContainerValue<Containerable> newValue) throws SchemaException {
-        delegate.addIgnoringEquivalents(newValue);
+        return delegate.addIgnoringEquivalents(newValue);
     }
 
     @Override

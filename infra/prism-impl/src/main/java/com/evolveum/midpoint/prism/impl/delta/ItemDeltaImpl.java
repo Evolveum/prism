@@ -1323,6 +1323,16 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     public void applyToMatchingPath(@NotNull Item item) throws SchemaException {
         applyResults = null;
         if (valuesToReplace != null) {
+
+            // this "add" to apply results should probably be in applyValuesToReplace(item), however we're clearing
+            // item before fore-mentioned method is called
+            if (applyResults == null) {
+                applyResults = new ArrayList<>();
+            }
+
+            List<V> values = item.getValues();
+            values.forEach(v -> applyResults.add(ItemModifyResult.removed(v, v)));
+
             item.clear();
             // In some cases, the "replace" delta can change the item type and definition. That's why we clear the item first
             // (to avoid type errors when the definition is applied to existing values).
@@ -1395,7 +1405,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         item.clear();
         for (V v : valuesToReplace) {
             //noinspection unchecked
-            item.addIgnoringEquivalents(v.clone());
+            var result = item.addIgnoringEquivalents(v.clone());
+            applyResults.add(result);
         }
     }
 

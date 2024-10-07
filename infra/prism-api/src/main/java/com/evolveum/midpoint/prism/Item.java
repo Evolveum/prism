@@ -392,7 +392,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * Note that we check the cardinality of the item according to its definition,
      * i.e. we do not allow single-valued item to contain more than one value.
      */
-    void addIgnoringEquivalents(@NotNull V newValue) throws SchemaException;
+    ItemModifyResult<V> addIgnoringEquivalents(@NotNull V newValue) throws SchemaException;
 
     /**
      * Adds given values, with the same semantics as repeated add(..) calls.

@@ -9,15 +9,10 @@ package com.evolveum.midpoint.prism.impl.item;
 import java.util.Collection;
 import java.util.List;
 
+import com.evolveum.midpoint.prism.*;
+
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.CloneStrategy;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PartiallyResolvedItem;
-import com.evolveum.midpoint.prism.PrismProperty;
-import com.evolveum.midpoint.prism.PrismPropertyDefinition;
-import com.evolveum.midpoint.prism.PrismPropertyValue;
-import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -48,8 +43,8 @@ public class DummyPropertyImpl<T> extends DummyItem<PrismPropertyValue<T>, Prism
     }
 
     @Override
-    public void addIgnoringEquivalents(@NotNull PrismPropertyValue<T> newValue) throws SchemaException {
-        delegate().addIgnoringEquivalents(newValue);
+    public ItemModifyResult<PrismPropertyValue<T>> addIgnoringEquivalents(@NotNull PrismPropertyValue<T> newValue) throws SchemaException {
+        return delegate().addIgnoringEquivalents(newValue);
     }
 
     public <X> @NotNull Collection<X> getRealValues(Class<X> type) {

@@ -51,8 +51,8 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
     }
 
     @Override
-    public void addIgnoringEquivalents(@NotNull PrismReferenceValue newValue) throws SchemaException {
-        delegate().addIgnoringEquivalents(newValue);
+    public ItemModifyResult<PrismReferenceValue> addIgnoringEquivalents(@NotNull PrismReferenceValue newValue) throws SchemaException {
+        return delegate().addIgnoringEquivalents(newValue);
     }
 
     @Override

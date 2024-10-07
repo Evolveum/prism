@@ -1,13 +1,11 @@
 package com.evolveum.midpoint.prism;
 
+import static com.evolveum.midpoint.prism.ItemModifyResult.ActualApplyOperation.*;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.evolveum.midpoint.prism.ItemModifyResult.ActualApplyOperation.*;
-
 public class ItemModifyResult<V extends PrismValue> {
-
-
 
     public enum ActualApplyOperation {
         /**
@@ -82,4 +80,15 @@ public class ItemModifyResult<V extends PrismValue> {
         return !isUnmodified();
     }
 
+    public boolean isModified() {
+        return MODIFIED.equals(operation);
+    }
+
+    public boolean isAdded() {
+        return ADDED.equals(operation);
+    }
+
+    public boolean isDeleted() {
+        return DELETED.equals(operation);
+    }
 }
