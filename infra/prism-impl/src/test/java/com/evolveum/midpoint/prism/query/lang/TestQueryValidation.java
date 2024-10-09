@@ -520,7 +520,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         var query = """
                 name = "Tony" and assignment matches ( targetRef/@/name = "Foo" )
                 """;
-        var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 5, ContentAssist.Options.VALIDATE).validate();
+        var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query, 0, ContentAssist.Options.VALIDATE).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
     }
 }
