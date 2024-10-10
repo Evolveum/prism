@@ -6,6 +6,7 @@ import com.evolveum.axiom.lang.antlr.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryLexer;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.query.ItemFilter;
 import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -15,6 +16,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 
@@ -28,24 +30,50 @@ import javax.xml.namespace.QName;
  */
 public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisitor<Object> {
 
-    private final ATN atn;
-    private final PrismContext prismContext;
-    private final ItemDefinition<?> rootItemDefinition;
-    private final HashMap<RuleContext, Definition> itemDefinitions = new HashMap<>();
-    public final List<AxiomQueryError> errorList = new ArrayList<>();
-    private final int positionCursor;
-
-    private Definition infraPathDefinition;
-    private PositionContext positionContext;
-
     /**
-     * itemComponents should be treated as item path
+     * ANTLR4 ATN network provided by the parser
+     */
+    private final ATN atn;
+    /**
+     * PRISM context for get schema context and other helper methods.
+     */
+    private final PrismContext prismContext;
+    /**
+     * PRISM definition for root context (initial state), primary from schema context annotation
+     */
+    private final ItemDefinition<?> rootItemDefinition;
+    /**
+     * Table hash for mapping PRISM definition according AST (primary for itemFilter, filter and root context)
+     */
+    private final HashMap<RuleContext, Definition> itemDefinitions = new HashMap<>();
+    /**
+     * Error list for save semantic and syntax errors also
+     */
+    public final List<AxiomQueryError> errorList = new ArrayList<>();
+    /**
+     * Mumber of position cursor (start from 1)
+     */
+    private final int positionCursor;
+    /**
+     * Context at the location of the cursor position
+     */
+    private PositionContext positionContext;
+    /**
+     * PRISM definition variable for infra language concept
+     */
+    private Definition infraPathDefinition;
+    /**
+     * ItemComponents should be treated as item path
      */
     private boolean itemExpected;
     /**
-     *  is first item path component expected?
+     *  Is first item path component expected?
      */
     private boolean firstItemComponentExpected;
+
+    public AxiomQueryContentAssistantVisitor(PrismContext prismContext, ItemDefinition<?> rootItem) {
+        this(prismContext, rootItem, null, 0);
+    }
 
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, ItemDefinition<?> rootItem,
             ATN atn, int positionCursor) {
@@ -93,7 +121,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public Object visitSubfilterOrValue(AxiomQueryParser.SubfilterOrValueContext ctx) {
         this.itemExpected = false;
 
-        var parent = parentItemFilter(ctx);
+        var parent = findItemFilterContextInTree(ctx);
         if (parent.filterName() != null && Filter.Name.MATCHES.getLocalPart().equals(parent.filterName().getText())) {
             if (ctx.subfilterSpec() != null) {
                 updateItemDefinitionForContext(ctx.subfilterSpec(), itemFilterDefinition(parent));
@@ -113,7 +141,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     @Override
     public Object visitSelfPath(AxiomQueryParser.SelfPathContext ctx) {
         this.firstItemComponentExpected = false;
-        var filterCtx = parentItemFilter(ctx);
+        var filterCtx = findItemFilterContextInTree(ctx);
         updateItemDefinitionForContext(filterCtx, findParentContextDefinition(filterCtx));
         return super.visitSelfPath(ctx);
     }
@@ -134,7 +162,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public Object visitDereferenceComponent(AxiomQueryParser.DereferenceComponentContext ctx) {
         var first = firstItemComponentExpected;
         firstItemComponentExpected = false;
-        var itemFilterContext = parentItemFilter(ctx);
+        var itemFilterContext = findItemFilterContextInTree(ctx);
         if (first) {
             updateItemDefinitionForContext(itemFilterContext, findParentContextDefinition(itemFilterContext));
         }
@@ -173,7 +201,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             return super.visitItemComponent(ctx);
         }
 
-        var itemFilterContext = parentItemFilter(ctx);
+        var itemFilterContext = findItemFilterContextInTree(ctx);
         if (metaFilters.containsKey(itemFilterContext.getChild(0).getText())) {
             if (Filter.Meta.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
                 updateItemDefinitionForContext(findIdentifierDefinition(ctx), prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(identifier)));
@@ -279,7 +307,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     @Override
     public Object visitFilterName(AxiomQueryParser.FilterNameContext ctx) {
-        var itemFilterContext = parentItemFilter(ctx);
+        var itemFilterContext = findItemFilterContextInTree(ctx);
         var itemDefinition = itemFilterDefinition(ctx);
         if (Arrays.stream(Filter.Meta.values())
                 .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
@@ -305,7 +333,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     @Override
     public Object visitFilterNameAlias(AxiomQueryParser.FilterNameAliasContext ctx) {
-        var itemFilterContext = parentItemFilter(ctx);
+        var itemFilterContext = findItemFilterContextInTree(ctx);
         if (Arrays.stream(Filter.Meta.values())
                 .anyMatch(meta -> meta.getName().equals(itemFilterContext.getChild(0).getText()))
             || Arrays.stream(Filter.ReferencedKeyword.values())
@@ -327,7 +355,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     private Definition itemFilterDefinition(ParserRuleContext context) {
-        return itemDefinitions.get(parentItemFilter(context));
+        return itemDefinitions.get(findItemFilterContextInTree(context));
     }
 
     @Override
@@ -348,18 +376,20 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
             for (TokenWithCtx token : getExpectedTokenCtxByPositionCtx(atn, positionContext)) {
                 if (token.index() == AxiomQueryLexer.IDENTIFIER) {
-                    if (token.rules().contains(AxiomQueryParser.RULE_filterName)) {
-                        var itemDefinition = itemDefinitions.get(parentItemFilter(positionContext.node()));
+                    if (token.rules() != null && token.rules().contains(AxiomQueryParser.RULE_filterName)) {
+                        ParseTree itemFilter = findItemFilterContextInTree(positionContext.node().getChild(positionContext.cursorIndex()));
+                        var itemDefinition = itemDefinitions.get(findItemFilterContextInTree(itemFilter));
+
                         if (itemDefinition != null) {
                             FilterProvider.findFilterByItemDefinition(itemDefinition, AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
                                 suggestions.add(new Suggestion(name, alias, -1));
                             });
                         }
-                    } else if (token.rules().contains(AxiomQueryParser.RULE_path)) {
+                    } else if (token.rules() != null && token.rules().contains(AxiomQueryParser.RULE_path)) {
                         definitionProcessingToPathSuggestion(definition, suggestions);
-                    } else if (token.rules().contains(AxiomQueryParser.RULE_matchingRule)) {
+                    } else if (token.rules() != null && token.rules().contains(AxiomQueryParser.RULE_matchingRule)) {
                         // generate matching paths to [... ]
-                    } else if (token.rules().contains(AxiomQueryParser.RULE_subfilterOrValue)) {
+                    } else if (token.rules() != null && token.rules().contains(AxiomQueryParser.RULE_subfilterOrValue)) {
                         // subfilter path ???
                     }
                 } else if (token.index() == AxiomQueryLexer.NOT_KEYWORD) {
@@ -368,7 +398,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     suggestions.add(new Suggestion(Filter.Name.AND.name().toLowerCase(), Filter.Name.AND.name().toLowerCase(), -1));
                 } else if (token.index() == AxiomQueryLexer.OR_KEYWORD) {
                     suggestions.add(new Suggestion(Filter.Name.OR.name().toLowerCase(), Filter.Name.OR.name().toLowerCase(), -1));
-                }else {
+                } else {
                     suggestions.add(suggestionFromVocabulary(token, -1));
                 }
             }
@@ -428,15 +458,16 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find node in parserTree which to content cursor by cursor position.
+     * Find node in parser tree which to content cursor by cursor position.
      * @param tree
      * @param position
      * @return the node in which it is located cursor or null
      */
     private ParseTree findNodeLeftOfCursor(ParseTree tree, int position) {
-        if (tree instanceof TerminalNode) {
-            Token token = ((TerminalNode) tree).getSymbol();
-            if (token.getStartIndex() <= position && token.getStopIndex() >= position) {
+        if (tree instanceof TerminalNode terminalNode) {
+            Token token = terminalNode.getSymbol();
+
+            if (token.getStartIndex() <= position - 1 && token.getStopIndex() >= position - 1) {
                 return tree;
             }
         } else {
@@ -455,7 +486,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find node which has cursor position with branch index
+     * Find node which has cursor of position with index of branch.
      * @param tree
      * @return {@link PositionContext}
      */
@@ -463,43 +494,17 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         int count = tree.getChildCount();
         ParseTree parent;
 
-        if (tree instanceof AxiomQueryParser.RootContext) {
-            return new PositionContext(0, tree);
-        }
-
-        while (count <= 1) {
-            if ((parent = tree.getParent()).getChildCount() > 1) {
-                for (int i = 0; i < parent.getChildCount(); i++) {
-                    if (parent.getChild(i).equals(tree)) {
-                        return new PositionContext(i, parent);
-                    }
-                }
+        if (tree instanceof AxiomQueryParser.RootContext rootContext) {
+            if (rootContext.filter() != null) {
+                return new PositionContext(getChildIndexInParent(rootContext, rootContext.filter()), rootContext.filter());
+            } else {
+                return new PositionContext(0, tree);
             }
-
-            tree = tree.getParent();
-            count = tree.getChildCount();
         }
-
-        return null;
-    }
-
-    private PositionContext findPositionContextAdjusted(ParseTree tree) {
-        int count = tree.getChildCount();
-        ParseTree parent;
-
-        /*
-        if (tree instanceof AxiomQueryParser.RootContext) {
-            return new PositionContext(0, tree);
-        }
-        */
 
         while (count <= 1) {
             if ((parent = tree.getParent()).getChildCount() > 1) {
-                for (int i = 0; i < parent.getChildCount(); i++) {
-                    if (parent.getChild(i).equals(tree)) {
-                        return new PositionContext(i, parent);
-                    }
-                }
+                return new PositionContext(getChildIndexInParent(tree, parent), parent);
             }
 
             tree = tree.getParent();
@@ -512,17 +517,55 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     /**
      * Found itemFilter context in input parserTree. ItemFilter is main non-terminal for every filter query see you grammar
      * language AxiomQueryParser.g4.
-     * @param ctx
+     * @param node
      * @return
      */
-    private AxiomQueryParser.ItemFilterContext parentItemFilter(ParseTree ctx) {
-        if (ctx == null) return null;
+    private AxiomQueryParser.ItemFilterContext parentItemFilter(ParseTree node) {
+        if (node == null) return null;
 
-        while (ctx != null && !ctx.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
-            ctx = ctx.getParent();
+        while (node != null && !node.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
+            node = node.getParent();
         }
 
-        return AxiomQueryParser.ItemFilterContext.class.cast(ctx);
+        return (AxiomQueryParser.ItemFilterContext) node;
+    }
+
+
+    /**
+     * Found itemFilter context as child and parent also. Top and down searching.
+     * @param node
+     * @return found itemFilter.
+     */
+    private AxiomQueryParser.ItemFilterContext findItemFilterContextInTree(ParseTree node) {
+        int index;
+
+        if (node == null) return null;
+
+        if (node instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) return itemFilterContext;
+
+        while (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+            if (node.getParent() instanceof AxiomQueryParser.RootContext || node.getParent() instanceof AxiomQueryParser.FilterContext) {
+                // -1 because need previous branch from node
+                index = getChildIndexInParent(node, node.getParent());
+
+                while (index > 0 && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+                    // Loop down searching until find itemFilter
+                    while (node != null && !node.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
+                        node = node.getParent().getChild(index - 1);
+                        if (node.getChildCount() > 0) {
+                            node = node.getChild(node.getChildCount() - 1);
+                        }
+                    }
+                    index = index -1;
+                }
+            }
+
+            if (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+                node = node.getParent();
+            }
+        }
+
+        return (AxiomQueryParser.ItemFilterContext) node;
     }
 
     /**
@@ -573,7 +616,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         if (node instanceof TerminalNode terminalNode) {
             // if position token is SEPARATOR then find following rule of previous token
             if (terminalNode.getSymbol().getType() == AxiomQueryLexer.SEP) {
-                node = positionCtx.node().getChild(positionCtx.cursorIndex() - 1);
+                node = positionCtx.node().getChild(positionCtx.cursorIndex());
                 if (node instanceof TerminalNode) {
                     node = node.getParent();
                 }
@@ -583,7 +626,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
 
         if (node instanceof RuleContext ruleContext) {
-            findTokensWithRuleCtxInATN(atn, ruleContext, getTerminalNode(positionCtx.node().getChild(positionCtx.cursorIndex())), expected);
+            findTokensWithRuleCtxInATN(atn, ruleContext, expected);
         }
 
         return expected;
@@ -595,12 +638,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * next analyzes all following rules and to collect all excepted tokens with rules ctx
      * @param atn ANTLR4 ATN network
      * @param context position context on the based on the which search following rules
-     * @param terminal following terminal after position context (usually SEPARATOR)
      * @param expected list to fill expected tokens with rule context
      */
-    private void findTokensWithRuleCtxInATN(ATN atn, RuleContext context, TerminalNode terminal, List<TokenWithCtx> expected) {
+    private void findTokensWithRuleCtxInATN(ATN atn, RuleContext context, List<TokenWithCtx> expected) {
         Stack<ATNState> states = new Stack<>(), passedStates = new Stack<>();
-        Stack<Integer> rules = new Stack<>();
         ATNState nextState;
 
         if (context.invokingState == -1) {
@@ -615,70 +656,70 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
             for (Transition transition : nextState.getTransitions()) {
                 if (transition instanceof AtomTransition atomTransition) {
-                    if (atomTransition.label == terminal.getSymbol().getType()) {
+                    if (atomTransition.label == AxiomQueryParser.SEP) {
                         states.push(atomTransition.target);
-                    }
-                } else if (transition instanceof RuleTransition ruleTransition) {
-                    if (context.getRuleIndex() == ruleTransition.ruleIndex) {
-                        states.push(ruleTransition.followState);
-                    }
-
-                    if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_path || ruleTransition.ruleIndex == AxiomQueryParser.RULE_matchingRule) {
-                        if (terminal.getSymbol().getType() == AxiomQueryLexer.IDENTIFIER) {
-                            rules.push(ruleTransition.ruleIndex);
-                        }
                     } else {
-                        rules.push(ruleTransition.ruleIndex);
-                    }
-                } else {
-                    // check looping
-                    if (!passedStates.contains(transition.target) && nextState.getClass() != RuleStopState.class) {
-                        states.push(transition.target);
-                    }
-                }
-            }
-        }
-
-        rules.forEach(followingRule -> {
-            states.push(atn.ruleToStartState[followingRule]);
-        });
-
-        rules.clear();
-
-        while (!states.isEmpty()) {
-            nextState = states.pop();
-            passedStates.push(nextState);
-
-            if (!rules.contains(nextState.ruleIndex)) {
-                rules.push(nextState.ruleIndex);
-            }
-
-            for (Transition transition : nextState.getTransitions()) {
-                if (transition instanceof AtomTransition atomTransition) {
-                    TokenWithCtx token = new TokenWithCtx(atomTransition.label, null);
-                    // currently to need rules context only for IDENTIFIER token
-                    if (atomTransition.label == AxiomQueryLexer.IDENTIFIER) {
-                        token = token.withRules(rules);
-                    }
-
-                    if (atomTransition.label != -1 && !(expected.contains(token))) {
-                        expected.add(token);
+                        registerExpectedTokens(atomTransition.label, null, expected);
                     }
                 } else if (transition instanceof SetTransition setTransition) {
                     setTransition.set.getIntervals().forEach(interval -> {
                         for (int i = interval.a; i <= interval.b; i++) {
-                            expected.add(new TokenWithCtx(i, null));
+                            registerExpectedTokens(i, null, expected);
                         }
                     });
                 } else if (transition instanceof RuleTransition ruleTransition) {
-                    if (context instanceof AxiomQueryParser.FilterContext) {
-                        if (context instanceof AxiomQueryParser.AndFilterContext || context instanceof AxiomQueryParser.OrFilterContext) {
+                    if (context instanceof AxiomQueryParser.RootContext rootContext) {
+                        if (rootContext.filter() != null) {
+                            findTokensWithRuleCtxInATN(atn, rootContext.filter(), expected);
+                        } else {
+                            // initial root context (path, subFilter, negation)
+                            expected.addAll(findExpectedTokensInItemFilter(null));
+                            states.clear();
+                            break;
+                        }
+                    } else if (context.getRuleIndex() == AxiomQueryParser.RULE_filter) {
+                        if (ruleTransition.ruleIndex == context.getRuleIndex()) {
+                            states.push(ruleTransition.target);
+                        }
+
+                        if (context instanceof AxiomQueryParser.GenFilterContext genFilter) {
+                            List<TokenWithCtx> expectedTokens = findExpectedTokensInItemFilter(genFilter.itemFilter());
+                            if (expectedTokens.isEmpty()) {
+                                states.push(ruleTransition.followState);
+                            } else {
+                                expected.addAll(expectedTokens);
+                                states.clear();
+                                break;
+                            }
+                        } else if (context instanceof AxiomQueryParser.AndFilterContext || context instanceof AxiomQueryParser.OrFilterContext) {
+                            // after logical filter can following filterContext
                             if (ruleTransition.ruleIndex != AxiomQueryParser.RULE_negation) {
                                 states.push(ruleTransition.target);
                             }
-                        } else {
-                            states.push(ruleTransition.followState);
+                        } else if (context instanceof AxiomQueryParser.NotFilterContext notFilterCtx) {
+                            if (notFilterCtx.subfilterSpec() == null) {
+                                if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_subfilterSpec) {
+                                    states.push(ruleTransition.target);
+                                }
+                            } else {
+                                findTokensWithRuleCtxInATN(atn, notFilterCtx.subfilterSpec(), expected);
+                            }
+                        } else if (context instanceof AxiomQueryParser.SubFilterContext subFilterCtx) {
+                            // TODO... After subfilter can following filterCTX
+                        } else if (context instanceof AxiomQueryParser.NegationContext negationCtx) {
+                            if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterName ||
+                                    ruleTransition.ruleIndex == AxiomQueryParser.RULE_filterNameAlias) {
+                                states.push(ruleTransition.target);
+                            }
                         }
+                    } else if (context.getRuleIndex() == AxiomQueryParser.RULE_subfilterOrValue) {
+                        // TODO...
+                    } else if (context.getRuleIndex() == AxiomQueryParser.RULE_negation) {
+                        if (ruleTransition.ruleIndex == AxiomQueryParser.RULE_negation) {
+                            states.push(ruleTransition.target);
+                        }
+                    } else if (context.getRuleIndex() == AxiomQueryParser.RULE_itemFilter) {
+                        expected.addAll(findExpectedTokensInItemFilter((AxiomQueryParser.ItemFilterContext) context));
                     } else {
                         states.push(ruleTransition.target);
                     }
@@ -692,6 +733,165 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
     }
 
+    /**
+     * Return all following tokens in itemFilter ATN according itemFilter parse context.
+     * @param itemFilter parse context itemFilter concept of AXQ language.
+     * @return expected tokens with rules by currently state itemFilter context.
+     */
+    private List<TokenWithCtx> findExpectedTokensInItemFilter(@Nullable AxiomQueryParser.ItemFilterContext itemFilter) {
+        Stack<ATNState> states = new Stack<>();
+        Stack<ATNState> passedStates = new Stack<>();
+        Stack<TokenWithCtx> tokens = new Stack<>();
+        Stack<Integer> rules = new Stack<>();
+        ATNState nextState;
+
+        // if context itemFilter is null then initial traverse expected tokens for RootContext
+        if (itemFilter == null) {
+            states.push(atn.states.get(0));
+
+            while (!states.isEmpty()) {
+                nextState = states.pop();
+                passedStates.push(nextState);
+
+                if (!rules.contains(nextState.ruleIndex)) {
+                    rules.push(nextState.ruleIndex);
+                }
+
+                for (Transition transition : nextState.getTransitions()) {
+                    if (transition instanceof AtomTransition atomTransition) {
+                        if (atomTransition.label == AxiomQueryParser.SEP) {
+                            states.push(atomTransition.target);
+                        } else {
+                            registerExpectedTokens(atomTransition.label, rules, tokens);
+                        }
+                    } else if (transition instanceof RuleTransition ruleTransition) {
+                        states.push(ruleTransition.target);
+                    } else {
+                        // check looping
+                        if (!passedStates.contains(transition.target) && nextState.getClass() != RuleStopState.class) {
+                            states.push(transition.target);
+                        }
+                    }
+                }
+            }
+        } else {
+            if (itemFilter.children.get(itemFilter.children.size() - 1) instanceof RuleContext lastConcept) {
+                int terminalType = getLastTerminalNode(itemFilter);
+                states.push(atn.states.get(lastConcept.invokingState));
+
+                while (!states.isEmpty()) {
+                    nextState = states.pop();
+                    passedStates.push(nextState);
+
+                    if (!rules.contains(nextState.ruleIndex)) {
+                        rules.push(nextState.ruleIndex);
+                    }
+
+                    for (Transition transition : nextState.getTransitions()) {
+                        if (transition instanceof AtomTransition atomTransition) {
+                            // FIXME code quality conditions
+                            if (terminalType == AxiomQueryParser.IDENTIFIER && (
+                                    rules.contains(AxiomQueryParser.RULE_path) ||
+                                    rules.contains(AxiomQueryParser.RULE_filterName))
+                            ) {
+                                registerExpectedTokens(atomTransition.label, rules, tokens);
+                            } else {
+                                if (atomTransition.label == terminalType) {
+                                    states.push(atomTransition.target);
+                                } else {
+                                    registerExpectedTokens(atomTransition.label, rules, tokens);
+                                }
+                            }
+                        } else if (transition instanceof SetTransition setTransition) {
+                            if (setTransition.label().contains(terminalType)) {
+                                states.push(setTransition.target);
+                            } else {
+                                setTransition.set.getIntervals().forEach(interval -> {
+                                    for (int i = interval.a; i <= interval.b; i++) {
+                                        registerExpectedTokens(i, null, tokens);
+                                    }
+                                });
+                            }
+                        } else if (transition instanceof RuleTransition ruleTransition) {
+                            if (lastConcept.getRuleIndex() == ruleTransition.ruleIndex) {
+                                if ((ruleTransition.ruleIndex == AxiomQueryParser.RULE_path ||
+                                        ruleTransition.ruleIndex == AxiomQueryParser.RULE_matchingRule) &&
+                                        terminalType == AxiomQueryParser.IDENTIFIER) {
+                                    states.push(ruleTransition.target);
+                                    states.push(ruleTransition.followState);
+                                } else {
+                                    states.push(ruleTransition.followState);
+                                    rules.clear();
+                                }
+                            } else {
+                                states.push(ruleTransition.target);
+                            }
+                        } else {
+                            // check looping
+                            if (!passedStates.contains(transition.target) && nextState.getClass() != RuleStopState.class) {
+                                states.push(transition.target);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return tokens;
+    }
+
+    /**
+     * Method check if concept has separator or not -> other terminal token because syntax of language to possible some concepts without separator
+     * (currently: path,filterNameAlias,matchesFilter, subFilter).
+     * @param itemFilter
+     * @return terminal token type.
+     */
+    private int getLastTerminalNode(AxiomQueryParser.ItemFilterContext itemFilter) {
+        RuleContext ruleContext = itemFilter;
+        int index = ruleContext.getChildCount() - 1;
+
+        while (!(ruleContext.getChild(index) instanceof TerminalNode terminal &&
+                terminal.getSymbol().getType() == AxiomQueryParser.SEP)) {
+
+            if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_root ||
+                    ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filter) {
+                if (ruleContext.getChild(index + 1) != null &&
+                        ruleContext.getChild(index + 1) instanceof TerminalNode terminal &&
+                        terminal.getSymbol().getType() == AxiomQueryParser.SEP) {
+                    return AxiomQueryParser.SEP;
+                } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_root) {
+                    return getTerminalNode(positionContext.node().getChild(positionContext.cursorIndex())).getSymbol().getType();
+                }
+            }
+
+            index = getChildIndexInParent(ruleContext, ruleContext.getParent());
+            ruleContext = ruleContext.getParent();
+        }
+
+        return getTerminalNode(positionContext.node().getChild(positionContext.cursorIndex())).getSymbol().getType();
+    }
+
+    /**
+     * Method to get the index of index node (ctx) in its parent's children list.
+     * @param child
+     * @param parent
+     * @return
+     */
+    private int getChildIndexInParent(ParseTree child, ParseTree parent) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            ParseTree childAtIndex = parent.getChild(i);
+            if (childAtIndex == child) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Method return last terminal node from branch node.
+     * @param parseTree
+     * @return
+     */
     private TerminalNode getTerminalNode(ParseTree parseTree) {
         if (parseTree instanceof TerminalNode terminalNode) {
             return terminalNode;
@@ -701,12 +901,30 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             while (parseTree.getChildCount() > 0) {
                 parseTree = parseTree.getChild(parseTree.getChildCount() - 1);
 
-                if (parseTree instanceof TerminalNode node) {
-                    return node;
+                if (parseTree instanceof TerminalNode terminalNode) {
+                    return terminalNode;
                 }
             }
         }
 
         return null;
+    }
+
+    /**
+     * Method append token to expected tokens list.
+     * @param label
+     * @param rules
+     * @param tokens
+     */
+    private void registerExpectedTokens(int label, Stack<Integer> rules, List<TokenWithCtx> tokens) {
+        TokenWithCtx token = new TokenWithCtx(label, null);
+        // currently to need rules context only for IDENTIFIER token
+        if (label == AxiomQueryLexer.IDENTIFIER) {
+            token = token.withRules(rules);
+        }
+
+        if (label != -1 && !tokens.contains(token)) {
+            tokens.add(token);
+        }
     }
 }

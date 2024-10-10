@@ -5,6 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 public interface AxiomQueryContentAssist {
 
-    ContentAssist process(@Nullable ItemDefinition<?> rootItem, String query, int cursorPosition, ContentAssist.Options option);
-
+    ContentAssist process(@Nullable ItemDefinition<?> rootItem, String query);
+    ContentAssist process(@Nullable ItemDefinition<?> rootItem, String query, int cursorPosition);
 }

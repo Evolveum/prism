@@ -6,8 +6,7 @@ import java.util.List;
 
 public record ContentAssist(List<AxiomQueryError> validate, List<Suggestion> autocomplete) {
 
-    public enum Options {
-        VALIDATE,
-        AUTOCOMPLETE
+    public ContentAssist(List<AxiomQueryError> validate) {
+        this(validate, null);
     }
 }
