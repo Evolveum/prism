@@ -19,16 +19,11 @@ public record AxiomQueryError(int lineStart, int lineStop,
             return false;
         }
 
-        if (axiomQueryError.lineStart == lineStart &&
+        return axiomQueryError.lineStart == lineStart &&
                 axiomQueryError.lineStop == lineStop &&
                 axiomQueryError.charPositionInLineStart == charPositionInLineStart &&
                 axiomQueryError.charPositionInLineStop == charPositionInLineStop &&
-                axiomQueryError.message.equals(message)
-        ) {
-            return true;
-        }
-
-        return false;
+                axiomQueryError.message.equals(message);
     }
 
     @Override
