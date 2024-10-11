@@ -4,7 +4,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Position node context by cursor in parser tree.
+ * Node by locations position cursor in AST, cursorIndex points to branch in node where the terminal symbol is located
  *
  * Created by Dominik.
  */
