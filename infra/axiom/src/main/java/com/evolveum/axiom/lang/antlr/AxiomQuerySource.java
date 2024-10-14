@@ -19,15 +19,15 @@ public record AxiomQuerySource(@NotNull AxiomQueryParser.RootContext root, @NotN
 
     public static AxiomQuerySource from(String query) {
         CodePointCharStream stream = CharStreams.fromString(query);
-        AxiomQueryErrorListener axiomQueryErrorListener = new AxiomQueryErrorListener();
 
         AxiomQueryLexer lexer = new AxiomQueryLexer(stream);
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(axiomQueryErrorListener);
-
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         AxiomQueryParser parser = new AxiomQueryParser(tokenStream);
+        AxiomQueryErrorListener axiomQueryErrorListener = new AxiomQueryErrorListener(parser.getVocabulary());
+
+        lexer.removeErrorListeners();
         parser.removeErrorListeners();
+        lexer.addErrorListener(axiomQueryErrorListener);
         parser.addErrorListener(axiomQueryErrorListener);
 
         // Get all tokens from the token stream
