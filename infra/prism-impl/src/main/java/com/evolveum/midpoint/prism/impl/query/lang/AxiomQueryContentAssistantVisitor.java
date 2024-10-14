@@ -5,13 +5,11 @@ import java.util.*;
 import com.evolveum.axiom.lang.antlr.*;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
-import com.evolveum.midpoint.prism.query.ItemFilter;
 import com.evolveum.midpoint.prism.query.Suggestion;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParserBaseVisitor;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 import com.google.common.base.Strings;
-import com.sun.xml.xsom.impl.Ref;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -786,7 +784,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             TerminalNode terminal = getTerminalNode(positionContext.node().getChild(positionContext.cursorIndex()));
             int terminalType = terminal.getSymbol().getType();
 
-            concept = findTerminalIndexInNode(terminal);
+            concept = findNodeOfTerminal(terminal);
             if (concept.getParent() instanceof AxiomQueryParser.FilterContext ||
                     concept.getParent() instanceof AxiomQueryParser.RootContext) {
                 concept = getPreviousNode(concept.getParent());
@@ -975,7 +973,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param terminalNode
      * @return node of terminal
      */
-    private ParseTree findTerminalIndexInNode(TerminalNode terminalNode) {
+    private ParseTree findNodeOfTerminal(TerminalNode terminalNode) {
         int index = -1;
         ParseTree node = terminalNode;
 
