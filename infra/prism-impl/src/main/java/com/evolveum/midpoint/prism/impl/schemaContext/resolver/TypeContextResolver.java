@@ -29,7 +29,11 @@ public class TypeContextResolver implements SchemaContextResolver {
     @Override
     public SchemaContext computeContext(PrismValue prismValue) {
         SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
-        PrismObjectDefinition<?> def = registry.findObjectDefinitionByType(definition.getType());
+        PrismObjectDefinition<?> objDef = registry.findObjectDefinitionByType(definition.getType());
+        if (definition.getPath() == null) {
+            return new SchemaContextImpl(objDef);
+        }
+        var def = objDef.findItemDefinition(definition.getPath());
         return new SchemaContextImpl(def);
     }
 }

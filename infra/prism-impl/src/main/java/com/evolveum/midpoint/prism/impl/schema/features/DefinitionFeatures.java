@@ -22,6 +22,8 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLi
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionMutator;
 import com.evolveum.midpoint.prism.TypeDefinition.TypeDefinitionLikeBuilder;
+import com.evolveum.midpoint.prism.impl.ItemPathParserImpl;
+import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.schema.features.ItemDiagramSpecificationXsomParser.ItemDiagramSpecifications;
 
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
@@ -483,6 +485,7 @@ public class DefinitionFeatures {
                     if (getAnnotationElement(annotation, A_SCHEMA_CONTEXT) != null) {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
                         Element typeElement = getAnnotationElement(annotation, A_TYPE);
+                        Element pathElement = getAnnotationElement(annotation, A_PATH);
                         Element typePathElement = getAnnotationElement(annotation, A_TYPE_PATH);
                         Element algorithmElement = getAnnotationElement(annotation, A_ALGORITHM);
 
@@ -498,6 +501,10 @@ public class DefinitionFeatures {
                             schemaContextDefinition.setAlgorithm(new QName(algorithmElement.getTextContent()));
                         }
 
+                        if (pathElement != null) {
+                            var itemPath = ItemPathHolder.parseFromString(pathElement.getTextContent(), DOMUtil.getNamespaceDeclarations(pathElement));
+                                schemaContextDefinition.setPath(itemPath);
+                        }
                         return schemaContextDefinition;
                     }
 

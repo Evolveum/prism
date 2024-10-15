@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.metadata.ValueMetadataAdapter;
 import com.evolveum.midpoint.prism.impl.schemaContext.resolver.ContextResolverFactoryImpl;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
@@ -446,9 +447,12 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         if (def == null) {
             return null;
         }
-        if (def.getSchemaContextDefinition() != null) {
-            SchemaContextDefinition schemaContextDefinition = getParent().getDefinition().getSchemaContextDefinition();
-            var schemaContextResolver = schemaLookup().resolverFor(schemaContextDefinition);
+        var contextDefinition = def.getSchemaContextDefinition();
+        if (contextDefinition == null && getParent() != null && getParent().getDefinition() != null) {
+            contextDefinition = getParent().getDefinition().getSchemaContextDefinition();
+        }
+        if (contextDefinition != null) {
+            var schemaContextResolver = schemaLookup().resolverFor(contextDefinition);
             return schemaContextResolver.computeContext(this);
         }
 
@@ -461,4 +465,15 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
         return null;
     }
 
+    @Override
+    public SchemaLookup schemaLookup() {
+        SchemaLookup maybe = null;
+        if (getDefinition() != null) {
+            maybe = getDefinition().schemaLookup();
+        }
+        if (maybe != null) {
+            return maybe;
+        }
+        return PrismContext.get().getDefaultSchemaLookup();
+    }
 }

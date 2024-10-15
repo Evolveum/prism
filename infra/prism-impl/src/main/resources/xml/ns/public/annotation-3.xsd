@@ -1009,6 +1009,13 @@
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
+            <xsd:element name="path" type="xsd:string" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Name object type.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
             <xsd:element name="typePath" type="xsd:QName" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>

@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import com.evolveum.midpoint.prism.normalization.Normalizer;
+import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.*;
@@ -743,5 +744,10 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     public void transformDefinition(ComplexTypeDefinition parentDef, ItemDefinition<?> itemDef,
             ItemDefinitionTransformer transformation) {
         // NOOP
+    }
+
+    @Override
+    public SchemaContext getSchemaContext() {
+        return super.getSchemaContext();
     }
 }

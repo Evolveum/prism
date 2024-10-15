@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.prism.schemaContext;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 import java.io.Serializable;
 import javax.xml.namespace.QName;
 
@@ -13,6 +15,8 @@ public interface SchemaContextDefinition extends Serializable {
      * Type object if directly defined.
      */
     QName getType();
+
+    ItemPath getPath();
 
     /**
      * Path of type object.
@@ -29,6 +33,8 @@ public interface SchemaContextDefinition extends Serializable {
     void setType(QName type);
 
     void setTypePath(QName typePath);
+
+    void setPath(ItemPath path);
 
     void setAlgorithm(QName algorithmName);
 }

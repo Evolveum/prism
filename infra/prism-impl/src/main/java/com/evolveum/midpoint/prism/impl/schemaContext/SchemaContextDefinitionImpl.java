@@ -2,6 +2,7 @@ package com.evolveum.midpoint.prism.impl.schemaContext;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
@@ -13,6 +14,8 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
     private QName type;
 
     private QName typePath;
+
+    private ItemPath path;
 
     private QName algorithm;
 
@@ -44,4 +47,13 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
         this.algorithm = algorithm;
     }
 
+    @Override
+    public void setPath(ItemPath path) {
+        this.path = path;
+    }
+
+    @Override
+    public ItemPath getPath() {
+        return path;
+    }
 }
