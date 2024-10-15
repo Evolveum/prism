@@ -15,6 +15,8 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 
+import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
+
 import org.jetbrains.annotations.NotNull;
 
 import org.jetbrains.annotations.Nullable;
@@ -195,5 +197,10 @@ public interface DefinitionDelegator extends Definition {
     @Override
     default @Nullable NaturalKeyDefinition getNaturalKeyInstance() {
         return delegate().getNaturalKeyInstance();
+    }
+
+    @Override
+    default @Nullable SchemaContextDefinition getSchemaContextDefinition() {
+        return delegate().getSchemaContextDefinition();
     }
 }
