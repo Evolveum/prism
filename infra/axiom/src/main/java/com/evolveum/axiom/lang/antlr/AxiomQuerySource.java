@@ -10,11 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- *
- * @param root
- * @param atn
- */
 public record AxiomQuerySource(@NotNull AxiomQueryParser.RootContext root, @NotNull ATN atn, List<AxiomQueryError> syntaxErrors) {
 
     public static AxiomQuerySource from(String query) {

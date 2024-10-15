@@ -48,7 +48,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     /**
      * Error list for save semantic and syntax errors also
      */
-    public final List<AxiomQueryError> errorList = new ArrayList<>();
+    private final List<AxiomQueryError> errorList = new ArrayList<>();
     /**
      * Mumber of position cursor (start from 1)
      */
@@ -361,6 +361,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return super.visitSubfilterSpec(ctx);
     }
 
+    public List<AxiomQueryError> getErrorList() {
+        return errorList;
+    }
+
     /**
      * Generate code completions suggestion for AxiomQuery language by position context.
      * @return List {@link Suggestion}
@@ -578,7 +582,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find reference object of node which present change of definition in AST (rootContext or subfilterSpecContext).
+     * Find reference object of node which present change of definition in AST (rootContext or subFilterSpecContext).
      * @param node
      * @return reference object as identifier for {@link AxiomQueryContentAssistantVisitor#itemDefinitions}
      */
