@@ -138,7 +138,15 @@ public class Filter {
         REF_TARGET_ALIAS("@"),
         SELF_PATH("."),
         LPAR("("),
-        RPAR(")");
+        RPAR(")"),
+        SQUARE_BRACKET_LEFT("["),
+        SQUARE_BRACKET_RIGHT("]"),
+        LEFT_BRACE("{"),
+        RIGHT_BRACE("}"),
+        SQOUTE("'"),
+        DQOUTE("\""),
+        BACKTICK("`");
+
 
         private final String name;
 
