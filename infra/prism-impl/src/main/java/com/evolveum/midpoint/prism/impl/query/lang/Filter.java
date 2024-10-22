@@ -117,14 +117,14 @@ public class Filter {
         }
     }
 
-    public enum PolystringKeyword {
+    public enum PolyStringKeyword {
 
         ORIG("orig"),
         NORM("norm");
 
         private final String name;
 
-        PolystringKeyword(String name) {
+        PolyStringKeyword(String name) {
             this.name = name;
         }
 
@@ -145,7 +145,8 @@ public class Filter {
         RIGHT_BRACE("}"),
         SQOUTE("'"),
         DQOUTE("\""),
-        BACKTICK("`");
+        BACKTICK("`"),
+        SLASH("/");
 
 
         private final String name;
