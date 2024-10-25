@@ -47,7 +47,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
-            .put(Filter.PolystringKeyword.ORIG.getName(), String.class).put(Filter.PolystringKeyword.NORM.getName(), String.class).build();
+            .put(Filter.PolyStringKeyword.ORIG.getName(), String.class).put(Filter.PolyStringKeyword.NORM.getName(), String.class).build();
 
     public interface ItemFilterFactory {
         ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -1191,8 +1191,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
             FilterContext filter) throws SchemaException {
         Map<String, Object> props = valuesFromFilter("PolyString", POLYSTRING_PROPS, filter, new HashMap<>(), true);
-        String orig = (String) props.get(Filter.PolystringKeyword.ORIG.getName());
-        String norm = (String) props.get(Filter.PolystringKeyword.NORM.getName());
+        String orig = (String) props.get(Filter.PolyStringKeyword.ORIG.getName());
+        String norm = (String) props.get(Filter.PolyStringKeyword.NORM.getName());
         schemaCheck(orig != null || norm != null, "orig or norm must be defined in matches polystring filter.");
         if (orig != null && norm != null) {
             return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME, new PolyString(orig, norm));
