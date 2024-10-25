@@ -49,78 +49,42 @@ public class TestQueryCompletion extends AbstractPrismTest {
         return contentAssist.autocomplete();
     }
 
+    private void assertSuggestionsMatch(List<Suggestion> suggestions, List<String> expected) {
+        expected.forEach(e -> assertThat(suggestions).map(Suggestion::name).contains(e));
+    }
+
     @Test()
     public void testRootCtx() {
-        List<Suggestion> suggestion = getSuggestion("^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion1 = getSuggestion("  ^");
-        assertThat(suggestion1).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion1).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion2 = getSuggestion("^  ");
-        assertThat(suggestion2).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion2).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion3 = getSuggestion("  ^  ");
-        assertThat(suggestion3).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion3).map(Suggestion::name).contains(itemName.toString());
-        });
+        List<String> expected = new ArrayList<>(userDef.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
+        expected.addAll(List.of(".", "@", "not"));
+        assertThat(getSuggestion("^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("  ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("^  ")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("  ^  ")).map(Suggestion::name).containsAll(expected);
     }
 
     @Test()
     public void testItemPath() {
-        List<Suggestion> suggestion = getSuggestion("name^");
-        List<String> aliases = new ArrayList<>(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
-        assertThat(suggestion).map(Suggestion::name).containsAll(aliases);
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
-        });
+        List<String> expected = new ArrayList<>(userDef.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
+        expected.addAll(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
+        assertThat(getSuggestion("name^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name^ equal value")).map(Suggestion::name).containsAll(expected);
 
-        List<Suggestion> suggestion2 = getSuggestion("name^ equal value");
-        assertThat(suggestion2).map(Suggestion::name).containsAll(aliases);
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion2).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion1 = getSuggestion("name ^");
-        aliases.add("not");
-        assertThat(suggestion1).map(Suggestion::name).containsAll(aliases);
-        FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("name"))), 15).forEach(
-                (name, alias) -> {
-                    assertThat(suggestion1).map(Suggestion::name).contains(name);
-                }
-        );
-
-        List<Suggestion> suggestion3 = getSuggestion("name ^equal 'value'");
-        assertThat(suggestion3).map(Suggestion::name).containsAll(aliases);
-        FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("name"))), 15).forEach(
-                (name, alias) -> {
-                    assertThat(suggestion3).map(Suggestion::name).contains(name);
-                }
-        );
+        expected = new ArrayList<>(FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("name"))), 15).keySet().stream().toList());
+        expected.add("not");
+        assertThat(getSuggestion("name ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name ^equal 'value'")).map(Suggestion::name).containsAll(expected);
     }
 
     @Test()
     public void testSelfPath() {
-        List<Suggestion> suggestion = getSuggestion(". ^");
+        List<String> expected = new ArrayList<>(FilterProvider.findFilterByItemDefinition(userDef, 15).keySet().stream().toList());
+        assertThat(getSuggestion(". ^")).map(Suggestion::name).containsAll(expected);
 
-        FilterProvider.findFilterByItemDefinition(userDef, 15).forEach(
-                (name, alias) -> {
-                    assertThat(suggestion).map(Suggestion::name).contains(name);
-                }
-        );
-
+        // unexpected
+        List<String> suggestion = getSuggestion(". ^").stream().map(Suggestion::name).toList();
         for (Filter.Alias value : Filter.Alias.values()) {
-            assertThat(suggestion).map(Suggestion::name).isNotEqualTo(value.getName());
+            assertThat(suggestion).doesNotContain(value.getName());
         }
     }
 
@@ -141,131 +105,135 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     @Test()
     public void testReferenceAndDereferencePath() {
-        List<Suggestion> suggestion = getSuggestion("""
+        PrismContainerDefinition<?> containerDefinition = userDef.findItemDefinition(ItemPath.create(new QName("assignment")), PrismContainerDefinition.class);
+        List<String> expected = new ArrayList<>(containerDefinition.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
+        expected.addAll(List.of("@", "#", ":"));
+        assertSuggestionsMatch(getSuggestion("""
                 assignment/^targetRef/@/name = "End user"
-                """);
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@", "#", ":"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion1 = getSuggestion("""
-                assignment/targetRef^/@/name = "End user"
-                """);
-        assertThat(suggestion1).map(Suggestion::name).contains("/");
-
-        List<Suggestion> suggestion2 = getSuggestion("""
+                """), expected);
+        assertSuggestionsMatch(getSuggestion("""
                 assignment/^
-                """);
-        assertThat(suggestion2).map(Suggestion::name).containsAll(List.of("@", "#", ":", ".."));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion2).map(Suggestion::name).contains(itemName.toString());
-        });
+                """), expected);
 
-        List<Suggestion> suggestion3 = getSuggestion("""
+        assertSuggestionsMatch(getSuggestion("""
+                assignment/targetRef^/@/name = "End user"
+                """), List.of("/"));
+
+        assertSuggestionsMatch(getSuggestion("""
                 assignment/targetRef/^@/name = "End user"
-                """);
-        assertThat(suggestion3).map(Suggestion::name).containsAll(List.of("@", "#", ":"));
-        userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion3).map(Suggestion::name).contains(itemName.toString());
-        });
-
-        List<Suggestion> suggestion4 = getSuggestion("""
-                assignment/targetRef/@/^
-                """);
+                """), List.of("@", "#", ":"));
 
         PrismContainerDefinition<?> def = userDef.findItemDefinition(ItemPath.create(new QName("assignment")));
         PrismReferenceDefinition ref = def.findReferenceDefinition(ItemPath.create(new QName("targetRef")));
         PrismObjectDefinition<?> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(ref.getTargetTypeName());
-        objDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion4).map(Suggestion::name).contains(itemName.toString());
-        });
+        assertSuggestionsMatch(getSuggestion("""
+                assignment/targetRef/@/^ eq 'value'
+                """), objDef.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
 
-        assertThat(getSuggestion("@^")).map(Suggestion::name).isEmpty();
+        assertSuggestionsMatch(getSuggestion("assignment/targetRef/@^"), List.of("/"));
     }
 
     @Test
     public void testValue() {
-        // FIXME discussion of what to generate for value
-//        List<Suggestion> suggestion = getSuggestion("givenName equal ^'John' ");
-//        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("'", "\""));
+        List<String> expected = List.of("'", "\"");
+        assertThat(getSuggestion("givenName equal ^'John' ")).map(Suggestion::name).containsAll(expected);
 
+        expected = List.of("or", "and");
+        assertThat(getSuggestion("givenName ='John' ^")).map(Suggestion::name).containsAll(expected);
         assertThat(getSuggestion("givenName = 'John'^")).map(Suggestion::name).isEmpty();
+    }
 
-        List<Suggestion> suggestion1 = getSuggestion("givenName ='John' ^");
-        assertThat(suggestion1).map(Suggestion::name).containsAll(List.of("or", "and"));
+    @Test()
+    public void testNegation() {
+        List<String> expected = new ArrayList<>(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
+
+        assertSuggestionsMatch(getSuggestion("""
+                name not^
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                name not^=
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                name not^ equal
+                """), expected);
+
+
+//        expected.add("(");
+        expected.addAll(FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("name"))),15).keySet());
+        assertSuggestionsMatch(getSuggestion("""
+                name not ^
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                name not ^equal
+                """), expected);
+
+
+        assertSuggestionsMatch(getSuggestion("""
+                not^ (name not exists)
+                """), List.of("SEP"));
     }
 
     @Test(enabled = false)
     public void testItemFilter() {
-//        getSuggestion("name not^");
-//        getSuggestion("name not ^");
-//        getSuggestion("name not^= ");
-//        getSuggestion("name not^ equal");
-//        getSuggestion("name not ^equal");
+        List<String> expected = new ArrayList<>();
 
-//        suggestion = getSuggestion("""
-//                . referencedBy (
-//                    and na^
-//                """);
+        assertSuggestionsMatch(getSuggestion("""
+                . referencedBy (
+                    and na^
+                """), expected);
 
-//        suggestion = getSuggestion("""
-//                . referencedBy (
-//                   @type = AssignmentType ^
-//                """);
-//
-//        suggestion = getSuggestion("""
-//                . referencedBy (
-//                   @type = AssignmentType
-//                   and @path = targetRef
-//                   and . ^ownedBy (
-//                      @type = UserType
-//                      and @path = assignment
-//                      and archetypeRef/@/name = "System user"
-//                   )
-//                )
-//                """);
-//
-//        suggestion = getSuggestion("""
-//                . referencedBy (
-//                   @type = AssignmentType
-//                   and @path = targetRef
-//                   and . ownedBy (
-//                      ^@type = UserType
-//                      and @path = assignment
-//                      and archetypeRef/@/name = "System user"
-//                   )
-//                )
-//                """);
+        assertSuggestionsMatch(getSuggestion("""
+                . referencedBy (
+                   @type = AssignmentType ^
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                . referencedBy (
+                   @type = AssignmentType
+                   and @path = targetRef
+                   and . ^ownedBy (
+                      @type = UserType
+                      and @path = assignment
+                      and archetypeRef/@/name = "System user"
+                   )
+                )
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                . referencedBy (
+                   @type = AssignmentType
+                   and @path = targetRef
+                   and . ownedBy (
+                      ^@type = UserType
+                      and @path = assignment
+                      and archetypeRef/@/name = "System user"
+                   )
+                )
+                """), expected);
     }
 
     @Test()
     public void testLogicalFilter() {
-        List<Suggestion> suggestion = getSuggestion("name equal value ^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("and", "or"));
+        List<String> expected = List.of("and", "or");
+        assertThat(getSuggestion("name equal value ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name= value ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name =value ^")).map(Suggestion::name).containsAll(expected);
 
-        suggestion = getSuggestion("name= value ^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("and", "or"));
-
-        suggestion = getSuggestion("name =value ^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("and", "or"));
-
-        suggestion = getSuggestion("name =value and^");
-        assertThat(suggestion).map(Suggestion::name).isEmpty();
-
-        suggestion = getSuggestion("name =value and ^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("(", ".", "@", ":", "$", "..", "#"));
-
-        suggestion = getSuggestion("name =value or^");
-         assertThat(suggestion).map(Suggestion::name).isEmpty();
-
-        suggestion = getSuggestion("name =value or ^");
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("(", ".", "@", ":", "$", "..", "#"));
+        expected = List.of("(", ".", "@", ":", "$", "..", "#");
+        assertThat(getSuggestion("name =value and ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name =value or ^")).map(Suggestion::name).containsAll(expected);
+        assertThat(getSuggestion("name =value or^")).map(Suggestion::name).isEmpty();
+        assertThat(getSuggestion("name =value and^")).map(Suggestion::name).isEmpty();
     }
 
     @Test(enabled = false)
     public void testSubFilter() {
-        List<Suggestion> suggestion = getSuggestion("""
+        List<String> expected = new ArrayList<>();
+
+        assertSuggestionsMatch(getSuggestion("""
                 . referencedBy ^(
                    @type = AssignmentType
                    and @path = targetRef
@@ -275,9 +243,9 @@ public class TestQueryCompletion extends AbstractPrismTest {
                       and archetypeRef/@/name = "System user"
                    )
                 )
-                """);
+                """), expected);
 
-        suggestion = getSuggestion("""
+        assertSuggestionsMatch(getSuggestion("""
                 . referencedBy (^
                    @type = AssignmentType
                    and @path = targetRef
@@ -287,9 +255,9 @@ public class TestQueryCompletion extends AbstractPrismTest {
                       and archetypeRef/@/name = "System user"
                    )
                 )
-                """);
+                """), expected);
 
-        suggestion = getSuggestion("""
+        assertSuggestionsMatch(getSuggestion("""
                 . referencedBy ( ^
                    @type = AssignmentType
                    and @path = targetRef
@@ -299,9 +267,9 @@ public class TestQueryCompletion extends AbstractPrismTest {
                       and archetypeRef/@/name = "System user"
                    )
                 )
-                """);
+                """), expected);
 
-        suggestion = getSuggestion("""
+        assertSuggestionsMatch(getSuggestion("""
                 . referencedBy (
                    @type = AssignmentType
                    and @path = targetRef
@@ -311,9 +279,9 @@ public class TestQueryCompletion extends AbstractPrismTest {
                       and archetypeRef/@/name = "System user"
                    )
                 )
-                """);
+                """), expected);
 
-        suggestion = getSuggestion("""
+        assertSuggestionsMatch(getSuggestion("""
                 . referencedBy (
                    @type = AssignmentType
                    and @path = targetRef
@@ -323,11 +291,23 @@ public class TestQueryCompletion extends AbstractPrismTest {
                       and archetypeRef/@/name = "System user"
                    )
                 )
-                """);
+                """), expected);
     }
 
     @Test(enabled = false)
-    public void testMatchesFilter() {
-        // TODO unit test for matches filters
+    public void testMatchingFilter() {
+        List<String> expected = new ArrayList<>();
+
+        assertSuggestionsMatch(getSuggestion("""
+                    locality =[origIgnoreCase] "Edinburgh"
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                    givenName =[origIgnoreCase] "Adam"
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                    emailAddress endsWith[stringIgnoreCase] "@test.com"
+                """), expected);
     }
 }
