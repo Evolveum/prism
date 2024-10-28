@@ -19,7 +19,7 @@ public class Filter {
 
     public static final String MATCHING_RULE_NS = "http://prism.evolveum.com/xml/ns/public/matching-rule-3";
 
-    public enum Meta {
+    public enum Infra {
 
         TYPE("@type"),
         PATH("@path"),
@@ -27,7 +27,7 @@ public class Filter {
 
         private final String name;
 
-        Meta(String name) {
+        Infra(String name) {
             this.name = name;
         }
 
@@ -134,20 +134,12 @@ public class Filter {
     }
 
     public enum Token {
-
         REF_TARGET_ALIAS("@"),
         SELF_PATH("."),
-        LPAR("("),
-        RPAR(")"),
-        SQUARE_BRACKET_LEFT("["),
-        SQUARE_BRACKET_RIGHT("]"),
-        LEFT_BRACE("{"),
-        RIGHT_BRACE("}"),
-        SQOUTE("'"),
-        DQOUTE("\""),
-        BACKTICK("`"),
+        PARENT(".."),
+        DOLLAR("$"),
+        SHARP("#"),
         SLASH("/");
-
 
         private final String name;
 
@@ -157,6 +149,32 @@ public class Filter {
 
         public String getName() {
             return name;
+        }
+
+        // Pair Tokens
+        public enum Pair {
+            ROUND_BRACKET("(", ")"),
+            SQUARE_BRACKET("[", "]"),
+            BRACE("{", "}"),
+            SQOUTE("'", "'"),
+            DQOUTE("\"", "\""),
+            BACKTICK("`", "`");
+
+            private final String open;
+            private final String close;
+
+            Pair(String open, String close) {
+                this.open = open;
+                this.close = close;
+            }
+
+            public String getOpen() {
+                return open;
+            }
+
+            public String getClose() {
+                return close;
+            }
         }
     }
 
