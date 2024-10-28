@@ -529,10 +529,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Infra.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Infra.PATH.getName(), andChildren);
 
-                    QName relation = consumeFromAnd(QName.class, Filter.Meta.RELATION.getName(), andChildren);
+                    QName relation = consumeFromAnd(QName.class, Filter.Infra.RELATION.getName(), andChildren);
 
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     var reffererCont = context.findContainerDefinitionByType(type);
@@ -552,8 +552,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Infra.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Infra.PATH.getName(), andChildren);
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     ObjectFilter filter = andFilter(context.referenced(null, referrerSchema), andChildren);
                     return OwnedByFilterImpl.create(type, path, allFilterToNull(filter));
