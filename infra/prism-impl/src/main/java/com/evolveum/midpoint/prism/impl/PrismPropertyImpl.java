@@ -205,8 +205,9 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         addValue(pValueToAdd, true);
     }
 
-    public void addValue(PrismPropertyValue<T> pValueToAdd, boolean checkUniqueness) {
+    public void addValue(@NotNull PrismPropertyValue<T> pValueToAdd, boolean checkUniqueness) {
         checkMutable();
+        resetIncompleteFlagOnAddIfPossible();
         ((PrismPropertyValueImpl<T>) pValueToAdd).checkValue();
         enableOrDisableIndex(pValueToAdd, true);
         if (checkUniqueness && shouldIterateList(pValueToAdd)) {
@@ -214,8 +215,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
             while (iterator.hasNext()) {
                 PrismPropertyValue<T> pValue = iterator.next();
                 if (pValue.equals(pValueToAdd, EquivalenceStrategy.REAL_VALUE)) {
-                    LOGGER.warn("Adding value to property " + getElementName() + " that already exists (overwriting), value: "
-                            + pValueToAdd);
+                    LOGGER.warn("Adding value to property {} that already exists (overwriting), value: {}",
+                            getElementName(), pValueToAdd);
                     iterator.remove();
                 }
             }

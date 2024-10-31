@@ -152,16 +152,22 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * requested and therefore is not returned. This may be used to indicate
      * that only part of the attribute values were returned from the search.
      * And so on.
+     *
+     * *Behavior*: For single-valued items, the `incomplete` flag is cleared when a known value is set up
+     * (via delta or Java API).
+     *
+     * See also https://docs.evolveum.com/midpoint/devel/design/incomplete-items-4.9.1/.
      */
     boolean isIncomplete();
 
     /**
      * Flags the item as incomplete.
-     * @see Item#isIncomplete()
      *
      * FIXME: Should be package-visible to implementation
      *
      * @param incomplete The new value
+     *
+     * @see Item#isIncomplete()
      */
     void setIncomplete(boolean incomplete);
 
