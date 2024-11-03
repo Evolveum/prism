@@ -27,8 +27,9 @@ public class AxiomQueryContentAssistImpl implements AxiomQueryContentAssist {
         AxiomQuerySource source = AxiomQuerySource.from(query);
         AxiomQueryContentAssistantVisitor visitor = new AxiomQueryContentAssistantVisitor(prismContext, rootItem);
         source.root().accept(visitor);
-        visitor.getErrorList().addAll(source.syntaxErrors());
-        return new ContentAssist(visitor.getErrorList());
+        var errors = visitor.getErrorList();
+        errors.addAll(source.syntaxErrors());
+        return new ContentAssist(errors);
     }
 
     @Override
@@ -36,7 +37,8 @@ public class AxiomQueryContentAssistImpl implements AxiomQueryContentAssist {
         AxiomQuerySource source = AxiomQuerySource.from(query);
         AxiomQueryContentAssistantVisitor visitor = new AxiomQueryContentAssistantVisitor(prismContext, rootItem, source.atn(), positionCursor);
         source.root().accept(visitor);
-        visitor.getErrorList().addAll(source.syntaxErrors());
-        return new ContentAssist(visitor.getErrorList(), visitor.generateSuggestions());
+        var errors = visitor.getErrorList();
+        errors.addAll(source.syntaxErrors());
+        return new ContentAssist(errors, visitor.generateSuggestions());
     }
 }
