@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2023 Evolveum and contributors
+ * Copyright (C) 2010-2024 Evolveum and contributors
  *
  * This work is dual-licensed under the Apache License 2.0
  * and European Union Public License. See LICENSE file for details.
@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.impl.lazy.LazyPrismContainerValue;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections4.CollectionUtils;
@@ -247,15 +249,15 @@ public class PrismUnmarshaller {
         }
     }
 
-    private String getOid(MapXNodeImpl xmap) throws SchemaException {
+    public static String getOid(MapXNodeImpl xmap) throws SchemaException {
         return xmap.getParsedPrimitiveValue(XNodeImpl.KEY_OID, DOMUtil.XSD_STRING);
     }
 
-    private String getVersion(MapXNodeImpl xmap) throws SchemaException {
+    public static String getVersion(MapXNodeImpl xmap) throws SchemaException {
         return xmap.getParsedPrimitiveValue(XNodeImpl.KEY_VERSION, DOMUtil.XSD_STRING);
     }
 
-    private Long getContainerId(MapXNodeImpl xmap, PrismContainerDefinition<?> containerDef) throws SchemaException {
+    public static Long getContainerId(MapXNodeImpl xmap, PrismContainerDefinition<?> containerDef) throws SchemaException {
         PrimitiveXNodeImpl<Object> maybeId = xmap.getPrimitive(XNodeImpl.KEY_CONTAINER_ID);
         if (isContainerId(XNodeImpl.KEY_CONTAINER_ID, maybeId, containerDef)) {
             return maybeId.getParsedValue(DOMUtil.XSD_LONG, Long.class);
@@ -263,7 +265,7 @@ public class PrismUnmarshaller {
         return null;
     }
 
-    private boolean isContainerId(QName itemName, XNodeImpl node, PrismContainerDefinition<?> parentDef) {
+    private static boolean isContainerId(QName itemName, XNodeImpl node, PrismContainerDefinition<?> parentDef) {
         if (node instanceof PrimitiveXNodeImpl<?> && QNameUtil.match(itemName, XNodeImpl.KEY_CONTAINER_ID)) {
             if (((PrimitiveXNodeImpl<?>) node).isAttribute()) {
                 return true;
@@ -282,7 +284,7 @@ public class PrismUnmarshaller {
     /**
      * Returns an item with name "id".
      */
-    private ItemDefinition<?> idDef(PrismContainerDefinition<?> containerDef) {
+    private static ItemDefinition<?> idDef(PrismContainerDefinition<?> containerDef) {
         if (containerDef == null) {
             return null;
         }
@@ -313,6 +315,16 @@ public class PrismUnmarshaller {
             @NotNull MapXNodeImpl map, @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc)
             throws SchemaException {
 
+        var ctd = refineContainerCtdFromXsiType(containerDef.getComplexTypeDefinition(), map, pc);
+
+        if (pc.isUseLazyDeserializationFor(ctd.getTypeName())) {
+            return new LazyPrismContainerValue<>(ctd, pc, map);
+        }
+        return parseRealContainerValueFromMap(map, containerDef, pc);
+    }
+
+    public <C extends Containerable> PrismContainerValue<C> parseRealContainerValueFromMap(
+            @NotNull MapXNodeImpl map, @NotNull PrismContainerDefinition<C> containerDef, @NotNull ParsingContext pc) throws SchemaException {
         ValueWithDefinition<C> vd = createContainerValueWithDefinition(map, containerDef, pc);
         parseContainerChildren(vd.value, map, containerDef, vd.complexTypeDefinition, pc);
         return vd.value;
@@ -348,6 +360,11 @@ public class PrismUnmarshaller {
             ComplexTypeDefinition containerTypeDef, @NotNull XNodeImpl xnode, @NotNull ParsingContext pc) throws SchemaException {
         QName xsiTypeName = xnode.getTypeQName();
         if (xsiTypeName == null) {
+            return containerTypeDef;
+        }
+
+        if (xsiTypeName.equals(containerTypeDef.getTypeName())) {
+            // Performance: XSI Type is already provided container type, we do not need to search for it in schema registry.
             return containerTypeDef;
         }
 

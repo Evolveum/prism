@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 
+import javax.xml.namespace.QName;
 import java.util.List;
 
 /**
@@ -55,4 +56,7 @@ public interface ParsingContext extends Cloneable {
     boolean isFastAddOperations();
 
     ParsingContext fastAddOperations();
+
+    boolean isUseLazyDeserializationFor(QName typeName);
+    ParsingContext enableLazyDeserializationFor(QName typeName);
 }
