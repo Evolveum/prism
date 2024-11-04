@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.deleg.PrismContainerValueDelegator;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -542,6 +544,10 @@ public class PrismContainerImpl<C extends Containerable>
         }
         // descent to the correct value
         ItemPath rest = itemPath.startsWithId() ? itemPath.rest() : itemPath;
+        if (cval instanceof PrismContainerValueDelegator<C> delegator) {
+            // FIXME: findCreateItem should probably be part of some API
+            cval = delegator.delegate();
+        }
         return ((PrismContainerValueImpl<C>) cval).findCreateItem(rest, type, itemDefinition, create);
     }
 
