@@ -70,6 +70,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      */
     private boolean beforeCursorPosition;
 
+    /**
+     * Allowed types of class for key in hash table {@link this#itemDefinitions}
+     */
+    private static final List<Class<? extends ParseTree>> CLAZZ_OF_KEY = List.of(AxiomQueryParser.RootContext.class, AxiomQueryParser.SubfilterSpecContext.class, AxiomQueryParser.ItemFilterContext.class);
+
     public AxiomQueryContentAssistantVisitor(PrismContext prismContext, Definition rootItem) {
         this(prismContext, rootItem, null, 0);
     }
@@ -81,6 +86,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         this.positionCursor = positionCursor;
         this.beforeCursorPosition = true;
     }
+
+// --------------------------------- Error Handling & Semantics Validation ----------------------------------
 
     @Override
     public Object visitRoot(AxiomQueryParser.RootContext ctx) {
@@ -124,14 +131,22 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     @Override
     public Object visitSelfPath(AxiomQueryParser.SelfPathContext ctx) {
-        updateDefinitionByContext(ctx, findParentContextDefinition(ctx));
+        var itemFilter = findIdentifierOfDefinition(ctx);
+
+        // if query started with selfPath use definition from root or not then using definition from subFilterSpec
+        if (findIdentifierOfDefinition(itemFilter.getParent()) instanceof AxiomQueryParser.RootContext) {
+            updateDefinitionByContext(ctx, findParentContextDefinition(ctx));
+        } else {
+            updateDefinitionByContext(ctx, findParentContextDefinition(ctx, AxiomQueryParser.SubfilterSpecContext.class), List.of(AxiomQueryParser.ItemFilterContext.class, AxiomQueryParser.SubfilterSpecContext.class));
+        }
+
         return super.visitSelfPath(ctx);
     }
 
     @Override
     public Object visitDereferenceComponent(AxiomQueryParser.DereferenceComponentContext ctx) {
         var def = findParentContextDefinition(ctx, AxiomQueryParser.ItemFilterContext.class);
-        // Is first ItemComponent
+        // Is first ItemComponent?
         if (getTerminalNode(ctx).getSymbol().equals(ctx.getParent().start)) {
             def = findParentContextDefinition(ctx);
         }
@@ -169,8 +184,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         if (infraFilters.containsKey(itemFilterContext.getChild(0).getText())) {
             if (Filter.Infra.TYPE.getName().equals(itemFilterContext.getChild(0).getText())) {
-                updateDefinitionByContext(ctx, prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(identifier)));
-                errorRegister(itemDefinitions.get(ctx) != null, ctx, "Invalid infra type '%s'.", identifier);
+                var def = prismContext.getSchemaRegistry().findComplexTypeDefinitionByType(new QName(identifier));
+                updateDefinitionByContext(ctx, def, List.of(AxiomQueryParser.ItemFilterContext.class, AxiomQueryParser.SubfilterSpecContext.class));
+                errorRegister(def != null, ctx, "Invalid infra type '%s'.", identifier);
             } else if (Filter.Infra.PATH.getName().equals(itemFilterContext.getChild(0).getText())) {
                 var key = findIdentifierOfDefinition(ctx);
                 var def = itemDefinitions.get(key);
@@ -180,7 +196,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 }
 
                 def = findDefinition(def, new QName(identifier));
-                updateDefinitionByContext(ctx, def);
+                updateDefinitionByContext(ctx, def,
+                        List.of(AxiomQueryParser.ItemFilterContext.class, AxiomQueryParser.SubfilterSpecContext.class));
                 errorRegister(def != null, ctx,
                         "Invalid infra path '%s'.", identifier);
             } else if (Filter.Infra.RELATION.getName().equals(itemFilterContext.getChild(0).getText())) {
@@ -199,7 +216,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
                 return null;
             }).filter(Objects::nonNull).findFirst().ifPresent(
-                    targetTypeDefinition -> updateDefinitionByContext(ctx, targetTypeDefinition)
+                    targetTypeDefinition -> {
+                        updateDefinitionByContext(ctx, targetTypeDefinition, List.of(AxiomQueryParser.ItemFilterContext.class, AxiomQueryParser.SubfilterSpecContext.class));
+                    }
             );
             errorRegister(itemDefinitions.get(findIdentifierOfDefinition(ctx)) != null, ctx, "Invalid type '%s'.", identifier);
         } else if (isRelationItemFilter(itemFilterContext)) {
@@ -232,6 +251,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public Object visitFilterName(AxiomQueryParser.FilterNameContext ctx) {
         var itemFilterContext = findItemFilterContextInTree(ctx);
         var itemDefinition = itemDefinitions.get(findIdentifierOfDefinition(ctx));
+
         if (Arrays.stream(Filter.Infra.values())
                 .anyMatch(infra -> infra.getName().equals(itemFilterContext.getChild(0).getText()))
                 || Arrays.stream( Filter.ReferencedKeyword.values())
@@ -301,10 +321,113 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Finds context definition - it can be definition in current item filter (if processing descendant paths, or in any parent
-     * FIXME javaDocs, check getParentDefinition duplicate ??? method find definition to parent of context if there null definition then searching to next parent
-     * item filters and / or root.
-     * @param ctx
+     * Find the closest item filter context in the analysis tree from the input node.
+     * @param node
+     * @return found itemFilter.
+     */
+    private AxiomQueryParser.ItemFilterContext findItemFilterContextInTree(ParseTree node) {
+        if (node == null) return null;
+
+        if (node instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) return itemFilterContext;
+
+        // look down in branch form input node
+        while (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext) && !(node instanceof TerminalNode)) {
+            node = node.getChild(node.getChildCount() - 1);
+        }
+
+        int index;
+        //  look top in branch & look to deep in parser tree form input node
+        while (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+            if (node.getParent() instanceof AxiomQueryParser.RootContext || node.getParent() instanceof AxiomQueryParser.FilterContext) {
+                // -1 because need previous branch from node
+                index = getChildIndexInParent(node, node.getParent());
+
+                while (index > 0 && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+                    // Loop down searching until find itemFilter
+                    while (node != null && !node.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
+                        node = node.getParent().getChild(index - 1);
+                        if (node.getChildCount() > 0) {
+                            node = node.getChild(node.getChildCount() - 1);
+                        } else {
+                            index = index -1;
+                        }
+                    }
+                    index = index -1;
+                }
+            }
+
+            if (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
+                node = node.getParent();
+            }
+        }
+
+        return (AxiomQueryParser.ItemFilterContext) node;
+    }
+
+
+    /**
+     * Method return last terminal node from branch node.
+     * @param parseTree
+     * @return
+     */
+    private TerminalNode getTerminalNode(ParseTree parseTree) {
+        if (parseTree instanceof TerminalNode terminalNode) {
+            return terminalNode;
+        }
+
+        if (parseTree != null) {
+            while (parseTree.getChildCount() > 0) {
+                parseTree = parseTree.getChild(parseTree.getChildCount() - 1);
+
+                if (parseTree instanceof TerminalNode terminalNode) {
+                    return terminalNode;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find definition of schema context.
+     * @param parentDefinition
+     * @param name
+     * @return Definition found or null
+     */
+    private Definition findDefinition(Definition parentDefinition, QName name) {
+        if (parentDefinition instanceof PrismContainerDefinition<?> containerDefinition) {
+            return containerDefinition.getComplexTypeDefinition().findLocalItemDefinition(name);
+        } else if (parentDefinition instanceof PrismReferenceDefinition referenceDefinition) {
+            return ItemPath.isObjectReference(name) && referenceDefinition.getTargetObjectDefinition() != null
+                    ? referenceDefinition.getTargetObjectDefinition() : null;
+        } else if (parentDefinition instanceof ComplexTypeDefinition complexTypeDefinition) {
+            return complexTypeDefinition.findLocalItemDefinition(name);
+        }
+        return null;
+    }
+
+    /**
+     * Method find definition form hash table of schema definitions {@link this#itemDefinitions} according AST, if it does not found parent definition return null.
+     * @param key
+     * @return
+     */
+    private Definition getParentDefinition(ParseTree key, Definition definition) {
+        if (key == null) return null;
+
+        if (!(key instanceof AxiomQueryParser.ItemFilterContext)) {
+            if (itemDefinitions.get(findItemFilterContextInTree(key)) != null && itemDefinitions.get(findItemFilterContextInTree(key)) != definition) {
+                return itemDefinitions.get(findItemFilterContextInTree(key));
+            } else {
+                return itemDefinitions.get(findIdentifierOfDefinition(key));
+            }
+        } else {
+            return itemDefinitions.get(findIdentifierOfDefinition(key));
+        }
+    }
+
+    /**
+     * Find first definition of parent identifier.
+     * @param ctx node from which the identifier is searched towards the parents in the AST
      */
     private Definition findParentContextDefinition(ParseTree ctx) {
         var parentCtx = findIdentifierOfDefinition(ctx);
@@ -319,12 +442,12 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * TODO ...
-     * @param ctx
-     * @param clazz
+     * Find definition of parent identifier by class of identifier.
+     * @param ctx node from which the identifier is searched towards the parents in the AST
+     * @param clazz type of class identifier AST
      * @return
      */
-    private Definition findParentContextDefinition(ParseTree ctx, Class<? extends ParserRuleContext> clazz) {
+    private Definition findParentContextDefinition(ParseTree ctx, Class<? extends ParseTree> clazz) {
         if (!(clazz == AxiomQueryParser.ItemFilterContext.class
                 || clazz == AxiomQueryParser.SubfilterSpecContext.class
                 || clazz == AxiomQueryParser.RootContext.class)) {
@@ -355,6 +478,65 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
+     * Find reference object of node which present change of definition in AST (rootContext or subFilterSpecContext).
+     * @param node
+     * @return reference object as identifier for {@link AxiomQueryContentAssistantVisitor#itemDefinitions}
+     */
+    private ParseTree findIdentifierOfDefinition(ParseTree node) {
+        if (node == null) return null;
+
+        while (!(node instanceof AxiomQueryParser.RootContext)) {
+            if (node instanceof AxiomQueryParser.SubfilterSpecContext) break;
+            if (node instanceof AxiomQueryParser.ItemFilterContext) break;
+            node = node.getParent();
+        }
+
+        return node;
+    }
+
+    private ParseTree findIdentifierOfDefinition(ParseTree node, Class<? extends ParseTree> clazz) {
+        if (node == null || clazz == null) return null;
+
+        if (!(clazz.equals(AxiomQueryParser.RootContext.class) ||
+                clazz.equals(AxiomQueryParser.SubfilterSpecContext.class) ||
+                clazz.equals(AxiomQueryParser.ItemFilterContext.class))) {
+            return null;
+        }
+
+        while (!(clazz.isInstance(node)) && node != null) {
+            node = node.getParent();
+        }
+
+        return node;
+    }
+
+    /**
+     * Method do update definition in itemDefinitions table hash and to assigment definition for positionDefinition based context.
+     * @param node
+     * @param definition
+     */
+    private void updateDefinitionByContext(ParseTree node, Definition definition) {
+        itemDefinitions.put(findIdentifierOfDefinition(node), definition);
+//        Set definition of position cursor for code completions
+//        setPositionDefinition(node, definition);
+    }
+
+    /**
+     * Method do update definition in itemDefinitions table hash on different levels of the identifier of the AST.
+     * @param node key of hash table
+     * @param definition new definition
+     * @param classes type of class identifier which represent levels of identifier in the AST
+     */
+    private void updateDefinitionByContext(ParseTree node, Definition definition, List<Class<? extends ParseTree>> classes) {
+        for (Class<? extends ParseTree> clazz : classes) {
+            var key = findIdentifierOfDefinition(node, clazz);
+            if (key != null) {
+                updateDefinitionByContext(key, definition);
+            }
+        }
+    }
+
+    /**
      * Registering error record on based input parameter condition.
      * @param condition
      * @param ctx
@@ -375,6 +557,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return errorList;
     }
 
+// --------------------------------- Code Completions ---------------------------------------------------------
     /**
      * Generate code completions suggestion for AxiomQuery language by position context.
      * @return List {@link Suggestion}
@@ -727,43 +910,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find definition of schema context.
-     * @param parentDefinition
-     * @param name
-     * @return Definition found or null
-     */
-    private Definition findDefinition(Definition parentDefinition, QName name) {
-        if (parentDefinition instanceof PrismContainerDefinition<?> containerDefinition) {
-            return containerDefinition.getComplexTypeDefinition().findLocalItemDefinition(name);
-        } else if (parentDefinition instanceof PrismReferenceDefinition referenceDefinition) {
-            return ItemPath.isObjectReference(name) && referenceDefinition.getTargetObjectDefinition() != null
-                    ? referenceDefinition.getTargetObjectDefinition() : null;
-        } else if (parentDefinition instanceof ComplexTypeDefinition complexTypeDefinition) {
-            return complexTypeDefinition.findLocalItemDefinition(name);
-        }
-        return null;
-    }
-
-    /**
-     * Method find definition form hash table of schema definitions {@link this#itemDefinitions} according AST, if it does not found parent definition return null.
-     * @param key
-     * @return
-     */
-    private Definition getParentDefinition(ParseTree key, Definition definition) {
-        if (key == null) return null;
-
-        if (!(key instanceof AxiomQueryParser.ItemFilterContext)) {
-            if (itemDefinitions.get(findItemFilterContextInTree(key)) != null && itemDefinitions.get(findItemFilterContextInTree(key)) != definition) {
-                return itemDefinitions.get(findItemFilterContextInTree(key));
-            } else {
-                return itemDefinitions.get(findIdentifierOfDefinition(key));
-            }
-        } else {
-            return itemDefinitions.get(findIdentifierOfDefinition(key));
-        }
-    }
-
-    /**
      * Find node in parser tree which to content cursor by cursor position.
      * @param tree
      * @param position
@@ -821,76 +967,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find the closest item filter context in the analysis tree from the input node.
-     * @param node
-     * @return found itemFilter.
-     */
-    private AxiomQueryParser.ItemFilterContext findItemFilterContextInTree(ParseTree node) {
-        if (node == null) return null;
-
-        if (node instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) return itemFilterContext;
-
-        // look down in branch form input node
-        while (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext) && !(node instanceof TerminalNode)) {
-            node = node.getChild(node.getChildCount() - 1);
-        }
-
-        int index;
-        //  look top in branch & look to deep in parser tree form input node
-        while (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
-            if (node.getParent() instanceof AxiomQueryParser.RootContext || node.getParent() instanceof AxiomQueryParser.FilterContext) {
-                // -1 because need previous branch from node
-                index = getChildIndexInParent(node, node.getParent());
-
-                while (index > 0 && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
-                    // Loop down searching until find itemFilter
-                    while (node != null && !node.getClass().equals(AxiomQueryParser.ItemFilterContext.class)) {
-                        node = node.getParent().getChild(index - 1);
-                        if (node.getChildCount() > 0) {
-                            node = node.getChild(node.getChildCount() - 1);
-                        } else {
-                            index = index -1;
-                        }
-                    }
-                    index = index -1;
-                }
-            }
-
-            if (node != null && !(node instanceof AxiomQueryParser.ItemFilterContext)) {
-                node = node.getParent();
-            }
-        }
-
-        return (AxiomQueryParser.ItemFilterContext) node;
-    }
-
-    /**
-     * Find reference object of node which present change of definition in AST (rootContext or subFilterSpecContext).
-     * @param node
-     * @return reference object as identifier for {@link AxiomQueryContentAssistantVisitor#itemDefinitions}
-     */
-    private ParseTree findIdentifierOfDefinition(ParseTree node) {
-        if (node == null) return null;
-
-        while (!(node instanceof AxiomQueryParser.RootContext)) {
-            if (node instanceof AxiomQueryParser.SubfilterSpecContext) break;
-            if (node instanceof AxiomQueryParser.ItemFilterContext) break;
-            node = node.getParent();
-        }
-
-        return node;
-    }
-
-    /**
-     * Method do update definition in itemDefinitions table hash and assigment definition for positionDefinition based context.
-     * @param node
-     * @param definition
-     */
-    private void updateDefinitionByContext(ParseTree node, Definition definition) {
-        itemDefinitions.put(findIdentifierOfDefinition(node), definition);
-    }
-
-    /**
      * Method to get the index of index node (ctx) in its parent's children list.
      * @param child
      * @param parent
@@ -907,29 +983,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         }
 
         return 0;
-    }
-
-    /**
-     * Method return last terminal node from branch node.
-     * @param parseTree
-     * @return
-     */
-    private TerminalNode getTerminalNode(ParseTree parseTree) {
-        if (parseTree instanceof TerminalNode terminalNode) {
-            return terminalNode;
-        }
-
-        if (parseTree != null) {
-            while (parseTree.getChildCount() > 0) {
-                parseTree = parseTree.getChild(parseTree.getChildCount() - 1);
-
-                if (parseTree instanceof TerminalNode terminalNode) {
-                    return terminalNode;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
