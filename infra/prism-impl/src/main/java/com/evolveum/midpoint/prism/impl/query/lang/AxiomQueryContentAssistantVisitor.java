@@ -448,11 +448,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @return
      */
     private Definition findParentContextDefinition(ParseTree ctx, Class<? extends ParseTree> clazz) {
-        if (!(clazz == AxiomQueryParser.ItemFilterContext.class
-                || clazz == AxiomQueryParser.SubfilterSpecContext.class
-                || clazz == AxiomQueryParser.RootContext.class)) {
-            return null;
-        }
+        if (!CLAZZ_OF_KEY.contains(clazz)) return null;
 
         while (!(clazz.isInstance(ctx)) && ctx != null) {
             ctx = findIdentifierOfDefinition(ctx.getParent());
@@ -495,13 +491,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     private ParseTree findIdentifierOfDefinition(ParseTree node, Class<? extends ParseTree> clazz) {
-        if (node == null || clazz == null) return null;
-
-        if (!(clazz.equals(AxiomQueryParser.RootContext.class) ||
-                clazz.equals(AxiomQueryParser.SubfilterSpecContext.class) ||
-                clazz.equals(AxiomQueryParser.ItemFilterContext.class))) {
-            return null;
-        }
+        if (node == null || !CLAZZ_OF_KEY.contains(clazz)) return null;
 
         while (!(clazz.isInstance(node)) && node != null) {
             node = node.getParent();
@@ -899,7 +889,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 suggestions.add(new Suggestion(d.getItemName().getLocalPart(),  d.getTypeName().getLocalPart(), -1));
             });
         } else if (definition instanceof PrismPropertyDefinition<?>) {
-            definitionProcessingToPathSuggestion(getParentDefinition(positionContext.node().getChild(positionContext.cursorIndex()), definition), suggestions);
+            var key = findIdentifierOfDefinition(positionContext.node().getChild(positionContext.cursorIndex()));
+            definitionProcessingToPathSuggestion(findParentContextDefinition(key), suggestions);
         }
     }
 
