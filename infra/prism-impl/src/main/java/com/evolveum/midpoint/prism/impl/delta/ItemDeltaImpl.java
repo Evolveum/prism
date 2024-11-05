@@ -1326,9 +1326,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
 
             // this "add" to apply results should probably be in applyValuesToReplace(item), however we're clearing
             // item before fore-mentioned method is called
-            if (applyResults == null) {
-                applyResults = new ArrayList<>();
-            }
+            applyResults = new ArrayList<>();
 
             List<V> values = item.getValues();
             values.forEach(v -> applyResults.add(ItemModifyResult.removed(v, v)));

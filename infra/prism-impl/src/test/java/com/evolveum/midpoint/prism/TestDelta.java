@@ -8,13 +8,20 @@ package com.evolveum.midpoint.prism;
 
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.AssertJUnit.*;
 
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import com.evolveum.midpoint.util.CheckedConsumer;
+import com.evolveum.midpoint.util.exception.CommonException;
+
+import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.AssertJUnit;
@@ -43,6 +50,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  * @author semancik
  */
 public class TestDelta extends AbstractPrismTest {
+
+    private static final String FOO = "foo";
 
     /**
      * Checks if we correctly work with paths in item deltas.
@@ -369,7 +378,7 @@ public class TestDelta extends AbstractPrismTest {
 
     private PrismPropertyDefinition<String> createDescriptionDefinition() {
         return getPrismContext().definitionFactory()
-                    .newPropertyDefinition(UserType.F_DESCRIPTION, DOMUtil.XSD_STRING);
+                .newPropertyDefinition(UserType.F_DESCRIPTION, DOMUtil.XSD_STRING);
     }
 
     /**
@@ -585,7 +594,7 @@ public class TestDelta extends AbstractPrismTest {
 
         then();
         assertEquals("Wrong OID", USER_FOO_OID, user.getOid());
-        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES,"baz", "foobar");
+        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, "baz", "foobar");
         PrismContainer<AssignmentType> assignment = user.findContainer(UserType.F_ASSIGNMENT);
         assertNotNull("No assignment", assignment);
         assertEquals("Unexpected number of assignment values", 1, assignment.size());
@@ -614,7 +623,7 @@ public class TestDelta extends AbstractPrismTest {
         System.out.println("User after delta application:");
         System.out.println(user.debugDump());
         assertEquals("Wrong OID", USER_FOO_OID, user.getOid());
-        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES,("foobar"));
+        PrismAsserts.assertPropertyValue(user, UserType.F_ADDITIONAL_NAMES, "foobar");
         PrismContainer<AssignmentType> assignment = user.findContainer(UserType.F_ASSIGNMENT);
         assertNotNull("No assignment", assignment);
         assertEquals("Unexpected number of assignment values", 1, assignment.size());
@@ -1417,7 +1426,7 @@ public class TestDelta extends AbstractPrismTest {
 
         PrismObject<UserType> user = userDef.instantiate();
         user.setOid(USER_FOO_OID);
-        user.setPropertyRealValue(UserType.F_NAME, PolyString.fromOrig("foo"));
+        user.setPropertyRealValue(UserType.F_NAME, getPolyFoo());
         PrismReference parentOrgRef = user.findOrCreateReference(UserType.F_PARENT_ORG_REF);
         parentOrgRef.add(new PrismReferenceValueImpl("oid1"));
 
@@ -1780,4 +1789,188 @@ public class TestDelta extends AbstractPrismTest {
         assertAssignmentReplace(narrowedDelta, 0);
     }
 
+    /** Tests whether we correctly process the `incomplete` flag when adding or replacing values via Prism API. */
+    @Test
+    public void testIncompleteFlagHandlingViaPrismApi() throws CommonException {
+
+        // Single-valued property (name)
+
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).addRealValue(getPolyFoo()),
+                false);
+
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).addValue(getPolyPropValueFoo()),
+                false);
+
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).add(getPolyPropValueFoo()),
+                false);
+
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).replace(getPolyPropValueFoo()),
+                false);
+
+        // This is maybe questionable. But by replacing to the empty list we may want to tell that
+        // there is no known value, only an unknown one. So we may want to keep the incomplete flag.
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).replaceValues(List.of()),
+                true);
+
+        // Deletion should have no effect on the "incomplete" flag.
+        executeIncompleteNameRelatedOperation(
+                user -> getNameProperty(user).deleteValue(getPolyPropValueFoo()),
+                true);
+
+        // Multi-valued property (additionalNames)
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getAdditionalNamesProperty(user).addRealValue(FOO));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getAdditionalNamesProperty(user).addValue(getPropValueFoo()));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getAdditionalNamesProperty(user).add(getPropValueFoo()));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getAdditionalNamesProperty(user).replace(getPropValueFoo()));
+    }
+
+    /**
+     * Tests whether we correctly process the `incomplete` flag when adding or replacing values via "Beans API".
+     * Currently does not work, as the Beans API on foo objects here is not implemented via Prism API.
+     */
+    @Test(enabled = false)
+    public void testIncompleteFlagHandlingViaBeansApi() throws CommonException {
+        executeIncompleteNameRelatedOperation(
+                user -> user.setName(getPolyTypeFoo()),
+                false);
+
+        // Similar to replacing to an empty list in testIncompleteFlagHandlingViaPrismApi() method
+        executeIncompleteNameRelatedOperation(
+                user -> user.setName(null),
+                true);
+    }
+
+    /**
+     * Tests whether we correctly process the `incomplete` flag when adding or replacing values via deltas.
+     */
+    @Test
+    public void testIncompleteFlagHandlingViaDeltas() throws CommonException {
+
+        // Single-valued property (name)
+
+        executeIncompleteNameRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_NAME)
+                        .add(getPolyFoo())
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()),
+                false);
+
+        executeIncompleteNameRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_NAME)
+                        .replace(getPolyFoo())
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()),
+                false);
+
+        // Similar to replacing to an empty list in testIncompleteFlagHandlingViaPrismApi() method
+        executeIncompleteNameRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_NAME)
+                        .replace()
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()),
+                true);
+
+        executeIncompleteNameRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_NAME)
+                        .delete(getPolyFoo())
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()),
+                true);
+
+        // Multi-valued property (additionalNames)
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_ADDITIONAL_NAMES)
+                        .add(FOO)
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_ADDITIONAL_NAMES)
+                        .replace(FOO)
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_ADDITIONAL_NAMES)
+                        .replace()
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()));
+
+        executeIncompleteAdditionalNamesRelatedOperation(
+                user -> getPrismContext().deltaFor(UserType.class)
+                        .item(UserType.F_ADDITIONAL_NAMES)
+                        .delete(FOO)
+                        .asItemDelta()
+                        .applyTo(user.asPrismObject()));
+    }
+
+    private static PrismProperty<PolyString> getNameProperty(UserType user) {
+        return user.asPrismObject().findProperty(UserType.F_NAME);
+    }
+
+    private static PrismProperty<String> getAdditionalNamesProperty(UserType user) {
+        return user.asPrismObject().findProperty(UserType.F_ADDITIONAL_NAMES);
+    }
+
+    private void executeIncompleteNameRelatedOperation(CheckedConsumer<UserType> consumer, boolean expectedIncompleteFlag)
+            throws CommonException {
+        var user = new UserType();
+        var property = user.asPrismObject().findOrCreateProperty(UserType.F_NAME);
+
+        property.setIncomplete(true);
+        consumer.accept(user);
+        assertThat(property.isIncomplete())
+                .as("incomplete flag")
+                .isEqualTo(expectedIncompleteFlag);
+    }
+
+    // The incomplete flag should not be touched on a multi-valued item.
+    private void executeIncompleteAdditionalNamesRelatedOperation(CheckedConsumer<UserType> consumer)
+            throws CommonException {
+        var user = new UserType();
+        var property = user.asPrismObject().findOrCreateProperty(UserType.F_ADDITIONAL_NAMES);
+
+        property.setIncomplete(true);
+        consumer.accept(user);
+        assertThat(property.isIncomplete())
+                .as("incomplete flag")
+                .isTrue();
+    }
+
+    private static @NotNull PrismPropertyValue<PolyString> getPolyPropValueFoo() {
+        return new PrismPropertyValueImpl<>(getPolyFoo());
+    }
+
+    private static @NotNull PrismPropertyValue<String> getPropValueFoo() {
+        return new PrismPropertyValueImpl<>(FOO);
+    }
+
+    private static PolyString getPolyFoo() {
+        return PolyString.fromOrig("foo");
+    }
+
+    private static @NotNull PolyStringType getPolyTypeFoo() {
+        return PolyStringType.fromOrig("foo");
+    }
 }
