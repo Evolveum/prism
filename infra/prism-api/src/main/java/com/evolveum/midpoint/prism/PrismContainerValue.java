@@ -377,4 +377,15 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
         return PrismValue.super.schemaLookup();
     }
+
+    @Override
+    default boolean acceptVisitor(PrismVisitor visitor) {
+        var ret = PrismValue.super.acceptVisitor(visitor);
+        if (ret) {
+            for (var item : getItems()) {
+                item.acceptVisitor(visitor);
+            }
+        }
+        return ret;
+    }
 }

@@ -51,7 +51,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  *
  * @author Radovan Semancik
  */
-public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PathVisitable,
+public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PrismVisitable, PathVisitable,
         ParentVisitable, Serializable, Revivable, Freezable {
 
     String KEY_NAMESPACE_CONTEXT = PrismNamespaceContext.class.getSimpleName();
@@ -812,4 +812,13 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path);
 
     Long getHighestId();
+
+    @Override
+    default boolean acceptVisitor(PrismVisitor visitor) {
+        var ret = visitor.visit(this);
+        if (ret) {
+            valuesStream().forEach(v -> v.acceptVisitor(visitor));
+        }
+        return ret;
+    }
 }
