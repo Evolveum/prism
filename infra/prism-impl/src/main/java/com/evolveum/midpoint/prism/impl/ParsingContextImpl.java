@@ -12,8 +12,11 @@ import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -27,6 +30,7 @@ public class ParsingContextImpl implements ParsingContext {
     /** Not checking for duplicates when adding parsed data. For trusted sources. */
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
+    private Set<QName> lazyDeserialization = new HashSet<>();
 
     private ParsingContextImpl() {
     }
@@ -127,6 +131,7 @@ public class ParsingContextImpl implements ParsingContext {
         clone.evaluationMode = evaluationMode;
         clone.allowMissingRefTypes = allowMissingRefTypes;
         clone.warnings.addAll(warnings);
+        clone.lazyDeserialization.addAll(lazyDeserialization);
         return clone;
     }
 
@@ -172,6 +177,17 @@ public class ParsingContextImpl implements ParsingContext {
     @Override
     public ParsingContext fastAddOperations() {
         fastAddOperations = true;
+        return this;
+    }
+
+    @Override
+    public boolean isUseLazyDeserializationFor(QName typeName) {
+        return lazyDeserialization.contains(typeName);
+    }
+
+    @Override
+    public ParsingContext enableLazyDeserializationFor(QName typeName) {
+        lazyDeserialization.add(typeName);
         return this;
     }
 }
