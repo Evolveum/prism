@@ -95,4 +95,5 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
     static boolean isTrue(PrismPropertyValue<Boolean> booleanPropertyValue) {
         return booleanPropertyValue != null && BooleanUtils.isTrue(booleanPropertyValue.getRealValue());
     }
+
 }

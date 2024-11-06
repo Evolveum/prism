@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.prism.impl.marshaller;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.lazy.LazyPrismContainerValue;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -325,6 +326,14 @@ public class PrismMarshaller {
             PrismContainerDefinition<?> containerDefinition,
             SerializationContext ctx,
             PathSet itemsToSkip) throws SchemaException {
+        if (containerVal instanceof LazyPrismContainerValue<?> lazy) {
+            var maybeXnode = lazy.xnode();
+            // FIXME: Should we clone it? Seems unnecessary, probably not
+            if (maybeXnode != null) {
+                return maybeXnode;
+            }
+        }
+
         MapXNodeImpl xmap = new MapXNodeImpl();
         marshalContainerValue(xmap, containerVal, containerDefinition, ctx, itemsToSkip);
         return xmap;

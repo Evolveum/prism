@@ -340,7 +340,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
     // The checkUniqueness parameter is redundant but let's keep it for robustness.
     @Contract("_, true, null -> fail; _, false, !null -> fail")
-    protected ItemModifyResult<V> addInternal(@NotNull V newValue, boolean checkEquivalents, EquivalenceStrategy equivalenceStrategy) throws SchemaException {
+    protected ItemModifyResult<V> addInternal(
+            @NotNull V newValue, boolean checkEquivalents, EquivalenceStrategy equivalenceStrategy) throws SchemaException {
 
         if (checkEquivalents && equivalenceStrategy == null) {
             throw new IllegalArgumentException("Equivalence strategy must be present if checkEquivalents is true");
@@ -350,6 +351,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         }
 
         checkMutable();
+        resetIncompleteFlagOnAddIfPossible();
+
         // The parent is needed also for comparisons. So we set it here.
         Itemable originalParent = newValue.getParent();
         newValue.setParent(this);
@@ -391,9 +394,29 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         return ItemModifyResult.added(newValue, newValue);
     }
 
+    /**
+     * When adding a specific value to a single-valued incomplete item, we can assume that the item is no longer incomplete.
+     * The reason is that it there is no other, unknown value, that would make the item incomplete.
+     * (As single-valued items can have only one value.)
+     *
+     * This is true regardless of whether the value being added is the same as the (unknown) value.
+     * If it's the same, the item is complete, as it will have one known value.
+     * If it's different, then the item is also complete, as the new value would overwrite the old one.
+     *
+     * It is also true, if the item contains (by mistake) any existing value; although that state is inconsistent by nature.
+     *
+     * See also https://docs.evolveum.com/midpoint/devel/design/incomplete-items-4.9.1/.
+     *
+     * @see Item#isIncomplete()
+     */
+    void resetIncompleteFlagOnAddIfPossible() {
+        if (incomplete && isSingleValueByDefinition()) {
+            incomplete = false;
+        }
+    }
+
     protected void valueRemoved(V currentValue) {
         // NOOP
-
     }
 
     protected boolean addInternalExecution(@NotNull V newValue) {

@@ -34,7 +34,7 @@ import java.util.Optional;
  * @author semancik
  *
  */
-public interface PrismValue extends Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata, SchemaLookup.Aware {      // todo ShortDumpable?
+public interface PrismValue extends PrismVisitable, Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata, SchemaLookup.Aware {      // todo ShortDumpable?
 
     Map<String, Object> getUserData();
 
@@ -313,5 +313,14 @@ public interface PrismValue extends Visitable, PathVisitable, Serializable, Debu
     @Override
     default SchemaLookup schemaLookup() {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    default boolean acceptVisitor(PrismVisitor visitor) {
+        var ret = visitor.visit(this);
+        if (ret) {
+            getValueMetadataAsContainer().acceptVisitor(visitor);
+        }
+        return ret;
     }
 }

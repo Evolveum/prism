@@ -51,7 +51,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  *
  * @author Radovan Semancik
  */
-public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PathVisitable,
+public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PrismVisitable, PathVisitable,
         ParentVisitable, Serializable, Revivable, Freezable {
 
     String KEY_NAMESPACE_CONTEXT = PrismNamespaceContext.class.getSimpleName();
@@ -152,16 +152,22 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
      * requested and therefore is not returned. This may be used to indicate
      * that only part of the attribute values were returned from the search.
      * And so on.
+     *
+     * *Behavior*: For single-valued items, the `incomplete` flag is cleared when a known value is set up
+     * (via delta or Java API).
+     *
+     * See also https://docs.evolveum.com/midpoint/devel/design/incomplete-items-4.9.1/.
      */
     boolean isIncomplete();
 
     /**
      * Flags the item as incomplete.
-     * @see Item#isIncomplete()
      *
      * FIXME: Should be package-visible to implementation
      *
      * @param incomplete The new value
+     *
+     * @see Item#isIncomplete()
      */
     void setIncomplete(boolean incomplete);
 
@@ -806,4 +812,13 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends
     @NotNull Collection<Item<?, ?>> getAllItems(@NotNull ItemPath path);
 
     Long getHighestId();
+
+    @Override
+    default boolean acceptVisitor(PrismVisitor visitor) {
+        var ret = visitor.visit(this);
+        if (ret) {
+            valuesStream().forEach(v -> v.acceptVisitor(visitor));
+        }
+        return ret;
+    }
 }

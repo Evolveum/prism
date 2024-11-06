@@ -170,4 +170,10 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
 
     @Experimental
     <I extends Item<?, ?>> I findReferencedItem(ItemPath path, Class<I> type);
+
+    @Override
+    default boolean acceptVisitor(PrismVisitor visitor) {
+        // FIXME: If visitor returns true, should we visit embedded object?
+        return PrismValue.super.acceptVisitor(visitor);
+    }
 }
