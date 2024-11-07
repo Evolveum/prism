@@ -9,10 +9,10 @@ import java.util.Stack;
  *  Index is index of token.
  *  Rules is stack of related rules with token.
  */
-public record TokenWithCtx(int index, Stack<Integer> rules) {
+public record TokenWithContext(int index, Stack<Integer> rules) {
 
     // Does not necessary track context rules for every token (currently only for: IDENTIFIER)
-    public TokenWithCtx withRules(Stack<Integer> rules) {
-        return new TokenWithCtx(this.index, rules);
+    public TokenWithContext withRules(Stack<Integer> rules) {
+        return new TokenWithContext(this.index, rules);
     }
 }
