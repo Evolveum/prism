@@ -2,7 +2,6 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 
 import java.util.*;
 
-import com.evolveum.axiom.concepts.Path;
 import com.evolveum.axiom.lang.antlr.*;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
@@ -625,7 +624,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         if (node instanceof RuleContext ruleContext) {
             if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filter) {
-                ruleContext = Optional.ofNullable(findContextIfCursorOffBranch(ruleContext))
+                ruleContext = Optional.ofNullable((RuleContext) findContextOfTerminal(getTerminalNode(ruleContext)))
                         .orElse(ruleContext);
             }
 
@@ -823,7 +822,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @return
      */
     private int getChildIndexInParent(ParseTree child, ParseTree parent) {
-        if (child == null || parent == null) return 0;
+        if (child == null || parent == null) return -1;
 
         for (int i = 0; i < parent.getChildCount(); i++) {
             ParseTree childAtIndex = parent.getChild(i);
@@ -858,27 +857,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find branch of context if cursor is off branch.
-     * @param ruleContext
-     * @return
-     */
-    private RuleContext findContextIfCursorOffBranch(RuleContext ruleContext) {
-        if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filter) {
-            var child = ruleContext.getChild(ruleContext.getChildCount() - 1);
-            if (child instanceof AxiomQueryParser.ItemFilterContext itemFilterContext) {
-                if (itemFilterContext.getChild(itemFilterContext.getChildCount() - 1) instanceof RuleContext context) {
-                    return context;
-                } else {
-                    return itemFilterContext;
-                }
-            }
-        }
-
-        return null;
-    }
-
-
-    /**
      * Method append token to expected tokens list.
      * @param label
      * @param rules
@@ -897,22 +875,25 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Find node of terminal in parent node.
-     * @param terminalNode
-     * @return node of terminal
+     * Method do find context of terminal (context of node in which existing terminal symbol in AST).
+     * @param terminal
+     * @return context of terminal
      */
-    private ParseTree findNodeOfTerminal(TerminalNode terminalNode) {
-        int index = -1;
-        ParseTree node = terminalNode;
+    private ParseTree findContextOfTerminal(TerminalNode terminal) {
+        if (terminal == null) return null;
 
-        while (node.getChildCount() <= 1) {
-            index = getChildIndexInParent(node, node.getParent());
-            node = node.getParent();
-            if (node == null) {
-                return null;
-            }
+        ParseTree node = terminal.getParent();
+
+        if (node instanceof AxiomQueryParser.RootContext) {
+            return node.getChild(getChildIndexInParent(terminal, node));
         }
 
+        int index = node.getChildCount();
+
+        while (index == 1) {
+            node = node.getParent();
+            index = getChildIndexInParent(node, node.getParent());
+        }
         return node.getChild(index);
     }
 
