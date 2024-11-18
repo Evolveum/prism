@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -175,6 +177,21 @@ public class Filter {
             public String getClose() {
                 return close;
             }
+        }
+    }
+
+    public enum RulesWithoutSep {
+        PATH(AxiomQueryParser.RULE_path),
+        MATCHING_RULE(AxiomQueryParser.RULE_matchingRule);
+
+        private final int index;
+
+        RulesWithoutSep(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
         }
     }
 

@@ -610,6 +610,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         do {
             node = node.getParent();
 
+
+
             if (node instanceof RuleContext ruleContext) {
                 transitionATN(atn, new TerminalWithContext(
                         positionTerminal.getSymbol().getType(),
@@ -618,6 +620,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         previousTerminalWithContext,
                         null
                 ), lastProcessingRuleIndex, expected);
+
                 lastProcessingRuleIndex = ruleContext.getRuleIndex();
             }
         } while (!(node instanceof AxiomQueryParser.RootContext));
@@ -678,6 +681,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     } else {
                         if (ruleTransition.target.ruleIndex != lastProcessingRuleIndex) {
                             states.push(ruleTransition.target);
+                            lastProcessingRuleIndex = -1;
                         } else {
                             states.push(ruleTransition.followState);
                         }
@@ -689,6 +693,60 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 }
             }
         }
+    }
+
+    /**
+     * Method find following rules by cursor terminal with context in ATN network.
+     * @param atn ATN network of rules.
+     * @param terminal terminal with context from place of cursor
+     * @return
+     */
+    private List<ATNState> findFollowingRules(@NotNull ATN atn, @NotNull TerminalWithContext terminal) {
+        Stack<ATNState> states = new Stack<>(), passedStates = new Stack<>();
+        List<ATNState> followingRules = new ArrayList<>();
+        ATNState currentState;
+
+        states.push(atn.states.get(terminal.context().invokingState == -1 ? 0 : terminal.context().invokingState));
+
+        while (!states.isEmpty()) {
+            currentState = states.pop();
+            passedStates.push(currentState);
+
+            for (Transition transition : currentState.getTransitions()) {
+                if (transition instanceof AtomTransition atomTransition) {
+                    if (terminal.type() == atomTransition.label) {
+                        states.push(atomTransition.target);
+                    }
+                } else if (transition instanceof SetTransition setTransition) {
+                    setTransition.set.getIntervals().forEach(interval -> {
+                        if (intervalContainsToken(interval, terminal.type())) {
+                            states.push(setTransition.target);
+                        }
+                    });
+                } else if (transition instanceof RuleTransition ruleTransition) {
+                    if (terminal.context().getRuleIndex() == ruleTransition.target.ruleIndex) {
+                        if (terminal.type() != AxiomQueryParser.SEP) {
+                            followingRules.add(ruleTransition.target);
+                        }
+                        states.push(ruleTransition.followState);
+                    } else {
+                        if (Arrays.stream(Filter.RulesWithoutSep.values()).map(Filter.RulesWithoutSep::getIndex).toList().contains(ruleTransition.ruleIndex)) {
+                            if (terminal.type() != AxiomQueryParser.SEP) {
+                                followingRules.add(ruleTransition.target);
+                            }
+                        } else {
+                            followingRules.add(ruleTransition.target);
+                        }
+                    }
+                } else {
+                    if (!passedStates.contains(transition.target) && !(currentState instanceof RuleStopState)) {
+                        states.push(transition.target);
+                    }
+                }
+            }
+        }
+
+        return followingRules;
     }
 
     /**
