@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.foo.*;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.impl.query.lang.FilterProvider;
@@ -55,10 +56,10 @@ public class TestQueryCompletion extends AbstractPrismTest {
         expected.forEach(e -> assertThat(suggestions).map(Suggestion::name).contains(e));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testRootCtx() {
         expected = new ArrayList<>(userDef.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
-        expected.addAll(List.of(".", "@", "not"));
+        expected.addAll(List.of(".", "@", "not", "("));
 
         assertThat(getSuggestion("^")).map(Suggestion::name).containsAll(expected);
         assertThat(getSuggestion("  ^")).map(Suggestion::name).containsAll(expected);
@@ -66,7 +67,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(getSuggestion("  ^  ")).map(Suggestion::name).containsAll(expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testItemPath() {
         expected = new ArrayList<>(userDef.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
         expected.addAll(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
@@ -79,11 +80,19 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(getSuggestion("name ^equal 'value'")).map(Suggestion::name).containsAll(expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testReferenceAndDereferencePath() {
         PrismContainerDefinition<?> containerDefinition = userDef.findItemDefinition(ItemPath.create(new QName("assignment")), PrismContainerDefinition.class);
         expected = new ArrayList<>(containerDefinition.getItemNames().stream().map(ItemName::getLocalPart).filter(Objects::nonNull).toList());
         expected.addAll(List.of("@", "#", ":"));
+
+        assertSuggestionsMatch(getSuggestion("""
+                targetRef^
+                """), expected);
+
+        assertSuggestionsMatch(getSuggestion("""
+                targetRef^/@/name = "End user"
+                """), expected);
 
         assertSuggestionsMatch(getSuggestion("""
                 assignment/^targetRef/@/name = "End user"
@@ -119,7 +128,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertSuggestionsMatch(getSuggestion("assignment/targetRef/@^"), List.of("/"));
     }
 
-    @Test(enabled = false)
+    @Test
     public void testSelfPath() {
         assertThat(getSuggestion(".^")).isEmpty();
 
@@ -134,7 +143,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         }
     }
 
-    @Test(enabled = false)
+    @Test
     public void testFilterAlias() {
         expected = Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList();
 
@@ -159,7 +168,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testFilterName() {
         expected = null;
 
@@ -180,7 +189,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
 
         assertSuggestionsMatch(getSuggestion("""
-                    emailAddress ^endsWith[stringIgnoreCase] "@Test(enabled = false).com"
+                    emailAddress ^endsWith[stringIgnoreCase] "@test.com"
                 """), expected);
 
         assertSuggestionsMatch(getSuggestion("""
@@ -261,7 +270,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testMatchingFilter() {
         expected = null;
 
@@ -274,11 +283,11 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
 
         assertSuggestionsMatch(getSuggestion("""
-                    emailAddress endsWith[stringIgnoreCase] "@Test(enabled = false).com"
+                    emailAddress endsWith[stringIgnoreCase] "@test.com"
                 """), expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testValue() {
         expected = List.of("'", "\"");
         assertThat(getSuggestion("givenName equal ^'John' ")).map(Suggestion::name).containsAll(expected);
@@ -288,7 +297,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(getSuggestion("givenName = 'John'^")).map(Suggestion::name).isEmpty();
     }
 
-    @Test(enabled = false)
+    @Test
     public void testNegation() {
         expected = new ArrayList<>(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
 
@@ -331,7 +340,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testItemFilter() {
         expected = new ArrayList<>();
 
@@ -370,7 +379,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """), expected);
     }
 
-    @Test(enabled = false)
+    @Test
     public void testLogicalFilter() {
         expected = List.of("and", "or");
         assertThat(getSuggestion("name equal value ^")).map(Suggestion::name).containsAll(expected);
@@ -384,7 +393,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(getSuggestion("name =value and^")).map(Suggestion::name).isEmpty();
     }
 
-    @Test(enabled = false)
+    @Test
     public void testSubFilter() {
         expected = null;
 

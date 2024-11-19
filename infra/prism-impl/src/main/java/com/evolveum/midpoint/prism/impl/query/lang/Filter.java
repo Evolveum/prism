@@ -181,7 +181,7 @@ public class Filter {
     }
 
     public enum RulesWithoutSep {
-        PATH(AxiomQueryParser.RULE_path),
+        FILTER_ALIAS(AxiomQueryParser.RULE_filterNameAlias),
         MATCHING_RULE(AxiomQueryParser.RULE_matchingRule);
 
         private final int index;
