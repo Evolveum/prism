@@ -21,6 +21,10 @@ public interface ProtectedData<T> {
 
     T getClearValue();
 
+    default boolean hasClearValue() {
+        return getClearValue() != null;
+    }
+
     void setClearValue(T data);
 
     void destroyCleartext();
