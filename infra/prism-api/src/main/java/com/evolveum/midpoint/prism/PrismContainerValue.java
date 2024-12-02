@@ -213,6 +213,9 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     <X> PrismProperty<X> createProperty(PrismPropertyDefinition<X> propertyDefinition) throws SchemaException;
 
+    /** Useful when removing something without the knowledge of its kind. */
+    void removeItem(@NotNull ItemPath path);
+
     void removeProperty(ItemPath path);
 
     void removeContainer(ItemPath path);
