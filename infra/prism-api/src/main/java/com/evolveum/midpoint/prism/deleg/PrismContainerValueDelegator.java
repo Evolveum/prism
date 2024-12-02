@@ -111,6 +111,10 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
         return delegate().getParent();
     }
 
+    default void removeItem(@NotNull ItemPath path) {
+        delegate().removeItem(path);
+    }
+
     default void removeProperty(ItemPath path) {
         delegate().removeProperty(path);
     }

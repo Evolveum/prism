@@ -860,6 +860,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
+    public void removeItem(@NotNull ItemPath path) {
+        removeItem(path, Item.class);
+    }
+
+    @Override
     public void removeProperty(ItemPath path) {
         removeItem(path, PrismProperty.class);
     }
