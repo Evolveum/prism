@@ -444,9 +444,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             PrismPropertyValue<?> other,
             @NotNull ParameterizedEquivalenceStrategy strategy,
             @Nullable MatchingRule<T> matchingRule) {
-        if (!super.equals(other, strategy)) {
-            return false;
-        }
+        // Super call should be last check, if all are Okay, it checks for value metatada.
 
         if (this.rawElement != null && other.getRawElement() != null) {
             return equalsRawElements((PrismPropertyValue<T>) other);
@@ -470,9 +468,21 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
         T otherRealValue = otherProcessed.getValue();
         T thisRealValue = thisProcessed.getValue();
+
+        if (!realValuesEquals(thisRealValue, otherRealValue, strategy, matchingRule)) {
+            return false;
+        }
+        // Super constructor compares metadata only, so it should be called last
+        // not first
+        return super.equals(other, strategy);
+    }
+
+    protected boolean realValuesEquals(T thisRealValue, T otherRealValue, @NotNull ParameterizedEquivalenceStrategy strategy,
+            @Nullable MatchingRule<T> matchingRule) {
         if (otherRealValue == null && thisRealValue == null) {
             return true;
         }
+
         if (otherRealValue == null || thisRealValue == null) {
             return false;
         }
