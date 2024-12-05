@@ -364,7 +364,11 @@ public class QNameUtil {
     }
 
     public static boolean contains(Collection<? extends QName> col, QName qname) {
-        return col != null && col.stream().anyMatch(e -> match(e, qname));
+        return contains(col, qname, false);
+    }
+
+    public static boolean contains(Collection<? extends QName> col, QName qname, boolean caseIgnore) {
+        return col != null && col.stream().anyMatch(e -> match(e, qname, caseIgnore));
     }
 
     public static boolean contains(QName[] array, QName qname) {
