@@ -12,6 +12,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -1275,6 +1276,13 @@ public class MiscUtil {
     public static Class<?> resolvePrimitiveIfNecessary(Class<?> aClass) {
         return aClass != null ?
                 ClassUtils.resolvePrimitiveIfNecessary(aClass) : null;
+    }
+
+    public static <T> T[] exceptNulls(T[] nullable) {
+        //noinspection unchecked
+        return Arrays.stream(nullable)
+                .filter(Objects::nonNull)
+                .toArray(value -> (T[]) Array.newInstance(nullable.getClass().getComponentType(), value));
     }
 
     @FunctionalInterface
