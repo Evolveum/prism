@@ -53,4 +53,12 @@ public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends Abstr
     public static boolean isNotMaterialized(PrismValue value) {
         return value instanceof LazyXNodeBasedPrismValue<?,?> xnode && !xnode.isMaterialized();
     }
+
+    protected boolean hasSameSource(LazyXNodeBasedPrismValue other) {
+        if (!this.isMaterialized() && !other.isMaterialized()) {
+            // TODO: Consider fully comparing XNodes?
+            return this.xnode() == other.xnode(); // Copy of save lazy node.
+        }
+        return false;
+    }
 }
