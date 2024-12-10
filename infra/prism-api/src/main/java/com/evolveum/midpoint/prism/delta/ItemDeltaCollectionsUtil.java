@@ -202,7 +202,7 @@ public class ItemDeltaCollectionsUtil {
 
     public static void merge(Collection<? extends ItemDelta> modifications, ItemDelta delta) {
         for (ItemDelta modification: modifications) {
-            if (modification.getPath().equals(delta.getPath())) {
+            if (modification.getPath().equivalent(delta.getPath())) {
                 modification.merge(delta);
                 return;
             }

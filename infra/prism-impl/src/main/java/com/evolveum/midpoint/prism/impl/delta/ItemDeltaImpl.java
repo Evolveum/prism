@@ -1969,7 +1969,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         }
         if (parentPath == null) {
             if (other.parentPath != null) {return false;}
-        } else if (!parentPath.equivalent(other.parentPath)) {                   // or "equals" ?
+        } else if (!parentPath.equivalent(other.parentPath)) {
             return false;
         }
         if (!equivalentSetRealValue(this.valuesToAdd, other.valuesToAdd, false)) {
