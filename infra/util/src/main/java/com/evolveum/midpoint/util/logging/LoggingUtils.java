@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import ch.qos.logback.classic.Level;
+
+import com.evolveum.midpoint.util.exception.ExceptionContextAware;
+
 import org.apache.commons.lang3.Validate;
 
 public class LoggingUtils {
@@ -64,6 +67,12 @@ public class LoggingUtils {
         // therefore the stack trace will get logged
         args.add(ex);
         log(LOGGER, second, message + ".", args.toArray());
+        if (ex instanceof ExceptionContextAware contextAware) {
+            var context = contextAware.getContext();
+            if (context != null) {
+                log(LOGGER, second, "Exception context:\n{}", new String[] { context.get() });
+            }
+        }
     }
 
     private static void log(Trace logger, Level level, String message, Object[] arguments) {

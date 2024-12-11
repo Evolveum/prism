@@ -8,6 +8,8 @@ package com.evolveum.midpoint.util.exception;
 
 import com.evolveum.midpoint.util.LocalizableMessage;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Objects;
 
 /**
@@ -16,7 +18,7 @@ import java.util.Objects;
  *
  * @author Radovan Semancik
  */
-public abstract class CommonException extends Exception implements SeverityAwareException {
+public abstract class CommonException extends Exception implements SeverityAwareException, ExceptionContextAware {
 
     /**
      * User-friendly localizable detail message.
@@ -43,37 +45,52 @@ public abstract class CommonException extends Exception implements SeverityAware
      */
     private String technicalMessage;
 
+    private final ExceptionContext context;
+
     public CommonException() {
+        this.context = null;
     }
 
     public CommonException(String technicalMessage) {
         super(technicalMessage);
         this.technicalMessage = technicalMessage;
+        this.context = null;
+    }
+
+    public CommonException(String technicalMessage, ExceptionContext context) {
+        super(technicalMessage);
+        this.technicalMessage = technicalMessage;
+        this.context = context;
     }
 
     public CommonException(LocalizableMessage userFriendlyMessage) {
         super(userFriendlyMessage.getFallbackMessage());
         this.userFriendlyMessage = userFriendlyMessage;
+        this.context = null;
     }
 
     public CommonException(Throwable cause) {
         super(cause);
+        this.context = null;
     }
 
     public CommonException(String technicalMessage, Throwable cause) {
         super(technicalMessage, cause);
         this.technicalMessage = technicalMessage;
+        this.context = null;
     }
 
     public CommonException(LocalizableMessage userFriendlyMessage, Throwable cause) {
         super(userFriendlyMessage.getFallbackMessage(), cause);
         this.userFriendlyMessage = userFriendlyMessage;
+        this.context = null;
     }
 
     public CommonException(String technicalMessage, Throwable cause, LocalizableMessage userFriendlyMessage) {
         super(technicalMessage, cause);
         this.userFriendlyMessage = userFriendlyMessage;
         this.technicalMessage = technicalMessage;
+        this.context = null;
     }
 
     /**
@@ -122,6 +139,11 @@ public abstract class CommonException extends Exception implements SeverityAware
     }
 
     @Override
+    public @Nullable ExceptionContext getContext() {
+        return context;
+    }
+
+    @Override
     public String toString() {
         if (userFriendlyMessage == null) {
             return super.toString();
@@ -135,7 +157,10 @@ public abstract class CommonException extends Exception implements SeverityAware
                 technicalMessagePart = "";
             }
             // TODO consider if we really want to display short dump of userFriendlyMessage even if localized and/or english message is present
-            return super.toString() + technicalMessagePart + " [" + userFriendlyMessage.shortDump() + "]";
+            return super.toString()
+                    + technicalMessagePart
+                    + " [" + userFriendlyMessage.shortDump() + "]"
+                    + (context != null ? " [with context]" : "");
         }
     }
 }

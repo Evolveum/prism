@@ -45,6 +45,10 @@ public class SchemaException extends CommonException {
         super(message);
     }
 
+    public SchemaException(String message, ExceptionContext context) {
+        super(message, context);
+    }
+
     public SchemaException(LocalizableMessage userFriendlyMessage) {
         super(userFriendlyMessage);
     }
