@@ -88,6 +88,7 @@
 
         <!-- JVM args for testing plugins, can be used to add profiling, etc. -->
         <surefire.args>-Xms512m -Xmx512m</surefire.args>
+        <jacoco.argLine></jacoco.argLine>
         <!-- Controls surefire config/redirectTestOutputToFile setting. -->
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
@@ -672,6 +673,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                  <groupId>org.jacoco</groupId>
+                  <artifactId>jacoco-maven-plugin</artifactId>
+                   <executions>
+			<execution>
+			    <id>jacoco-initialize</id>
+			    <goals>
+				<goal>prepare-agent</goal>
+			    </goals>
+			</execution>
+			<execution>
+			    <id>jacoco-site</id>
+			    <phase>package</phase>
+			    <goals>
+				<goal>report</goal>
+			    </goals>
+			</execution>
+		    </executions>
+                  <configuration>
+                    <propertyName>jacoco.argLine</propertyName>
+                  </configuration>
+                </plugin>
         </plugins>
 
         <pluginManagement>
@@ -740,7 +763,7 @@
                             <java.util.logging.config.file>${project.build.directory}/test-classes/logging.properties
                             </java.util.logging.config.file>
                         </systemPropertyVariables>
-                        <argLine>${surefire.args}</argLine>
+                        <argLine>@{jacoco.argLine} ${surefire.args}</argLine>
                         <suiteXmlFiles>
                             <suiteXmlFile>testng-unit.xml</suiteXmlFile>
                         </suiteXmlFiles>

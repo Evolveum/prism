@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.lazy;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.deleg.PrismContainerValueDelegator;
+import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.PrismUnmarshaller;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
@@ -173,6 +174,16 @@ public class LazyPrismContainerValue<C extends Containerable>
     }
 
     @Override
+    public boolean equals(PrismValue otherValue, @NotNull EquivalenceStrategy strategy) {
+        if (otherValue instanceof LazyPrismContainerValue<?> other && hasSameSource(other)) {
+            // If this value and other value are lazy prism containers with same source XNode,
+            // they are equals without need to compare rest.
+            return true;
+        }
+        return PrismContainerValueDelegator.super.equals(otherValue, strategy);
+    }
+
+    @Override
     public boolean isEmpty() {
         var raw = xnode();
         if (raw != null) {
@@ -216,7 +227,8 @@ public class LazyPrismContainerValue<C extends Containerable>
                 "AssignmentProcessor", // Assignment metadata
                 "ItemDeltaImpl", // Application of the delta.
                 "ShadowUpdater", // Shadow metadata
-                "AbstractMappingImpl", // Mapping provenance comparison
+                //"AbstractMappingImpl", // Mapping provenance comparison
+                "InboundProcessor",
                 "OperationalDataManager", // Object metadata
                 "PrismObjectAsserter" // testing, we should not care about materialization
         )) {
