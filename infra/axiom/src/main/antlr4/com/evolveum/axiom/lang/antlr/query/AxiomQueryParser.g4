@@ -25,10 +25,7 @@ itemName: prefixedName #dataName
     | AT_SIGN prefixedName #infraName;
 
 
-prefixedName: (prefix=IDENTIFIER COLON)? localName=IDENTIFIER
-    | (prefix=IDENTIFIER)? COLON localName=(AND_KEYWORD | NOT_KEYWORD | OR_KEYWORD);
-
-
+prefixedName: prefix=IDENTIFIER? COLON? localName=IDENTIFIER;
 argument : prefixedName | literalValue;
 
 
@@ -73,7 +70,6 @@ valueSet: ROUND_BRACKET_LEFT SEP* values+=singleValue SEP* (COMMA SEP* values+=s
 
 negation: NOT_KEYWORD;
 // Filter could be Value filter or Logic Filter
-
 
 
 filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter

@@ -12,10 +12,11 @@ PLUS : '+';
 COMMENT: ( [ \n\r\t]* ('//' (~[\r\n]*)) [ \n\r\t]* | ('/*' .*? '*/')) -> channel(HIDDEN);
 SEP: [ \n\r\t]+;
 
+IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
+
 AND_KEYWORD: 'and'|'AND';
 OR_KEYWORD: 'or'|'OR';
 NOT_KEYWORD: 'not'|'NOT';
-IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
 
 fragment SQOUTE : '\'';
 fragment DQOUTE : '"';
