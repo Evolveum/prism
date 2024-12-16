@@ -25,7 +25,10 @@ itemName: prefixedName #dataName
     | AT_SIGN prefixedName #infraName;
 
 
-prefixedName: prefix=IDENTIFIER? COLON? localName=IDENTIFIER;
+prefixedName: (prefix=IDENTIFIER COLON)? localName=IDENTIFIER
+    | (prefix=IDENTIFIER)? COLON localName=(AND_KEYWORD | NOT_KEYWORD | OR_KEYWORD);
+
+
 argument : prefixedName | literalValue;
 
 
@@ -72,6 +75,7 @@ negation: NOT_KEYWORD;
 // Filter could be Value filter or Logic Filter
 
 
+
 filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter
            | left=filter SEP+ OR_KEYWORD SEP+ right=filter #orFilter
            | negation SEP+ subfilterSpec #notFilter
@@ -99,6 +103,3 @@ constant: AT_SIGN name=IDENTIFIER;
 
 
 // grammar AxiomLiterals;
-
-
-
