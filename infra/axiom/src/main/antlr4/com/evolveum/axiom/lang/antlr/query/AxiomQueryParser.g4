@@ -76,14 +76,14 @@ negation: NOT_KEYWORD;
 
 
 
-filter: left=filter SEP+ AND_KEYWORD SEP+ right=filter #andFilter
-           | left=filter SEP+ OR_KEYWORD SEP+ right=filter #orFilter
-           | negation SEP+ subfilterSpec #notFilter
+filter: left=filter (|SEP+ ~ROUND_BRACKET_LEFT) AND_KEYWORD (|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #andFilter
+           | left=filter (|SEP+ ~ROUND_BRACKET_LEFT) OR_KEYWORD (|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #orFilter
+           | negation subfilterSpec #notFilter
            | itemFilter #genFilter
            | subfilterSpec #subFilter;
 
 
-subfilterSpec: ROUND_BRACKET_LEFT SEP* filter SEP* ROUND_BRACKET_RIGHT;
+subfilterSpec: SEP* ROUND_BRACKET_LEFT SEP* filter SEP* ROUND_BRACKET_RIGHT SEP*;
 
 itemFilter: path (SEP+ negation)? ((SEP* usedAlias=filterNameAlias) | (SEP+ usedFilter=filterName)) (matchingRule? SEP* subfilterOrValue)?;
 
