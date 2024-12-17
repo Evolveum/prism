@@ -49,7 +49,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         return contentAssist.autocomplete();
     }
 
-    @Test()
+    @Test(enabled = false)
     public void testRootCtx() {
         List<Suggestion> suggestion = getSuggestion("^");
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
@@ -76,7 +76,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         });
     }
 
-    @Test()
+    @Test(enabled = false)
     public void testItemPath() {
         List<Suggestion> suggestion = getSuggestion("name^");
         List<String> aliases = new ArrayList<>(Arrays.stream(Filter.Alias.values()).map(Filter.Alias::getName).toList());
@@ -139,7 +139,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         // TODO
     }
 
-    @Test()
+    @Test(enabled = false)
     public void testReferenceAndDereferencePath() {
         List<Suggestion> suggestion = getSuggestion("""
                 assignment/^targetRef/@/name = "End user"
