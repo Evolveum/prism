@@ -76,8 +76,8 @@ negation: NOT_KEYWORD;
 
 
 
-filter: left=filter (|SEP+ ~ROUND_BRACKET_LEFT) AND_KEYWORD (|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #andFilter
-           | left=filter (|SEP+ ~ROUND_BRACKET_LEFT) OR_KEYWORD (|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #orFilter
+filter: left=filter (~ROUND_BRACKET_LEFT SEP+|SEP*) AND_KEYWORD (SEP*|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #andFilter
+           | left=filter (~ROUND_BRACKET_LEFT SEP+|SEP*) OR_KEYWORD (SEP*|SEP+ ~ROUND_BRACKET_RIGHT) right=filter #orFilter
            | negation subfilterSpec #notFilter
            | itemFilter #genFilter
            | subfilterSpec #subFilter;
