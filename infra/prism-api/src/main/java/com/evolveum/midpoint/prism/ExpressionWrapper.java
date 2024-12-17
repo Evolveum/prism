@@ -7,7 +7,9 @@
 
 package com.evolveum.midpoint.prism;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.xml.namespace.QName;
 
@@ -18,7 +20,8 @@ import com.evolveum.midpoint.util.PrettyPrinter;
  * Contains the expression that can be part of e.g. prism filters (or other data).
  */
 public class ExpressionWrapper implements Cloneable, Serializable, Freezable {
-    private static final long serialVersionUID = 1L;
+
+    @Serial private static final long serialVersionUID = 1L;
 
     /**
      * Name of the expression root element (e.g. "expression").
@@ -63,8 +66,22 @@ public class ExpressionWrapper implements Cloneable, Serializable, Freezable {
 
     @Override
     public void freeze() {
-        if (expression instanceof Freezable) {
-            ((Freezable) expression).freeze();
+        if (expression instanceof Freezable freezable) {
+            freezable.freeze();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ExpressionWrapper expressionWrapper)) {
+            return false;
+        }
+        return Objects.equals(elementName, expressionWrapper.elementName)
+                && Objects.equals(expression, expressionWrapper.expression);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(elementName, expression);
     }
 }
