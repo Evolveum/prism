@@ -26,6 +26,7 @@ import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.xnode.*;
 import com.evolveum.midpoint.util.QNameUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.w3c.dom.Element;
@@ -40,6 +41,8 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Set of prism-related asserts.
@@ -68,6 +71,26 @@ public class PrismAsserts {
         assertNotNull("Property " + propQName + " not found in " + containerValue.getParent(), property);
         assertSame("Wrong parent for property " + property, containerValue, property.getParent());
         assertPropertyValueDesc(property, matchingRule, containerValue.getParent().toString(), realPropValues);
+    }
+
+    /** Ignores any non-expression-based values. */
+    public static void assertPropertyValueExpressions(PrismContainer<?> container, ItemPath propPath, Object... expressions) {
+        var property = container.getValue().findProperty(propPath);
+        var desc = "Property " + propPath + " in " + container;
+        assertThat(property).as(desc).isNotNull();
+        assertPropertyValueExpressions(property, desc, expressions);
+    }
+
+    /** Ignores any non-expression-based values. */
+    public static void assertPropertyValueExpressions(PrismProperty<?> property, String desc, Object... expressions) {
+        var realExpressions = property.getValues().stream()
+                .map(PrismPropertyValue::getExpression)
+                .filter(Objects::nonNull)
+                .map(ExpressionWrapper::getExpression)
+                .collect(Collectors.toSet());
+        assertThat(realExpressions)
+                .as(() -> "Expressions in " + desc)
+                .containsExactlyInAnyOrder(expressions);
     }
 
     public static <T> void assertPropertyValue(PrismContainer<?> container, ItemPath propPath, T... realPropValues) {
@@ -1225,6 +1248,7 @@ public class PrismAsserts {
         assertEquals(message+": wrong target type", expected.getTargetType(), actual.getTargetType());
     }
 
+    @Contract("_, null -> fail")
     public static void assertInstanceOf(Class<?> expectedClass, Object object) {
         assertNotNull("Expected that object will be instance of "+expectedClass+", but it is null", object);
         assertTrue("Expected that "+object+" will be instance of "+expectedClass+", but it is "+object.getClass(),

@@ -436,28 +436,39 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     @Override
     public boolean equals(PrismValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        return other instanceof PrismPropertyValue && equals((PrismPropertyValue<?>) other, strategy, null);
+        return other instanceof PrismPropertyValue<?> prismPropertyValue
+                && equals(prismPropertyValue, strategy, null);
     }
 
     @Override
     public boolean equals(
-            PrismPropertyValue<?> other,
+            PrismPropertyValue<?> other0,
             @NotNull ParameterizedEquivalenceStrategy strategy,
             @Nullable MatchingRule<T> matchingRule) {
-        // Super call should be last check, if all are Okay, it checks for value metatada.
+        // Super call should be last check, if all are Okay, it checks for value metadata.
+
+        //noinspection unchecked
+        var other = (PrismPropertyValue<T>) other0;
 
         if (this.rawElement != null && other.getRawElement() != null) {
-            return equalsRawElements((PrismPropertyValue<T>) other);
+            return equalsRawElements(other);
         }
 
-        PrismPropertyValue<T> otherProcessed = (PrismPropertyValue<T>) other;
+        var thisExpressionWrapper = this.getExpression();
+        var otherExpressionWrapper = other.getExpression();
+        if (thisExpressionWrapper != null && otherExpressionWrapper != null) {
+            // TODO consider equivalence strategy as well
+            return thisExpressionWrapper.equals(otherExpressionWrapper);
+        }
+
+        PrismPropertyValue<T> otherProcessed = other;
         PrismPropertyValue<T> thisProcessed = this;
         if (this.rawElement != null || other.getRawElement() != null) {
             try {
                 if (this.rawElement == null) {
-                    otherProcessed = parseRawElementToNewValue((PrismPropertyValue<T>) other, this);
+                    otherProcessed = parseRawElementToNewValue(other, this);
                 } else if (other.getRawElement() == null) {
-                    thisProcessed = parseRawElementToNewValue(this, (PrismPropertyValue<T>) other);
+                    thisProcessed = parseRawElementToNewValue(this, other);
                 }
             } catch (SchemaException e) {
                 // TODO: Maybe just return false?
@@ -477,7 +488,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         return super.equals(other, strategy);
     }
 
-    protected boolean realValuesEquals(T thisRealValue, T otherRealValue, @NotNull ParameterizedEquivalenceStrategy strategy,
+    private boolean realValuesEquals(T thisRealValue, T otherRealValue, @NotNull ParameterizedEquivalenceStrategy strategy,
             @Nullable MatchingRule<T> matchingRule) {
         if (otherRealValue == null && thisRealValue == null) {
             return true;
@@ -498,12 +509,11 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             }
         } else {
 
-            if (thisRealValue instanceof Element && otherRealValue instanceof Element) {
-                return DOMUtil.compareElement((Element) thisRealValue, (Element) otherRealValue, strategy.isLiteralDomComparison());
+            if (thisRealValue instanceof Element thisElement && otherRealValue instanceof Element otherElement) {
+                return DOMUtil.compareElement(thisElement, otherElement, strategy.isLiteralDomComparison());
             }
 
-            if (thisRealValue instanceof SchemaDefinitionType && otherRealValue instanceof SchemaDefinitionType) {
-                SchemaDefinitionType thisSchema = (SchemaDefinitionType) thisRealValue;
+            if (thisRealValue instanceof SchemaDefinitionType thisSchema && otherRealValue instanceof SchemaDefinitionType) {
                 return thisSchema.equals(otherRealValue, strategy.isLiteralDomComparison());
             }
 
@@ -523,17 +533,17 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 }
             }
 
-            if (thisRealValue instanceof byte[] && otherRealValue instanceof byte[]) {
-                return Arrays.equals((byte[]) thisRealValue, (byte[]) otherRealValue);
+            if (thisRealValue instanceof byte[] thisBytes && otherRealValue instanceof byte[] otherBytes) {
+                return Arrays.equals(thisBytes, otherBytes);
             }
 
             if (strategy.isLiteralDomComparison()) {
-                if (thisRealValue instanceof QName && otherRealValue instanceof QName) {
+                if (thisRealValue instanceof QName thisQName && otherRealValue instanceof QName otherQName) {
                     // we compare prefixes as well
-                    return thisRealValue.equals(otherRealValue) &&
-                            StringUtils.equals(((QName) thisRealValue).getPrefix(), ((QName) otherRealValue).getPrefix());
-                } else if (thisRealValue instanceof PlainStructured && otherRealValue instanceof PlainStructured) {
-                    return ((PlainStructured) thisRealValue).equals(otherRealValue, StructuredEqualsStrategy.LITERAL);
+                    return thisRealValue.equals(otherRealValue)
+                            && StringUtils.equals(thisQName.getPrefix(), otherQName.getPrefix());
+                } else if (thisRealValue instanceof PlainStructured thisPlainStructured && otherRealValue instanceof PlainStructured) {
+                    return thisPlainStructured.equals(otherRealValue, StructuredEqualsStrategy.LITERAL);
                 }
             }
             return thisRealValue.equals(otherRealValue);
