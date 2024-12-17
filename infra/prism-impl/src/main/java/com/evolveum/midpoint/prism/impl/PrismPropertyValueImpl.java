@@ -66,6 +66,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     // elements here and process them later (e.g. during applyDefinition or getting a value with explicit type).
     private XNodeImpl rawElement;
 
+    // TODO can be the expression present along with the value?
     @Nullable private ExpressionWrapper expression;
 
     public PrismPropertyValueImpl(T value) {
@@ -451,40 +452,50 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         var other = (PrismPropertyValue<T>) other0;
 
         if (this.rawElement != null && other.getRawElement() != null) {
-            return equalsRawElements(other);
-        }
-
-        var thisExpressionWrapper = this.getExpression();
-        var otherExpressionWrapper = other.getExpression();
-        if (thisExpressionWrapper != null && otherExpressionWrapper != null) {
+            if (!equalsRawElements(other)) {
+                return false;
+            } else {
+                // continuing to the super.equals check
+            }
+        } else if (this.getExpression() != null && other.getExpression() != null) {
             // TODO consider equivalence strategy as well
-            return thisExpressionWrapper.equals(otherExpressionWrapper);
-        }
-
-        PrismPropertyValue<T> otherProcessed = other;
-        PrismPropertyValue<T> thisProcessed = this;
-        if (this.rawElement != null || other.getRawElement() != null) {
-            try {
-                if (this.rawElement == null) {
-                    otherProcessed = parseRawElementToNewValue(other, this);
-                } else if (other.getRawElement() == null) {
-                    thisProcessed = parseRawElementToNewValue(this, other);
+            if (!this.getExpression().equals(other.getExpression())) {
+                return false;
+            } else {
+                // continuing to the super.equals check
+            }
+        } else if (this.getExpression() != null || other.getExpression() != null) {
+            // The resolved value may be the same or different, but the PPVs are syntactically different.
+            // TODO we could consider the equivalence strategy here
+            return false;
+        } else {
+            PrismPropertyValue<T> otherProcessed = other;
+            PrismPropertyValue<T> thisProcessed = this;
+            if (this.rawElement != null || other.getRawElement() != null) {
+                try {
+                    if (this.rawElement == null) {
+                        otherProcessed = parseRawElementToNewValue(other, this);
+                    } else if (other.getRawElement() == null) {
+                        thisProcessed = parseRawElementToNewValue(this, other);
+                    }
+                } catch (SchemaException e) {
+                    // TODO: Maybe just return false?
+                    throw new IllegalArgumentException(
+                            "Error parsing the value of property %s using the 'other' definition during a compare: %s".formatted(
+                                    getParent(), e.getMessage()),
+                            e);
                 }
-            } catch (SchemaException e) {
-                // TODO: Maybe just return false?
-                throw new IllegalArgumentException("Error parsing the value of property " + getParent() + " using the 'other' definition " +
-                        "during a compare: " + e.getMessage(), e);
+            }
+
+            T otherRealValue = otherProcessed.getValue();
+            T thisRealValue = thisProcessed.getValue();
+
+            if (!realValuesEquals(thisRealValue, otherRealValue, strategy, matchingRule)) {
+                return false;
             }
         }
 
-        T otherRealValue = otherProcessed.getValue();
-        T thisRealValue = thisProcessed.getValue();
-
-        if (!realValuesEquals(thisRealValue, otherRealValue, strategy, matchingRule)) {
-            return false;
-        }
-        // Super constructor compares metadata only, so it should be called last
-        // not first
+        // Super constructor compares metadata only, so it should be called last, not first
         return super.equals(other, strategy);
     }
 
