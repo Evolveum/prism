@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism;
 
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS;
 
+import static com.evolveum.midpoint.prism.testing.PrismAsserts2.assertPropertyValueExpressions;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.AssertJUnit.*;
 
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
@@ -15,6 +18,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 import java.util.Collection;
 import java.util.Comparator;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.AssertJUnit;
@@ -667,6 +671,7 @@ public class TestDelta extends AbstractPrismTest {
         // The value id is null
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -705,6 +710,7 @@ public class TestDelta extends AbstractPrismTest {
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -742,6 +748,7 @@ public class TestDelta extends AbstractPrismTest {
         // The value id is null
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -779,6 +786,7 @@ public class TestDelta extends AbstractPrismTest {
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -816,6 +824,7 @@ public class TestDelta extends AbstractPrismTest {
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -853,6 +862,7 @@ public class TestDelta extends AbstractPrismTest {
         assignmentValue1.setId(USER_ASSIGNMENT_1_ID);
         assignmentValue1.setPropertyRealValue(AssignmentType.F_DESCRIPTION, ASSIGNMENT_PATLAMA_DESCRIPTION, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta1 = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         UserType.F_ASSIGNMENT, assignmentValue1);
@@ -979,6 +989,7 @@ public class TestDelta extends AbstractPrismTest {
         // The value id is null
         activationValue.setPropertyRealValue(ActivationType.F_ENABLED, true, PrismTestUtil.getPrismContext());
 
+        @SuppressWarnings("unchecked")
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddContainer(UserType.class, USER_FOO_OID,
                         ItemPath.create(UserType.F_ASSIGNMENT,
@@ -1074,6 +1085,43 @@ public class TestDelta extends AbstractPrismTest {
         user.checkConsistence();
     }
 
+    /** MID-7918 */
+    @Test
+    public void testObjectDeltaApplyToWithExpressions() throws Exception {
+        given();
+        PrismObject<UserType> user = PrismTestUtil.parseObject(USER_JACK_FILE_XML);
+        ObjectDelta<UserType> addDelta = PrismTestUtil.getPrismContext().deltaFor(UserType.class)
+                .item(UserType.F_ADDITIONAL_NAMES)
+                .add(expressionBasedValue("const1"),
+                        expressionBasedValue("const2"))
+                .asObjectDelta(USER_JACK_OID);
+        ObjectDelta<UserType> deleteDelta = PrismTestUtil.getPrismContext().deltaFor(UserType.class)
+                .item(UserType.F_ADDITIONAL_NAMES)
+                .delete(expressionBasedValue("const1"))
+                .asObjectDelta(USER_JACK_OID);
+
+        when("values are added");
+        addDelta.applyTo(user);
+
+        then("they are there");
+        user.checkConsistence();
+        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, "const1", "const2");
+
+        when("a value is removed");
+        deleteDelta.applyTo(user);
+
+        then("it is gone");
+        user.checkConsistence();
+        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, "const2");
+    }
+
+    private PrismPropertyValue<String> expressionBasedValue(String content) {
+        PrismPropertyValue<String> value = getPrismContext().itemFactory().createPropertyValue();
+        value.setExpression(
+                new ExpressionWrapper(new QName("expression"), content));
+        return value;
+    }
+
     @Test
     public void testObjectDeltaFindItemDeltaModifyProperty() throws Exception {
         given();
@@ -1087,6 +1135,7 @@ public class TestDelta extends AbstractPrismTest {
         then();
         PrismAsserts.assertInstanceOf(PropertyDelta.class, itemDelta);
         PrismAsserts.assertPathEquivalent("paths are different", itemDeltaPath, itemDelta.getPath());
+        //noinspection unchecked,rawtypes
         PrismAsserts.assertPropertyValues("Wrong replace values in " + itemDelta,
                 ((PropertyDelta) itemDelta).getValuesToReplace(), "Guybrush");
     }
@@ -1106,6 +1155,7 @@ public class TestDelta extends AbstractPrismTest {
         System.out.println("Item delta:\n" + (itemDelta == null ? "null" : itemDelta.debugDump()));
         PrismAsserts.assertInstanceOf(PropertyDelta.class, itemDelta);
         assertEquals(itemDeltaPath, itemDelta.getPath());
+        //noinspection unchecked,rawtypes
         PrismAsserts.assertPropertyValues("Wrong add values in " + itemDelta,
                 ((PropertyDelta) itemDelta).getValuesToAdd(), Boolean.TRUE);
     }
@@ -1456,8 +1506,6 @@ public class TestDelta extends AbstractPrismTest {
     public void testDeltaComplex() throws Exception {
         given();
 
-        PrismContext prismContext = getPrismContext();
-
         ObjectDelta<UserType> delta = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddProperty(UserType.class, USER_FOO_OID,
                         UserType.F_FULL_NAME, PrismTestUtil.createPolyString("Foo Bar"));
@@ -1601,10 +1649,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1631,10 +1677,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1661,10 +1705,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1673,7 +1715,7 @@ public class TestDelta extends AbstractPrismTest {
     }
 
     @Test
-    public void testObjectDeltaNarrowAssignmen01() throws Exception {
+    public void testObjectDeltaNarrowAssignment01() throws Exception {
         given();
 
         ObjectDelta<UserType> userDelta = getPrismContext().deltaFactory().object()
@@ -1687,10 +1729,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1699,7 +1739,7 @@ public class TestDelta extends AbstractPrismTest {
     }
 
     @Test
-    public void testObjectDeltaNarrowAssignmen02() throws Exception {
+    public void testObjectDeltaNarrowAssignment02() throws Exception {
         given();
 
         ObjectDelta<UserType> userDelta = getPrismContext().deltaFactory().object()
@@ -1713,10 +1753,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1740,10 +1778,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
@@ -1756,7 +1792,7 @@ public class TestDelta extends AbstractPrismTest {
     }
 
     @Test
-    public void testObjectDeltaNarrowAssignmen12() throws Exception {
+    public void testObjectDeltaNarrowAssignment12() throws Exception {
         given();
 
         ObjectDelta<UserType> userDelta = getPrismContext().deltaFactory().object()
@@ -1771,10 +1807,8 @@ public class TestDelta extends AbstractPrismTest {
         displayValue("user", user);
 
         when();
-        when();
         ObjectDelta<UserType> narrowedDelta = userDelta.narrow(user, REAL_VALUE_CONSIDER_DIFFERENT_IDS, REAL_VALUE_CONSIDER_DIFFERENT_IDS, false);
 
-        then();
         then();
         displayValue("Narrowed delta", narrowedDelta);
 
