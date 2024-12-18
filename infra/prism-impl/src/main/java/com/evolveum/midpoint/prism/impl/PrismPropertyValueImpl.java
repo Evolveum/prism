@@ -9,11 +9,11 @@ package com.evolveum.midpoint.prism.impl;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
+import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
@@ -35,7 +35,6 @@ import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 import com.evolveum.midpoint.prism.crypto.EncryptionException;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.marshaller.BeanMarshaller;
-import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
@@ -176,13 +175,16 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         if (!propertyDefinition.isAnyType()) {
             if (rawElement != null) {
                 //noinspection unchecked
-                T maybeValue = parseRawElementToNewRealValue(this, (PrismPropertyDefinition<T>) propertyDefinition);
-                if (maybeValue != null) {
-                    setValue(maybeValue);
-                } else {
-                    // Be careful here. Expression element can be legal sub-element of complex properties.
-                    // Therefore parse expression only if there is no legal value.
-                    expression = PrismUtilInternal.parseExpression(rawElement);
+                var maybeValue = parseRawElementToNewValue(this, (PrismPropertyDefinition<T>) propertyDefinition);
+                if (maybeValue != null) { // should be the case
+                    var maybeRealValue = maybeValue.getRealValue();
+                    if (maybeRealValue != null) {
+                        setValue(maybeRealValue);
+                    } else {
+                        // Be careful here. Expression element can be legal sub-element of complex properties.
+                        // Therefore parse expression only if there is no legal value.
+                        expression = maybeValue.getExpression();
+                    }
                 }
                 rawElement = null;
             }
@@ -407,12 +409,10 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         ItemDefinition<?> definition = definitionSource.getParent() != null ? definitionSource.getParent().getDefinition() : null;
         if (definition != null) {
             //noinspection unchecked
-            return new PrismPropertyValueImpl<>(
-                    parseRawElementToNewRealValue(origValue, (PrismPropertyDefinition<T>) definition));
+            return parseRawElementToNewValue(origValue, (PrismPropertyDefinition<T>) definition);
         } else if (definitionSource.getRealClass() != null) {
             //noinspection unchecked
-            return new PrismPropertyValueImpl<>(
-                    parseRawElementToNewRealValue(origValue, (Class<T>) definitionSource.getRealClass()));
+            return parseRawElementToNewValue(origValue, (Class<T>) definitionSource.getRealClass());
         } else {
             throw new IllegalArgumentException(
                     "Attempt to use property " + origValue.getParent() + " values in a raw parsing state (raw elements)"
@@ -420,19 +420,25 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         }
     }
 
-    private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, PrismPropertyDefinition<T> definition)
+    /** This includes both real value and expression (whatever is present). */
+    private PrismPropertyValue<T> parseRawElementToNewValue(
+            PrismPropertyValue<T> prismPropertyValue, PrismPropertyDefinition<T> definition)
             throws SchemaException {
         return PrismContext.get()
                 .parserFor(prismPropertyValue.getRawElement().toRootXNode())
                 .definition(definition)
-                .parseRealValue();
+                .parseItemValue();
     }
 
-    private T parseRawElementToNewRealValue(PrismPropertyValue<T> prismPropertyValue, Class<T> clazz)
+    /** Definition-less variant of the above method. */
+    private PrismPropertyValue<T> parseRawElementToNewValue(PrismPropertyValue<T> prismPropertyValue, Class<T> clazz)
             throws SchemaException {
-        return PrismContext.get()
-                .parserFor(prismPropertyValue.getRawElement().toRootXNode())
+        var rawElement = (XNodeImpl) prismPropertyValue.getRawElement();
+        var realValue = PrismContext.get()
+                .parserFor(rawElement.toRootXNode())
                 .parseRealValue(clazz);
+        var expression = PrismUtilInternal.parseExpression(rawElement);
+        return new PrismPropertyValueImpl<>(realValue, null, null, expression);
     }
 
     @Override
@@ -446,57 +452,54 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             PrismPropertyValue<?> other0,
             @NotNull ParameterizedEquivalenceStrategy strategy,
             @Nullable MatchingRule<T> matchingRule) {
-        // Super call should be last check, if all are Okay, it checks for value metadata.
+
+        // Super.equals() call should be checked last, as it compares metadata, which can be quite expensive.
+        // Please DO NOT FORGET to call it at each exit point!
 
         //noinspection unchecked
         var other = (PrismPropertyValue<T>) other0;
 
         if (this.rawElement != null && other.getRawElement() != null) {
-            if (!equalsRawElements(other)) {
-                return false;
-            } else {
-                // continuing to the super.equals check
-            }
-        } else if (this.getExpression() != null && other.getExpression() != null) {
-            // TODO consider equivalence strategy as well
-            if (!this.getExpression().equals(other.getExpression())) {
-                return false;
-            } else {
-                // continuing to the super.equals check
-            }
-        } else if (this.getExpression() != null || other.getExpression() != null) {
-            // The resolved value may be the same or different, but the PPVs are syntactically different.
-            // TODO we could consider the equivalence strategy here
-            return false;
-        } else {
-            PrismPropertyValue<T> otherProcessed = other;
-            PrismPropertyValue<T> thisProcessed = this;
-            if (this.rawElement != null || other.getRawElement() != null) {
-                try {
-                    if (this.rawElement == null) {
-                        otherProcessed = parseRawElementToNewValue(other, this);
-                    } else if (other.getRawElement() == null) {
-                        thisProcessed = parseRawElementToNewValue(this, other);
-                    }
-                } catch (SchemaException e) {
-                    // TODO: Maybe just return false?
-                    throw new IllegalArgumentException(
-                            "Error parsing the value of property %s using the 'other' definition during a compare: %s".formatted(
-                                    getParent(), e.getMessage()),
-                            e);
+            return equalsRawElements(other)
+                    && super.equals(other, strategy); // TODO can value metadata be present in this case?
+        }
+
+        PrismPropertyValue<T> otherProcessed = other;
+        PrismPropertyValue<T> thisProcessed = this;
+        if (this.rawElement != null || other.getRawElement() != null) {
+            try {
+                if (this.rawElement == null) {
+                    otherProcessed = parseRawElementToNewValue(other, this);
+                } else if (other.getRawElement() == null) {
+                    thisProcessed = parseRawElementToNewValue(this, other);
                 }
-            }
-
-            T otherRealValue = otherProcessed.getValue();
-            T thisRealValue = thisProcessed.getValue();
-
-            if (!realValuesEquals(thisRealValue, otherRealValue, strategy, matchingRule)) {
-                return false;
+            } catch (SchemaException e) {
+                // TODO: Maybe just return false?
+                throw new IllegalArgumentException(
+                        "Error parsing the value of property %s using the 'other' definition during a compare: %s".formatted(
+                                getParent(), e.getMessage()),
+                        e);
             }
         }
 
-        // Super constructor compares metadata only, so it should be called last, not first
-        return super.equals(other, strategy);
+        var thisExpressionWrapper = thisProcessed.getExpression();
+        var otherExpressionWrapper = otherProcessed.getExpression();
+        if (thisExpressionWrapper != null && otherExpressionWrapper != null) {
+            // TODO consider equivalence strategy as well
+            return thisExpressionWrapper.equals(otherExpressionWrapper)
+                    && super.equals(other, strategy);
+        }
+
+        if (thisExpressionWrapper != null || otherExpressionWrapper != null) {
+            // The resolved value may be the same or different, but the PPVs are syntactically different.
+            // TODO we could consider the equivalence strategy here
+            return false;
+        }
+
+        T otherRealValue = otherProcessed.getValue();
+        T thisRealValue = thisProcessed.getValue();
+        return realValuesEquals(thisRealValue, otherRealValue, strategy, matchingRule)
+                && super.equals(other, strategy);
     }
 
     private boolean realValuesEquals(T thisRealValue, T otherRealValue, @NotNull ParameterizedEquivalenceStrategy strategy,
