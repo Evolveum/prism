@@ -26,6 +26,7 @@ import com.evolveum.midpoint.prism.query.*;
 import com.evolveum.midpoint.prism.xnode.*;
 import com.evolveum.midpoint.util.QNameUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.w3c.dom.Element;
@@ -46,9 +47,9 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
  *
  * DO NOT use this in the main code. Although it is placed in "main" for convenience, is should only be used in tests.
  *
- * FIXME: Move to test-jar
- * @author Radovan Semancik
+ * FIXME: Move to test-jar (into PrismAsserts2 that are already there)
  *
+ * @author Radovan Semancik
  */
 @TestOnly
 public class PrismAsserts {
@@ -1225,6 +1226,7 @@ public class PrismAsserts {
         assertEquals(message+": wrong target type", expected.getTargetType(), actual.getTargetType());
     }
 
+    @Contract("_, null -> fail")
     public static void assertInstanceOf(Class<?> expectedClass, Object object) {
         assertNotNull("Expected that object will be instance of "+expectedClass+", but it is null", object);
         assertTrue("Expected that "+object+" will be instance of "+expectedClass+", but it is "+object.getClass(),
