@@ -21,10 +21,11 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+import java.io.Serializable;
 
 public class LazyPrismContainerValue<C extends Containerable>
         extends LazyXNodeBasedPrismValue<MapXNodeImpl, PrismContainerValue<C>>
-        implements PrismContainerValueDelegator<C> {
+        implements PrismContainerValueDelegator<C>, Serializable {
 
     /**
      * Only for manual testing, will be removed later
