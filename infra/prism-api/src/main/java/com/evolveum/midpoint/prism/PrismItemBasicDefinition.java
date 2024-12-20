@@ -15,7 +15,7 @@ import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.Objects;
 
-/** "Basic" aspect of a prism item definition (whatever that means - TBD) */
+/** "Basic" aspect of a prism item definition (item/type name, cardinality). */
 public interface PrismItemBasicDefinition {
 
     /**

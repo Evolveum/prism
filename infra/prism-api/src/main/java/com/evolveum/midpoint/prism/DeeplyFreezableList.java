@@ -25,8 +25,8 @@ public class DeeplyFreezableList<T> extends FreezableList<T> {
     protected void performFreeze() {
         super.performFreeze();
         for (T item : this) {
-            if (item instanceof Freezable) {
-                ((Freezable) item).freeze();
+            if (item instanceof Freezable freezable) {
+                freezable.freeze();
             }
         }
     }

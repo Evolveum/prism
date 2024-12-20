@@ -9,9 +9,11 @@ package com.evolveum.midpoint.util.exception;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
+
 public class SystemException extends RuntimeException {
 
-    private static final long serialVersionUID = -611042093339023362L;
+    @Serial private static final long serialVersionUID = -611042093339023362L;
 
     public SystemException() {
     }
