@@ -23,8 +23,8 @@ public class DeeplyFreezableReference<T extends Serializable> extends FreezableR
     protected void performFreeze() {
         super.performFreeze();
         T value = getValue();
-        if (value instanceof Freezable) {
-            ((Freezable) value).freeze();
+        if (value instanceof Freezable freezable) {
+            freezable.freeze();
         }
     }
 }

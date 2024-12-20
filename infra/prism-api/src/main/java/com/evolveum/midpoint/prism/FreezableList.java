@@ -24,7 +24,7 @@ import java.util.*;
 @Experimental
 public class FreezableList<T> extends AbstractFreezable implements Serializable, List<T> {
 
-    private List<T> list = new ArrayList<>();
+    @NotNull private List<T> list = new ArrayList<>();
 
     public FreezableList() {
     }
@@ -70,7 +70,6 @@ public class FreezableList<T> extends AbstractFreezable implements Serializable,
     @NotNull
     @Override
     public <T1> T1 @NotNull [] toArray(@NotNull T1 @NotNull [] a) {
-        //noinspection SuspiciousToArrayCall
         return list.toArray(a);
     }
 
@@ -160,5 +159,14 @@ public class FreezableList<T> extends AbstractFreezable implements Serializable,
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
         return list.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public String toString() {
+        if (isImmutable()) {
+            return list.toString();
+        } else {
+            return list + " (mutable)";
+        }
     }
 }

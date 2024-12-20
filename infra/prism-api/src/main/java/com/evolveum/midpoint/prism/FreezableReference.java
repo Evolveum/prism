@@ -32,6 +32,12 @@ public class FreezableReference<T extends Serializable>
         return value;
     }
 
+    public static <T extends Serializable> FreezableReference<T> of(T value) {
+        var ref = new FreezableReference<T>();
+        ref.setValue(value);
+        return ref;
+    }
+
     public void setValue(T value) {
         checkMutable();
         this.value = value;
