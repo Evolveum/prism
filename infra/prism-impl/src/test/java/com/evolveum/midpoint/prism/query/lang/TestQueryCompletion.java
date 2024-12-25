@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.foo.*;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.impl.query.lang.FilterProvider;
@@ -33,8 +32,6 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
     AxiomQueryContentAssist axiomQueryContentAssist;
     private PrismObjectDefinition<UserType> userDef;
-
-    List<String> expected = new ArrayList<>();
 
     @BeforeSuite
     public void setupDebug() throws SchemaException, SAXException, IOException {
