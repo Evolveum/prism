@@ -9,7 +9,7 @@ package com.evolveum.midpoint.prism;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
 
-/** TODO */
+/** How the item is (usually) stored in the repository. */
 public interface PrismItemStorageDefinition {
 
     /**

@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.prism;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  *  Something that can be made immutable.
  */
@@ -28,10 +30,21 @@ public interface Freezable {
         }
     }
 
+    /**
+     * Convenience variant to be used in fluent interfaces.
+     * The name is different from {@link #checkImmutable()} to allow method references.
+     */
+    @Contract("null -> null; !null -> !null")
+    static <T extends Freezable> T checkIsImmutable(T freezable) {
+        if (freezable != null) {
+            freezable.checkImmutable();
+        }
+        return freezable;
+    }
+
     static void freezeNullable(Freezable target) {
         if (target != null) {
             target.freeze();
         }
     }
-
 }
