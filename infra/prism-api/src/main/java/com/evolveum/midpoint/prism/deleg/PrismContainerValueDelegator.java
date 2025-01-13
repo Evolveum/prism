@@ -579,4 +579,8 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
         return delegate().getRealValue();
     }
 
+    @Override
+    default void removeItem(@NotNull ItemPath path) {
+        delegate().removeItem(path);
+    }
 }
