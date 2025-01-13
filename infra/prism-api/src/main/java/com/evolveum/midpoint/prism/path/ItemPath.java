@@ -270,6 +270,9 @@ public interface ItemPath extends ShortDumpable, Serializable {
         if (segment instanceof InfraItemName) {
             return true;
         }
+        if (PrismConstants.T_ID.equals(segment)) {
+            return true;
+        }
         return isName(segment);
     }
 
