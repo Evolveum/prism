@@ -7,14 +7,15 @@
 package com.evolveum.midpoint.prism.lazy;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.xnode.XNode;
 
 import org.jetbrains.annotations.Nullable;
 
-public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable {
+import java.io.Serializable;
+
+public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable implements Serializable {
 
     protected static record Source<M extends XNode>(ParsingContext parsingContext, M value) {
 
