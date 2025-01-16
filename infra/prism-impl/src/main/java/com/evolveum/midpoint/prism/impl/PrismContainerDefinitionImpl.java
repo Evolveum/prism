@@ -244,6 +244,12 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
         return null;
     }
 
+    @Override
+    public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(
+            @NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
+        return findLocalItemDefinitionByIteration(name, clazz, caseInsensitive);
+    }
+
     /**
      * FIXME this looks like outdated description
      *
