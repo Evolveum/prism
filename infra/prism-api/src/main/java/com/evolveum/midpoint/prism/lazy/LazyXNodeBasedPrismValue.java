@@ -19,7 +19,7 @@ public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends Abstr
 
     private static final long serialVersionUID = 42L;
 
-    protected record Source<M extends XNode>(ParsingContext parsingContext, M value) {
+    protected record Source<M extends XNode>(ParsingContext parsingContext, M value) implements Serializable {
 
     }
     private Object value;
