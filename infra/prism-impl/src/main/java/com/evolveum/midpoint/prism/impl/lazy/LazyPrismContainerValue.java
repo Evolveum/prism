@@ -22,10 +22,11 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class LazyPrismContainerValue<C extends Containerable>
         extends LazyXNodeBasedPrismValue<MapXNodeImpl, PrismContainerValue<C>>
-        implements PrismContainerValueDelegator<C>, Serializable {
+        implements PrismContainerValueDelegator<C> {
 
     /**
      * Only for manual testing, will be removed later
@@ -55,7 +56,8 @@ public class LazyPrismContainerValue<C extends Containerable>
             return delegate().getId();
         }
         try {
-            return PrismUnmarshaller.getContainerId(xnode(), containerDef());
+            return PrismUnmarshaller.getContainerId(Objects.requireNonNull(xnode(), "invalid internal state"),
+                    containerDef());
         } catch (SchemaException e) {
             return delegate().getId();
         }
