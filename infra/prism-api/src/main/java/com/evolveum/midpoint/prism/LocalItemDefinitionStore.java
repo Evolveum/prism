@@ -46,7 +46,11 @@ public interface LocalItemDefinitionStore {
      *
      * BEWARE: In the case of ambiguities, returns any suitable definition. (This may change.)
      */
-     default <ID extends ItemDefinition<?>> ID findLocalItemDefinition(
+     <ID extends ItemDefinition<?>> ID findLocalItemDefinition(
+            @NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive);
+
+     /** Do not override this method. */
+     default <ID extends ItemDefinition<?>> ID findLocalItemDefinitionByIteration(
             @NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
         for (ItemDefinition<?> def : getDefinitions()) {
             if (def.isValidFor(name, clazz, caseInsensitive)) {
