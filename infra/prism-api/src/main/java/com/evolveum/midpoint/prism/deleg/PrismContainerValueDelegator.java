@@ -27,6 +27,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface PrismContainerValueDelegator<C extends Containerable> extends PrismContainerValue<C> {
@@ -109,6 +112,10 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
 
     default PrismContainerable<C> getParent() {
         return delegate().getParent();
+    }
+
+    default void removeItem(@NotNull ItemPath path) {
+        delegate().removeItem(path);
     }
 
     default void removeProperty(ItemPath path) {
@@ -316,6 +323,10 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
 
     default void removePaths(List<? extends ItemPath> remove) throws SchemaException {
         delegate().removePaths(remove);
+    }
+
+    default void removeMetadataFromPaths(List<? extends ItemPath> pathsToRemoveMetadata) throws SchemaException {
+        delegate().removeMetadataFromPaths(pathsToRemoveMetadata);
     }
 
     default <IV extends PrismValue, ID extends ItemDefinition<?>> boolean merge(Item<IV, ID> item) throws SchemaException {
@@ -580,7 +591,9 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
     }
 
     @Override
-    default void removeItem(@NotNull ItemPath path) {
-        delegate().removeItem(path);
+    default void walk(BiPredicate<? super ItemPath, Boolean> descendPredicate, Predicate<? super ItemPath> consumePredicate,
+            Consumer<? super Item<?, ?>> itemConsumer) throws SchemaException {
+        delegate().walk(descendPredicate, consumePredicate, itemConsumer);
     }
+
 }
