@@ -24,7 +24,7 @@ import java.util.*;
  * Prism container groups items into logical blocks. The reason for
  * grouping may be as simple as better understandability of data structure. But
  * the group usually means different meaning, source or structure of the data.
- * For example, the a container is frequently used to hold properties
+ * For example, the container is frequently used to hold properties
  * that are dynamic, not fixed by a static schema. Such grouping also naturally
  * translates to XML and helps to "quarantine" such properties to avoid Unique
  * Particle Attribute problems.
