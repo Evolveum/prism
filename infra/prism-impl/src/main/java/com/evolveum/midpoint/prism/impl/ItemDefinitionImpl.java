@@ -389,6 +389,10 @@ public abstract class ItemDefinitionImpl<I extends Item<?, ?>>
         sb.append("]");
     }
 
+    public String debugDisplayOrder() {
+        return getDisplayOrder() != null ? Integer.toString(getDisplayOrder()) : "";
+    }
+
     public String debugMultiplicity() {
         StringBuilder sb = new StringBuilder();
         debugMultiplicity(sb);
