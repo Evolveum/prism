@@ -7,19 +7,21 @@
 package com.evolveum.midpoint.prism.lazy;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.xnode.XNode;
 
 import org.jetbrains.annotations.Nullable;
 
-public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable {
+import java.io.Serializable;
 
-    protected static record Source<M extends XNode>(ParsingContext parsingContext, M value) {
+public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable implements Serializable {
+
+    private static final long serialVersionUID = 42L;
+
+    protected record Source<M extends XNode>(ParsingContext parsingContext, M value) implements Serializable {
 
     }
-
     private Object value;
 
     public LazyXNodeBasedPrismValue(ParsingContext parsingContext, M value) {
@@ -54,7 +56,7 @@ public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends Abstr
         return value instanceof LazyXNodeBasedPrismValue<?,?> xnode && !xnode.isMaterialized();
     }
 
-    protected boolean hasSameSource(LazyXNodeBasedPrismValue other) {
+    protected boolean hasSameSource(LazyXNodeBasedPrismValue<?,?> other) {
         if (!this.isMaterialized() && !other.isMaterialized()) {
             // TODO: Consider fully comparing XNodes?
             return this.xnode() == other.xnode(); // Copy of save lazy node.

@@ -382,15 +382,14 @@ public class ComplexTypeDefinitionImpl
         return null;
     }
 
-
-
     @Override
     public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
         if (name instanceof InfraItemName infra) {
             return findInfraItemDefinition(infra, infra.rest(), clazz);
         }
 
-        var explicit = ComplexTypeDefinition.super.findLocalItemDefinition(name, clazz, caseInsensitive);
+        // The result should be cached, so the ineffectiveness is OK here (in the main call path)
+        var explicit = findLocalItemDefinitionByIteration(name, clazz, caseInsensitive);
         if (explicit != null) {
             return explicit;
         }

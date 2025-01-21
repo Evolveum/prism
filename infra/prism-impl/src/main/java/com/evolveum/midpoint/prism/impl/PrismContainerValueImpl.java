@@ -690,6 +690,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private <IV extends PrismValue, ID extends ItemDefinition<?>> Item<IV, ID> findItemOrInfraItem(ItemName name) throws SchemaException {
+        if (ItemPath.isIdentifier(name)) {
+            // Normalize it to infra item name
+            name = InfraItemName.ID;
+        }
         if (name instanceof InfraItemName infra) {
             return findInfraItemName(infra);
         }
@@ -699,6 +703,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     private <ID extends ItemDefinition<?>, IV extends PrismValue> Item<IV,ID> findInfraItemName(InfraItemName name) {
         if (InfraItemName.METADATA.equals(name)) {
             return (Item<IV,ID>) getValueMetadataAsContainer();
+        }
+        if (InfraItemName.ID.equals(name)) {
+            return (Item<IV,ID>) idAsProperty();
         }
         return null;
     }
@@ -2024,5 +2031,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         public Class<?> getTypeClass() {
             throw unsupported();
         }
+    }
+
+    protected PrismProperty<?> idAsProperty() {
+        var prop = getDefinition().findPropertyDefinition(PrismConstants.T_ID).instantiate();
+        prop.setRealValue(getIdentifier());
+        return prop;
     }
 }
