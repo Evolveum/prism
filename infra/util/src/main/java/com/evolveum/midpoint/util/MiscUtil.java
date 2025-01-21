@@ -1079,7 +1079,7 @@ public class MiscUtil {
     }
 
     public static <V> V find(Collection<V> values, V value, @NotNull EqualsChecker<V> equalsChecker) {
-        for (V current : values) {
+        for (V current : emptyIfNull(values)) {
             if (equalsChecker.test(current, value)) {
                 return current;
             }
