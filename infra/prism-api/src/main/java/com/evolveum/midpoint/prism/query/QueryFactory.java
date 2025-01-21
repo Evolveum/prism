@@ -6,8 +6,10 @@
  */
 package com.evolveum.midpoint.prism.query;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
@@ -124,7 +126,7 @@ public interface QueryFactory {
     default ObjectFilter createAndOptimized(List<ObjectFilter> conditions) {
         List<ObjectFilter> nonTrivialConjuncts = conditions.stream()
                 .filter(c -> c != null && !(c instanceof AllFilter))
-                .toList();
+                .collect(Collectors.toList()); // returned List needs to be mutable, DO NOT replace with stream.toList();
         if (nonTrivialConjuncts.isEmpty()) {
             return createAll();
         } else if (nonTrivialConjuncts.size() == 1) {
