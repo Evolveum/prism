@@ -6,14 +6,16 @@
  */
 package com.evolveum.midpoint.prism;
 
-import java.util.*;
+import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
-
-import com.evolveum.midpoint.prism.schema.SchemaLookup;
-import com.evolveum.midpoint.util.annotation.Unused;
-import com.evolveum.midpoint.util.exception.CommonException;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -22,14 +24,15 @@ import org.jetbrains.annotations.Nullable;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaLookup;
+import com.evolveum.midpoint.util.annotation.Unused;
+import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.midpoint.util.exception.SchemaException;
-
-import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 /**
  * @author semancik
  */
-public interface PrismContainerValue<C extends Containerable> extends PrismValue, ParentVisitable {
+public interface PrismContainerValue<C extends Containerable> extends PrismValue, ParentVisitable, Walkable {
 
     static <T extends Containerable> T asContainerable(PrismContainerValue<T> value) {
         return value != null ? value.asContainerable() : null;
@@ -339,6 +342,17 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     // TODO optimize a bit + test thoroughly
     void removePaths(List<? extends ItemPath> remove) throws SchemaException;
+
+    /**
+     * Remove metadata from specified paths
+     *
+     * Can also remove metadata from the object on which it's called, if the paths contains a "root" path (e.g.
+     * {@code ItemPath.fromString("/")}).
+     *
+     * @param pathsToRemoveMetadata the paths to items on which metadata should be removed.
+     * @throws SchemaException
+     */
+    void removeMetadataFromPaths(List<? extends ItemPath> pathsToRemoveMetadata) throws SchemaException;
 
     void removeItems(List<? extends ItemPath> itemsToRemove);
 
