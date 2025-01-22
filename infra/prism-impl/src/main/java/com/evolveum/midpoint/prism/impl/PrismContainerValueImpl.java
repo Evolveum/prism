@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism.impl;
 
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
@@ -1828,19 +1831,44 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
     }
 
-    // TODO optimize a bit + test thoroughly
     @Override
-    public void removePaths(List<? extends ItemPath> remove) throws SchemaException {
-        Collection<QName> itemNames = getItemNames();
+    public void removePaths(List<? extends ItemPath> pathsToRemove) throws SchemaException {
+        walk((path, consumed) -> !consumed && ItemPathCollectionsUtil.containsSuperpath(pathsToRemove, path),
+                path -> ItemPathCollectionsUtil.containsEquivalent(pathsToRemove, path),
+                item -> {
+                    if (item.getParent() != null) {
+                        item.getParent().removeItem(ItemName.fromQName(item.getElementName()));
+                    }
+                });
+    }
+
+    @Override
+    public void removeMetadataFromPaths(List<? extends ItemPath> pathsToRemoveMetadata)
+            throws SchemaException {
+        if (ItemPathCollectionsUtil.containsEquivalent(pathsToRemoveMetadata, this.getPath())) {
+            this.deleteValueMetadata();
+        }
+        walk((path, consumed) -> ItemPathCollectionsUtil.containsSuperpath(pathsToRemoveMetadata, path),
+                path -> ItemPathCollectionsUtil.containsEquivalent(pathsToRemoveMetadata, path),
+                item -> item.getValues().forEach(PrismValue::deleteValueMetadata));
+    }
+
+    @Override
+    public void walk(BiPredicate<? super ItemPath, Boolean> descendPredicate,
+            Predicate<? super ItemPath> consumePredicate, Consumer<? super Item<?, ?>> itemConsumer)
+            throws SchemaException {
+        final Collection<QName> itemNames = getItemNames();
         for (QName itemName : itemNames) {
-            Item<?, ?> item = findItemByQName(itemName);
-            ItemPath itemPath = item.getPath().removeIds();
-            if (ItemPathCollectionsUtil.containsEquivalent(remove, itemPath)) {
-                removeItem(ItemName.fromQName(itemName), Item.class);
-            } else if (ItemPathCollectionsUtil.containsSuperpath(remove, itemPath)) {
-                if (item instanceof PrismContainer) {
-                    for (PrismContainerValue<?> v : ((PrismContainer<?>) item).getValues()) {
-                        v.removePaths(remove);
+            final Item<?, ?> item = findItemByQName(itemName);
+            final ItemPath itemPath = item.getPath().removeIds();
+            final boolean consume = consumePredicate.test(itemPath);
+            if (consume) {
+                itemConsumer.accept(item);
+            }
+            if (descendPredicate.test(itemPath, consume)) {
+                if (item instanceof PrismContainer<?> container) {
+                    for (PrismContainerValue<?> v : container.getValues()) {
+                        v.walk(descendPredicate, consumePredicate, itemConsumer);
                     }
                 }
             }

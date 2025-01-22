@@ -37,6 +37,24 @@
             <loa>low</loa>
         </_metadata>
     </additionalNames>
+    <description>Alice from the Wonderland</description>
+    <assignment id="1112">
+        <description>Assignment</description>
+        <accountConstruction>
+            <howto>Just do it</howto>
+            <when>2025-01-20T09:31:00.000Z</when>
+            <value>ABC</value>
+            <value>
+                <fullName>Nobody</fullName>
+            </value>
+            <_metadata>
+                <loa>low</loa>
+            </_metadata>
+        </accountConstruction>
+        <_metadata>
+            <loa>low</loa>
+        </_metadata>
+    </assignment>
     <extension>
         <ext:singleStringType>
             <_value>foobar</_value>
