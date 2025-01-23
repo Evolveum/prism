@@ -999,10 +999,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
         if (terminal.getSymbol().getType() == AxiomQueryParser.SEP) {
             TerminalNode infraFilter = getTerminalNode(getPreviousNode(terminal));
-            TerminalNode at_sign = getTerminalNode(getPreviousNode(infraFilter));
+            TerminalNode atSign = getTerminalNode(getPreviousNode(infraFilter));
 
-            if (at_sign != null) {
-                infraString = at_sign.getSymbol().getText() + infraFilter.getSymbol().getText();
+            if (atSign != null) {
+                infraString = atSign.getSymbol().getText() + infraFilter.getSymbol().getText();
             }
 
             for (Filter.Infra value : Filter.Infra.values()) {
