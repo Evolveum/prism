@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+
+import com.evolveum.midpoint.prism.polystring.PolyString;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -131,6 +135,23 @@ public class Filter {
         public String getName() {
             return name;
         }
+
+        public enum MatchingRule {
+
+            STRICT_IGNORE_CASE("strictIgnoreCase"),
+            ORIG_IGNORE_CASE("origIgnoreCase"),
+            NORM_IGNORE_CASE("normIgnoreCase");
+
+            private final String name;
+
+            MatchingRule(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return name;
+            }
+        }
     }
 
     public enum Token {
@@ -175,6 +196,21 @@ public class Filter {
             public String getClose() {
                 return close;
             }
+        }
+    }
+
+    public enum RulesWithoutSep {
+        FILTER_ALIAS(AxiomQueryParser.RULE_filterNameAlias),
+        MATCHING_RULE(AxiomQueryParser.RULE_matchingRule);
+
+        private final int index;
+
+        RulesWithoutSep(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
         }
     }
 
