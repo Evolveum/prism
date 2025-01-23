@@ -11,6 +11,7 @@ import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
@@ -1221,6 +1222,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return (T) path(null, pathContext);
         }
 
+        return extractLiteralValue(type, singleValue);
+    }
+
+    private <T> T extractLiteralValue(Class<T> type, SingleValueContext singleValue) throws SchemaException {
         LiteralValueContext literalContext = singleValue.literalValue();
         schemaCheck(literalContext != null, "Literal value required");
         return type.cast(parseLiteral(type, literalContext));
@@ -1243,7 +1248,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         boolean oidNullAsAny = !andContains(Filter.ReferencedKeyword.OID.getName(), andChildren);
         boolean typeNullAsAny = !andContains(Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
-        String oid = consumeFromAnd(String.class, Filter.ReferencedKeyword.OID.getName(), andChildren);
+        List<String> oids = consumeMultipleFromAnd(String.class, Filter.ReferencedKeyword.OID.getName(), andChildren);
+
+
         QName relation = consumeFromAnd(QName.class, Filter.ReferencedKeyword.RELATION.getName(), andChildren);
         QName type = consumeFromAnd(QName.class, Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
@@ -1267,11 +1274,21 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             var nested = context.referenced(targetSchema);
             targetFilter = parseFilter(nested, targetCtx.subfilterOrValue().subfilterSpec().filter());
         }
+        List<PrismReferenceValue> refValues;
+        if (oids.isEmpty()) {
+            PrismReferenceValue value = new PrismReferenceValueImpl(null, type);
+            value.setRelation(relation);
+            refValues = Collections.singletonList(value);
+        } else {
+            refValues = oids.stream().map((oid) -> {
+                PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
+                value.setRelation(relation);
+                return value;
+            }).collect(Collectors.toList());
+        }
 
-        PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
-        value.setRelation(relation);
         RefFilterImpl result = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition,
-                Collections.singletonList(value), targetFilter);
+                refValues, targetFilter);
         result.setOidNullAsAny(oidNullAsAny);
         result.setTargetTypeNullAsAny(typeNullAsAny);
 
@@ -1307,6 +1324,23 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return extractValue(valueType, maybe.subfilterOrValue());
         }
         return null;
+    }
+
+    private <T> List<T> consumeMultipleFromAnd(Class<T> valueType, String path, Collection<FilterContext> andFilters) throws SchemaException {
+        ItemFilterContext maybe = consumeFromAnd(path, EQUAL.getName(), andFilters);
+        var ret = new ArrayList<T>();
+        if (maybe != null) {
+            var subfilter = maybe.subfilterOrValue();
+            if (subfilter.singleValue() != null) {
+                ret.add(extractLiteralValue(valueType, maybe.subfilterOrValue().singleValue()));
+            } else {
+                schemaCheck(subfilter.valueSet() != null, "literal value required");
+                for (var value : subfilter.valueSet().values) {
+                    ret.add(extractLiteralValue(valueType, value));
+                }
+            }
+        }
+        return ret;
     }
 
     private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) {
