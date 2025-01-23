@@ -12,6 +12,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 
+import com.evolveum.midpoint.prism.polystring.PolyString;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -132,6 +134,23 @@ public class Filter {
 
         public String getName() {
             return name;
+        }
+
+        public enum MatchingRule {
+
+            STRICT_IGNORE_CASE("strictIgnoreCase"),
+            ORIG_IGNORE_CASE("origIgnoreCase"),
+            NORM_IGNORE_CASE("normIgnoreCase");
+
+            private final String name;
+
+            MatchingRule(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return name;
+            }
         }
     }
 
