@@ -103,6 +103,3 @@ constant: AT_SIGN name=IDENTIFIER;
 
 
 // grammar AxiomLiterals;
-
-
-

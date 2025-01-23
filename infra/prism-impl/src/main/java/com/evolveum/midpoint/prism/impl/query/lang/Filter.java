@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
+
+import com.evolveum.midpoint.prism.polystring.PolyString;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
@@ -19,7 +23,7 @@ public class Filter {
 
     public static final String MATCHING_RULE_NS = "http://prism.evolveum.com/xml/ns/public/matching-rule-3";
 
-    public enum Meta {
+    public enum Infra {
 
         TYPE("@type"),
         PATH("@path"),
@@ -27,7 +31,7 @@ public class Filter {
 
         private final String name;
 
-        Meta(String name) {
+        Infra(String name) {
             this.name = name;
         }
 
@@ -117,28 +121,46 @@ public class Filter {
         }
     }
 
-    public enum PolystringKeyword {
+    public enum PolyStringKeyword {
 
         ORIG("orig"),
         NORM("norm");
 
         private final String name;
 
-        PolystringKeyword(String name) {
+        PolyStringKeyword(String name) {
             this.name = name;
         }
 
         public String getName() {
             return name;
         }
+
+        public enum MatchingRule {
+
+            STRICT_IGNORE_CASE("strictIgnoreCase"),
+            ORIG_IGNORE_CASE("origIgnoreCase"),
+            NORM_IGNORE_CASE("normIgnoreCase");
+
+            private final String name;
+
+            MatchingRule(String name) {
+                this.name = name;
+            }
+
+            public String getName() {
+                return name;
+            }
+        }
     }
 
     public enum Token {
-
         REF_TARGET_ALIAS("@"),
         SELF_PATH("."),
-        LPAR("("),
-        RPAR(")");
+        PARENT(".."),
+        DOLLAR("$"),
+        SHARP("#"),
+        SLASH("/");
 
         private final String name;
 
@@ -148,6 +170,47 @@ public class Filter {
 
         public String getName() {
             return name;
+        }
+
+        // Pair Tokens
+        public enum Pair {
+            ROUND_BRACKET("(", ")"),
+            SQUARE_BRACKET("[", "]"),
+            BRACE("{", "}"),
+            SQOUTE("'", "'"),
+            DQOUTE("\"", "\""),
+            BACKTICK("`", "`");
+
+            private final String open;
+            private final String close;
+
+            Pair(String open, String close) {
+                this.open = open;
+                this.close = close;
+            }
+
+            public String getOpen() {
+                return open;
+            }
+
+            public String getClose() {
+                return close;
+            }
+        }
+    }
+
+    public enum RulesWithoutSep {
+        FILTER_ALIAS(AxiomQueryParser.RULE_filterNameAlias),
+        MATCHING_RULE(AxiomQueryParser.RULE_matchingRule);
+
+        private final int index;
+
+        RulesWithoutSep(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
         }
     }
 
