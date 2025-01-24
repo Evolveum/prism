@@ -771,6 +771,16 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     public ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException {
         AxiomQuerySource source = AxiomQuerySource.from(query);
 
+        if (!source.syntaxErrors().isEmpty()) {
+            source.syntaxErrors().forEach(error -> {
+                try {
+                    throw new SchemaException(error.message());
+                } catch (SchemaException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
         if (source.root().filter() == null) {
             throw new IllegalArgumentException("Unable to parse query: " + query);
         }
