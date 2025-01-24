@@ -144,6 +144,14 @@ public class QNameUtil {
         }
     }
 
+    public static @NotNull QName withoutPrefix(@NotNull QName typeName) {
+        if (typeName.getPrefix() != null) {
+            // We should not store prefixes in type definitions
+            return new QName(typeName.getNamespaceURI(), typeName.getLocalPart());
+        }
+        return typeName;
+    }
+
     public static class QNameInfo {
         @NotNull public final QName name;
         public final boolean explicitEmptyNamespace;

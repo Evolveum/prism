@@ -19,6 +19,8 @@ import com.evolveum.midpoint.prism.schema.SerializableReferenceDefinition;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
+import com.evolveum.midpoint.util.QNameUtil;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.concepts.Lazy;
@@ -92,7 +94,7 @@ public class PrismReferenceDefinitionImpl
     @Override
     public void setTargetTypeName(QName targetTypeName) {
         checkMutable();
-        this.targetTypeName = targetTypeName;
+        this.targetTypeName = QNameUtil.withoutPrefix(targetTypeName);
     }
 
     @Override
