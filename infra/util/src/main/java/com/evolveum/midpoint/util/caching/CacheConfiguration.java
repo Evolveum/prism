@@ -264,8 +264,7 @@ public class CacheConfiguration implements DebugDumpable {
         }
     }
 
-    public static StatisticsLevel getStatisticsLevel(CacheObjectTypeConfiguration typeConfig,
-            CacheConfiguration config) {
+    public static StatisticsLevel getStatisticsLevel(CacheObjectTypeConfiguration typeConfig, CacheConfiguration config) {
         if (typeConfig != null) {
             return typeConfig.getEffectiveStatisticsLevel();
         } else if (config != null) {

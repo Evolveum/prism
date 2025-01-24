@@ -16,6 +16,7 @@ public interface Freezable {
 
     boolean isImmutable();
 
+    /** Should be no-op (or very quick) if the object is already immutable. */
     void freeze();
 
     default void checkMutable() {
@@ -38,6 +39,18 @@ public interface Freezable {
     static <T extends Freezable> T checkIsImmutable(T freezable) {
         if (freezable != null) {
             freezable.checkImmutable();
+        }
+        return freezable;
+    }
+
+    /**
+     * Convenience variant to be used in fluent interfaces. The name is different from {@link #freeze()}
+     * to allow method references. TODO better name!
+     */
+    @Contract("null -> null; !null -> !null")
+    static <T extends Freezable> T doFreeze(T freezable) {
+        if (freezable != null) {
+            freezable.freeze();
         }
         return freezable;
     }
