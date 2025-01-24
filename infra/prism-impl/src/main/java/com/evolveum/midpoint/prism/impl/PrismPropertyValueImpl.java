@@ -215,6 +215,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                         //noinspection unchecked
                         value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
                     } else {
+                        // FIXME This is thrown also in cases when conversion is possible e.g. from int to double
                         throw new SchemaException(
                                 "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(
                                         definition.getTypeName(), type, definition.getItemName(), value.getClass()));
