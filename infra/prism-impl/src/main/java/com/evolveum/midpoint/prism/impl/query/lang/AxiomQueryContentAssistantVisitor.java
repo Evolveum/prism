@@ -241,6 +241,16 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     @Override
+    public Object visitInfraName(AxiomQueryParser.InfraNameContext ctx) {
+         if (Filter.Infra.METADATA.getName().equals(ctx.getText())) {
+            var def = prismContext.getSchemaRegistry().getValueMetadataDefinition();
+            updateDefinitionByContext(ctx, def);
+        }
+
+        return super.visitInfraName(ctx);
+    }
+
+    @Override
     public Object visitFilterName(AxiomQueryParser.FilterNameContext ctx) {
         var itemFilterContext = findItemFilterContextInTree(ctx);
         var itemDefinition = itemDefinitions.get(findIdentifierOfDefinition(ctx));
@@ -310,7 +320,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
                 while (positionDefinition == null) {
                     positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(parent));
-                    parent = parent.getParent();
+                    if (!(parent instanceof AxiomQueryParser.RootContext)) {
+                        parent = parent.getParent();
+                    }
                 }
             }
         }
@@ -322,7 +334,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     public Object visitTerminal(TerminalNode node) {
         if (node.equals(positionTerminal)) {
             if (positionTerminal.getParent() instanceof AxiomQueryParser.RootContext) {
-                positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(getTerminalNode(getPreviousNode(positionTerminal))));
+                positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(getPreviousTerminal(positionTerminal)));
             } else {
                 positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(node));
             }
@@ -331,7 +343,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
             while (positionDefinition == null) {
                 positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(parent));
-                parent = parent.getParent();
+                if (!(parent instanceof AxiomQueryParser.RootContext)) {
+                    parent = parent.getParent();
+                }
             }
         }
 
@@ -420,7 +434,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     ? referenceDefinition.getTargetObjectDefinition() : null;
         } else if (parentDefinition instanceof ComplexTypeDefinition complexTypeDefinition) {
             return complexTypeDefinition.findLocalItemDefinition(name);
+        } else if (parentDefinition instanceof PrismPropertyDefinition<?> prismPropertyDefinition) {
+            return prismPropertyDefinition;
         }
+
         return null;
     }
 
@@ -545,7 +562,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     }
 
     /**
-     * Generate code completions suggestion for AxiomQuery language by position context.
+     * Generate code completion suggestions for AxiomQuery language by position context.
      * @return List {@link Suggestion}
      */
     public List<Suggestion> generateSuggestions() {
@@ -580,21 +597,30 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                                 });
                             });
                         } else if (infraName != null && infraName.getChild(0).getText().equals(Filter.Infra.PATH.getName())) {
-                            processingDefinitionToPathSuggestion(positionDefinition, suggestions);
+                            processingDefinitionToPathSuggestion(positionDefinition, null, positionTerminal, suggestions);
                         } else {
+                            TerminalNode prevTerminal = getPreviousTerminal(positionTerminal);
+
                             if (positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP
                             || positionTerminal.getSymbol().getType() == AxiomQueryParser.ROUND_BRACKET_LEFT
-                            || positionTerminal.getSymbol().getType() == AxiomQueryParser.EOF) {
+                            || positionTerminal.getSymbol().getType() == AxiomQueryParser.EOF
+                            || positionTerminal.getSymbol().getType() == AxiomQueryParser.AT_SIGN
+                            || Filter.Infra.METADATA.getName().contains(positionTerminal.getParent().getText())
+                            || prevTerminal != null && Filter.Infra.METADATA.getName().contains(prevTerminal.getText())) {
                                 for (Filter.Infra value : Filter.Infra.values()) {
-                                    suggestions.add(new Suggestion(value.getName(), "Infra", -1));
+                                    if (value == Filter.Infra.METADATA) {
+                                        processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), value, null, suggestions);
+                                    } else {
+                                        suggestions.add(new Suggestion(value.getName(), "Infra", -1));
+                                    }
                                 }
                             }
 
                             if (positionTerminalItemPathOrFilterCtx[0] == AxiomQueryParser.RULE_filterName
                                     || positionTerminalItemPathOrFilterCtx[0] == AxiomQueryParser.RULE_filterNameAlias) {
-                                processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(parentNode, AxiomQueryParser.RootContext.class)), suggestions);
+                                processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(parentNode, AxiomQueryParser.RootContext.class)), null, positionTerminal, suggestions);
                             } else {
-                                processingDefinitionToPathSuggestion(positionDefinition, suggestions);
+                                processingDefinitionToPathSuggestion(positionDefinition, null, positionTerminal, suggestions);
                             }
                         }
                     } else if (token.identifierContext() == TokenCustom.IdentifierContext.MATCHING) {
@@ -689,10 +715,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         if (positionTerminal.getParent() instanceof AxiomQueryParser.RootContext ruleContext && getPreviousNode(positionTerminal) == null) {
             traverseATN(atn.states.get(ruleContext.invokingState == -1 ? 0 : ruleContext.invokingState), null, -1, expected);
         } else {
-            TerminalNode lastTerminal = positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP ? getTerminalNode(getPreviousNode(positionTerminal)) : positionTerminal;
+            TerminalNode lastTerminal = positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP ? getPreviousTerminal(positionTerminal) : positionTerminal;
 
             while (lastTerminal.getParent() instanceof AxiomQueryParser.RootContext){
-                lastTerminal = getTerminalNode(getPreviousNode(lastTerminal));
+                lastTerminal = getPreviousTerminal(lastTerminal);
             }
 
             if (lastTerminal.getParent() instanceof RuleContext ruleContext) {
@@ -824,25 +850,28 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     /**
      * Generate path suggestion by item definition.
      * @param definition item definition in the place of position cursor
+     * @param option option for different definition e.g ValueMetadataType definition
+     * @param positionTerminal position terminal node
      * @param suggestions suggestion list for append new suggestions generate from definition
      */
-    private void processingDefinitionToPathSuggestion(Definition definition, List<Suggestion> suggestions) {
+    private void processingDefinitionToPathSuggestion(Definition definition, Object option, TerminalNode positionTerminal, List<Suggestion> suggestions) {
         if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
+            String parentPath = determineParentPath(positionTerminal, containerDefinition, itemDefinitions, option);
             containerDefinition.getDefinitions().forEach(prop -> {
-                suggestions.add(new Suggestion(prop.getItemName().getLocalPart(), prop.getDisplayName(), -1));
+                suggestions.add(new Suggestion(parentPath + prop.getItemName().getLocalPart(), prop.getDisplayName() != null ? prop.getDisplayName() : "", -1));
                 if (prop instanceof PrismContainerDefinition<?> containerDefinition1) {
                     containerDefinition1.getDefinitions().forEach( o -> {
-                        suggestions.add(new Suggestion(containerDefinition1.getItemName().getLocalPart() + "/" +
-                                o.getItemName().getLocalPart(), o.getTypeName().getLocalPart(), -1
+                        suggestions.add(new Suggestion(parentPath + containerDefinition1.getItemName().getLocalPart() + "/" +
+                                o.getItemName().getLocalPart(), o.getDisplayName() != null ? o.getDisplayName() : "", -1
                         ));
                     });
                 }
             });
         } else if (definition instanceof PrismReferenceDefinition referenceDefinition) {
-             suggestions.add(new Suggestion(referenceDefinition.getItemName().getLocalPart(), referenceDefinition.getTypeName().getLocalPart(), -1));
+            suggestions.add(new Suggestion(referenceDefinition.getItemName().getLocalPart(), referenceDefinition.getDisplayName() != null ? referenceDefinition.getDisplayName() : "", -1));
         } else if (definition instanceof ComplexTypeDefinition complexTypeDefinition) {
             complexTypeDefinition.getDefinitions().forEach(d -> {
-                suggestions.add(new Suggestion(d.getItemName().getLocalPart(), d.getTypeName().getLocalPart(), -1));
+                suggestions.add(new Suggestion(d.getItemName().getLocalPart(), d.getDisplayName() != null ? d.getDisplayName() : "", -1));
             });
         } else if (definition instanceof PrismPropertyDefinition<?>) {
 //            suggestions.add(new Suggestion(propertyDefinition.getItemName().getLocalPart(), propertyDefinition.getTypeName().getLocalPart(), -1));
@@ -929,6 +958,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         return node.getChild(index - 1);
     }
 
+    private TerminalNode getPreviousTerminal(TerminalNode terminalNode) {
+        return getTerminalNode(getPreviousNode(terminalNode));
+    }
+
     /**
      * Method append token to expected tokens list.
      * @param label
@@ -998,8 +1031,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         String infraString = "";
 
         if (terminal.getSymbol().getType() == AxiomQueryParser.SEP) {
-            TerminalNode infraFilter = getTerminalNode(getPreviousNode(terminal));
-            TerminalNode atSign = getTerminalNode(getPreviousNode(infraFilter));
+            TerminalNode infraFilter = getPreviousTerminal(terminal);
+            TerminalNode atSign = getPreviousTerminal(infraFilter);
 
             if (atSign != null) {
                 infraString = atSign.getSymbol().getText() + infraFilter.getSymbol().getText();
@@ -1015,7 +1048,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     private ParseTree findInfraName(TerminalNode terminal) {
         while (terminal != null) {
-            terminal = getTerminalNode(getPreviousNode(terminal));
+            terminal =  getPreviousTerminal(terminal);
             if (terminal != null && terminal.getParent() instanceof AxiomQueryParser.InfraNameContext infraNameContext) {
                 return infraNameContext;
             }
@@ -1026,7 +1059,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
 
     private ParseTree findFilterName(TerminalNode terminal) {
         while (terminal != null) {
-            terminal = getTerminalNode(getPreviousNode(terminal));
+            terminal = getPreviousTerminal(terminal);
             if (terminal != null && terminal.getParent() instanceof AxiomQueryParser.FilterNameContext filterNameContext) {
                 return filterNameContext;
             }
@@ -1057,5 +1090,29 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 }
             }
         }
+    }
+
+    private boolean isAtSign(TerminalNode terminalNode) {
+        return terminalNode != null && terminalNode.getSymbol().getType() == AxiomQueryParser.AT_SIGN;
+    }
+
+
+    private String determineParentPath(TerminalNode positionTerminal, PrismContainerDefinition<?> containerDefinition, Map<ParseTree, Definition> itemDefinitions, Object option) {
+        if (option != null && option.equals(Filter.Infra.METADATA)) {
+            return Filter.Infra.METADATA.getName() + "/";
+        }
+
+        if (isAtSign(positionTerminal)) {
+            return "";
+        }
+
+        TerminalNode previousTerminal = getPreviousTerminal(positionTerminal);
+        if (isAtSign(previousTerminal)) {
+            return "";
+        }
+
+        return Objects.equals(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.RootContext.class)), containerDefinition)
+                ? ""
+                : containerDefinition.getItemName().getLocalPart() + "/";
     }
 }

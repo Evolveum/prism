@@ -77,4 +77,15 @@ public abstract class AbstractRoleType extends FocusType
     public AbstractRoleType clone() {
         return ((AbstractRoleType) super.clone());
     }
+
+    public AbstractRoleType metadata(MetadataType value) {
+        setMetadata(value);
+        return this;
+    }
+
+    public MetadataType beginMetadata() {
+        MetadataType value = new MetadataType();
+        metadata(value);
+        return value;
+    }
 }

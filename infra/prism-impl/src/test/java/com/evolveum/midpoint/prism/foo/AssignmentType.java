@@ -16,6 +16,8 @@ package com.evolveum.midpoint.prism.foo;
 
 import java.io.Serializable;
 
+import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
+
 import jakarta.xml.bind.annotation.*;
 
 import com.evolveum.midpoint.prism.Containerable;
@@ -46,10 +48,10 @@ import com.evolveum.midpoint.prism.path.ItemName;
         "description",
         "note",
         "accountConstruction",
-        "targetRef"
+        "targetRef",
+        "metadata"
 })
-public class AssignmentType
-        implements Serializable, Containerable {
+public class AssignmentType extends AbstractMutableContainerable {
 
     private static final long serialVersionUID = 201202081233L;
 
@@ -59,6 +61,7 @@ public class AssignmentType
     public static final ItemName F_ACCOUNT_CONSTRUCTION = ItemName.from(ObjectType.NS_FOO, "accountConstruction");
     public static final ItemName F_ACTIVATION = ItemName.from(ObjectType.NS_FOO, "activation");
     public static final ItemName F_TARGET_REF = ItemName.from(ObjectType.NS_FOO, "targetRef");
+    public static final ItemName F_METADATA = ItemName.interned(ObjectType.NS_FOO, "metadata");
 
     protected String identifier;
     protected String description;
@@ -126,16 +129,6 @@ public class AssignmentType
     }
 
     /**
-     * Gets the value of the id property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
      * Sets the value of the id property.
      *
      * @param value allowed object is
@@ -164,5 +157,15 @@ public class AssignmentType
     @XmlElement(name = "targetRef")
     public ObjectReferenceType getTargetRef() {
         return targetRef;
+    }
+
+
+    @XmlElement(name = "metadata")
+    public MetadataType getMetadata() {
+        return this.prismGetSingleContainerable(F_METADATA, MetadataType.class);
+    }
+
+    public void setMetadata(MetadataType value) {
+        this.prismSetSingleContainerable(F_METADATA, value);
     }
 }

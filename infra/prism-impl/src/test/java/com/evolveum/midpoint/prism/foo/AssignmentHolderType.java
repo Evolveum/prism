@@ -341,4 +341,14 @@ public abstract class AssignmentHolderType extends ObjectType implements Objecta
         return ((AssignmentHolderType) super.clone());
     }
 
+    public AssignmentHolderType metadata(MetadataType value) {
+        setMetadata(value);
+        return this;
+    }
+
+    public MetadataType beginMetadata() {
+        MetadataType value = new MetadataType();
+        metadata(value);
+        return value;
+    }
 }
