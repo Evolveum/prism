@@ -51,8 +51,9 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  *
  * @author Radovan Semancik
  */
-public interface Item<V extends PrismValue, D extends ItemDefinition<?>> extends Itemable, DebugDumpable, Visitable, PrismVisitable, PathVisitable,
-        ParentVisitable, Serializable, Revivable, Freezable {
+public interface Item<V extends PrismValue, D extends ItemDefinition<?>>
+        extends Itemable, DebugDumpable, Visitable, PrismVisitable, PathVisitable, ParentVisitable, Serializable, Revivable,
+        Freezable, Cloneable {
 
     String KEY_NAMESPACE_CONTEXT = PrismNamespaceContext.class.getSimpleName();
 
