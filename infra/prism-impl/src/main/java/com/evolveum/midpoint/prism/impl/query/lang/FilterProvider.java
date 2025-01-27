@@ -68,6 +68,7 @@ public class FilterProvider {
             suggestions.put(Infra.TYPE.getName(), null);
             suggestions.put(Infra.PATH.getName(), null);
             suggestions.put(Infra.RELATION.getName(), null);
+            suggestions.put(Infra.METADATA.getName(), null);
         }
 
         if (ruleIndex == RULE_negation) {

@@ -382,4 +382,15 @@ public class ArchetypeType
     public ArchetypeType clone() {
         return ((ArchetypeType) super.clone());
     }
+
+    public ArchetypeType metadata(MetadataType value) {
+        setMetadata(value);
+        return this;
+    }
+
+    public MetadataType beginMetadata() {
+        MetadataType value = new MetadataType();
+        metadata(value);
+        return value;
+    }
 }

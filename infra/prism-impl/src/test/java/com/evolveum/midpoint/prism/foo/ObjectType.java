@@ -52,7 +52,8 @@ import java.util.List;
     "name",
     "description",
     "extension",
-    "parentOrgRef"
+    "parentOrgRef",
+    "metadata"
 })
 @XmlSeeAlso({
     UserType.class
@@ -70,6 +71,7 @@ public abstract class ObjectType
     public static final ItemName F_DESCRIPTION = ItemName.from(NS_FOO, "description");
     public static final ItemName F_EXTENSION = ItemName.from(NS_FOO, "extension");
     public static final ItemName F_PARENT_ORG_REF = ItemName.from(NS_FOO, "parentOrgRef");
+    public static final ItemName F_METADATA = ItemName.interned(NS_FOO, "metadata");
 
     private static final long serialVersionUID = 201202081233L;
     protected PolyStringType name;
@@ -244,5 +246,25 @@ public abstract class ObjectType
             parentOrgRef = new ArrayList<>();
         }
         return parentOrgRef;
+    }
+
+    @XmlElement(name = "metadata")
+    public MetadataType getMetadata() {
+        return this.prismGetSingleContainerable(F_METADATA, MetadataType.class);
+    }
+
+    public void setMetadata(MetadataType value) {
+        this.prismSetSingleContainerable(F_METADATA, value);
+    }
+
+    public ObjectType metadata(MetadataType value) {
+        setMetadata(value);
+        return this;
+    }
+
+    public MetadataType beginMetadata() {
+        MetadataType value = new MetadataType();
+        metadata(value);
+        return value;
     }
 }

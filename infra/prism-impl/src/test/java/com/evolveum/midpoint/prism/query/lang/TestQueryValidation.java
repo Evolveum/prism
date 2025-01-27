@@ -517,4 +517,14 @@ public class TestQueryValidation extends AbstractPrismTest {
         var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
     }
+
+    @Test
+    public void testInfraMetadata() {
+        ItemDefinition<?> localTypeDefinition = PrismContext.get().getSchemaRegistry().getValueMetadataDefinition();
+        var query = """
+                @metadata/storage/createTimestamp < "2024-12-31"
+                """;
+        var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+    }
 }

@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.evolveum.midpoint.prism.foo.*;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.impl.query.lang.FilterProvider;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
@@ -54,6 +55,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testRootCtx() {
         suggestion = getSuggestion("^");
+
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
@@ -155,7 +157,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(suggestion).map(Suggestion::name).containsAll(aliases);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("#", ":", "$", "/"));
         def.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
+            assertThat(suggestion).map(Suggestion::name).contains("assignment/" + itemName.toString());
         });
 
         suggestion = getSuggestion("""
@@ -163,7 +165,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("#", ":", "$", ".."));
         def.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
+            assertThat(suggestion).map(Suggestion::name).contains("assignment/" + itemName.toString());
         });
 
         suggestion = getSuggestion("""
@@ -187,7 +189,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(suggestion).map(Suggestion::name).contains(ref.getItemName().getLocalPart());
 
         suggestion = getSuggestion("""
-                assignment/targetRef/@/^name = "End user"
+                assignment/targetRef/@^/name = "End user"
                 """);
         PrismObjectDefinition<?> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(ref.getTargetTypeName());
         objDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
@@ -199,6 +201,36 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """);
         objDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
+        });
+    }
+
+    @Test
+    public void testMetadataPath() {
+        var localValMetadataDef = getPrismContext().getSchemaRegistry().getValueMetadataDefinition();
+        suggestion = getSuggestion("^");
+
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@meta^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata/^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
         });
     }
 
@@ -340,6 +372,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """);
 
         List<String> infraFilters = new ArrayList<>(Arrays.stream(Filter.Infra.values()).map(Filter.Infra::getName).toList());
+        infraFilters.remove(Filter.Infra.METADATA.getName());
         assertThat(suggestion).map(Suggestion::name).containsAll(infraFilters);
 
         suggestion = getSuggestion("""

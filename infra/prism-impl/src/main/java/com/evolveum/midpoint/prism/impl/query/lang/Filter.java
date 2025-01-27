@@ -27,7 +27,8 @@ public class Filter {
 
         TYPE("@type"),
         PATH("@path"),
-        RELATION("@relation");
+        RELATION("@relation"),
+        METADATA("@metadata");
 
         private final String name;
 
