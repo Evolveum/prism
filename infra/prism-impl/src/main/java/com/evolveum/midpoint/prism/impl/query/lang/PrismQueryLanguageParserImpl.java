@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 import com.google.common.collect.ImmutableList;
@@ -771,14 +772,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     public ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException {
         AxiomQuerySource source = AxiomQuerySource.from(query);
 
-        if (!source.syntaxErrors().isEmpty()) {
-            source.syntaxErrors().forEach(error -> {
-                try {
-                    throw new SchemaException(error.message());
-                } catch (SchemaException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        for (AxiomQueryError error : source.syntaxErrors()) {
+            throw new SchemaException(error.message());
         }
 
         if (source.root().filter() == null) {
