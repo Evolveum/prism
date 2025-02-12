@@ -53,6 +53,15 @@ public class TestQueryCompletion extends AbstractPrismTest {
     }
 
     @Test
+    public void testDevel() {
+        suggestion = getSuggestion("@metadata/^");
+
+        suggestion.forEach(a -> {
+            System.out.println("RESULT>>  "+ a.name());
+        });
+    }
+
+    @Test
     public void testRootCtx() {
         suggestion = getSuggestion("^");
 
@@ -149,7 +158,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testReferenceAndDereferencePath() {
         suggestion = getSuggestion("""
-                assignment^/targetRef/@/name = "End user"
+                assignment/targetRef^
                 """);
 
         PrismContainerDefinition<?> def = userDef.findItemDefinition(ItemPath.create(new QName("assignment")));
@@ -157,7 +166,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         assertThat(suggestion).map(Suggestion::name).containsAll(aliases);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("#", ":", "$", "/"));
         def.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains("assignment/" + itemName.toString());
+            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
 
         suggestion = getSuggestion("""
@@ -165,7 +174,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 """);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("#", ":", "$", ".."));
         def.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains("assignment/" + itemName.toString());
+            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
 
         suggestion = getSuggestion("""
