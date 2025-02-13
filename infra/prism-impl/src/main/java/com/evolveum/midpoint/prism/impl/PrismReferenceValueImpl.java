@@ -477,9 +477,6 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
 
     @SuppressWarnings({ "RedundantIfStatement" })
     public boolean equals(PrismReferenceValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        if (!super.equals(other, strategy)) {
-            return false;
-        }
         if (this.getOid() == null) {
             if (other.getOid() != null) {
                 return false;
@@ -517,7 +514,8 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
                 return false;
             }
         }
-        return true;
+        // called intentionally at the end, because it is quite expensive if metadata are present
+        return super.equals(other, strategy);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")
