@@ -1170,6 +1170,13 @@ public class MiscUtil {
         return value != null ? value.intValue() : null;
     }
 
+    /** Converts naive-style patterns (e.g. "*.xml") to regex. */
+    public static String toRegex(String pattern) {
+        return pattern
+                .replace(".", "\\.")
+                .replace("*", ".*");
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
