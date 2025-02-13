@@ -689,7 +689,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public PrismReferenceValueImpl cloneComplex(CloneStrategy strategy) {
+    public PrismReferenceValueImpl cloneComplex(@NotNull CloneStrategy strategy) {
         PrismReferenceValueImpl clone = new PrismReferenceValueImpl(getOid(), getOriginType(), getOriginObject());
         copyValues(strategy, clone);
         return clone;

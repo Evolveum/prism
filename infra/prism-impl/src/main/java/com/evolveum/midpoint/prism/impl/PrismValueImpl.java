@@ -214,16 +214,16 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
      * @see CloneStrategy
      */
     @Override
-    public abstract PrismValue cloneComplex(CloneStrategy strategy);
+    public abstract PrismValue cloneComplex(@NotNull CloneStrategy strategy);
 
-    protected void copyValues(CloneStrategy strategy, PrismValueImpl clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismValueImpl clone) {
         clone.originType = this.originType;
         clone.originObject = this.originObject;
         // Do not clone parent. The clone will most likely go to a different prism
         // and setting the parent will make it difficult to add it there.
         clone.parent = null;
         // Do not clone immutable flag.
-        clone.valueMetadata = valueMetadata != null ? valueMetadata.clone() : null;
+        clone.valueMetadata = valueMetadata != null && !strategy.ignoreMetadata() ? valueMetadata.clone() : null;
         clone.isTransient = isTransient;
     }
 

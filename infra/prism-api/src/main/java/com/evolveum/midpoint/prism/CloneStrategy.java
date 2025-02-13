@@ -18,6 +18,11 @@ public enum CloneStrategy {
     LITERAL,
 
     /**
+     * As {@link #LITERAL} but ignores the metadata.
+     */
+    LITERAL_NO_METADATA,
+
+    /**
      * Clone for reuse.
      * Create clone of the object that is suitable to be reused
      * in a different object or delta. The cloned object will
@@ -30,4 +35,7 @@ public enum CloneStrategy {
      */
     REUSE;
 
+    public boolean ignoreMetadata() {
+        return this == LITERAL_NO_METADATA;
+    }
 }

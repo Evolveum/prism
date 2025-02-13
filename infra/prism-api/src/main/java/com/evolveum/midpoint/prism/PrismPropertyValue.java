@@ -45,7 +45,7 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
     PrismPropertyValue<T> clone();
 
     @Override
-    PrismPropertyValue<T> cloneComplex(CloneStrategy strategy);
+    PrismPropertyValue<T> cloneComplex(@NotNull CloneStrategy strategy);
 
     /**
      * @return true if values are equivalent under given strategy and (if present) also under matching rule.
