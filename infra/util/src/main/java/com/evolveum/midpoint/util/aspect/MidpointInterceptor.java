@@ -9,6 +9,7 @@ package com.evolveum.midpoint.util.aspect;
 import com.evolveum.midpoint.util.statistics.OperationInvocationRecord;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
@@ -26,14 +27,14 @@ import org.springframework.core.annotation.Order;
 public class MidpointInterceptor implements MethodInterceptor {
 
     @Override
-    public Object invoke(MethodInvocation invocation) throws Throwable {
+    public Object invoke(@NotNull MethodInvocation invocation) throws Throwable {
         OperationInvocationRecord ctx = OperationInvocationRecord.create(invocation);
         try {
             return ctx.processReturnValue(invocation.proceed());
         } catch (Throwable e) {
             throw ctx.processException(e);
         } finally {
-            ctx.afterCall(invocation);
+            ctx.afterCall(invocation, null);
         }
     }
 }

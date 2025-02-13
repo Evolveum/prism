@@ -1289,6 +1289,13 @@ public class MiscUtil {
                 .toArray(value -> (T[]) Array.newInstance(nullable.getClass().getComponentType(), value));
     }
 
+    /** Converts naive-style patterns (e.g. "*.xml") to regex. */
+    public static String toRegex(String pattern) {
+        return pattern
+                .replace(".", "\\.")
+                .replace("*", ".*");
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
