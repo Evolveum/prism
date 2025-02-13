@@ -276,7 +276,7 @@ public interface PrismContainerValueDelegator<C extends Containerable> extends P
         return delegate().getValue();
     }
 
-    default PrismContainerValue<C> cloneComplex(CloneStrategy strategy) {
+    default PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

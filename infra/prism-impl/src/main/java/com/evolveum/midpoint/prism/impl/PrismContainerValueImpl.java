@@ -1446,7 +1446,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValueImpl<C> cloneComplex(CloneStrategy strategy) {    // TODO resolve also the definition?
+    public PrismContainerValueImpl<C> cloneComplex(@NotNull CloneStrategy strategy) {    // TODO resolve also the definition?
         PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), null, this.complexTypeDefinition);
         copyValues(strategy, clone);

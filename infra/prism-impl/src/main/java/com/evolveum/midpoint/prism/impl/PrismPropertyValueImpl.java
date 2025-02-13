@@ -386,7 +386,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     }
 
     @Override
-    public PrismPropertyValue<T> cloneComplex(CloneStrategy strategy) {
+    public PrismPropertyValue<T> cloneComplex(@NotNull CloneStrategy strategy) {
         PrismPropertyValueImpl<T> clone = new PrismPropertyValueImpl<>(getOriginType(), getOriginObject());
         copyValues(strategy, clone);
         return clone;

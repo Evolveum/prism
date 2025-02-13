@@ -94,7 +94,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
-    public PrismObjectValueImpl<O> cloneComplex(CloneStrategy strategy) {
+    public PrismObjectValueImpl<O> cloneComplex(@NotNull CloneStrategy strategy) {
         PrismObjectValueImpl<O> clone = new PrismObjectValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, oid, version);
         copyValues(strategy, clone);
