@@ -38,8 +38,9 @@ public final class OperationInvocationRecord implements Serializable {
     private final Long startCpuTime; // null if not measured
     private final boolean measureCpuTime;
 
-    private long elapsedTime;
-    private Long cpuTime; // null if not measured
+    private long elapsedTime; // in nanoseconds
+    private Long ownTimeMicros; // null if not available
+    private Long cpuTime; // in nanoseconds; null if not measured
     private int invocationId;
     private String formattedReturnValue;            // present only if traceEnabled=true
     private boolean gotException;
@@ -201,12 +202,15 @@ public final class OperationInvocationRecord implements Serializable {
         return e;
     }
 
-    public void afterCall() {
-        afterCall(null);
+    public void afterCall(long notOwnTimeMicros) {
+        afterCall(null, notOwnTimeMicros);
     }
 
-    public void afterCall(MethodInvocation invocation) {
+    public void afterCall(MethodInvocation invocation, Long notOwnTimeMicros) {
         elapsedTime = System.nanoTime() - startTime;
+        if (notOwnTimeMicros != null) {
+            ownTimeMicros = getElapsedTimeMicros() - notOwnTimeMicros;
+        }
         if (measureCpuTime && startCpuTime != null) {
             Long currentCpuTime = getCurrentCpuTime();
             if (currentCpuTime != null) {
@@ -306,6 +310,10 @@ public final class OperationInvocationRecord implements Serializable {
 
     public long getElapsedTimeMicros() {
         return elapsedTime / 1000;
+    }
+
+    public Long getOwnTimeMicros() {
+        return ownTimeMicros;
     }
 
     public Long getCpuTimeMicros() {

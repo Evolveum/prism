@@ -11,6 +11,8 @@ import com.evolveum.midpoint.util.ShortDumpable;
 
 import java.util.Locale;
 
+import static com.evolveum.midpoint.util.MiscUtil.or0;
+
 /**
  *  Experimental.
  */
@@ -20,6 +22,9 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
     private long totalTime;
     private Long minTime;
     private Long maxTime;
+    private Long ownTime;
+    private Long minOwnTime;
+    private Long maxOwnTime;
 
     public int getInvocationCount() {
         return invocationCount;
@@ -37,9 +42,25 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
         return maxTime;
     }
 
+    public Long getOwnTime() {
+        return ownTime;
+    }
+
+    public Long getMinOwnTime() {
+        return minOwnTime;
+    }
+
+    public Long getMaxOwnTime() {
+        return maxOwnTime;
+    }
+
     public synchronized void register(OperationInvocationRecord operation) {
         invocationCount++;
         addTotalTime(operation.getElapsedTimeMicros());
+        var ownTime = operation.getOwnTimeMicros();
+        if (ownTime != null) {
+            addOwnTime(ownTime);
+        }
     }
 
     private void addTotalTime(long time) {
@@ -52,6 +73,16 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
         }
     }
 
+    private void addOwnTime(long time) {
+        ownTime = or0(ownTime) + time;
+        if (minOwnTime == null || time < minOwnTime) {
+            minOwnTime = time;
+        }
+        if (maxOwnTime == null || time > maxOwnTime) {
+            maxOwnTime = time;
+        }
+    }
+
     @Override
     public synchronized void shortDump(StringBuilder sb) {
         sb.append(invocationCount);
@@ -61,6 +92,13 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
             sb.append(String.format(Locale.US, " (min/max/avg: %.2f/%.2f/%.2f)", minTime/1000.0, maxTime/1000.0,
                     (float) totalTime / invocationCount / 1000.0));
         }
+        if (ownTime != null) {
+            sb.append(", own time: ");
+            sb.append(ownTime/1000).append(" ms");
+            if (invocationCount > 0) {
+                sb.append(String.format(Locale.US, " (min/max/avg: %.2f/%.2f/%.2f)",
+                        minOwnTime/1000.0, maxOwnTime/1000.0, (float) ownTime / invocationCount / 1000.0));
+            }
+        }
     }
-
 }
