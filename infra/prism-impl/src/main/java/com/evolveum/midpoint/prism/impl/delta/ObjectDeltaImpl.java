@@ -1363,21 +1363,24 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
-    private static boolean subtractFromModifications(Collection<? extends ItemDelta<?, ?>> modifications,
-            @NotNull ItemPath itemPath, @NotNull PrismValue value, boolean fromMinusSet, boolean dryRun) {
+    private static <V extends PrismValue> boolean subtractFromModifications(Collection<? extends ItemDelta<?, ?>> modifications,
+            @NotNull ItemPath itemPath, @NotNull V value, boolean fromMinusSet, boolean dryRun) {
         if (modifications == null) {
             return false;
         }
         boolean wasPresent = false;
         Iterator<? extends ItemDelta<?, ?>> itemDeltaIterator = modifications.iterator();
         while (itemDeltaIterator.hasNext()) {
-            ItemDelta<?, ?> itemDelta = itemDeltaIterator.next();
+            //noinspection unchecked
+            ItemDelta<V, ?> itemDelta = (ItemDelta<V, ?>) itemDeltaIterator.next();
             if (itemPath.equivalent(itemDelta.getPath())) {
                 if (!fromMinusSet) {
+                    // The equivalence strategy used (real value considering different IDs) is the same for dry & normal runs.
+                    // ("removeValueToXXX" methods use REAL_VALUE_CONSIDER_DIFFERENT_IDS strategy.)
                     if (dryRun) {
                         wasPresent = wasPresent
-                                || emptyIfNull(itemDelta.getValuesToAdd()).contains(value)
-                                || emptyIfNull(itemDelta.getValuesToReplace()).contains(value);
+                                || itemDelta.containsValueToAdd(value, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS)
+                                || itemDelta.containsValueToReplace(value, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS);
                     } else {
                         boolean removed1 = itemDelta.removeValueToAdd(value);
                         boolean removed2 = itemDelta.removeValueToReplace(value);
@@ -1388,7 +1391,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
                         throw new UnsupportedOperationException("Couldn't subtract 'value to be deleted' from REPLACE itemDelta: " + itemDelta);
                     }
                     if (dryRun) {
-                        wasPresent = wasPresent || emptyIfNull(itemDelta.getValuesToDelete()).contains(value);
+                        wasPresent = wasPresent || itemDelta.containsValueToDelete(value, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS);
                     } else {
                         wasPresent = wasPresent || itemDelta.removeValueToDelete(value);
                     }

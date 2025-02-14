@@ -11,8 +11,10 @@ import static com.evolveum.midpoint.util.MiscUtil.schemaCheck;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 import com.google.common.collect.ImmutableList;
@@ -47,7 +49,7 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private static final QName VALUES = new QName(PrismConstants.NS_QUERY, "values");
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
-            .put(Filter.PolystringKeyword.ORIG.getName(), String.class).put(Filter.PolystringKeyword.NORM.getName(), String.class).build();
+            .put(Filter.PolyStringKeyword.ORIG.getName(), String.class).put(Filter.PolyStringKeyword.NORM.getName(), String.class).build();
 
     public interface ItemFilterFactory {
         ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -528,10 +530,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Infra.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Infra.PATH.getName(), andChildren);
 
-                    QName relation = consumeFromAnd(QName.class, Filter.Meta.RELATION.getName(), andChildren);
+                    QName relation = consumeFromAnd(QName.class, Filter.Infra.RELATION.getName(), andChildren);
 
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     var reffererCont = context.findContainerDefinitionByType(type);
@@ -551,8 +553,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     List<FilterContext> andChildren = new ArrayList<>();
                     expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(subfilter));
 
-                    QName type = consumeFromAnd(QName.class, Filter.Meta.TYPE.getName(), andChildren);
-                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Meta.PATH.getName(), andChildren);
+                    QName type = consumeFromAnd(QName.class, Filter.Infra.TYPE.getName(), andChildren);
+                    ItemPath path = consumeFromAnd(ItemPath.class, Filter.Infra.PATH.getName(), andChildren);
                     var referrerSchema = context.findComplexTypeDefinitionByType(type);
                     ObjectFilter filter = andFilter(context.referenced(null, referrerSchema), andChildren);
                     return OwnedByFilterImpl.create(type, path, allFilterToNull(filter));
@@ -769,6 +771,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     @Override
     public ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException {
         AxiomQuerySource source = AxiomQuerySource.from(query);
+
+        for (AxiomQueryError error : source.syntaxErrors()) {
+            throw new SchemaException(error.message());
+        }
 
         if (source.root().filter() == null) {
             throw new IllegalArgumentException("Unable to parse query: " + query);
@@ -1191,8 +1197,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     private ObjectFilter matchesPolystringFilter(ItemPath path, PrismPropertyDefinition<?> definition,
             FilterContext filter) throws SchemaException {
         Map<String, Object> props = valuesFromFilter("PolyString", POLYSTRING_PROPS, filter, new HashMap<>(), true);
-        String orig = (String) props.get(Filter.PolystringKeyword.ORIG.getName());
-        String norm = (String) props.get(Filter.PolystringKeyword.NORM.getName());
+        String orig = (String) props.get(Filter.PolyStringKeyword.ORIG.getName());
+        String norm = (String) props.get(Filter.PolyStringKeyword.NORM.getName());
         schemaCheck(orig != null || norm != null, "orig or norm must be defined in matches polystring filter.");
         if (orig != null && norm != null) {
             return EqualFilterImpl.createEqual(path, definition, PrismConstants.POLY_STRING_STRICT_MATCHING_RULE_NAME, new PolyString(orig, norm));
@@ -1221,6 +1227,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return (T) path(null, pathContext);
         }
 
+        return extractLiteralValue(type, singleValue);
+    }
+
+    private <T> T extractLiteralValue(Class<T> type, SingleValueContext singleValue) throws SchemaException {
         LiteralValueContext literalContext = singleValue.literalValue();
         schemaCheck(literalContext != null, "Literal value required");
         return type.cast(parseLiteral(type, literalContext));
@@ -1243,7 +1253,9 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         boolean oidNullAsAny = !andContains(Filter.ReferencedKeyword.OID.getName(), andChildren);
         boolean typeNullAsAny = !andContains(Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
-        String oid = consumeFromAnd(String.class, Filter.ReferencedKeyword.OID.getName(), andChildren);
+        List<String> oids = consumeMultipleFromAnd(String.class, Filter.ReferencedKeyword.OID.getName(), andChildren);
+
+
         QName relation = consumeFromAnd(QName.class, Filter.ReferencedKeyword.RELATION.getName(), andChildren);
         QName type = consumeFromAnd(QName.class, Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
 
@@ -1267,11 +1279,21 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             var nested = context.referenced(targetSchema);
             targetFilter = parseFilter(nested, targetCtx.subfilterOrValue().subfilterSpec().filter());
         }
+        List<PrismReferenceValue> refValues;
+        if (oids.isEmpty()) {
+            PrismReferenceValue value = new PrismReferenceValueImpl(null, type);
+            value.setRelation(relation);
+            refValues = Collections.singletonList(value);
+        } else {
+            refValues = oids.stream().map((oid) -> {
+                PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
+                value.setRelation(relation);
+                return value;
+            }).collect(Collectors.toList());
+        }
 
-        PrismReferenceValue value = new PrismReferenceValueImpl(oid, type);
-        value.setRelation(relation);
         RefFilterImpl result = (RefFilterImpl) RefFilterImpl.createReferenceEqual(path, definition,
-                Collections.singletonList(value), targetFilter);
+                refValues, targetFilter);
         result.setOidNullAsAny(oidNullAsAny);
         result.setTargetTypeNullAsAny(typeNullAsAny);
 
@@ -1307,6 +1329,23 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             return extractValue(valueType, maybe.subfilterOrValue());
         }
         return null;
+    }
+
+    private <T> List<T> consumeMultipleFromAnd(Class<T> valueType, String path, Collection<FilterContext> andFilters) throws SchemaException {
+        ItemFilterContext maybe = consumeFromAnd(path, EQUAL.getName(), andFilters);
+        var ret = new ArrayList<T>();
+        if (maybe != null) {
+            var subfilter = maybe.subfilterOrValue();
+            if (subfilter.singleValue() != null) {
+                ret.add(extractLiteralValue(valueType, maybe.subfilterOrValue().singleValue()));
+            } else {
+                schemaCheck(subfilter.valueSet() != null, "literal value required");
+                for (var value : subfilter.valueSet().values) {
+                    ret.add(extractLiteralValue(valueType, value));
+                }
+            }
+        }
+        return ret;
     }
 
     private ItemFilterContext consumeFromAnd(String path, QName filterName, Collection<FilterContext> andFilters) {

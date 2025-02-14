@@ -163,6 +163,11 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
+    public <ID extends ItemDefinition<?>> ID findLocalItemDefinition(@NotNull QName name, @NotNull Class<ID> clazz, boolean caseInsensitive) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<PrismPropertyDefinition<?>> getPropertyDefinitions() {
         throw new UnsupportedOperationException();
     }

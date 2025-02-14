@@ -369,6 +369,14 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify("accountRef matches ( oid =\"c0c010c0-d34d-b33f-f00d-aaaaaaaa1113\")", filter, false);
     }
 
+    @Test   // MID-4217
+    public void testRefMultivalue() throws Exception {
+        ObjectFilter filter = getPrismContext().queryFor(UserType.class)
+                .item(UserType.F_ACCOUNT_REF).ref("c0c010c0-d34d-b33f-f00d-aaaaaaaa1113", "c0c010c0-d34d-b33f-f00d-aaaaaaaa1114")
+                .buildFilter();
+        verify("accountRef matches (oid = ('c0c010c0-d34d-b33f-f00d-aaaaaaaa1113', 'c0c010c0-d34d-b33f-f00d-aaaaaaaa1114'))", filter);
+    }
+
     @Test
     public void testOidIn() throws Exception {
         ObjectFilter filter = getPrismContext().queryFor(UserType.class)

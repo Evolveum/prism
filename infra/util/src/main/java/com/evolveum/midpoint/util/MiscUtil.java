@@ -1007,6 +1007,10 @@ public class MiscUtil {
         return value != null ? singletonList(value) : emptyList();
     }
 
+    public static <T> @Nullable T castOrNull(@Nullable Object value, @NotNull Class<T> expectedClass) {
+        return value != null && expectedClass.isAssignableFrom(value.getClass()) ? expectedClass.cast(value) : null;
+    }
+
     public static <T> T castSafely(Object value, Class<T> expectedClass) throws SchemaException {
         return castSafely(value, expectedClass, null);
     }
@@ -1075,7 +1079,7 @@ public class MiscUtil {
     }
 
     public static <V> V find(Collection<V> values, V value, @NotNull EqualsChecker<V> equalsChecker) {
-        for (V current : values) {
+        for (V current : emptyIfNull(values)) {
             if (equalsChecker.test(current, value)) {
                 return current;
             }

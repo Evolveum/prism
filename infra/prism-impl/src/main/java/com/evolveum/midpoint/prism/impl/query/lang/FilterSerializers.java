@@ -40,11 +40,8 @@ import com.google.common.collect.ImmutableMap;
 import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import static com.evolveum.midpoint.prism.impl.query.lang.Filter.Name.*;
 
-
-import java.util.Map;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
@@ -232,12 +229,12 @@ public class FilterSerializers {
 
         // @type = QName
 
-        writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), false, false, false);
+        writeProperty(target, Filter.Infra.TYPE.getName(), source.getType().getTypeName(), false, false, false);
         // and @path = ItemPath
-        writeProperty(target, Filter.Meta.PATH.getName(), source.getPath(), false, true);
+        writeProperty(target, Filter.Infra.PATH.getName(), source.getPath(), false, true);
 
         // and @relation =
-        writeProperty(target, Filter.Meta.RELATION.getName(), source.getRelation(), true, true, false);
+        writeProperty(target, Filter.Infra.RELATION.getName(), source.getRelation(), true, true, false);
         var nested = source.getFilter();
         if(nested != null) {
             target.writeFilterName(AND);
@@ -257,9 +254,9 @@ public class FilterSerializers {
 
         // @type = QName
 
-        boolean notFirst = writeProperty(target, Filter.Meta.TYPE.getName(), source.getType().getTypeName(), true, false);
+        boolean notFirst = writeProperty(target, Filter.Infra.TYPE.getName(), source.getType().getTypeName(), true, false);
         // and @path = ItemPath
-        notFirst = writeProperty(target, Filter.Meta.PATH.getName(), source.getPath(), true, notFirst);
+        notFirst = writeProperty(target, Filter.Infra.PATH.getName(), source.getPath(), true, notFirst);
 
         var nested = source.getFilter();
         if(nested != null) {
@@ -364,9 +361,45 @@ public class FilterSerializers {
             target.writeExpression(source.getExpression());
             return;
         }
-        checkSupported(source.getValues().size() == 1, "Only one reference is supported");
+
+
+        checkSupported(source.getValues().size() >= 1, "One reference or more simple references are supported");
         target.writeFilterName(MATCHES);
         target.startNestedFilter();
+        if (source.getValues().size() == 1) {
+            writeSingleValueRefFilterBody(source, target);
+        } else {
+            checkSupported(simpleMultivalue(source.getValues()), "Multiple references supported only if target and relation is same.");
+            var firstValue = source.getValues().get(0);
+            target.writePath("oid");
+            target.writeFilterName(EQUAL);
+            target.writeRawValues(source.getValues().stream().map(PrismReferenceValue::getOid).toList());
+            writeProperty(target, "targetType", firstValue.getTargetType(), source.isTargetTypeNullAsAny(),
+                    true, false);
+            writeProperty(target, "relation", firstValue.getRelation(), true, true, false);
+        }
+        target.endNestedFilter();
+    }
+
+    private static boolean simpleMultivalue(@Nullable List<PrismReferenceValue> values) {
+        QName type = null;
+        QName relation = null;
+        for (PrismReferenceValue value : values) {
+            if (type == null) {
+                type = value.getTargetType();
+            }
+            if (relation == null) {
+                relation = value.getRelation();
+            }
+            if (!Objects.equals(relation, value.getRelation()) || !Objects.equals(type, value.getTargetType())) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static void writeSingleValueRefFilterBody(RefFilterImpl source, QueryWriter target) throws NotSupportedException {
         for (PrismReferenceValue value : source.getValues()) {
             var notFirst = writeProperty(target, "oid", value.getOid(), source.isOidNullAsAny(), false);
             notFirst = writeProperty(target, "targetType", value.getTargetType(), source.isTargetTypeNullAsAny(),
@@ -381,7 +414,6 @@ public class FilterSerializers {
                 target.writeNestedFilter(source.getFilter());
             }
         }
-        target.endNestedFilter();
     }
 
     static void fuzzyMatchFilter(FuzzyStringMatchFilterImpl<?> source, QueryWriter target) throws NotSupportedException {

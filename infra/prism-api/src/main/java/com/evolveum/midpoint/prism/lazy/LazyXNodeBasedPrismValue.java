@@ -17,10 +17,11 @@ import java.io.Serializable;
 
 public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable implements Serializable {
 
-    protected static record Source<M extends XNode>(ParsingContext parsingContext, M value) {
+    private static final long serialVersionUID = 42L;
+
+    protected record Source<M extends XNode>(ParsingContext parsingContext, M value) implements Serializable {
 
     }
-
     private Object value;
 
     public LazyXNodeBasedPrismValue(ParsingContext parsingContext, M value) {
@@ -55,7 +56,7 @@ public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends Abstr
         return value instanceof LazyXNodeBasedPrismValue<?,?> xnode && !xnode.isMaterialized();
     }
 
-    protected boolean hasSameSource(LazyXNodeBasedPrismValue other) {
+    protected boolean hasSameSource(LazyXNodeBasedPrismValue<?,?> other) {
         if (!this.isMaterialized() && !other.isMaterialized()) {
             // TODO: Consider fully comparing XNodes?
             return this.xnode() == other.xnode(); // Copy of save lazy node.

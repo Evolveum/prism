@@ -91,4 +91,15 @@ public abstract class FocusType
     public void setLocality(PolyStringType value) {
         this.prismSetPropertyValue(F_LOCALITY, value);
     }
+
+    public FocusType metadata(MetadataType value) {
+        setMetadata(value);
+        return this;
+    }
+
+    public MetadataType beginMetadata() {
+        MetadataType value = new MetadataType();
+        metadata(value);
+        return value;
+    }
 }

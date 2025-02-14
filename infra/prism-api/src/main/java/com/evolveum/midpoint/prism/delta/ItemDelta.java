@@ -18,6 +18,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -142,11 +144,26 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void addValueToAdd(V newValue);
 
+    /** Uses {@link EquivalenceStrategy#REAL_VALUE_CONSIDER_DIFFERENT_IDS} for value matching. */
     boolean removeValueToAdd(PrismValue valueToRemove);
 
+    /** Uses {@link EquivalenceStrategy#REAL_VALUE_CONSIDER_DIFFERENT_IDS} for value matching. */
     boolean removeValueToDelete(PrismValue valueToRemove);
 
+    /** Uses {@link EquivalenceStrategy#REAL_VALUE_CONSIDER_DIFFERENT_IDS} for value matching. */
     boolean removeValueToReplace(PrismValue valueToRemove);
+
+    default boolean containsValueToAdd(V value, ParameterizedEquivalenceStrategy strategy) {
+        return MiscUtil.findWithComparator(getValuesToAdd(), value, strategy.prismValueComparator()) != null;
+    }
+
+    default boolean containsValueToDelete(V value, ParameterizedEquivalenceStrategy strategy) {
+        return MiscUtil.findWithComparator(getValuesToDelete(), value, strategy.prismValueComparator()) != null;
+    }
+
+    default boolean containsValueToReplace(V value, ParameterizedEquivalenceStrategy strategy) {
+        return MiscUtil.findWithComparator(getValuesToReplace(), value, strategy.prismValueComparator()) != null;
+    }
 
     void mergeValuesToAdd(Collection<V> newValues);
 

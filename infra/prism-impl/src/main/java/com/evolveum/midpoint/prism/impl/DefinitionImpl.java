@@ -11,6 +11,8 @@ import java.io.Serial;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.util.QNameUtil;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -89,7 +91,7 @@ public abstract class DefinitionImpl
     protected boolean emphasized = false;
 
     DefinitionImpl(@NotNull QName typeName) {
-        this.typeName = typeName;
+        this.typeName = QNameUtil.withoutPrefix(typeName);
     }
 
     @Override

@@ -67,6 +67,8 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         if (values != null) {
             for (V value : values) {
                 value.setParent(this);
+                // Apply the definition in order to convert compatible types (e.g. String to PolyString).
+                applyDefinition(value);
             }
         }
         checkConsistence(false);
@@ -105,6 +107,12 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
     @Override
     public void setDefinition(@Nullable D definition) {
         this.definition = definition;
+        if (this.values != null) {
+            // Apply the definition in order to convert compatible types (e.g. String to PolyString).
+            for (V value : this.values) {
+                applyDefinition(value);
+            }
+        }
         checkConsistence(false);
     }
 
@@ -182,6 +190,8 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         this.values = new ArrayList<>();
         if (value != null) {
             value.setParent(this);
+            // Apply the definition in order to convert compatible types (e.g. String to PolyString).
+            applyDefinition(value);
             values.add(value);
         }
     }
@@ -192,6 +202,8 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         this.values = new ArrayList<>();
         for (V value : values) {
             value.setParent(this);
+            // Apply the definition in order to convert compatible types (e.g. String to PolyString).
+            applyDefinition(value);
             this.values.add(value);
         }
     }
@@ -471,6 +483,17 @@ public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefini
         // UserType/archetypeRef a ArchetypeType/name
         if (getRightHandSidePath() != null) {
             base.append(getRightHandSidePath()).emitTo(pathConsumer, expandReferences);
+        }
+    }
+
+    private void applyDefinition(V value) {
+        if (this.definition != null) {
+            try {
+                value.applyDefinition(this.definition);
+            } catch (SchemaException e) {
+                // We don't want to wrap it into some runtime exception, because of scripts which may use this filter
+                // in various unknown ways
+            }
         }
     }
 }

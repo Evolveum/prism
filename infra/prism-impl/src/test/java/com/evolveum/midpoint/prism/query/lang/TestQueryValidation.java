@@ -5,6 +5,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPAC
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.evolveum.midpoint.prism.*;
@@ -363,12 +364,6 @@ public class TestQueryValidation extends AbstractPrismTest {
         query = "name isRoot \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'isRoot' filter.");
-        // FIXME type item filter only for selfPath ???
-//        query = "name type ShadowType";
-//        errorList = this.axiomQueryContentAssist.process(typeDefinition, query, 0).validate();
-//        assertThat()(errorList.contains(
-//                new AxiomQueryError(1, 1, 5, 9, "Invalid 'type' filter.")
-//        ));
     }
 
     // FIXME problem to find archetypeRef in UserType definition, edit foo schema
@@ -409,8 +404,8 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = BadAbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid meta type 'BadAbstractRoleType'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid meta path 'inducement'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra type 'BadAbstractRoleType'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'inducement'.");
 
         query = """
                 . referencedBy (
@@ -420,14 +415,14 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid meta path 'badTargetRef'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'badTargetRef'.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badArchetypeRef' definition.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'name' definition.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
 
-
+        errorList = new ArrayList<>();
         query = """
                 . referencedBy (
                    @type = BadAssignmentType
@@ -440,14 +435,13 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid meta type 'BadAssignmentType'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid meta path 'targetRef'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra type 'BadAssignmentType'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'targetRef'.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'ownedBy' filter for self path.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badName' definition.");
         assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
     }
 
-    // FIXME solve order andFilters
     @Test
     public void testValidSubFilterSpec() {
         ItemDefinition<?> localTypeDefinition = PrismContext.get().getSchemaRegistry().findItemDefinitionByType(new QName("FocusType"));
@@ -463,16 +457,17 @@ public class TestQueryValidation extends AbstractPrismTest {
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
 
-        query = "roleMembershipRef not matches (targetType = ServiceType)";
+        query = "roleMembershipRef not matches (targetType = ShadowType)";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+
 
         query = """
                 roleMembershipRef not matches (
                     targetType = RoleType
                 )
                 AND roleMembershipRef not matches (
-                    targetType = ServiceType
+                    targetType = ShadowType
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
@@ -483,7 +478,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                     targetType = RoleType
                 )
                 AND assignment/targetRef not matches (
-                    targetType = ServiceType
+                    targetType = ShadowType
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
@@ -512,6 +507,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
     }
+
     @Test
     public void testInvalidFilter() {
         ItemDefinition<?> localTypeDefinition = PrismContext.get().getSchemaRegistry().findItemDefinitionByType(new QName("FocusType"));
@@ -520,5 +516,31 @@ public class TestQueryValidation extends AbstractPrismTest {
                 """;
         var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+    }
+
+    @Test
+    public void testInfraMetadata() {
+        ItemDefinition<?> localTypeDefinition = PrismContext.get().getSchemaRegistry().getValueMetadataDefinition();
+        var query = """
+                @metadata/storage/createTimestamp < "2024-12-31"
+                """;
+        var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+
+        query = """
+                @metadata/badStorage/createTimestamp < "2024-12-31""
+                """;
+        errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badStorage' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'createTimestamp' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
+
+
+        query = """
+                @metadata/storage/badCreateTimestamp < "2024-12-31""
+                """;
+        errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badCreateTimestamp' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
     }
 }
