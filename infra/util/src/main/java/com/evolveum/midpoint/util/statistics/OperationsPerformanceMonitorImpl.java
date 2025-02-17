@@ -10,9 +10,8 @@ package com.evolveum.midpoint.util.statistics;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 
-/**
- *
- */
+import org.jetbrains.annotations.NotNull;
+
 public class OperationsPerformanceMonitorImpl implements OperationsPerformanceMonitor {
 
     public static final OperationsPerformanceMonitorImpl INSTANCE = new OperationsPerformanceMonitorImpl();
@@ -34,7 +33,7 @@ public class OperationsPerformanceMonitorImpl implements OperationsPerformanceMo
     }
 
     @Override
-    public OperationsPerformanceInformationImpl getGlobalPerformanceInformation() {
+    public @NotNull OperationsPerformanceInformationImpl getGlobalPerformanceInformation() {
         return globalPerformanceInformation;
     }
 
