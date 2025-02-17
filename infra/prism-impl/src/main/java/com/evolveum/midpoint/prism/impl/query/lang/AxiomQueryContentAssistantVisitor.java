@@ -364,11 +364,10 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     pathDefinition = itemDefinitions.get(findIdentifierOfDefinition(node));
                     positionDefinition = itemDefinitions.get(findIdentifierOfDefinition(node));
                 }
-
-                pathDefinition = findDefOfParentNode(node, pathDefinition);
-                positionDefinition = findDefOfParentNode(node, pathDefinition);
-
             }
+
+            pathDefinition = findDefOfParentNode(node, pathDefinition);
+            positionDefinition = findDefOfParentNode(node, positionDefinition);
         }
 
         return super.visitTerminal(node);
@@ -609,15 +608,27 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                             suggestions.add(new Suggestion(name, alias, 1));
                         });
                     } else if (token.identifierContext() == TokenCustom.IdentifierContext.PATH) {
-
-                        System.out.println("ASKKASK>> " + initItemPath());
-
-                        if (initItemPath()) {
-                            // Initial state of itemPath concept
-                            processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
-                            processingDefinitionToPathSuggestion(pathDefinition, null, positionTerminal, suggestions);
+                        ParseTree infraName = findInfraName(positionTerminal);
+                        if (infraName != null && (infraName.getText().equals(Filter.Infra.TYPE.getName()) || infraName.getText().equals(Filter.ReferencedKeyword.TARGET_TYPE.getName()))) {
+                            prismContext.getSchemaRegistry().findTypeDefinitionByCompileTimeClass(
+                                prismContext.getSchemaRegistry().findObjectDefinitionByType(prismContext.getDefaultReferenceTargetType()).getCompileTimeClass(),
+                                TypeDefinition.class
+                            ).getStaticSubTypes().forEach(objSubType -> {
+                                suggestions.add(new Suggestion(objSubType.getTypeName().getLocalPart(), "Object Definitions", -1));
+                            });
+                        } else if (infraName != null && infraName.getChild(0).getText().equals(Filter.Infra.PATH.getName())) {
+                            processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.SubfilterSpecContext.class)), null, positionTerminal, suggestions);
                         } else {
-                            processingDefinitionToPathSuggestion(pathDefinition, null, positionTerminal, suggestions);
+                            if (initItemPath()) {
+                                // Initial state of itemPath concept
+                                processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
+                                processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.RootContext.class)), null, positionTerminal, suggestions);
+                                for (Filter.Infra value : Filter.Infra.values()) {
+                                    suggestions.add(new Suggestion(value.getName(), "Infra", 0));
+                                }
+                            } else {
+                                processingDefinitionToPathSuggestion(pathDefinition, null, positionTerminal, suggestions);
+                            }
                         }
                     } else if (token.identifierContext() == TokenCustom.IdentifierContext.MATCHING) {
                         suggestions.add(new Suggestion(Filter.PolyStringKeyword.MatchingRule.NORM_IGNORE_CASE.getName(), "Ignore case", 0));
@@ -667,9 +678,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         suggestions.add(suggestionFromVocabulary(token, "", -1));
                     }
                 } else if (token.type() == AxiomQueryParser.STRING_SINGLEQUOTE) {
-                    suggestions.add(new Suggestion("'", "String value", 4));
+                    suggestions.add(new Suggestion("'", "String value", -5));
                 } else if (token.type() == AxiomQueryParser.STRING_DOUBLEQUOTE) {
-                    suggestions.add(new Suggestion("\"", "String value", 4));
+                    suggestions.add(new Suggestion("\"", "String value", -4));
                 } else if (token.type() == AxiomQueryParser.SEP
                         || token.type() == AxiomQueryParser.ERRCHAR
                         || token.type() == AxiomQueryParser.QUESTION_MARK
@@ -685,7 +696,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     // skip tokens which can not generate value
                     continue;
                 } else {
-                    suggestions.add(suggestionFromVocabulary(token, "", -1));
+                    suggestions.add(suggestionFromVocabulary(token, "", 100));
                 }
             }
         }
@@ -1150,7 +1161,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     private boolean initItemPath() {
         var prevTerminal = getPreviousTerminal(positionTerminal);
         return (prevTerminal == null ||
-                prevTerminal.getSymbol().getType() == AxiomQueryParser.SEP ||
+                positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP ||
+                positionTerminal.getSymbol().getType() == AxiomQueryParser.ROUND_BRACKET_LEFT ||
                 prevTerminal.getParent() instanceof AxiomQueryParser.FilterNameAliasContext);
     }
 
