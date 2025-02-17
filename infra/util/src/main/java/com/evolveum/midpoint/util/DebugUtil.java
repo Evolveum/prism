@@ -43,8 +43,10 @@ public class DebugUtil {
         return detailedDebugDump;
     }
 
-    public static void setDetailedDebugDump(boolean detailedDebugDump) {
+    public static boolean setDetailedDebugDump(boolean detailedDebugDump) {
+        var previous = DebugUtil.detailedDebugDump;
         DebugUtil.detailedDebugDump = detailedDebugDump;
+        return previous;
     }
 
     public static String getPrettyPrintBeansAs() {
