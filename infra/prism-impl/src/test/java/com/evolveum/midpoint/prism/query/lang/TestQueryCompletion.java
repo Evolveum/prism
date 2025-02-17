@@ -53,14 +53,6 @@ public class TestQueryCompletion extends AbstractPrismTest {
     }
 
     @Test
-    public void testDevel() {
-        suggestion = getSuggestion("assignment/targetRef/^");
-        for (Suggestion suggestion1 : suggestion) {
-            System.out.println("RESULT>> " + suggestion1.name());
-        }
-    }
-
-    @Test
     public void testRootCtx() {
         suggestion = getSuggestion("^");
 
@@ -421,7 +413,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         suggestion = getSuggestion("""
                 . referencedBy (
                    @type^ = AssignmentType
-                   and ^@path = targetRef
+                   and @path = targetRef
                    and . ownedBy (
                       @type = UserType
                       and @path = assignment
