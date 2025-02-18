@@ -214,6 +214,16 @@ public class TestQueryCompletion extends AbstractPrismTest {
             assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
         });
 
+        suggestion = getSuggestion("@meta^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
         localValMetadataDef.getDefinitions().forEach(metadata -> {
             assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
         });

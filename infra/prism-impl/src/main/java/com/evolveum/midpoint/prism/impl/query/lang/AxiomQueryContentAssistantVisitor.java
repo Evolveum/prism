@@ -618,6 +618,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                             });
                         } else if (infraName != null && infraName.getChild(0).getText().equals(Filter.Infra.PATH.getName())) {
                             processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.SubfilterSpecContext.class)), null, positionTerminal, suggestions);
+                        } else if (infraName != null && infraName.getText().contains(positionTerminal.getText()) && (Filter.Infra.METADATA.getName().contains(infraName.getText()) || Filter.Infra.METADATA.getName().equals(infraName.getText()))) {
+                            processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
                         } else {
                             if (initItemPath()) {
                                 // Initial state of itemPath concept
