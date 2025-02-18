@@ -680,9 +680,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         suggestions.add(suggestionFromVocabulary(token, "", -1));
                     }
                 } else if (token.type() == AxiomQueryParser.STRING_SINGLEQUOTE) {
-                    suggestions.add(new Suggestion("'", "String value", -5));
+                    suggestions.add(new Suggestion("'", "String value", 1));
                 } else if (token.type() == AxiomQueryParser.STRING_DOUBLEQUOTE) {
-                    suggestions.add(new Suggestion("\"", "String value", -4));
+                    suggestions.add(new Suggestion("\"", "String value", 1));
                 } else if (token.type() == AxiomQueryParser.SEP
                         || token.type() == AxiomQueryParser.ERRCHAR
                         || token.type() == AxiomQueryParser.QUESTION_MARK
@@ -698,7 +698,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     // skip tokens which can not generate value
                     continue;
                 } else {
-                    suggestions.add(suggestionFromVocabulary(token, "", 100));
+                    suggestions.add(suggestionFromVocabulary(token, "", -1));
                 }
             }
         }
