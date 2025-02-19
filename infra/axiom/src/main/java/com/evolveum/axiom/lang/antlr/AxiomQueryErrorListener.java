@@ -27,7 +27,7 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
         String errorMessage;
 
         if (offendingSymbol instanceof Token token) {
-            errorMessage = "Syntax error: Unexpected " + getDisplayTokenName(token.getType(), vocabulary) + " '" + token.getText() + "'";
+            errorMessage = "Syntax error: Unexpected " + getDisplayTokenName(token.getType(), vocabulary);
         } else {
             errorMessage = "Syntax error: " + msg;
         }
@@ -63,5 +63,4 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
 
         return "unknown token";
     }
-
 }

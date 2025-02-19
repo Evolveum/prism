@@ -13,7 +13,7 @@ import com.evolveum.midpoint.prism.query.ObjectPaging;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.util.DebugUtil;
 
-public class ObjectQueryImpl implements ObjectQuery {
+public class ObjectQueryImpl implements ObjectQuery, Cloneable {
 
     private static final long serialVersionUID = 1L;
 
