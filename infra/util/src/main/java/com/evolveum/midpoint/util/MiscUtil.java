@@ -125,6 +125,13 @@ public class MiscUtil {
         if (a.size() != b.size()) {
             return false;
         }
+
+        if (a.size() == 1) {
+            // In case of single value, we can compare values directly, no need for tracking
+            // and complex algorithm as bellow.
+            return comparator.test(a.iterator().next(), b.iterator().next());
+        }
+
         Collection<B> outstanding = new ArrayList<>(b.size());
         outstanding.addAll(b);
         for (A ao : a) {
@@ -149,7 +156,7 @@ public class MiscUtil {
     }
 
     public static <T> boolean unorderedArrayEquals(T[] a, T[] b) {
-        return unorderedArrayEquals(a, b, (o1, o2) -> o1.equals(o2));
+        return unorderedArrayEquals(a, b, Object::equals);
     }
 
     /**
@@ -165,6 +172,13 @@ public class MiscUtil {
         if (a.length != b.length) {
             return false;
         }
+
+        if (a.length == 1) {
+            // In case of single value, we can compare values directly, no need for tracking
+            // and complex algorithm as bellow.
+            return equalsChecker.test(a[0], b[0]);
+        }
+
         List<T> outstanding = Arrays.asList(b);
         for (T ao : a) {
             boolean found = false;
