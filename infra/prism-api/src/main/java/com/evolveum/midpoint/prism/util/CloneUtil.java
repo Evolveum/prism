@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.util.*;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.MiscUtil;
@@ -107,6 +108,9 @@ public class CloneUtil {
             // todo could we use "instanceof Number" here instead?
             //noinspection RedundantCast
             return (T) orig;
+        }
+        if (orig instanceof PlainStructured structured) {
+            return (T) structured.clone();
         }
 
         if (orig instanceof Cloneable) {
