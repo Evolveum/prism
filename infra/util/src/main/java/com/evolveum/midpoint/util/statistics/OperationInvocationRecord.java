@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.util.statistics;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -14,45 +15,88 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.qos.logback.classic.Level;
+
+import com.evolveum.midpoint.util.aspect.MidpointInterceptor;
+
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.MDC;
 
 import com.evolveum.midpoint.util.PrettyPrinter;
-import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.aspect.ProfilingDataManager;
 
 /**
- * This class provides basically the functionality of MidpointInterceptor. However it was refactored to be callable also
- * outside of the context of AOP - manually by injecting appropriate code, mimicking MidpointInterceptor.invoke method.
+ * Represents an invocation of a single *operation* in the system. (Operation is typically implemented by a method or a set
+ * of methods. But it may not be necessarily aligned to method's boundary.)
  *
- * EXPERIMENTAL.
+ * NOTE: History: This class provides basically the functionality of {@link MidpointInterceptor}. However, it was later
+ * refactored to be callable also outside of the context of AOP - manually by injecting appropriate code, mimicking
+ * {@link MidpointInterceptor#invoke(MethodInvocation)} method. Currently, its main use is to manage the performance
+ * data of the operations executed in the system in cooperation with the `OperationResult` class.
+ *
+ * "Operation" may represent "operation invocation" in short (where no confusion is possible).
  */
-@Experimental
 public final class OperationInvocationRecord implements Serializable {
 
-    private static final long serialVersionUID = 6805648677427302932L;
+    @Serial private static final long serialVersionUID = 6805648677427302932L;
 
     private static final AtomicInteger ID_COUNTER = new AtomicInteger(0);
 
+    /** When the operation started (see {@link System#nanoTime()}). */
     private final long startTime = System.nanoTime();
-    private final Long startCpuTime; // null if not measured
+
+    /** CPU time at the start of the operation. Usually not measured; the value of `null` is used then. */
+    private final Long startCpuTime;
+
+    /** Do we measure the CPU time? */
     private final boolean measureCpuTime;
 
+    /** Elapsed time during the operation; in nanoseconds. */
     private long elapsedTime;
-    private Long cpuTime; // null if not measured
+
+    /** Operation own time - i.e. without called (child) operations. In microseconds. Null if not known. */
+    private Long ownTimeMicros;
+
+    /** CPU time of the operation (including child operations). Null if not measured. */
+    private Long cpuTime;
+
+    /** Unique ID of the operation invocation. */
     private int invocationId;
-    private String formattedReturnValue;            // present only if traceEnabled=true
+
+    /** Return value of the operation. Present only if {@link #traceEnabled} is `true` to avoid wasting CPU cycles. */
+    private String formattedReturnValue;
+
+    /** True if the operation invocation ended with an exception. */
     private boolean gotException;
+
+    /** Name of the exception occurring during operation invocation. */
     private String exceptionName;
 
+    /**
+     * A {@link ProfilingDataManager.Subsystem} to which the operation belongs. Derived from the operation name.
+     * Slightly obsolete. We now have a different classification of subsystems in midPoint, see e.g. `BasicComponentStructure`
+     * class.
+     */
     private final ProfilingDataManager.Subsystem subsystem;
+
+    /** Used to manage the subsystem mark in logging context ({@link MDC}). */
     private String previousSubsystem;
+
+    /** Qualified class name corresponding to the operation. (In fact, it may not be a Java class name, but it usually is.) */
     private final String fullClassName;
+
+    /** Abbreviated class name, for clarity purposes. */
     private final String shortenedClassName;
+
+    /** The "method" part of the operation name. May or may not correspond to actual Java method. */
     private final String methodName;
+
+    /** How deep are we in the call stack? Used for old-style logger-based profiling. */
     private int callDepth;
 
+    /** Is the first (coarse) level of logger-based profiling enabled? */
     private final boolean debugEnabled;
+
+    /** Is the second (fine) level of logger-based profiling enabled? */
     private final boolean traceEnabled;
 
     private OperationInvocationRecord(String fullClassName, String methodName, boolean measureCpuTime) {
@@ -74,7 +118,8 @@ public final class OperationInvocationRecord implements Serializable {
     }
 
     public static OperationInvocationRecord create(MethodInvocation invocation) {
-        OperationInvocationRecord ctx = new OperationInvocationRecord(getFullClassName(invocation), invocation.getMethod().getName() + "#", true);
+        OperationInvocationRecord ctx = new OperationInvocationRecord(
+                getFullClassName(invocation), invocation.getMethod().getName() + "#", true);
         ctx.beforeCall(invocation.getArguments());
         return ctx;
     }
@@ -201,12 +246,15 @@ public final class OperationInvocationRecord implements Serializable {
         return e;
     }
 
-    public void afterCall() {
-        afterCall(null);
+    public void afterCall(long notOwnTimeMicros) {
+        afterCall(null, notOwnTimeMicros);
     }
 
-    public void afterCall(MethodInvocation invocation) {
+    public void afterCall(MethodInvocation invocation, Long notOwnTimeMicros) {
         elapsedTime = System.nanoTime() - startTime;
+        if (notOwnTimeMicros != null) {
+            ownTimeMicros = getElapsedTimeMicros() - notOwnTimeMicros;
+        }
         if (measureCpuTime && startCpuTime != null) {
             Long currentCpuTime = getCurrentCpuTime();
             if (currentCpuTime != null) {
@@ -296,7 +344,7 @@ public final class OperationInvocationRecord implements Serializable {
         }
     }
 
-    public String getFullClassName() {
+    String getFullClassName() {
         return fullClassName;
     }
 
@@ -306,6 +354,10 @@ public final class OperationInvocationRecord implements Serializable {
 
     public long getElapsedTimeMicros() {
         return elapsedTime / 1000;
+    }
+
+    public Long getOwnTimeMicros() {
+        return ownTimeMicros;
     }
 
     public Long getCpuTimeMicros() {

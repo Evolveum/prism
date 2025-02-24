@@ -381,7 +381,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismPropertyImpl<T> clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismPropertyImpl<T> clone) {
         super.copyValues(strategy, clone);
         for (PrismPropertyValue<T> value : getValues()) {
             clone.addValue(value.cloneComplex(strategy), false);

@@ -782,7 +782,7 @@ public class PrismContainerImpl<C extends Containerable>
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismContainerImpl<C> clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismContainerImpl<C> clone) {
         super.copyValues(strategy, clone);
         clone.compileTimeClass = this.compileTimeClass;
         for (PrismContainerValue<C> pval : getValues()) {

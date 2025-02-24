@@ -43,7 +43,7 @@ public interface PrismObjectValue<O extends Objectable> extends PrismContainerVa
     PrismObjectValue<O> clone();
 
     @Override
-    PrismObjectValue<O> cloneComplex(CloneStrategy strategy);
+    PrismObjectValue<O> cloneComplex(@NotNull CloneStrategy strategy);
 
     @Override
     boolean equals(Object o);

@@ -287,7 +287,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     PrismContainerValue<C> createImmutableClone();
 
     @Override
-    PrismContainerValue<C> cloneComplex(CloneStrategy strategy);
+    PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy);
 
     boolean equivalent(PrismContainerValue<?> other);
 

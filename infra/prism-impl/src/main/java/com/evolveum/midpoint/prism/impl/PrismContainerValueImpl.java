@@ -1446,7 +1446,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValueImpl<C> cloneComplex(CloneStrategy strategy) {    // TODO resolve also the definition?
+    public PrismContainerValueImpl<C> cloneComplex(@NotNull CloneStrategy strategy) {    // TODO resolve also the definition?
         PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), null, this.complexTypeDefinition);
         copyValues(strategy, clone);
@@ -1512,9 +1512,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private boolean equals(@NotNull PrismContainerValue<?> other, ParameterizedEquivalenceStrategy strategy) {
-        if (!super.equals(other, strategy)) {
-            return false;
-        }
         if (strategy.isConsideringContainerIds()) {
             if (!Objects.equals(id, other.getId())) {
                 return false;
@@ -1524,7 +1521,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return false;
             }
         }
-        return equalsItems((PrismContainerValue<C>) other, strategy);
+        // super.equals is called intentionally at the end, because it is quite expensive if metadata are present
+        return equalsItems((PrismContainerValue<C>) other, strategy)
+                && super.equals(other, strategy);
     }
 
     protected boolean equalsItems(PrismContainerValue<C> other, ParameterizedEquivalenceStrategy strategy) {

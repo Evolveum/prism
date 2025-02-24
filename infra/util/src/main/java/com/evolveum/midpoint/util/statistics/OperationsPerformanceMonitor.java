@@ -7,19 +7,15 @@
 
 package com.evolveum.midpoint.util.statistics;
 
-import com.evolveum.midpoint.util.annotation.Experimental;
+import org.jetbrains.annotations.NotNull;
 
-/**
- *  EXPERIMENTAL.
- */
-@Experimental
 public interface OperationsPerformanceMonitor {
 
     OperationsPerformanceMonitor INSTANCE = OperationsPerformanceMonitorImpl.INSTANCE;
 
     void clearGlobalPerformanceInformation();
 
-    OperationsPerformanceInformation getGlobalPerformanceInformation();
+    @NotNull OperationsPerformanceInformation getGlobalPerformanceInformation();
 
     /**
      * Starts gathering thread-local performance information, clearing existing (if any).

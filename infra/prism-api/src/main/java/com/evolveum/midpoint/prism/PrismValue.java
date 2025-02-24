@@ -182,7 +182,7 @@ public interface PrismValue extends PrismVisitable, Visitable, PathVisitable, Se
      * Complex clone with different cloning strategies.
      * @see CloneStrategy
      */
-    PrismValue cloneComplex(CloneStrategy strategy);
+    PrismValue cloneComplex(@NotNull CloneStrategy strategy);
 
     int hashCode(@NotNull EquivalenceStrategy equivalenceStrategy);
 
