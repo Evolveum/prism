@@ -861,10 +861,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
      * @param suggestions suggestion list for append new suggestions generate from definition
      */
     private void processingDefinitionToPathSuggestion(Definition definition, Object option, TerminalNode positionTerminal, List<Suggestion> suggestions) {
-
-//        String slash = (positionTerminal != null && positionTerminal.getSymbol().getType() == AxiomQueryParser.IDENTIFIER)
-//                ? Filter.Token.SLASH.getName() : "";
-
         if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
             String parentPath;
             if (option != null) {
@@ -885,7 +881,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             });
         } else if (definition instanceof PrismReferenceDefinition) {
             suggestions.add(suggestionFromVocabulary(new TokenCustom(AxiomQueryParser.AT_SIGN, TokenCustom.IdentifierContext.PATH), "Dereference path", -1));
-//            suggestions.add(new Suggestion(referenceDefinition.getItemName().getLocalPart(), referenceDefinition.getDisplayName() != null ? referenceDefinition.getDisplayName() : "", 1));
         }
         else if (definition instanceof ComplexTypeDefinition complexTypeDefinition) {
             complexTypeDefinition.getDefinitions().forEach(d -> {
@@ -1141,7 +1136,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             if (prevTerminal != null && prevTerminal.getSymbol().getType() == AxiomQueryParser.AT_SIGN) {
                 if (Filter.Infra.METADATA.getName().equals(prevTerminal.getText() + node.getText())) {
                     updateDefinitionByContext(node, prismContext.getSchemaRegistry().getValueMetadataDefinition());
-//                    positionDefinition = prismContext.getSchemaRegistry().getValueMetadataDefinition();
                 }
             }
         }
