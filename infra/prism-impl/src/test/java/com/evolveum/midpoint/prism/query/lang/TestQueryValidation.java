@@ -12,6 +12,8 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.foo.RoleType;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
+import com.evolveum.midpoint.util.SingleLocalizableMessage;
+
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
@@ -55,8 +57,8 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidPathComponent() {
         String query = "badPath = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badPath' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badPath" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
     }
 
     @Test
@@ -78,18 +80,18 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidPropFilter() {
         String query = "badName endsWith \"LAST\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badName' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'endsWith' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "endsWith" }));
 
         query = "badGivenName = \"John\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badGivenName' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badGivenName" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "badFamilyName startsWith \"Wo\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badFamilyName' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'startsWith' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badFamilyName" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
     }
 
     @Test()
@@ -111,11 +113,13 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidSelfPath() {
         String query = ". equal value";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'equal' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
 
         query = ". = value";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAliasSelfPath", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
     }
 
     @Test()
@@ -142,18 +146,18 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidReferenceComponent() {
         String query = "activation/badAdministrativeStatus = \"disabled\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badAdministrativeStatus' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badAdministrativeStatus" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "assignment/badTargetRef = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badTargetRef' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTargetRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "extension/badIndexedString contains \"mycompanyname.com\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badIndexedString' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'contains' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badIndexedString" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "contains" }));
     }
 
     @Test()
@@ -183,36 +187,36 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testInvalidDereferenceComponent() {
         String query = "assignment/targetRef/@/badProp = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badProp' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "@/badTypeRef/@/name=\"Application\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition.findItemDefinition(
                 ItemPath.create("assignment"), ItemDefinition.class).findItemDefinition(
                 ItemPath.create("targetRef"), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badTypeRef' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'name' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         ItemDefinition<?> localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentHolderType"));
         query = "roleMembershipRef/@/badProp = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badProp' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "badMembershipRef/@/name = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badMembershipRef' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'name' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badMembershipRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentType"));
         query = "@/badProp startsWith \"gallery\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition.findItemDefinition(ItemPath.create(new QName("targetRef")), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badProp' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'startsWith' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
     }
 
     @Test()
@@ -277,67 +281,67 @@ public class TestQueryValidation extends AbstractPrismTest {
         // filters for prop definition
         String query = ". equal \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'equal' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
 
         query = ". less \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'less' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "less" }));
 
         query = ". greater \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'greater' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
 
         query = ". lessOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'lessOrEqual' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
 
         query = ". greater \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'greater' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
 
         query = ". lessOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'lessOrEqual' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
 
         query = ". greaterOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'greaterOrEqual' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greaterOrEqual" }));
 
         query = ". notEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'notEqual' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "notEqual" }));
 
         query = ". exists \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'exists' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "exists" }));
 
         query = ". levenshtein \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'levenshtein' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "levenshtein" }));
 
         query = ". similarity \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'similarity' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "similarity" }));
 
         query = ". anyIn \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'anyIn' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "anyIn" }));
 
         query = ". startsWith \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'startsWith' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "startsWith" }));
 
         query = ". endsWith \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'endsWith' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "endsWith" }));
 
         query = ". contains \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'contains' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "contains" }));
 
         query = ". fullText \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'fullText' filter for self path.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "fullText" }));
 
         // filters for ref & container definition
         query = """
@@ -347,23 +351,26 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'referencedBy' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "referencedBy" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "AbstractRoleTyp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
 
         query = "name ownedBy \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'ownedBy' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "ownedBy" }));
 
         query = "name inOrg \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'inOrg' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOrg" }));
 
         query = "name inOid \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'inOid' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOid" }));
 
         query = "name isRoot \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'isRoot' filter.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "isRoot" }));
     }
 
     // FIXME problem to find archetypeRef in UserType definition, edit foo schema
@@ -404,8 +411,8 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = BadAbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra type 'BadAbstractRoleType'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'inducement'.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAbstractRoleType" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
 
         query = """
                 . referencedBy (
@@ -415,14 +422,14 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'badTargetRef'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badArchetypeRef' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid dereference path because reference definition is null.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'name' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "UserTyp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "assignment" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "badTargetRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badArchetypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
-        errorList = new ArrayList<>();
         query = """
                 . referencedBy (
                    @type = BadAssignmentType
@@ -435,11 +442,13 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra type 'BadAssignmentType'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid infra path 'targetRef'.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid 'ownedBy' filter for self path.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badName' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '=' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAssignmentType" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "ownedBy" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "archetypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
     }
 
     @Test
@@ -531,16 +540,15 @@ public class TestQueryValidation extends AbstractPrismTest {
                 @metadata/badStorage/createTimestamp < "2024-12-31""
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badStorage' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'createTimestamp' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
-
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badStorage" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "createTimestamp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
 
         query = """
                 @metadata/storage/badCreateTimestamp < "2024-12-31""
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badCreateTimestamp' definition.");
-        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badCreateTimestamp" }));
+        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
     }
 }

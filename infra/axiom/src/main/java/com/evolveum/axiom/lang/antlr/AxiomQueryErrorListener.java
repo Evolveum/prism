@@ -1,5 +1,7 @@
 package com.evolveum.axiom.lang.antlr;
 
+import com.evolveum.midpoint.util.SingleLocalizableMessage;
+
 import org.antlr.v4.runtime.*;
 
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
             errorMessage = "Syntax error: " + msg;
         }
 
-        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, errorMessage));
+        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, new SingleLocalizableMessage(errorMessage)));
     }
 
     public List<AxiomQueryError> getSyntaxErrors() {

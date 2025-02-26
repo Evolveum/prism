@@ -1,5 +1,7 @@
 package com.evolveum.axiom.lang.antlr;
 
+import com.evolveum.midpoint.util.LocalizableMessage;
+
 import java.util.Objects;
 
 /**
@@ -7,7 +9,7 @@ import java.util.Objects;
  */
 public record AxiomQueryError(int lineStart, int lineStop,
                               int charPositionInLineStart, int charPositionInLineStop,
-                              String message) {
+                              LocalizableMessage message) {
 
     @Override
     public boolean equals(Object obj) {
