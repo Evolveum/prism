@@ -7,9 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -69,12 +67,6 @@ public interface ItemFactory {
     <C extends Containerable> PrismContainer<C> createContainer(QName name, PrismContainerDefinition<C> definition);
 
     <O extends Objectable> PrismObject<O> createObject(QName name, PrismObjectDefinition<O> definition);
-
-    // TODO is this needed?
-    <O extends Objectable> PrismObjectValue<O> createObjectValue(O objectable);
-
-    // TODO is this needed?
-    <C extends Containerable> PrismContainerValue<C> createContainerValue(C containerable);
 
     <C extends Containerable> PrismContainerValue<C> createContainerValue();
 

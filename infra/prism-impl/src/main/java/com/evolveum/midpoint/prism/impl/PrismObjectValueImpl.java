@@ -33,10 +33,6 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     PrismObjectValueImpl() {
     }
 
-    PrismObjectValueImpl(O objectable) {
-        super(objectable);
-    }
-
     private PrismObjectValueImpl(OriginType type, Objectable source, PrismContainerable<?> container, Long id,
             ComplexTypeDefinition complexTypeDefinition, String oid, String version) {
         super(type, source, container, id, complexTypeDefinition);

@@ -15,8 +15,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-import org.jetbrains.annotations.NotNull;
-
 import javax.xml.namespace.QName;
 
 /**
@@ -120,16 +118,6 @@ public class ItemFactoryImpl implements ItemFactory {
     @Override
     public <O extends Objectable> PrismObject<O> createObject(QName name, PrismObjectDefinition<O> definition) {
         return new PrismObjectImpl<>(name, definition);
-    }
-
-    @Override
-    public <O extends Objectable> PrismObjectValue<O> createObjectValue(O objectable) {
-        return new PrismObjectValueImpl<>(objectable);
-    }
-
-    @Override
-    public <C extends Containerable> PrismContainerValue<C> createContainerValue(C containerable) {
-        return new PrismContainerValueImpl<>(containerable);
     }
 
     @Override
