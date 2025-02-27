@@ -113,6 +113,13 @@ public class TestMonitor {
         return reportSection;
     }
 
+    public TestReportSection findOrAddReportSection(String sectionName) {
+        return reportSections.stream()
+                .filter(section -> section.getSectionName().equals(sectionName))
+                .findFirst()
+                .orElseGet(() -> addReportSection(sectionName));
+    }
+
     public TestReportSection addRawReportSection(String sectionName) {
         TestReportSection reportSection = new TestReportSection(sectionName, true);
         reportSections.add(reportSection);
