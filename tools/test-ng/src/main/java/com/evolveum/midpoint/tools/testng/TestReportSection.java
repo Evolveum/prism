@@ -8,6 +8,7 @@ package com.evolveum.midpoint.tools.testng;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -33,10 +34,25 @@ public class TestReportSection {
         this.rawSection = rawSection;
     }
 
+    public String getSectionName() {
+        return sectionName;
+    }
+
     /**
      * Specifies column names - without implicit "test" that will be added during dump.
      */
     public TestReportSection withColumns(String... columnNames) {
+        this.columnNames = columnNames;
+        return this;
+    }
+
+    /** As {@link #withColumns(String...)} but checks the equality of column names, if there already some. */
+    public TestReportSection withColumnsChecked(String... columnNames) {
+        if (this.columnNames != null && !Arrays.equals(this.columnNames, columnNames)) {
+            throw new IllegalArgumentException(
+                    "Changing column names is forbidden. Original names: %s, names attempted to be set: %s".formatted(
+                            Arrays.toString(this.columnNames), Arrays.toString(columnNames)));
+        }
         this.columnNames = columnNames;
         return this;
     }
