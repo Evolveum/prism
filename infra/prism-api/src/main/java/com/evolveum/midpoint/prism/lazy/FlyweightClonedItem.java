@@ -11,12 +11,11 @@ import com.evolveum.midpoint.prism.deleg.ItemDelegator;
 import com.evolveum.midpoint.prism.deleg.PrismPropertyDelegator;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class ReparentedItem<V extends PrismValue, D extends ItemDefinition<?>> implements ItemDelegator<V,D> {
-
+public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDefinition<?>> implements ItemDelegator<V,D> {
     private PrismContainerValue<?> parent;
 
     public static Item<?,?> copyOf(Item<?,?> item) {
-        if (item instanceof ReparentedItem<?,?> reparentedItem) {
+        if (item instanceof FlyweightClonedItem<?,?> reparentedItem) {
             return reparentedItem.copy();
         }
         if (item instanceof PrismProperty<?> property) {
@@ -39,7 +38,7 @@ public abstract class ReparentedItem<V extends PrismValue, D extends ItemDefinit
     public abstract Item<V, D> clone();
 
 
-    private static class Property<T> extends ReparentedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements PrismPropertyDelegator<T>  {
+    private static class Property<T> extends FlyweightClonedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements PrismPropertyDelegator<T>  {
 
         private final PrismProperty<T> delegate;
 
