@@ -18,7 +18,6 @@ import java.util.List;
 
 public interface PrismPropertyDelegator<T> extends PrismProperty<T>, ItemDelegator<PrismPropertyValue<T>, PrismPropertyDefinition<T>>  {
 
-
     PrismProperty<T> delegate();
 
     default <X> List<PrismPropertyValue<X>> getValues(Class<X> type) {
