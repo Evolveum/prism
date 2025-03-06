@@ -159,4 +159,27 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
             delegate.shortDump(sb);
         }
     }
+
+    static class ObjectValue<O extends Objectable> extends Container<O> implements PrismObjectValueDelegator<O> {
+
+
+        public ObjectValue(PrismObjectValue<O> delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public PrismObjectValue<O> delegate() {
+            return (PrismObjectValue<O>) super.delegate();
+        }
+
+        @Override
+        public PrismObjectValue<O> clone() {
+            return new ObjectValue<>(delegate());
+        }
+
+        @Override
+        public PrismObjectValue<O> cloneComplex(CloneStrategy strategy) {
+            return clone();
+        }
+    }
 }

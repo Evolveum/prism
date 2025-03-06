@@ -7,8 +7,7 @@
 package com.evolveum.midpoint.prism.lazy;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.deleg.ItemDelegator;
-import com.evolveum.midpoint.prism.deleg.PrismPropertyDelegator;
+import com.evolveum.midpoint.prism.deleg.*;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +40,13 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         if (item instanceof PrismProperty<?> property) {
             return new Property<>(property);
         }
+        if (item instanceof PrismObject<?> object) {
+            return new ObjectItem<>(object);
+        }
+        if (item instanceof PrismContainer<?> container) {
+            return new Container<>(container);
+        }
+
         return item.clone();
     }
 
@@ -91,7 +97,7 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
     public abstract Item<V, D> clone();
 
 
-    private static class Property<T> extends FlyweightClonedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements PrismPropertyDelegator<T>  {
+    static class Property<T> extends FlyweightClonedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements PrismPropertyDelegator<T>  {
 
         private final PrismProperty<T> delegate;
 
@@ -120,5 +126,82 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         }
     }
 
+    static class Container<C extends Containerable> extends FlyweightClonedItem<PrismContainerValue<C>, PrismContainerDefinition<C>> implements PrismContainerDelegator<C> {
+
+        private final PrismContainer<C> delegate;
+
+        public Container(PrismContainer<C> delegate) {
+            this.delegate = delegate;
+        }
+
+
+        @Override
+        public PrismContainer<C> delegate() {
+            return delegate;
+        }
+
+        @Override
+        protected PrismContainerValue<C> createWrapped(PrismContainerValue<C> value) {
+            return new FlyweightClonedValue.Container<>(value);
+        }
+
+        @Override
+        public PrismContainer<C> clone() {
+            return new Container<>(delegate);
+        }
+
+    }
+
+    static class ObjectItem<C extends Objectable> extends Container<C> implements PrismObjectDelegator<C> {
+
+        public ObjectItem(PrismObject<C> delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public PrismObject<C> delegate() {
+            return (PrismObject<C>) super.delegate();
+        }
+
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
+        @Override
+        public PrismObject<C> clone() {
+            return new ObjectItem<>(delegate());
+        }
+
+        @Override
+        protected PrismContainerValue<C> createWrapped(PrismContainerValue<C> value) {
+            return super.createWrapped(value);
+        }
+
+        @Override
+        public @NotNull PrismObjectValue<C> getValue() {
+            return (PrismObjectValue<C>) super.getValue();
+        }
+    }
+
+    static class Reference extends FlyweightClonedItem<PrismReferenceValue, PrismReferenceDefinition> implements PrismReferenceDelegator {
+
+        private final PrismReference delegate;
+
+        public Reference(PrismReference delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public PrismReference delegate() {
+            return delegate;
+        }
+
+        @Override
+        protected PrismReferenceValue createWrapped(PrismReferenceValue value) {
+            return new FlyweightClonedValue.Reference(value);
+        }
+
+        @Override
+        public PrismReference clone() {
+            return new Reference(delegate);
+        }
+    }
 
 }
