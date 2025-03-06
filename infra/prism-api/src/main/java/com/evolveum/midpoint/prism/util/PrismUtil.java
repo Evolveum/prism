@@ -81,7 +81,8 @@ public class PrismUtil {
         }
         Item<PrismValue, ItemDefinition<?>> itemOld = oldObject.findItem(itemDelta.getPath());
         if (itemOld != null) {
-            itemDelta.setEstimatedOldValues((Collection) PrismValueCollectionsUtil.cloneCollection(itemOld.getValues()));
+            //noinspection unchecked,rawtypes
+            itemDelta.setEstimatedOldValuesWithCloning((Collection) itemOld.getValues());
         }
     }
 
