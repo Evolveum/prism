@@ -156,8 +156,8 @@ public class LazyPrismContainerValue<C extends Containerable>
 
     @Override
     public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
-        if (strategy == CloneStrategy.LITERAL && !isMaterialized()) {
-            var ret =  new LazyPrismContainerValue<>(this);
+        if (strategy.isLiteral() && !isMaterialized()) {
+            var ret = new LazyPrismContainerValue<>(this);
             if (!ret.isMaterialized()) {
                 // During calling constructor, other thread may materialized value during copying of parent value
                 // so if copy is already materialized it may share delegate

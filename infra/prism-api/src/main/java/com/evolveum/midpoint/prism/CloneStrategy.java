@@ -7,20 +7,26 @@
 package com.evolveum.midpoint.prism;
 
 /**
- * @author semancik
+ * @param ignoreMetadata Value metadata won't be cloned.
+ * @param ignoreContainerValueIds Container value IDs won't be cloned.
+ * @param ignoreEmbeddedObjects Objects embedded in {@link PrismReferenceValue}s won't be cloned.
  *
+ * @author semancik
  */
-public enum CloneStrategy {
+public record CloneStrategy(
+        boolean ignoreMetadata,
+        boolean ignoreContainerValueIds,
+        boolean ignoreEmbeddedObjects) {
 
     /**
      * Literal clone. All properties of the clone are the same as those of the original.
      */
-    LITERAL,
+    public static final CloneStrategy LITERAL = literal();
 
     /**
      * As {@link #LITERAL} but ignores the metadata.
      */
-    LITERAL_NO_METADATA,
+    public static final CloneStrategy LITERAL_NO_METADATA = literalNoMetadata();
 
     /**
      * Clone for reuse.
@@ -33,9 +39,37 @@ public enum CloneStrategy {
      * with the same values but with not identifiers.
      * References will not have full object inside them.
      */
-    REUSE;
+    public static final CloneStrategy REUSE = reuse();
 
-    public boolean ignoreMetadata() {
-        return this == LITERAL_NO_METADATA;
+    public CloneStrategy withIgnoreMetadata() {
+        return new CloneStrategy(true, ignoreContainerValueIds, ignoreEmbeddedObjects);
+    }
+
+    public CloneStrategy withIgnoreContainerValueIds() {
+        return new CloneStrategy(ignoreMetadata, true, ignoreEmbeddedObjects);
+    }
+
+    public CloneStrategy withIgnoreEmbeddedObjects() {
+        return new CloneStrategy(ignoreMetadata, ignoreContainerValueIds, true);
+    }
+
+    static CloneStrategy literal() {
+        return new CloneStrategy(false, false, false);
+    }
+
+    static CloneStrategy literalNoMetadata() {
+        return literal()
+                .withIgnoreMetadata();
+    }
+
+    static CloneStrategy reuse() {
+        return literal()
+                .withIgnoreContainerValueIds()
+                .withIgnoreEmbeddedObjects();
+    }
+
+    /** TODO reconsider this method; replace it with something more specific */
+    public boolean isLiteral() {
+        return equals(LITERAL);
     }
 }

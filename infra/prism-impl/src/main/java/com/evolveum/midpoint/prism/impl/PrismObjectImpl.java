@@ -71,6 +71,9 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
             // This should not happen
             throw new SystemException("Internal Error: " + e.getMessage(), e);
         }
+        if (value.isImmutable()) {
+            freeze();
+        }
     }
 
     @Override

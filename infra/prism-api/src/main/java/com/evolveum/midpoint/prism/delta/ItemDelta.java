@@ -258,6 +258,14 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void setEstimatedOldValues(Collection<V> estimatedOldValues);
 
+    default void setEstimatedOldValuesWithCloning(Collection<V> estimatedOldValues) {
+        // TODO use flyweights instead of cloning for immutable values
+        setEstimatedOldValues(
+                PrismValueCollectionsUtil.cloneCollectionComplex(
+                        CloneStrategy.LITERAL.withIgnoreEmbeddedObjects(),
+                        estimatedOldValues));
+    }
+
     void addEstimatedOldValues(Collection<V> newValues);
 
     void addEstimatedOldValues(V... newValues);
