@@ -10,6 +10,7 @@ import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.getRealValue
 import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
@@ -259,11 +260,18 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     void setEstimatedOldValues(Collection<V> estimatedOldValues);
 
     default void setEstimatedOldValuesWithCloning(Collection<V> estimatedOldValues) {
-        // TODO use flyweights instead of cloning for immutable values
-        setEstimatedOldValues(
-                PrismValueCollectionsUtil.cloneCollectionComplex(
-                        CloneStrategy.LITERAL.withIgnoreEmbeddedObjects(),
-                        estimatedOldValues));
+        var valuesToStore = new ArrayList<V>(estimatedOldValues.size());
+        for (V originalValue : estimatedOldValues) {
+            if (originalValue.isImmutable()) {
+                // There will be a parent but in estimated old values it should not be a problem
+                valuesToStore.add(originalValue);
+            } else {
+                //noinspection unchecked
+                valuesToStore.add(
+                        (V) originalValue.cloneComplex(CloneStrategy.LITERAL_IGNORING_EMBEDDED_OBJECTS));
+            }
+        }
+        setEstimatedOldValues(valuesToStore);
     }
 
     void addEstimatedOldValues(Collection<V> newValues);

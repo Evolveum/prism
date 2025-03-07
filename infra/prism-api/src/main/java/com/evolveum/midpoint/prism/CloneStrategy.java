@@ -26,7 +26,7 @@ public record CloneStrategy(
     /**
      * As {@link #LITERAL} but ignores the metadata.
      */
-    public static final CloneStrategy LITERAL_NO_METADATA = literalNoMetadata();
+    public static final CloneStrategy LITERAL_NO_METADATA = literal().withIgnoreMetadata();
 
     /**
      * Clone for reuse.
@@ -40,6 +40,8 @@ public record CloneStrategy(
      * References will not have full object inside them.
      */
     public static final CloneStrategy REUSE = reuse();
+
+    public static final CloneStrategy LITERAL_IGNORING_EMBEDDED_OBJECTS = literal().withIgnoreEmbeddedObjects();
 
     public CloneStrategy withIgnoreMetadata() {
         return new CloneStrategy(true, ignoreContainerValueIds, ignoreEmbeddedObjects);
@@ -55,11 +57,6 @@ public record CloneStrategy(
 
     static CloneStrategy literal() {
         return new CloneStrategy(false, false, false);
-    }
-
-    static CloneStrategy literalNoMetadata() {
-        return literal()
-                .withIgnoreMetadata();
     }
 
     static CloneStrategy reuse() {

@@ -237,6 +237,29 @@ public class CloneUtil {
         return pcv.clone().asContainerable();
     }
 
+    @Contract("null -> null; !null -> !null")
+    public static <C extends Containerable> @Nullable C cloneIfMutable(@Nullable C value) {
+        if (value == null) {
+            return null;
+        }
+        //noinspection unchecked
+        PrismContainerValue<C> pcv = value.asPrismContainerValue();
+        if (pcv.isImmutable()) {
+            return value;
+        }
+        return pcv.clone().asContainerable();
+    }
+
+    @Contract("null -> null; !null -> !null")
+    public static <C extends PrismContainer<?>> @Nullable C cloneIfMutable(@Nullable C value) {
+        if (value == null || value.isImmutable()) {
+            return value;
+        } else {
+            //noinspection unchecked
+            return (C) value.clone();
+        }
+    }
+
     /**
      * Provides an immutable version of the input:
      *
