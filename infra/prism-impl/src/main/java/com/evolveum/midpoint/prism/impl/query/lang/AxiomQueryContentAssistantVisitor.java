@@ -100,7 +100,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         } else {
             errorList.add(new AxiomQueryError(
                     positionCursor, positionCursor, positionCursor, positionCursor,
-                    new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.cursorOut")
+                    new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.cursorOut"),
+                    null
             ));
         }
 
@@ -575,7 +576,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
             errorList.add(new AxiomQueryError(
                     ctx.getStart().getLine(), ctx.getStop().getLine(),
                     ctx.getStart().getStartIndex(), ctx.getStop().getStopIndex() + 1,
-                    new SingleLocalizableMessage(message, arguments)
+                    new SingleLocalizableMessage(message, arguments), null
             ));
         }
     }
