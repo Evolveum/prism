@@ -269,7 +269,7 @@ public class DummyContainerImpl<C extends Containerable>
     }
 
     @Override
-    public PrismContainer<C> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismContainer<C> cloneComplex(@NotNull CloneStrategy strategy) {
         return new DummyContainerImpl<>(delegate().cloneComplex(strategy), getPath());
     }
 

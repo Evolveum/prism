@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism.impl;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
@@ -679,8 +680,8 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public PrismReferenceValueImpl clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+    public PrismReferenceValue clone() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -689,7 +690,11 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public PrismReferenceValueImpl cloneComplex(@NotNull CloneStrategy strategy) {
+    public PrismReferenceValue cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this);
+        }
+
         PrismReferenceValueImpl clone = new PrismReferenceValueImpl(getOid(), getOriginType(), getOriginObject());
         copyValues(strategy, clone);
         return clone;

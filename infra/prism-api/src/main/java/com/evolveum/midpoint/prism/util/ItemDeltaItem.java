@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism.util;
 
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
 import static com.evolveum.midpoint.prism.path.ItemPath.EMPTY_PATH;
 
@@ -495,17 +497,26 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         return outputSet;
     }
 
+    @Deprecated // use copy() instead
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public ItemDeltaItem<V,D> clone() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    public ItemDeltaItem<V, D> copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    public @NotNull ItemDeltaItem<V, D> cloneComplex(@NotNull CloneStrategy strategy) {
         return new ItemDeltaItem<>(
-                itemOld != null ? itemOld.clone() : null,
+                itemOld != null ? itemOld.cloneComplex(strategy) : null,
                 delta != null ? delta.clone() : null,
-                itemNew != null ? itemNew.clone() : null,
+                itemNew != null ? itemNew.cloneComplex(strategy) : null,
                 definition,
                 resolvePath,
                 residualPath,
-                subItemDeltas != null ? ItemDeltaCollectionsUtil.cloneCollection(this.subItemDeltas) : null);
+                subItemDeltas != null ? ItemDeltaCollectionsUtil.cloneCollection(this.subItemDeltas) : null); // TODO strategy
     }
 
     @Override

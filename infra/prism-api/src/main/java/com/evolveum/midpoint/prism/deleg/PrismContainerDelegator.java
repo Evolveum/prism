@@ -273,7 +273,7 @@ public interface PrismContainerDelegator<C extends Containerable> extends PrismC
     }
 
     @Override
-    default PrismContainer<C> cloneComplex(CloneStrategy strategy) {
+    default @NotNull PrismContainer<C> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

@@ -268,7 +268,7 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
             } else {
                 //noinspection unchecked
                 valuesToStore.add(
-                        (V) originalValue.cloneComplex(CloneStrategy.LITERAL_IGNORING_EMBEDDED_OBJECTS));
+                        (V) originalValue.cloneComplex(CloneStrategy.LITERAL_IGNORING_EMBEDDED_OBJECTS_MUTABLE));
             }
         }
         setEstimatedOldValues(valuesToStore);

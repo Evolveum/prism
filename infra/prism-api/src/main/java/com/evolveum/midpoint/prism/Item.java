@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 
 import com.evolveum.midpoint.util.annotation.OneUseOnly;
@@ -36,7 +37,6 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.google.common.annotations.VisibleForTesting;
 
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS;
 import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy.DEFAULT_FOR_EQUALS;
@@ -53,7 +53,7 @@ import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceSt
  */
 public interface Item<V extends PrismValue, D extends ItemDefinition<?>>
         extends Itemable, DebugDumpable, Visitable, PrismVisitable, PathVisitable, ParentVisitable, Serializable, Revivable,
-        Freezable, Cloneable {
+        Freezable, Cloneable, ComplexCopyable<Item<V, D>> {
 
     String KEY_NAMESPACE_CONTEXT = PrismNamespaceContext.class.getSimpleName();
 
@@ -667,28 +667,44 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>>
      */
     void applyDefinition(@NotNull D definition, boolean force) throws SchemaException;
 
-    default Item<V, D> copy() {
-        return clone();
-    }
-
     /**
      * Literal clone.
      */
-    Item<V, D> clone();
+    @Deprecated // use copy(), mutableCopy() or immutableCopy() instead
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    default Item<V, D> clone() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
 
+    @Deprecated // use immutableCopy(), although it's not exactly the same
     Item<V, D> createImmutableClone();
 
     /**
      * Complex clone with different cloning strategies.
+     *
      * @see CloneStrategy
      */
-    Item<V, D> cloneComplex(CloneStrategy strategy);
+    @NotNull Item<V, D> cloneComplex(@NotNull CloneStrategy strategy);
 
-    static <T extends Item<?,?>>  Collection<T> cloneCollection(Collection<T> items) {
+    /** A copy with no guarantees about mutability. */
+    default @NotNull Item<V, D> copy() {
+        return cloneComplex(CloneStrategy.LITERAL_ANY);
+    }
+
+    /** A literal copy that is guaranteed to be mutable. */
+    default @NotNull Item<V, D> mutableCopy() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
+
+    default @NotNull Item<V, D> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
+
+    static <T extends Item<?, ?>> Collection<T> cloneCollection(Collection<T> items) {
         Collection<T> clones = new ArrayList<>(items.size());
         for (T item: items) {
             //noinspection unchecked
-            clones.add((T) item.copy());
+            clones.add((T) item.mutableCopy());
         }
         return clones;
     }

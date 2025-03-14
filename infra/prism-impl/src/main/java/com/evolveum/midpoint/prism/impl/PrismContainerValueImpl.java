@@ -17,6 +17,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.path.InfraItemName;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -1436,7 +1437,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public PrismContainerValue<C> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -1446,7 +1447,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValueImpl<C> cloneComplex(@NotNull CloneStrategy strategy) {    // TODO resolve also the definition?
+    public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this);
+        }
+
         PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), null, this.complexTypeDefinition);
         copyValues(strategy, clone);
@@ -1738,6 +1743,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     /**
      * Returns a single-valued container (with a single-valued definition) holding just this value.
+     * If the value is immutable, the container will be immutable as well.
+     * If the value is parent-less, it will be put right into the container.
+     * Otherwise, the value will be cloned.
      *
      * *TODO* Consider moving this into some "util" class; it is not really in the spirit of prism.
      *
@@ -1753,7 +1761,14 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         definition.mutator().setMaxOccurs(1);
 
         PrismContainer<C> pc = definition.instantiate();
-        pc.add(clone());
+        if (isImmutable()) {
+            //noinspection unchecked
+            pc.add((PrismContainerValue<C>) FlyweightClonedValue.from(this));
+        } else if (getParent() == null) {
+            pc.add(this);
+        } else {
+            pc.add(clone());
+        }
         return pc;
     }
 

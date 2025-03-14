@@ -12,6 +12,7 @@ import java.util.Collection;
 import com.evolveum.midpoint.prism.delta.ReferenceDelta;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
@@ -60,7 +61,21 @@ public interface PrismReference extends Item<PrismReferenceValue,PrismReferenceD
     PrismReference createImmutableClone();
 
     @Override
-    PrismReference cloneComplex(CloneStrategy strategy);
+    @NotNull
+    PrismReference cloneComplex(@NotNull CloneStrategy strategy);
+
+    @Override
+    default @NotNull PrismReference copy() {
+        return cloneComplex(CloneStrategy.LITERAL_ANY);
+    }
+
+    default @NotNull PrismReference mutableCopy() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
+
+    default @NotNull PrismReference immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     @Override
     String toString();

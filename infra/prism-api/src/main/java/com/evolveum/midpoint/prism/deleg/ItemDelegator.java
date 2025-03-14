@@ -383,18 +383,12 @@ public interface ItemDelegator<V extends PrismValue, D extends ItemDefinition<?>
     }
 
     @Override
-    default Item<V, D> copy() {
-        return delegate().copy();
-    }
-
-
-    @Override
     default Item<V, D> createImmutableClone() {
         return delegate().createImmutableClone();
     }
 
     @Override
-    default Item<V, D> cloneComplex(CloneStrategy strategy) {
+    default @NotNull Item<V, D> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

@@ -13,6 +13,7 @@ import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.PrismUnmarshaller;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.lazy.LazyXNodeBasedPrismValue;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -21,7 +22,6 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.io.Serializable;
 import java.util.Objects;
 
 public class LazyPrismContainerValue<C extends Containerable>
@@ -156,6 +156,10 @@ public class LazyPrismContainerValue<C extends Containerable>
 
     @Override
     public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this); // TODO is this ok?
+        }
+
         if (strategy.isLiteral() && !isMaterialized()) {
             var ret = new LazyPrismContainerValue<>(this);
             if (!ret.isMaterialized()) {
