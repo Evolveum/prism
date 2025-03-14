@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.path.InfraItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
@@ -30,11 +31,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
+
 /**
  * @author semancik
  *
  */
-public interface PrismValue extends PrismVisitable, Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable, MidpointOriginMetadata, SchemaLookup.Aware {      // todo ShortDumpable?
+public interface PrismValue
+        extends PrismVisitable, Visitable, PathVisitable, Serializable, DebugDumpable, Revivable, Freezable,
+        MidpointOriginMetadata, SchemaLookup.Aware, ComplexCopyable<PrismValue> {      // todo ShortDumpable?
 
     Map<String, Object> getUserData();
 
@@ -183,6 +189,18 @@ public interface PrismValue extends PrismVisitable, Visitable, PathVisitable, Se
      * @see CloneStrategy
      */
     PrismValue cloneComplex(@NotNull CloneStrategy strategy);
+
+    default PrismValue copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    default PrismValue mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    default PrismValue immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     int hashCode(@NotNull EquivalenceStrategy equivalenceStrategy);
 

@@ -6,6 +6,8 @@
  */
 package com.evolveum.midpoint.prism;
 
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
 
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+
+import com.evolveum.midpoint.prism.util.CloneUtil;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -288,6 +292,18 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
 
     @Override
     PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy);
+
+    default PrismContainerValue<C> copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    default PrismContainerValue<C> mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    default PrismContainerValue<C> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     boolean equivalent(PrismContainerValue<?> other);
 

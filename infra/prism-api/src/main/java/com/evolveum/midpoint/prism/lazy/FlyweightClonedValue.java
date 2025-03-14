@@ -24,25 +24,22 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
     public static PrismValue from(@Nullable PrismValue value) {
         if (value == null) {
             return null;
-        }
-        if (value instanceof FlyweightClonedValue flyweight) {
-            return flyweight.clone();
-        }
-        if (value instanceof PrismPropertyValue<?> property) {
+        } else if (value instanceof FlyweightClonedValue flyweight) {
+            return flyweight.copy();
+        } else if (value instanceof PrismPropertyValue<?> property) {
             return new Property<>(property);
-        }
-        if (value instanceof PrismContainerValue<?> container) {
+        } else if (value instanceof PrismContainerValue<?> container) {
             return new Container<>(container);
-        }
-        if (value instanceof PrismReferenceValue reference) {
+        } else if (value instanceof PrismReferenceValue reference) {
             return new Reference(reference);
+        } else {
+            throw new AssertionError("Unsupported prism value type: " + value.getClass());
         }
-        return value.clone();
     }
 
     public static <T> PrismPropertyValue<T> from(@NotNull PrismPropertyValue<T> value) {
         if (value instanceof FlyweightClonedValue.Property<T> flyweight) {
-            return flyweight.clone();
+            return flyweight.copy();
         } else {
             return new Property<>(value);
         }
@@ -50,7 +47,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
     public static <C extends Containerable> PrismContainerValue<C> from(@NotNull PrismContainerValue<C> value) {
         if (value instanceof FlyweightClonedValue.Container<C> flyweight) {
-            return flyweight.clone();
+            return flyweight.copy();
         } else {
             return new Container<>(value);
         }
@@ -58,7 +55,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
     public static <O extends Objectable> PrismObjectValue<O> from(@NotNull PrismObjectValue<O> value) {
         if (value instanceof FlyweightClonedValue.ObjectValue<O> flyweight) {
-            return flyweight.clone();
+            return flyweight.copy();
         } else {
             return new ObjectValue<>(value);
         }
@@ -66,7 +63,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
     public static PrismReferenceValue from(@NotNull PrismReferenceValue value) {
         if (value instanceof FlyweightClonedValue.Reference flyweight) {
-            return flyweight.clone();
+            return flyweight.copy();
         } else {
             return new Reference(value);
         }
