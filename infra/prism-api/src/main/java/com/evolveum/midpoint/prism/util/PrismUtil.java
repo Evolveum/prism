@@ -16,6 +16,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.evolveum.midpoint.prism.*;
@@ -198,5 +200,24 @@ public class PrismUtil {
             assert first != null;
             return first.asPrismContainerValue().isEmpty();
         }
+    }
+
+    /** @see com.evolveum.midpoint.prism.PrismContainerValue#asSingleValuedContainer(javax.xml.namespace.QName) */
+    public static <C extends Containerable> PrismContainer<C> asSingleValuedContainer(
+            @NotNull QName itemName,
+            @NotNull PrismContainerValue<C> pcv,
+            @NotNull ComplexTypeDefinition ctd) throws SchemaException {
+        PrismContainerDefinition<C> definition = PrismContext.get().definitionFactory().newContainerDefinition(itemName, ctd);
+        definition.mutator().setMaxOccurs(1);
+
+        PrismContainer<C> pc = definition.instantiate();
+        if (pcv.getParent() == null) {
+            pc.add(pcv);
+        } else if (pcv.isImmutable()) {
+            pc.add(FlyweightClonedValue.from(pcv));
+        } else {
+            pc.add(pcv.clone());
+        }
+        return pc;
     }
 }

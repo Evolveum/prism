@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.Objects;
 
+// Should be named LazyNodeBasedPrismContainerValue
 public class LazyPrismContainerValue<C extends Containerable>
         extends LazyXNodeBasedPrismValue<MapXNodeImpl, PrismContainerValue<C>>
         implements PrismContainerValueDelegator<C> {
@@ -34,7 +35,7 @@ public class LazyPrismContainerValue<C extends Containerable>
     @Deprecated
     private static final boolean TRACK_CALLERS = false;
 
-    protected ComplexTypeDefinition complexTypeDefinition = null;
+    protected ComplexTypeDefinition complexTypeDefinition;
 
     private Itemable parent;
 
@@ -69,6 +70,7 @@ public class LazyPrismContainerValue<C extends Containerable>
         return delegate().isIdOnly();
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public PrismContainerValue<C> clone() {
         return delegate().clone();
@@ -121,6 +123,7 @@ public class LazyPrismContainerValue<C extends Containerable>
         PrismContainerValueDelegator.super.acceptParentVisitor(visitor);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public PrismContainerable<C> getParent() {
         return (PrismContainerable<C>) parent;
@@ -139,8 +142,7 @@ public class LazyPrismContainerValue<C extends Containerable>
         return "";
     }
 
-
-
+    @SuppressWarnings("unchecked")
     private PrismContainerDefinition<C> containerDef() {
         if (parent != null) {
             return (PrismContainerDefinition<C>) parent.getDefinition();
@@ -155,7 +157,7 @@ public class LazyPrismContainerValue<C extends Containerable>
     }
 
     @Override
-    public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
+    public @NotNull PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
         if (isImmutable() && !strategy.mutableCopy()) {
             return FlyweightClonedValue.from(this); // TODO is this ok?
         }
@@ -246,8 +248,6 @@ public class LazyPrismContainerValue<C extends Containerable>
     private void breakPoint() {
         parent.getPath();
     }
-
-
 
     private static boolean callerIsNoneOf(String... callers) {
         for (var elem : new Throwable().fillInStackTrace().getStackTrace()) {

@@ -76,8 +76,9 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
      */
     private final Collection<? extends ItemDelta<?,?>> subItemDeltas;
 
+    // FIXME temporarily public
     /** For internal use (e.g., cloning); we do not do any checks here. */
-    protected ItemDeltaItem(
+    public ItemDeltaItem(
             @Nullable Item<V, D> itemOld,
             @Nullable ItemDelta<V, D> delta,
             @Nullable Item<V, D> itemNew,
@@ -500,12 +501,16 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
     @Deprecated // use copy() instead
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    public ItemDeltaItem<V,D> clone() {
+    public ItemDeltaItem<V, D> clone() {
         return cloneComplex(LITERAL_MUTABLE);
     }
 
     public ItemDeltaItem<V, D> copy() {
         return cloneComplex(LITERAL_ANY);
+    }
+
+    public ItemDeltaItem<V, D> mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
     }
 
     public @NotNull ItemDeltaItem<V, D> cloneComplex(@NotNull CloneStrategy strategy) {

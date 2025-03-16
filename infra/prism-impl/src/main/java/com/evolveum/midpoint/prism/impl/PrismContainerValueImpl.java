@@ -20,6 +20,8 @@ import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
 import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.path.InfraItemName;
 
+import com.evolveum.midpoint.prism.util.PrismUtil;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -1756,27 +1758,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         ComplexTypeDefinition ctd = MiscUtil.stateNonNull(
                 getComplexTypeDefinition(),
                 "Cannot invoke 'asSingleValuedContainer' on a container value without CTD: %s", this);
-
-        PrismContainerDefinition<C> definition = PrismContext.get().definitionFactory().newContainerDefinition(itemName, ctd);
-        definition.mutator().setMaxOccurs(1);
-
-        PrismContainer<C> pc = definition.instantiate();
-        if (isImmutable()) {
-            //noinspection unchecked
-            pc.add((PrismContainerValue<C>) FlyweightClonedValue.from(this));
-        } else if (getParent() == null) {
-            pc.add(this);
-        } else {
-            pc.add(clone());
-        }
-        return pc;
+        return PrismUtil.asSingleValuedContainer(itemName, this, ctd);
     }
 
     // EXPERIMENTAL. TODO write some tests
     // BEWARE, it expects that definitions for items are present. Otherwise definition-less single valued items will get overwritten.
     @Override
     @Experimental
-    @SuppressWarnings("unchecked")
     public void mergeContent(@NotNull PrismContainerValue<?> other, @NotNull List<QName> overwrite) throws SchemaException {
         List<ItemName> remainingToOverwrite = overwrite.stream().map(ItemName::fromQName).collect(Collectors.toList());
         for (Item<?, ?> otherItem : other.getItems()) {
