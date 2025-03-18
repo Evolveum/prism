@@ -59,9 +59,9 @@ public class FilterProvider {
         }
 
         if (ruleIndex == RULE_subfilterOrValue) {
-            addFilterSuggestion(Name.AND, suggestions);
-            addFilterSuggestion(Name.OR, suggestions);
-            addFilterSuggestion(Name.NOT, suggestions);
+            suggestions.put(LogicalFilter.AND.getLocalPart(), LogicalFilter.AND.getLocalPart());
+            suggestions.put(LogicalFilter.OR.getLocalPart(), LogicalFilter.OR.getLocalPart());
+            suggestions.put(LogicalFilter.NOT.getLocalPart(), LogicalFilter.NOT.getLocalPart());
         }
 
         if (ruleIndex == RULE_itemPathComponent) {
@@ -72,7 +72,7 @@ public class FilterProvider {
         }
 
         if (ruleIndex == RULE_negation) {
-            addFilterSuggestion(Name.NOT, suggestions);
+            suggestions.put(LogicalFilter.NOT.getLocalPart(), LogicalFilter.NOT.getLocalPart());
         }
 
         return suggestions;

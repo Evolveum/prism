@@ -641,14 +641,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         suggestions.add(new Suggestion(Filter.PolyStringKeyword.MatchingRule.STRICT_IGNORE_CASE.getName(), "QueryLanguage.contentAssist.codeCompletions.matchingRule.ignoreCase", 99));
                     }
                 } else if (token.type() == AxiomQueryParser.NOT_KEYWORD) {
-                    suggestions.add(new Suggestion(Filter.Name.NOT.name().toLowerCase(), Filter.Name.NOT.name().toLowerCase(), 2));
+                    suggestions.add(new Suggestion(Filter.LogicalFilter.NOT.name().toLowerCase(), Filter.LogicalFilter.NOT.name().toLowerCase(), 2));
                 } else if (token.type() == AxiomQueryParser.AND_KEYWORD) {
                     if (positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP) {
-                        suggestions.add(new Suggestion(Filter.Name.AND.name().toLowerCase(), Filter.Name.AND.name().toLowerCase(), 2));
+                        suggestions.add(new Suggestion(Filter.LogicalFilter.AND.name().toLowerCase(), Filter.LogicalFilter.AND.name().toLowerCase(), 2));
                     }
                 } else if (token.type() == AxiomQueryParser.OR_KEYWORD) {
                     if (positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP) {
-                        suggestions.add(new Suggestion(Filter.Name.OR.name().toLowerCase(), Filter.Name.OR.name().toLowerCase(), 2));
+                        suggestions.add(new Suggestion(Filter.LogicalFilter.OR.name().toLowerCase(), Filter.LogicalFilter.OR.name().toLowerCase(), 2));
                     }
                 }else if (token.type() == AxiomQueryParser.SLASH) {
                     if (!(pathDefinition instanceof PrismPropertyDefinition<?>)
@@ -736,9 +736,16 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 while (!(ruleContext instanceof AxiomQueryParser.RootContext)) {
                     if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_path) {
                         positionTerminalContext[0] = AxiomQueryParser.RULE_path;
-                    } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterName
-                            || ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterNameAlias) {
+                    } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterName) {
                         positionTerminalContext[0] = AxiomQueryParser.RULE_filterName;
+                        // check if filterName is correct existing and not just identifier
+//                        RuleContext finalRuleContext = ruleContext;
+//                        if (Arrays.stream(Filter.Name.values())
+//                                .anyMatch(name -> name.name().equals(finalRuleContext.getText()))) {
+//
+//                        }
+                    } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterNameAlias) {
+                        positionTerminalContext[0] = AxiomQueryParser.RULE_filterNameAlias;
                     }
 
                     if (completeRule != -1) {
@@ -804,7 +811,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         pushState(atomTransition.target, states, passedStates);
                         isConsumed.set(true);
                     } else {
-                        registerExpectedTokens(atomTransition.label, identifierContext, expectedTokens);
+                        registerExpectedTokens(atomTransition.label, positionTerminal, identifierContext, expectedTokens);
                         isConsumed.set(false);
                     }
                 } else if (transition instanceof SetTransition setTransition) {
@@ -814,7 +821,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                             isConsumed.set(true);
                         } else if (isConsumed.get() || positionTerminal != null && positionTerminal.getSymbol().getType() == AxiomQueryParser.IDENTIFIER) {
                             for (int i = interval.a; i <= interval.b; i++) {
-                                registerExpectedTokens(i, null, expectedTokens);
+                                registerExpectedTokens(i, positionTerminal, null, expectedTokens);
                             }
                             isConsumed.set(false);
                         }
@@ -979,10 +986,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
     /**
      * Method append token to expected tokens list.
      * @param label
+     * @param positionTerminal
      * @param identifierContext
      * @param expected
      */
-    private void registerExpectedTokens(int label, TokenCustom.IdentifierContext identifierContext, Set<TokenCustom> expected) {
+    private void registerExpectedTokens(int label, TerminalNode positionTerminal, TokenCustom.IdentifierContext identifierContext, Set<TokenCustom> expected) {
         if (label != -1) {
             if (!(label == AxiomQueryParser.IDENTIFIER && identifierContext == null)) {
                 expected.add(new TokenCustom(
