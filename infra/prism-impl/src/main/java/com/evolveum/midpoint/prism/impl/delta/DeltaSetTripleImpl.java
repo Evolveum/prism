@@ -72,7 +72,7 @@ public class DeltaSetTripleImpl<T> implements DeltaSetTriple<T> {
     }
 
     private Collection<T> createSet() {
-        return new ArrayList<>();
+        return new HashSet<>();
     }
 
     @NotNull
@@ -177,9 +177,7 @@ public class DeltaSetTripleImpl<T> implements DeltaSetTriple<T> {
         if (set == null) {
             set = createSet();
         }
-        if (!set.contains(item)) {
-            set.add(item);
-        }
+        set.add(item);
     }
 
     public boolean presentInPlusSet(T item) {
