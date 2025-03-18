@@ -27,6 +27,12 @@ public class ThresholdPolicyViolationException extends PolicyViolationException 
         super(userFriendlyMessage);
     }
 
+    public ThresholdPolicyViolationException(LocalizableMessage userFriendlyMessage, String technicalMessage) {
+        this(userFriendlyMessage);
+
+        setTechnicalMessage(technicalMessage);
+    }
+
     public ThresholdPolicyViolationException(Throwable cause) {
         super(cause);
     }
