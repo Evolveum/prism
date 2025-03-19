@@ -738,12 +738,6 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         positionTerminalContext[0] = AxiomQueryParser.RULE_path;
                     } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterName) {
                         positionTerminalContext[0] = AxiomQueryParser.RULE_filterName;
-                        // check if filterName is correct existing and not just identifier
-//                        RuleContext finalRuleContext = ruleContext;
-//                        if (Arrays.stream(Filter.Name.values())
-//                                .anyMatch(name -> name.name().equals(finalRuleContext.getText()))) {
-//
-//                        }
                     } else if (ruleContext.getRuleIndex() == AxiomQueryParser.RULE_filterNameAlias) {
                         positionTerminalContext[0] = AxiomQueryParser.RULE_filterNameAlias;
                     }
@@ -827,8 +821,17 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         }
                     });
                 } else if (transition instanceof RuleTransition ruleTransition) {
-                    if (positionTerminal != null && positionTerminal.getSymbol().getType() != AxiomQueryParser.SEP && ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
-                        states.push(ruleTransition.target);
+                    if (processedRule == AxiomQueryParser.RULE_filterName && Objects.requireNonNull(positionTerminal).getSymbol().getType() == AxiomQueryParser.IDENTIFIER) {
+
+                        if (FilterProvider.findFilterByItemDefinition(positionDefinition, processedRule).containsKey(positionTerminal.getText())) {
+                            states.push(ruleTransition.followState);
+                        }
+
+                        expectedTokens.add(new TokenCustom(AxiomQueryParser.IDENTIFIER, TokenCustom.IdentifierContext.FILTER_NAME));
+                    } else {
+                        if (positionTerminal != null && positionTerminal.getSymbol().getType() != AxiomQueryParser.SEP && ruleTransition.ruleIndex == AxiomQueryParser.RULE_path) {
+                            states.push(ruleTransition.target);
+                        }
                     }
 
                     if (processedRule == AxiomQueryParser.RULE_matchingRule && positionTerminal != null && positionTerminal.getSymbol().getType() == AxiomQueryParser.SQUARE_BRACKET_LEFT) {
