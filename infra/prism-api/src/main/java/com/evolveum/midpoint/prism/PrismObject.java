@@ -74,8 +74,12 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     @Override
     PrismObjectDefinition<O> getDefinition();
 
-    @NotNull
-    O asObjectable();
+    @NotNull O asObjectable();
+
+    /** Freezes the object and returns itself. */
+    default @NotNull PrismObject<O> doFreeze() {
+        return Freezable.doFreeze(this);
+    }
 
     PolyString getName();
 
