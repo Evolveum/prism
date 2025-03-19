@@ -608,7 +608,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 if (token.type() == AxiomQueryParser.IDENTIFIER) {
                     if (token.identifierContext() == TokenCustom.IdentifierContext.FILTER_NAME) {
                         FilterProvider.findFilterByItemDefinition(positionDefinition, AxiomQueryParser.RULE_filterName).forEach((name, alias) -> {
-                            suggestions.add(new Suggestion(name, alias, 1));
+                            suggestions.add(new Suggestion(name, alias, 0));
                         });
                     } else if (token.identifierContext() == TokenCustom.IdentifierContext.PATH) {
                         ParseTree infraName = findInfraName(positionTerminal);
@@ -627,7 +627,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                                 processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
                                 processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.RootContext.class)), null, positionTerminal, suggestions);
                                 for (Filter.Infra value : Filter.Infra.values()) {
-                                    suggestions.add(new Suggestion(value.getName(), "QueryLanguage.contentAssist.codeCompletions.infra", 99));
+                                    suggestions.add(new Suggestion(value.getName(), "QueryLanguage.contentAssist.codeCompletions.infra", -1));
                                 }
                             } else if (initMetadataPath(positionTerminal)) {
                                 processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
@@ -641,14 +641,14 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                         suggestions.add(new Suggestion(Filter.PolyStringKeyword.MatchingRule.STRICT_IGNORE_CASE.getName(), "QueryLanguage.contentAssist.codeCompletions.matchingRule.ignoreCase", 99));
                     }
                 } else if (token.type() == AxiomQueryParser.NOT_KEYWORD) {
-                    suggestions.add(new Suggestion(Filter.LogicalFilter.NOT.name().toLowerCase(), Filter.LogicalFilter.NOT.name().toLowerCase(), 2));
+                    suggestions.add(new Suggestion(Filter.LogicalFilter.NOT.name().toLowerCase(), Filter.LogicalFilter.NOT.name().toLowerCase(), 3));
                 } else if (token.type() == AxiomQueryParser.AND_KEYWORD) {
                     if (positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP) {
-                        suggestions.add(new Suggestion(Filter.LogicalFilter.AND.name().toLowerCase(), Filter.LogicalFilter.AND.name().toLowerCase(), 2));
+                        suggestions.add(new Suggestion(Filter.LogicalFilter.AND.name().toLowerCase(), Filter.LogicalFilter.AND.name().toLowerCase(), 3));
                     }
                 } else if (token.type() == AxiomQueryParser.OR_KEYWORD) {
                     if (positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP) {
-                        suggestions.add(new Suggestion(Filter.LogicalFilter.OR.name().toLowerCase(), Filter.LogicalFilter.OR.name().toLowerCase(), 2));
+                        suggestions.add(new Suggestion(Filter.LogicalFilter.OR.name().toLowerCase(), Filter.LogicalFilter.OR.name().toLowerCase(), 3));
                     }
                 }else if (token.type() == AxiomQueryParser.SLASH) {
                     if (!(pathDefinition instanceof PrismPropertyDefinition<?>)
@@ -682,10 +682,12 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                     if (positionTerminal.getSymbol().getType() != AxiomQueryParser.IDENTIFIER) {
                         suggestions.add(suggestionFromVocabulary(token, "", -1));
                     }
+                } else if (token.type() == AxiomQueryParser.AT_SIGN) {
+                    suggestions.add(suggestionFromVocabulary(token, "", 4));
                 } else if (token.type() == AxiomQueryParser.STRING_SINGLEQUOTE) {
-                    suggestions.add(new Suggestion("'", "QueryLanguage.contentAssist.codeCompletions.stringValue", 1));
+                    suggestions.add(new Suggestion("'", "QueryLanguage.contentAssist.codeCompletions.stringValue", 4));
                 } else if (token.type() == AxiomQueryParser.STRING_DOUBLEQUOTE) {
-                    suggestions.add(new Suggestion("\"", "QueryLanguage.contentAssist.codeCompletions.stringValue", 1));
+                    suggestions.add(new Suggestion("\"", "QueryLanguage.contentAssist.codeCompletions.stringValue", 4));
                 } else if (token.type() == AxiomQueryParser.SEP
                         || token.type() == AxiomQueryParser.ERRCHAR
                         || token.type() == AxiomQueryParser.QUESTION_MARK
@@ -893,7 +895,7 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 }
             });
         } else if (definition instanceof PrismReferenceDefinition) {
-            suggestions.add(suggestionFromVocabulary(new TokenCustom(AxiomQueryParser.AT_SIGN, TokenCustom.IdentifierContext.PATH), "QueryLanguage.contentAssist.codeCompletions.dereferencePath", -1));
+            suggestions.add(suggestionFromVocabulary(new TokenCustom(AxiomQueryParser.AT_SIGN, TokenCustom.IdentifierContext.PATH), "QueryLanguage.contentAssist.codeCompletions.dereferencePath", 2));
         }
         else if (definition instanceof ComplexTypeDefinition complexTypeDefinition) {
             complexTypeDefinition.getDefinitions().forEach(d -> {
@@ -907,9 +909,9 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         var tokenValue = AxiomStrings.fromOptionallySingleQuoted(AxiomQueryParser.VOCABULARY.getDisplayName(terminal.type()));
 
         if (terminal.type() == AxiomQueryParser.SEP) {
-            return new Suggestion(" ", "QueryLanguage.contentAssist.codeCompletions.token.sep", -1);
+            return new Suggestion(" ", "QueryLanguage.contentAssist.codeCompletions.token.sep", priority);
         } else {
-            return new Suggestion(tokenValue, alias, -1);
+            return new Suggestion(tokenValue, alias, priority);
         }
     }
 
