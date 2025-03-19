@@ -151,7 +151,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     public void setOid(String oid) {
         checkMutable();
         this.oid = oid;
-        if (objectToAdd != null) {
+        if (objectToAdd != null && !objectToAdd.isImmutable()) {
             objectToAdd.setOid(oid);
         }
     }

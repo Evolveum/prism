@@ -82,6 +82,10 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
         writeFilterName(filter.getName());
     }
 
+    public void writeFilterName(Filter.LogicalFilter filter) {
+        writeFilterName(filter.getName());
+    }
+
     public void writeFilterName(QName filter) {
         var alias = lookupAlias(filter);
         target.emitSpace();

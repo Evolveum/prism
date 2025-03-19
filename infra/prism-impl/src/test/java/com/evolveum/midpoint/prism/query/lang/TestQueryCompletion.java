@@ -329,6 +329,11 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
         suggestion = getSuggestion("givenName equal^ ");
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("[", "("));
+        FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("givenName"))), 15).forEach(
+            (name, alias) -> {
+                assertThat(suggestion).map(Suggestion::name).contains(name);
+            }
+        );
     }
 
     @Test

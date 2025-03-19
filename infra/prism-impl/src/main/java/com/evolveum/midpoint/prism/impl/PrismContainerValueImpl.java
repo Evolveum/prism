@@ -1455,7 +1455,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     protected void copyValues(CloneStrategy strategy, PrismContainerValueImpl<C> clone) {
         super.copyValues(strategy, clone);
-        if (strategy == CloneStrategy.LITERAL) {
+        if (!strategy.ignoreContainerValueIds()) {
             clone.id = this.id;
         }
         for (Item<?, ?> item : this.items.values()) {

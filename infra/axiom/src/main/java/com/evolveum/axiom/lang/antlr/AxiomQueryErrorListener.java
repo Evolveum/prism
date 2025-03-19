@@ -34,7 +34,7 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
             errorMessage = "Syntax error: " + msg;
         }
 
-        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, new SingleLocalizableMessage(errorMessage)));
+        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, new SingleLocalizableMessage(errorMessage), null));
     }
 
     public List<AxiomQueryError> getSyntaxErrors() {

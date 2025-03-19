@@ -9,7 +9,8 @@ import java.util.Objects;
  */
 public record AxiomQueryError(int lineStart, int lineStop,
                               int charPositionInLineStart, int charPositionInLineStop,
-                              LocalizableMessage message) {
+                              LocalizableMessage localizableMessage,
+                              String message) {
 
     @Override
     public boolean equals(Object obj) {

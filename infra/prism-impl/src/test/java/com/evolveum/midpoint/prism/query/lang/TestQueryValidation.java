@@ -50,76 +50,76 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidPathComponent() {
         String query = "givenName = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test
     public void testInvalidPathComponent() {
         String query = "badPath = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badPath" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badPath" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
     }
 
     @Test
     public void testValidPropFilter() {
         String query = "name endsWith \"LAST\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "givenName = \"John\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "familyName startsWith \"Wo\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test
     public void testInvalidPropFilter() {
         String query = "badName endsWith \"LAST\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "endsWith" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "endsWith" }));
 
         query = "badGivenName = \"John\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badGivenName" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badGivenName" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "badFamilyName startsWith \"Wo\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badFamilyName" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badFamilyName" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
     }
 
     @Test()
     public void testValidSelfPath() {
         String query = ". matches (targetType = RoleType)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = ". referencedBy (@type = UserType AND @path = assignment/targetRef)";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test()
     public void testInvalidSelfPath() {
         String query = ". equal value";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
 
         query = ". = value";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAliasSelfPath", new String[] { "=" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAliasSelfPath", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "value" }));
     }
 
     @Test()
@@ -131,92 +131,92 @@ public class TestQueryValidation extends AbstractPrismTest {
     public void testValidReferenceComponent() {
         String query = "activation/validTo < \"2022-01-01\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "assignment/targetRef not matches ( targetType = RoleType )";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "extension/indexedString contains \"mycompanyname.com\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test
     public void testInvalidReferenceComponent() {
         String query = "activation/badAdministrativeStatus = \"disabled\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badAdministrativeStatus" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badAdministrativeStatus" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "assignment/badTargetRef = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTargetRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTargetRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "extension/badIndexedString contains \"mycompanyname.com\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badIndexedString" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "contains" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badIndexedString" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "contains" }));
     }
 
     @Test()
     public void testValidDereferenceComponent() {
         String query = "assignment/targetRef/@/name = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "@/archetypeRef/@/name=\"Application\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition.findItemDefinition(
                 ItemPath.create("assignment"), ItemDefinition.class).findItemDefinition(
                 ItemPath.create("targetRef"), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         ItemDefinition<?> localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentHolderType"));
         query = "roleMembershipRef/@/name = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentType"));
         query = "@/name startsWith \"gallery\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition.findItemDefinition(ItemPath.create(new QName("targetRef")), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test()
     public void testInvalidDereferenceComponent() {
         String query = "assignment/targetRef/@/badProp = \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "@/badTypeRef/@/name=\"Application\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition.findItemDefinition(
                 ItemPath.create("assignment"), ItemDefinition.class).findItemDefinition(
                 ItemPath.create("targetRef"), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTypeRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badTypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         ItemDefinition<?> localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentHolderType"));
         query = "roleMembershipRef/@/badProp = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = "badMembershipRef/@/name = \"End user\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badMembershipRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badMembershipRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         localTypeDefinition = getPrismContext().getSchemaRegistry().findItemDefinitionByType(new QName("AssignmentType"));
         query = "@/badProp startsWith \"gallery\"";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition.findItemDefinition(ItemPath.create(new QName("targetRef")), PrismReferenceDefinition.class), query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badProp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "startsWith" }));
     }
 
     @Test()
@@ -273,7 +273,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         errorList.addAll(this.axiomQueryContentAssist.process(userDefinition, query).validate());
         query = ". type ShadowType";
         errorList.addAll(this.axiomQueryContentAssist.process(userDefinition, query).validate());
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test()
@@ -281,67 +281,67 @@ public class TestQueryValidation extends AbstractPrismTest {
         // filters for prop definition
         String query = ". equal \"End user\"";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "equal" }));
 
         query = ". less \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "less" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "less" }));
 
         query = ". greater \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
 
         query = ". lessOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
 
         query = ". greater \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greater" }));
 
         query = ". lessOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "lessOrEqual" }));
 
         query = ". greaterOrEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greaterOrEqual" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "greaterOrEqual" }));
 
         query = ". notEqual \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "notEqual" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "notEqual" }));
 
         query = ". exists \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "exists" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "exists" }));
 
         query = ". levenshtein \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "levenshtein" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "levenshtein" }));
 
         query = ". similarity \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "similarity" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "similarity" }));
 
         query = ". anyIn \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "anyIn" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "anyIn" }));
 
         query = ". startsWith \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "startsWith" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "startsWith" }));
 
         query = ". endsWith \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "endsWith" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "endsWith" }));
 
         query = ". contains \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "contains" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "contains" }));
 
         query = ". fullText \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "fullText" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "fullText" }));
 
         // filters for ref & container definition
         query = """
@@ -351,26 +351,26 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "referencedBy" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "AbstractRoleTyp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "referencedBy" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "AbstractRoleTyp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
 
         query = "name ownedBy \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "ownedBy" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "ownedBy" }));
 
         query = "name inOrg \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOrg" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOrg" }));
 
         query = "name inOid \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOid" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "inOid" }));
 
         query = "name isRoot \"End user\"";
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "isRoot" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilter", new String[] { "isRoot" }));
     }
 
     // FIXME problem to find archetypeRef in UserType definition, edit foo schema
@@ -379,7 +379,7 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = AbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 . referencedBy (
@@ -389,7 +389,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 . referencedBy (
@@ -403,7 +403,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test()
@@ -411,8 +411,8 @@ public class TestQueryValidation extends AbstractPrismTest {
         // @path & @type & @relation
         String query = ". ownedBy ( @type = BadAbstractRoleType and @path = inducement)";
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAbstractRoleType" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAbstractRoleType" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "inducement" }));
 
         query = """
                 . referencedBy (
@@ -422,13 +422,13 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "UserTyp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "assignment" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "badTargetRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badArchetypeRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "UserTyp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "assignment" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "badTargetRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badArchetypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "name" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
 
         query = """
                 . referencedBy (
@@ -442,13 +442,13 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(userDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAssignmentType" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "ownedBy" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "archetypeRef" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraType", new String[] { "BadAssignmentType" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidInfraPath", new String[] { "targetRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterSelfPath", new String[] { "ownedBy" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "archetypeRef" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidDereferencePathNull", new String[] {}));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badName" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "=" }));
     }
 
     @Test
@@ -464,11 +464,11 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         List<AxiomQueryError> errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "roleMembershipRef not matches (targetType = ShadowType)";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
 
         query = """
@@ -480,7 +480,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 assignment/targetRef not matches (
@@ -491,11 +491,11 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = "assignment/targetRef matches (targetType=RoleType and relation=owner)";
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 . referencedBy (
@@ -505,7 +505,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 assignment/targetRef/@ matches (
@@ -514,7 +514,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 )
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test
@@ -524,7 +524,7 @@ public class TestQueryValidation extends AbstractPrismTest {
                 name = "Tony" and assignment matches ( targetRef/@/name = "Foo" )
                 """;
         var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
     }
 
     @Test
@@ -534,21 +534,21 @@ public class TestQueryValidation extends AbstractPrismTest {
                 @metadata/storage/createTimestamp < "2024-12-31"
                 """;
         var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).isEmpty();
 
         query = """
                 @metadata/badStorage/createTimestamp < "2024-12-31""
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badStorage" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "createTimestamp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badStorage" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "createTimestamp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
 
         query = """
                 @metadata/storage/badCreateTimestamp < "2024-12-31""
                 """;
         errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badCreateTimestamp" }));
-        assertThat(errorList).map(AxiomQueryError::message).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidItemComponent", new String[] { "badCreateTimestamp" }));
+        assertThat(errorList).map(AxiomQueryError::localizableMessage).contains(new SingleLocalizableMessage("QueryLanguage.contentAssist.validation.invalidFilterAlias", new String[] { "<" }));
     }
 }

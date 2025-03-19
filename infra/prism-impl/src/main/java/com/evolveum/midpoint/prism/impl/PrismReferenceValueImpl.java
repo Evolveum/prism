@@ -698,7 +698,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     protected void copyValues(CloneStrategy strategy, PrismReferenceValueImpl clone) {
         super.copyValues(strategy, clone);
         clone.targetType = this.targetType;
-        if (this.object != null && strategy == CloneStrategy.LITERAL) {
+        if (this.object != null && !strategy.ignoreEmbeddedObjects()) {
             clone.object = this.object.clone();
         }
         clone.description = this.description;
