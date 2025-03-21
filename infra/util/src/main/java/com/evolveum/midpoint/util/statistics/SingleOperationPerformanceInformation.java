@@ -11,6 +11,8 @@ import com.evolveum.midpoint.util.ShortDumpable;
 
 import java.util.Locale;
 
+import static com.evolveum.midpoint.util.NoValueUtil.NONE_LONG;
+
 /**
  *  Experimental.
  */
@@ -58,7 +60,7 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
         invocationCount++;
         addTotalTime(operation.getElapsedTimeMicros());
         var ownTime = operation.getOwnTimeMicros();
-        if (ownTime != null) {
+        if (ownTime != NONE_LONG) {
             addOwnTime(ownTime);
         }
     }
