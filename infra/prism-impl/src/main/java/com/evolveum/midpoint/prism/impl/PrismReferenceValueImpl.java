@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.prism.path.*;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -34,6 +35,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * BEWARE! When adding data to this class, do not forget to update {@link PrismForJAXBUtil#setReferenceValueAsRef(
+ * PrismContainerValue, QName, PrismReferenceValue)}!
+ *
+ * TODO ... or, even better, provide "updateFrom(sourceReferenceValue)" method right here
+ *
  * @author Radovan Semancik
  */
 public class PrismReferenceValueImpl extends PrismValueImpl implements PrismReferenceValue {

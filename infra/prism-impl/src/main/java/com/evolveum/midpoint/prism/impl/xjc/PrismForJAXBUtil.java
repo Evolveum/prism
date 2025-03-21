@@ -278,11 +278,17 @@ public final class PrismForJAXBUtil {
                     throw new IllegalStateException("Couldn't add a value: " + e.getMessage(), e);
                 }
             } else {
-                reference.getValue().setOid(value.getOid());
-                reference.getValue().setTargetType(value.getTargetType());
-                reference.getValue().setFilter(value.getFilter());
-                reference.getValue().setDescription(value.getDescription());
-                reference.getValue().setObject(value.getObject());
+                // TODO consider simply deleting and re-adding the value
+                PrismReferenceValue existingValue = reference.getValue();
+                existingValue.setOid(value.getOid());
+                existingValue.setObject(value.getObject());
+                existingValue.setTargetType(value.getTargetType());
+                existingValue.setRelation(value.getRelation());
+                existingValue.setDescription(value.getDescription());
+                existingValue.setFilter(value.getFilter());
+                existingValue.setResolutionTime(value.getResolutionTime());
+                existingValue.setReferentialIntegrity(value.getReferentialIntegrity());
+                existingValue.setTargetName(value.getTargetName());
             }
         }
     }
