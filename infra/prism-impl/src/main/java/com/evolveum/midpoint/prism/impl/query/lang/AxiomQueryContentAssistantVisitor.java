@@ -728,11 +728,11 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
         } else {
             TerminalNode lastTerminal = positionTerminal.getSymbol().getType() == AxiomQueryParser.SEP ? getPreviousTerminal(positionTerminal) : positionTerminal;
 
-            while (lastTerminal.getParent() instanceof AxiomQueryParser.RootContext){
+            while (lastTerminal != null && lastTerminal.getParent() instanceof AxiomQueryParser.RootContext){
                 lastTerminal = getPreviousTerminal(lastTerminal);
             }
 
-            if (lastTerminal.getParent() instanceof RuleContext ruleContext) {
+            if (lastTerminal != null && lastTerminal.getParent() instanceof RuleContext ruleContext) {
                 int completeRule = ruleContext.getRuleIndex();
 
                 while (!(ruleContext instanceof AxiomQueryParser.RootContext)) {
@@ -752,8 +752,8 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                 }
             }
 
-            if (lastTerminal.getSymbol().getType() == AxiomQueryParser.AND_KEYWORD
-                    || lastTerminal.getSymbol().getType() == AxiomQueryParser.OR_KEYWORD) {
+            if (lastTerminal != null && (lastTerminal.getSymbol().getType() == AxiomQueryParser.AND_KEYWORD
+                    || lastTerminal.getSymbol().getType() == AxiomQueryParser.OR_KEYWORD)) {
                 expected.add(new TokenCustom(AxiomQueryParser.DOT, null));
                 expected.add(new TokenCustom(AxiomQueryParser.PARENT, null));
                 expected.add(new TokenCustom(AxiomQueryParser.ROUND_BRACKET_LEFT, null));
