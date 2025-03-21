@@ -1412,15 +1412,15 @@ public class MiscUtil {
     }
 
     public static BigDecimal or0(BigDecimal value) {
-        return Objects.requireNonNullElse(value, BigDecimal.ZERO);
+        return value != null ? value : BigDecimal.ZERO;
     }
 
     public static int or0(Integer value) {
-        return Objects.requireNonNullElse(value, 0);
+        return value != null ? value : 0;
     }
 
     public static long or0(Long value) {
-        return Objects.requireNonNullElse(value, 0L);
+        return value != null ? value : 0L;
     }
 
     public static double or0(Double value) {

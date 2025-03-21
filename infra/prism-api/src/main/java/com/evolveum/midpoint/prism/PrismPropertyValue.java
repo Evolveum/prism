@@ -10,6 +10,7 @@ package com.evolveum.midpoint.prism;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DebugDumpable;
 
@@ -21,6 +22,9 @@ import org.jetbrains.annotations.Nullable;
 
 import jakarta.xml.bind.JAXBElement;
 import java.io.Serializable;
+
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 
 /**
  * @author lazyman
@@ -46,6 +50,18 @@ public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, Pris
 
     @Override
     PrismPropertyValue<T> cloneComplex(@NotNull CloneStrategy strategy);
+
+    default PrismPropertyValue<T> copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    default PrismPropertyValue<T> mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    default PrismPropertyValue<T> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     /**
      * @return true if values are equivalent under given strategy and (if present) also under matching rule.

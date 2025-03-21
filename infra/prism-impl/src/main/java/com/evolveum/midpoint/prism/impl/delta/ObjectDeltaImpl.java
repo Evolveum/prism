@@ -17,6 +17,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.util.CloneUtil;
+
 import org.apache.commons.collections4.MultiValuedMap;
 import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.apache.commons.lang3.Validate;
@@ -730,7 +732,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     public PrismObject<O> computeChangedObject(PrismObject<O> objectOld) throws SchemaException {
         if (objectOld == null) {
             if (getChangeType() == ChangeType.ADD) {
-                return getObjectToAdd().clone();
+                return CloneUtil.cloneIfMutable(getObjectToAdd());
             } else {
                 //throw new IllegalStateException("Cannot apply "+getChangeType()+" delta to a null old object");
                 // This seems to be quite OK

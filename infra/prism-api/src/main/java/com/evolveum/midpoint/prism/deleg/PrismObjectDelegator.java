@@ -115,13 +115,14 @@ public interface PrismObjectDelegator<O extends Objectable> extends PrismContain
         delegate().addReplaceExisting(item);
     }
 
+    @Deprecated // use copy()
     @Override
     default PrismObject<O> clone() {
         return delegate().clone();
     }
 
     @Override
-    default PrismObject<O> cloneComplex(CloneStrategy strategy) {
+    default @NotNull PrismObject<O> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

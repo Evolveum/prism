@@ -102,7 +102,7 @@ public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismRefer
     }
 
     @Override
-    public PrismReference cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismReference cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

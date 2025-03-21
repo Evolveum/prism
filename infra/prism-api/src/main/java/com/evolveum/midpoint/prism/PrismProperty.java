@@ -11,6 +11,8 @@ import com.evolveum.midpoint.prism.delta.PropertyDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
+import com.evolveum.midpoint.prism.util.CloneUtil;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -114,14 +116,28 @@ public interface PrismProperty<T> extends Item<PrismPropertyValue<T>,PrismProper
 
     PropertyDelta<T> diff(PrismProperty<T> other, ParameterizedEquivalenceStrategy strategy);
 
+    @Deprecated // use copy()
     @Override
     PrismProperty<T> clone();
 
+    @Deprecated // use immutableCopy()
     @Override
     PrismProperty<T> createImmutableClone();
 
     @Override
-    PrismProperty<T> cloneComplex(CloneStrategy strategy);
+    @NotNull PrismProperty<T> cloneComplex(@NotNull CloneStrategy strategy);
+
+    default @NotNull PrismProperty<T> copy() {
+        return cloneComplex(CloneStrategy.LITERAL_ANY);
+    }
+
+    default @NotNull PrismProperty<T> mutableCopy() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
+
+    default @NotNull PrismProperty<T> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     String toHumanReadableString();
 

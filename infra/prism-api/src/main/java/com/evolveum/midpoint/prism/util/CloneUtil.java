@@ -30,6 +30,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.util.ClassUtils;
 
@@ -237,6 +238,29 @@ public class CloneUtil {
         return pcv.clone().asContainerable();
     }
 
+    @Contract("null -> null; !null -> !null")
+    public static <C extends Containerable> @Nullable C cloneIfMutable(@Nullable C value) {
+        if (value == null) {
+            return null;
+        }
+        //noinspection unchecked
+        PrismContainerValue<C> pcv = value.asPrismContainerValue();
+        if (pcv.isImmutable()) {
+            return value;
+        }
+        return pcv.clone().asContainerable();
+    }
+
+    @Contract("null -> null; !null -> !null")
+    public static <C extends PrismContainer<?>> @Nullable C cloneIfMutable(@Nullable C value) {
+        if (value == null || value.isImmutable()) {
+            return value;
+        } else {
+            //noinspection unchecked
+            return (C) value.clone();
+        }
+    }
+
     /**
      * Provides an immutable version of the input:
      *
@@ -279,6 +303,21 @@ public class CloneUtil {
             PrismContainerValue<C> pcvClone = pcv.clone();
             pcvClone.freeze();
             return pcvClone.asContainerable();
+        }
+    }
+
+    /**
+     * Provides an immutable version of the input. Just a different variant of similar methods here.
+     * They should be unified eventually.
+     */
+    public static <CC extends ComplexCopyable<?> & Freezable> @NotNull CC immutableCopy(@NotNull CC source) {
+        if (source.isImmutable()) {
+            return source;
+        } else {
+            //noinspection unchecked
+            CC clone = (CC) source.cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+            clone.freeze();
+            return clone;
         }
     }
 

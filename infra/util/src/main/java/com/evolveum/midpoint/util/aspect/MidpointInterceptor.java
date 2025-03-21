@@ -13,6 +13,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+import static com.evolveum.midpoint.util.NoValueUtil.NONE_LONG;
+
 /**
  *  In this class, we define some Pointcuts in AOP meaning that will provide join points for most common
  *  methods used in main midPoint subsystems. We wrap these methods with profiling wrappers.
@@ -34,7 +36,7 @@ public class MidpointInterceptor implements MethodInterceptor {
         } catch (Throwable e) {
             throw ctx.processException(e);
         } finally {
-            ctx.afterCall(invocation, null);
+            ctx.afterCall(invocation, NONE_LONG);
         }
     }
 }
