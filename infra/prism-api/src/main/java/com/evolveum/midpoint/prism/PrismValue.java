@@ -10,7 +10,6 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.metadata.MidpointOriginMetadata;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
-import com.evolveum.midpoint.prism.path.InfraItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
@@ -198,6 +197,7 @@ public interface PrismValue
         return cloneComplex(LITERAL_MUTABLE);
     }
 
+    /** TODO define exact semantics of this method regarding the parent. */
     default PrismValue immutableCopy() {
         return CloneUtil.immutableCopy(this);
     }

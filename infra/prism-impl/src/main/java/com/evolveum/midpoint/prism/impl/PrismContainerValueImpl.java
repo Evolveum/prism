@@ -1449,7 +1449,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
+    public @NotNull PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
         if (isImmutable() && !strategy.mutableCopy()) {
             return FlyweightClonedValue.from(this);
         }

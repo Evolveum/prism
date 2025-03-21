@@ -690,7 +690,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public PrismReferenceValue cloneComplex(@NotNull CloneStrategy strategy) {
+    public @NotNull PrismReferenceValue cloneComplex(@NotNull CloneStrategy strategy) {
         if (isImmutable() && !strategy.mutableCopy()) {
             return FlyweightClonedValue.from(this);
         }

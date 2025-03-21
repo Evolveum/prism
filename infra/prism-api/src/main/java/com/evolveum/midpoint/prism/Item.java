@@ -696,6 +696,7 @@ public interface Item<V extends PrismValue, D extends ItemDefinition<?>>
         return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
+    /** TODO define exact semantics of this regarding the parent - so, today it's safe to call this only on objects. */
     default @NotNull Item<V, D> immutableCopy() {
         return CloneUtil.immutableCopy(this);
     }

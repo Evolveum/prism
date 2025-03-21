@@ -213,10 +213,8 @@ public class PrismUtil {
         PrismContainer<C> pc = definition.instantiate();
         if (pcv.getParent() == null) {
             pc.add(pcv);
-        } else if (pcv.isImmutable()) {
-            pc.add(FlyweightClonedValue.from(pcv));
         } else {
-            pc.add(pcv.clone());
+            pc.add(pcv.copy());
         }
         return pc;
     }

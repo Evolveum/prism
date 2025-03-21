@@ -91,7 +91,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
-    public PrismObjectValue<O> cloneComplex(@NotNull CloneStrategy strategy) {
+    public @NotNull PrismObjectValue<O> cloneComplex(@NotNull CloneStrategy strategy) {
         if (isImmutable() && !strategy.mutableCopy()) {
             return FlyweightClonedValue.from(this);
         }
