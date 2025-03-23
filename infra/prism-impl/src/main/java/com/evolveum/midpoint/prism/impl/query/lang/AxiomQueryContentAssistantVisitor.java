@@ -626,8 +626,12 @@ public class AxiomQueryContentAssistantVisitor extends AxiomQueryParserBaseVisit
                                 // Initial state of itemPath concept
                                 processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);
                                 processingDefinitionToPathSuggestion(itemDefinitions.get(findIdentifierOfDefinition(positionTerminal, AxiomQueryParser.RootContext.class)), null, positionTerminal, suggestions);
-                                for (Filter.Infra value : Filter.Infra.values()) {
-                                    suggestions.add(new Suggestion(value.getName(), "QueryLanguage.contentAssist.codeCompletions.infra", -1));
+
+                                if (!(positionTerminalItemPathOrFilterCtx[0] == AxiomQueryParser.RULE_filterName || positionTerminalItemPathOrFilterCtx[0] == AxiomQueryParser.RULE_filterNameAlias)
+                                        || (positionTerminal != null && positionTerminal.getSymbol().getType() == AxiomQueryParser.ROUND_BRACKET_LEFT)) {
+                                    for (Filter.Infra value : Filter.Infra.values()) {
+                                        suggestions.add(new Suggestion(value.getName(), "QueryLanguage.contentAssist.codeCompletions.infra", -1));
+                                    }
                                 }
                             } else if (initMetadataPath(positionTerminal)) {
                                 processingDefinitionToPathSuggestion(prismContext.getSchemaRegistry().getValueMetadataDefinition(), Filter.Infra.METADATA, positionTerminal, suggestions);

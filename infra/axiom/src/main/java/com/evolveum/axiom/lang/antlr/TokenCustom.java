@@ -11,6 +11,7 @@ public record TokenCustom(int type, IdentifierContext identifierContext) {
     // currently to need rules context just for IDENTIFIER token in path & filterName cases
     public enum IdentifierContext {
         PATH,
+        SUBFILTER_OR_VALUE,
         FILTER_NAME,
         MATCHING
     }

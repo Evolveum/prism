@@ -357,12 +357,22 @@ public class TestQueryCompletion extends AbstractPrismTest {
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
+        // value context can not contain infra filters
+        assertThat(suggestion).map(Suggestion::name).doesNotContainAnyElementsOf(Arrays.stream(Filter.Infra.values())
+                .map(Filter.Infra::getName)
+                .filter(name -> !Filter.Infra.METADATA.getName().equals(name))
+                .toList());
 
         suggestion = getSuggestion("givenName equal ^");
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "..", "@", "'", "\"", "("));
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
+        // value context can not contain infra filters
+        assertThat(suggestion).map(Suggestion::name).doesNotContainAnyElementsOf(Arrays.stream(Filter.Infra.values())
+                .map(Filter.Infra::getName)
+                .filter(name -> !Filter.Infra.METADATA.getName().equals(name))
+                .toList());
 
         assertThat(getSuggestion("givenName = 'John'^")).map(Suggestion::name).isEmpty();
         suggestion = getSuggestion("givenName ='John' ^");
