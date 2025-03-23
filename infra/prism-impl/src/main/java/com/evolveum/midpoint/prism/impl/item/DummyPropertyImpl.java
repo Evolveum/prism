@@ -158,7 +158,7 @@ public class DummyPropertyImpl<T> extends DummyItem<PrismPropertyValue<T>, Prism
         return delegate().createImmutableClone();
     }
 
-    public PrismProperty<T> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismProperty<T> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

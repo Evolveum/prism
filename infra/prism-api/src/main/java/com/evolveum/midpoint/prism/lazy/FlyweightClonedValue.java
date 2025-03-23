@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
+
 public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
     private Itemable parent;
@@ -22,20 +24,49 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
     public static PrismValue from(@Nullable PrismValue value) {
         if (value == null) {
             return null;
-        }
-        if (value instanceof FlyweightClonedValue flyweight) {
-            return flyweight.clone();
-        }
-        if (value instanceof PrismPropertyValue<?> property) {
+        } else if (value instanceof FlyweightClonedValue flyweight) {
+            return flyweight.copy();
+        } else if (value instanceof PrismPropertyValue<?> property) {
             return new Property<>(property);
-        }
-        if (value instanceof PrismContainerValue<?> container) {
+        } else if (value instanceof PrismContainerValue<?> container) {
             return new Container<>(container);
-        }
-        if (value instanceof PrismReferenceValue reference) {
+        } else if (value instanceof PrismReferenceValue reference) {
             return new Reference(reference);
+        } else {
+            throw new AssertionError("Unsupported prism value type: " + value.getClass());
         }
-        return value.clone();
+    }
+
+    public static <T> PrismPropertyValue<T> from(@NotNull PrismPropertyValue<T> value) {
+        if (value instanceof FlyweightClonedValue.Property<T> flyweight) {
+            return flyweight.copy();
+        } else {
+            return new Property<>(value);
+        }
+    }
+
+    public static <C extends Containerable> PrismContainerValue<C> from(@NotNull PrismContainerValue<C> value) {
+        if (value instanceof FlyweightClonedValue.Container<C> flyweight) {
+            return flyweight.copy();
+        } else {
+            return new Container<>(value);
+        }
+    }
+
+    public static <O extends Objectable> PrismObjectValue<O> from(@NotNull PrismObjectValue<O> value) {
+        if (value instanceof FlyweightClonedValue.ObjectValue<O> flyweight) {
+            return flyweight.copy();
+        } else {
+            return new ObjectValue<>(value);
+        }
+    }
+
+    public static PrismReferenceValue from(@NotNull PrismReferenceValue value) {
+        if (value instanceof FlyweightClonedValue.Reference flyweight) {
+            return flyweight.copy();
+        } else {
+            return new Reference(value);
+        }
     }
 
     @Override
@@ -71,6 +102,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
         private final PrismPropertyValue<T> delegate;
 
         public Property(PrismPropertyValue<T> delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
 
@@ -81,12 +113,16 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
         @Override
         public PrismPropertyValue<T> clone() {
-            return new Property<>(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
         @Override
         public PrismPropertyValue<T> cloneComplex(CloneStrategy strategy) {
-            return clone();
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Property<>(delegate);
+            }
         }
     }
 
@@ -95,6 +131,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
         private final PrismContainerValue<T> delegate;
 
         public Container(PrismContainerValue<T> delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
 
@@ -105,7 +142,7 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
         @Override
         public PrismContainerValue<T> clone() {
-            return new Container<>(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
         @Override
@@ -115,7 +152,11 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
         @Override
         public PrismContainerValue<T> cloneComplex(CloneStrategy strategy) {
-            return clone();
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Container<>(delegate);
+            }
         }
 
         @Override
@@ -128,14 +169,14 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
             ret.setParent(this);
             return ret;
         }
-
     }
 
     static class Reference extends FlyweightClonedValue implements PrismReferenceValueDelegator  {
 
         private final PrismReferenceValue delegate;
 
-        public Reference(PrismReferenceValue delegate) {
+        Reference(PrismReferenceValue delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
 
@@ -146,12 +187,16 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
         @Override
         public PrismReferenceValue clone() {
-            return new Reference(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
         @Override
         public PrismReferenceValue cloneComplex(CloneStrategy strategy) {
-            return clone();
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Reference(delegate);
+            }
         }
 
         @Override
@@ -162,7 +207,6 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
 
     static class ObjectValue<O extends Objectable> extends Container<O> implements PrismObjectValueDelegator<O> {
 
-
         public ObjectValue(PrismObjectValue<O> delegate) {
             super(delegate);
         }
@@ -172,14 +216,19 @@ public abstract class FlyweightClonedValue implements PrismValueDelegator {
             return (PrismObjectValue<O>) super.delegate();
         }
 
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public PrismObjectValue<O> clone() {
-            return new ObjectValue<>(delegate());
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
         @Override
         public PrismObjectValue<O> cloneComplex(CloneStrategy strategy) {
-            return clone();
+            if (strategy.mutableCopy()) {
+                return delegate().cloneComplex(strategy);
+            } else {
+                return new ObjectValue<>(delegate());
+            }
         }
     }
 }

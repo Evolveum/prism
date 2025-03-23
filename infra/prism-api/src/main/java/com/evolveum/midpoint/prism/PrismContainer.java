@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.delta.ContainerDelta;
 import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -208,6 +209,7 @@ public interface PrismContainer<C extends Containerable>
 
     List<? extends ItemDelta> diffModifications(PrismContainer<C> other, ParameterizedEquivalenceStrategy strategy);
 
+    @Deprecated // use copy() instead
     @Override
     PrismContainer<C> clone();
 
@@ -215,7 +217,20 @@ public interface PrismContainer<C extends Containerable>
     PrismContainer<C> createImmutableClone();
 
     @Override
-    PrismContainer<C> cloneComplex(CloneStrategy strategy);
+    @NotNull
+    PrismContainer<C> cloneComplex(@NotNull CloneStrategy strategy);
+
+    default @NotNull PrismContainer<C> copy() {
+        return cloneComplex(CloneStrategy.LITERAL_ANY);
+    }
+
+    default @NotNull PrismContainer<C> mutableCopy() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
+
+    default @NotNull PrismContainer<C> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     PrismContainerDefinition<C> deepCloneDefinition(@NotNull DeepCloneOperation operation);
 

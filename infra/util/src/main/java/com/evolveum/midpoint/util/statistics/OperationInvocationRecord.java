@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.qos.logback.classic.Level;
 
+import com.evolveum.midpoint.util.CanBeNone;
+import com.evolveum.midpoint.util.NoValueUtil;
 import com.evolveum.midpoint.util.aspect.MidpointInterceptor;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -23,6 +25,8 @@ import org.slf4j.MDC;
 
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.aspect.ProfilingDataManager;
+
+import static com.evolveum.midpoint.util.NoValueUtil.NONE_LONG;
 
 /**
  * Represents an invocation of a single *operation* in the system. (Operation is typically implemented by a method or a set
@@ -44,8 +48,8 @@ public final class OperationInvocationRecord implements Serializable {
     /** When the operation started (see {@link System#nanoTime()}). */
     private final long startTime = System.nanoTime();
 
-    /** CPU time at the start of the operation. Usually not measured; the value of `null` is used then. */
-    private final Long startCpuTime;
+    /** CPU time at the start of the operation. Usually not measured; the value of {@link NoValueUtil#NONE_LONG} is used then. */
+    @CanBeNone private final long startCpuTime;
 
     /** Do we measure the CPU time? */
     private final boolean measureCpuTime;
@@ -53,11 +57,11 @@ public final class OperationInvocationRecord implements Serializable {
     /** Elapsed time during the operation; in nanoseconds. */
     private long elapsedTime;
 
-    /** Operation own time - i.e. without called (child) operations. In microseconds. Null if not known. */
-    private Long ownTimeMicros;
+    /** Operation own time: without called (child) operations. In microseconds. {@link NoValueUtil#NONE_LONG} if not known. */
+    @CanBeNone private long ownTimeMicros = NONE_LONG;
 
-    /** CPU time of the operation (including child operations). Null if not measured. */
-    private Long cpuTime;
+    /** CPU time of the operation (including child operations). {@link NoValueUtil#NONE_LONG} if not measured. */
+    @CanBeNone private long cpuTime = NONE_LONG;
 
     /** Unique ID of the operation invocation. */
     private int invocationId;
@@ -101,7 +105,7 @@ public final class OperationInvocationRecord implements Serializable {
 
     private OperationInvocationRecord(String fullClassName, String methodName, boolean measureCpuTime) {
         this.measureCpuTime = measureCpuTime;
-        this.startCpuTime = measureCpuTime ? getCurrentCpuTime() : null;
+        this.startCpuTime = measureCpuTime ? getCurrentCpuTime() : NONE_LONG;
 
         this.fullClassName = fullClassName;
         shortenedClassName = getClassName(fullClassName);
@@ -246,18 +250,18 @@ public final class OperationInvocationRecord implements Serializable {
         return e;
     }
 
-    public void afterCall(long notOwnTimeMicros) {
+    public void afterCall(@CanBeNone long notOwnTimeMicros) {
         afterCall(null, notOwnTimeMicros);
     }
 
-    public void afterCall(MethodInvocation invocation, Long notOwnTimeMicros) {
+    public void afterCall(MethodInvocation invocation, @CanBeNone long notOwnTimeMicros) {
         elapsedTime = System.nanoTime() - startTime;
-        if (notOwnTimeMicros != null) {
+        if (notOwnTimeMicros != NONE_LONG) {
             ownTimeMicros = getElapsedTimeMicros() - notOwnTimeMicros;
         }
-        if (measureCpuTime && startCpuTime != null) {
-            Long currentCpuTime = getCurrentCpuTime();
-            if (currentCpuTime != null) {
+        if (measureCpuTime && startCpuTime != NONE_LONG) {
+            long currentCpuTime = getCurrentCpuTime();
+            if (currentCpuTime != NONE_LONG) {
                 cpuTime = currentCpuTime - startCpuTime;
             }
         }
@@ -285,7 +289,7 @@ public final class OperationInvocationRecord implements Serializable {
             formatExecutionTime(sb, elapsedTime);
             sb.append(" ms");
 
-            if (cpuTime != null) {
+            if (cpuTime != NONE_LONG) {
                 sb.append(", cputime: ");
                 formatExecutionTime(sb, cpuTime);
                 sb.append(" ms");
@@ -303,9 +307,9 @@ public final class OperationInvocationRecord implements Serializable {
 
         if (invocation != null && OperationExecutionLogger.isProfilingActive) {
             long processingStartTime = System.nanoTime();
-            ProfilingDataManager
-                    .getInstance().applyGranularityFilterOnEnd(shortenedClassName, invocation.getMethod().getName(),
-                    invocation.getArguments(), subsystem, startTime, processingStartTime);
+            ProfilingDataManager.getInstance().applyGranularityFilterOnEnd(
+                    shortenedClassName, invocation.getMethod().getName(), invocation.getArguments(),
+                    subsystem, startTime, processingStartTime);
         }
 
         swapSubsystemMark(previousSubsystem);
@@ -356,20 +360,20 @@ public final class OperationInvocationRecord implements Serializable {
         return elapsedTime / 1000;
     }
 
-    public Long getOwnTimeMicros() {
+    public @CanBeNone long getOwnTimeMicros() {
         return ownTimeMicros;
     }
 
-    public Long getCpuTimeMicros() {
-        return cpuTime != null ? cpuTime / 1000 : null;
+    public @CanBeNone long getCpuTimeMicros() {
+        return cpuTime != NONE_LONG ? cpuTime / 1000 : NONE_LONG;
     }
 
     public long getInvocationId() {
         return invocationId;
     }
 
-    private Long getCurrentCpuTime() {
+    private @CanBeNone long getCurrentCpuTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        return bean.isCurrentThreadCpuTimeSupported() ? bean.getCurrentThreadCpuTime() : null;
+        return bean.isCurrentThreadCpuTimeSupported() ? bean.getCurrentThreadCpuTime() : NONE_LONG;
     }
 }

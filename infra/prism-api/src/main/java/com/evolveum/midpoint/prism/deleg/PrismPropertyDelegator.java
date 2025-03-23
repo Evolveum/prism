@@ -139,13 +139,20 @@ public interface PrismPropertyDelegator<T> extends PrismProperty<T>, ItemDelegat
         return delegate().diff(other, strategy);
     }
 
+    @Deprecated // use immutableCopy()
     @Override
     default PrismProperty<T> createImmutableClone() {
         return delegate().createImmutableClone();
     }
 
+    @Deprecated // use copy()
     @Override
-    default PrismProperty<T> cloneComplex(CloneStrategy strategy) {
+    default PrismProperty<T> clone() {
+        return delegate().clone();
+    }
+
+    @Override
+    default @NotNull PrismProperty<T> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

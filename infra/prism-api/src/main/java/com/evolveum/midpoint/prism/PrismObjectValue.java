@@ -8,10 +8,14 @@
 package com.evolveum.midpoint.prism;
 
 import com.evolveum.midpoint.prism.polystring.PolyString;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
+
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 
 /**
  * Extension of PrismContainerValue that holds object-specific data (OID and version).
@@ -44,6 +48,18 @@ public interface PrismObjectValue<O extends Objectable> extends PrismContainerVa
 
     @Override
     PrismObjectValue<O> cloneComplex(@NotNull CloneStrategy strategy);
+
+    default PrismObjectValue<O> copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    default PrismObjectValue<O> mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    default PrismObjectValue<O> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     @Override
     boolean equals(Object o);

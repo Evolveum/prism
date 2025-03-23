@@ -148,7 +148,7 @@ public class PrismValueCollectionsUtil {
 
     @NotNull
     public static <T extends PrismValue> Collection<T> cloneCollection(Collection<T> values) {
-        return cloneCollectionComplex(CloneStrategy.LITERAL, values);
+        return cloneCollectionComplex(CloneStrategy.LITERAL_MUTABLE, values);
     }
 
     /**

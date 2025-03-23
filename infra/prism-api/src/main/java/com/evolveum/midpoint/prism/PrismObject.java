@@ -10,11 +10,10 @@ package com.evolveum.midpoint.prism;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
@@ -75,8 +74,12 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
     @Override
     PrismObjectDefinition<O> getDefinition();
 
-    @NotNull
-    O asObjectable();
+    @NotNull O asObjectable();
+
+    /** Freezes the object and returns itself. */
+    default @NotNull PrismObject<O> doFreeze() {
+        return Freezable.doFreeze(this);
+    }
 
     PolyString getName();
 
@@ -100,11 +103,28 @@ public interface PrismObject<O extends Objectable> extends PrismContainer<O> {
 
     void addReplaceExisting(Item<?, ?> item) throws SchemaException;
 
+    @Deprecated // use copy()
     @Override
     PrismObject<O> clone();
 
     @Override
-    PrismObject<O> cloneComplex(CloneStrategy strategy);
+    @NotNull
+    PrismObject<O> cloneComplex(@NotNull CloneStrategy strategy);
+
+    @Override
+    default @NotNull PrismObject<O> copy() {
+        return cloneComplex(CloneStrategy.LITERAL_ANY);
+    }
+
+    @Override
+    default @NotNull PrismObject<O> mutableCopy() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
+    }
+
+    @Override
+    default @NotNull PrismObject<O> immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     PrismObjectDefinition<O> deepCloneDefinition(@NotNull DeepCloneOperation operation);
 

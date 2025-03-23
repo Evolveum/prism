@@ -66,6 +66,7 @@ public interface PrismReferenceDelegator extends PrismReference, ItemDelegator<P
         return delegate().createDelta(path);
     }
 
+    @Deprecated // use copy()
     @Override
     default PrismReference clone() {
         return delegate().clone();
@@ -77,7 +78,7 @@ public interface PrismReferenceDelegator extends PrismReference, ItemDelegator<P
     }
 
     @Override
-    default PrismReference cloneComplex(CloneStrategy strategy) {
+    default @NotNull PrismReference cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate().cloneComplex(strategy);
     }
 

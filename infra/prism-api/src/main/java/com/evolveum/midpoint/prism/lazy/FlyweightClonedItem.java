@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
+
 /**
  * Flyweight immutable item backed by delegate.
  *
@@ -29,25 +31,57 @@ import java.util.List;
  * @param <V>
  * @param <D>
  */
-public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDefinition<?>> implements ItemDelegator<V,D> {
+public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDefinition<?>>
+        implements ItemDelegator<V,D> {
+
     private PrismContainerValue<?> parent;
 
-
-    public static Item<?,?> from(Item<?,?> item) {
-        if (item instanceof FlyweightClonedItem<?,?> reparentedItem) {
-            return reparentedItem.copy();
+    public static @NotNull Item<?,?> from(@NotNull Item<?,?> item) {
+        if (item instanceof FlyweightClonedItem<?,?> flyweight) {
+            return flyweight.copy();
+        } else if (item instanceof PrismProperty<?> property) {
+            return new Property<>(property);
+        } else if (item instanceof PrismObject<?> object) {
+            return new ObjectItem<>(object);
+        } else if (item instanceof PrismContainer<?> container) {
+            return new Container<>(container);
+        } else if (item instanceof PrismReference reference) {
+            return new Reference(reference);
+        } else {
+            throw new AssertionError("Unsupported item type: " + item.getClass());
         }
-        if (item instanceof PrismProperty<?> property) {
+    }
+
+    public static <T> @NotNull PrismProperty<T> from(@NotNull PrismProperty<T> property) {
+        if (property instanceof FlyweightClonedItem.Property<T> flyweight) {
+            return flyweight.copy();
+        } else {
             return new Property<>(property);
         }
-        if (item instanceof PrismObject<?> object) {
-            return new ObjectItem<>(object);
-        }
-        if (item instanceof PrismContainer<?> container) {
+    }
+
+    public static <C extends Containerable> @NotNull PrismContainer<C> from(@NotNull PrismContainer<C> container) {
+        if (container instanceof FlyweightClonedItem.Container<C> flyweight) {
+            return flyweight.copy();
+        } else {
             return new Container<>(container);
         }
+    }
 
-        return item.clone();
+    public static <O extends Objectable> @NotNull PrismObject<O> from(@NotNull PrismObject<O> object) {
+        if (object instanceof FlyweightClonedItem.ObjectItem<O> flyweight) {
+            return flyweight.copy();
+        } else {
+            return new ObjectItem<>(object);
+        }
+    }
+
+    public static @NotNull PrismReference from(@NotNull PrismReference reference) {
+        if (reference instanceof FlyweightClonedItem.Reference flyweight) {
+            return flyweight.copy();
+        } else {
+            return new Reference(reference);
+        }
     }
 
     @Deprecated
@@ -65,7 +99,7 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         parent = parentValue;
     }
 
-    V wrapValue(V value) {
+    private V wrapValue(V value) {
         var ret = createWrapped(value);
         ret.setParent(this);
         return ret;
@@ -93,15 +127,20 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         return wrapValue(delegate().getAnyValue());
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    public abstract Item<V, D> clone();
+    public Item<V, D> clone() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
 
-
-    static class Property<T> extends FlyweightClonedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>> implements PrismPropertyDelegator<T>  {
+    static class Property<T>
+            extends FlyweightClonedItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>>
+            implements PrismPropertyDelegator<T>  {
 
         private final PrismProperty<T> delegate;
 
-        public Property(PrismProperty<T> delegate) {
+        Property(PrismProperty<T> delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
 
@@ -110,14 +149,19 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
             return delegate;
         }
 
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public PrismProperty<T> clone() {
-            return new Property<>(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
         @Override
-        public PrismProperty<T> cloneComplex(CloneStrategy strategy) {
-            return clone();
+        public @NotNull PrismProperty<T> cloneComplex(@NotNull CloneStrategy strategy) {
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Property<>(delegate);
+            }
         }
 
         @Override
@@ -126,14 +170,16 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         }
     }
 
-    static class Container<C extends Containerable> extends FlyweightClonedItem<PrismContainerValue<C>, PrismContainerDefinition<C>> implements PrismContainerDelegator<C> {
+    static class Container<C extends Containerable>
+            extends FlyweightClonedItem<PrismContainerValue<C>, PrismContainerDefinition<C>>
+            implements PrismContainerDelegator<C> {
 
         private final PrismContainer<C> delegate;
 
         public Container(PrismContainer<C> delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
-
 
         @Override
         public PrismContainer<C> delegate() {
@@ -145,16 +191,27 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
             return new FlyweightClonedValue.Container<>(value);
         }
 
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public PrismContainer<C> clone() {
-            return new Container<>(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
         }
 
+        @Override
+        public @NotNull PrismContainer<C> cloneComplex(@NotNull CloneStrategy strategy) {
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Container<>(delegate);
+            }
+        }
     }
 
-    static class ObjectItem<C extends Objectable> extends Container<C> implements PrismObjectDelegator<C> {
+    static class ObjectItem<C extends Objectable>
+            extends Container<C>
+            implements PrismObjectDelegator<C> {
 
-        public ObjectItem(PrismObject<C> delegate) {
+        ObjectItem(PrismObject<C> delegate) {
             super(delegate);
         }
 
@@ -166,7 +223,16 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public PrismObject<C> clone() {
-            return new ObjectItem<>(delegate());
+            return cloneComplex(LITERAL_MUTABLE);
+        }
+
+        @Override
+        public @NotNull PrismObject<C> cloneComplex(@NotNull CloneStrategy strategy) {
+            if (strategy.mutableCopy()) {
+                return delegate().cloneComplex(strategy);
+            } else {
+                return new ObjectItem<>(delegate());
+            }
         }
 
         @Override
@@ -180,11 +246,14 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
         }
     }
 
-    static class Reference extends FlyweightClonedItem<PrismReferenceValue, PrismReferenceDefinition> implements PrismReferenceDelegator {
+    static class Reference
+            extends FlyweightClonedItem<PrismReferenceValue, PrismReferenceDefinition>
+            implements PrismReferenceDelegator {
 
         private final PrismReference delegate;
 
-        public Reference(PrismReference delegate) {
+        Reference(PrismReference delegate) {
+            delegate.checkImmutable();
             this.delegate = delegate;
         }
 
@@ -198,10 +267,19 @@ public abstract class FlyweightClonedItem<V extends PrismValue, D extends ItemDe
             return new FlyweightClonedValue.Reference(value);
         }
 
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
         @Override
         public PrismReference clone() {
-            return new Reference(delegate);
+            return cloneComplex(LITERAL_MUTABLE);
+        }
+
+        @Override
+        public @NotNull PrismReference cloneComplex(@NotNull CloneStrategy strategy) {
+            if (strategy.mutableCopy()) {
+                return delegate.cloneComplex(strategy);
+            } else {
+                return new Reference(delegate);
+            }
         }
     }
-
 }

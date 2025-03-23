@@ -355,7 +355,9 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
 
         // The parent is needed also for comparisons. So we set it here.
         Itemable originalParent = newValue.getParent();
-        newValue.setParent(this);
+        if (isParentForValues()) {
+            newValue.setParent(this);
+        }
 
         if (checkEquivalents) {
             V exactEquivalentFound = null;
@@ -370,14 +372,18 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
                     } else {
                         iterator.remove();
                         valueRemoved(currentValue);
-                        currentValue.setParent(null);
+                        if (isParentForValues()) {
+                            currentValue.setParent(null);
+                        }
                         somethingRemoved = currentValue;
                     }
                 }
             }
 
             if (exactEquivalentFound != null && somethingRemoved == null) {
-                newValue.setParent(originalParent);
+                if (isParentForValues()) {
+                    newValue.setParent(originalParent);
+                }
                 return ItemModifyResult.unmodified(newValue);
             }
         }
@@ -387,8 +393,10 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
             if (!values.isEmpty() && definition.isSingleValue()) {
                 throw new SchemaException("Attempt to put more than one value to single-valued item " + this + "; newly added value: " + newValue);
             }
-            //noinspection unchecked
-            newValue = (V) newValue.applyDefinition(definition, false);
+            if (!newValue.isImmutable()) {
+                //noinspection unchecked
+                newValue = (V) newValue.applyDefinition(definition, false);
+            }
         }
         addInternalExecution(newValue);
         return ItemModifyResult.added(newValue, newValue);
@@ -516,7 +524,9 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
             if (val.representsSameValue(value, strategy, false) || val.equals(value, strategy)) {
                 iterator.remove();
                 valueRemoved(val);
-                val.setParent(null);
+                if (isParentForValues()) {
+                    val.setParent(null);
+                }
                 removedValue = val;
             }
         }
@@ -530,7 +540,9 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         checkMutable();
         V removed = values.remove(index);
         valueRemoved(removed);
-        removed.setParent(null);
+        if (isParentForValues()) {
+            removed.setParent(null);
+        }
         return removed;
     }
 
@@ -551,10 +563,25 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public void clear() {
         checkMutable();
-        for (V value : values) {
-            value.setParent(null);
+        if (isParentForValues()) {
+            for (V value : values) {
+                value.setParent(null);
+            }
         }
         values.clear();
+    }
+
+    /**
+     * Does this object serve as a parent for its values? Usually it is so.
+     *
+     * An exception is {@link EmbeddedPrismObjectImpl} that denotes a (fake) {@link PrismObject}
+     * implementation for object values that are embedded in a {@link PrismContainer} somewhere
+     * in the enclosing (real) {@link PrismObject}.
+     *
+     * An example: identities/identity/data in midPoint focus object
+     */
+    boolean isParentForValues() {
+        return true;
     }
 
     @Override

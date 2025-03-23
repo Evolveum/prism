@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import org.apache.commons.lang3.StringUtils;
@@ -85,12 +86,16 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    public PrismObjectValueImpl<O> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+    public PrismObjectValue<O> clone() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
-    public PrismObjectValueImpl<O> cloneComplex(@NotNull CloneStrategy strategy) {
+    public @NotNull PrismObjectValue<O> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this);
+        }
+
         PrismObjectValueImpl<O> clone = new PrismObjectValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), getId(), complexTypeDefinition, oid, version);
         copyValues(strategy, clone);
