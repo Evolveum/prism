@@ -517,7 +517,7 @@ public class DefinitionFeatures {
         public static DefinitionFeatureParser<SchemaContextDefinition, XSAnnotation> schemaContextDefinitionParser() {
             return new DefinitionFeatureParser<>() {
                 @Override
-                public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) {
+                public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) throws SchemaException {
                     if (getAnnotationElement(annotation, A_SCHEMA_CONTEXT) != null) {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
                         Element typeElement = getAnnotationElement(annotation, A_TYPE);
@@ -526,7 +526,18 @@ public class DefinitionFeatures {
                         Element algorithmElement = getAnnotationElement(annotation, A_ALGORITHM);
 
                         if (typeElement != null) {
-                            schemaContextDefinition.setType(new QName(typeElement.getTextContent()));
+                            var content = typeElement.getTextContent().split(":");
+                            String namespaceURI = typeElement.lookupNamespaceURI(content[0]);
+
+                            if (namespaceURI != null) {
+                                schemaContextDefinition.setType(new QName(namespaceURI, content[1]));
+                            } else {
+                                throw new SchemaException("Missing define Namespace in '%s' element '%s' for %s.".formatted(
+                                        typeElement.getParentNode().getLocalName(),
+                                        typeElement.getNodeName(),
+                                        typeElement.getTextContent()
+                                ));
+                            }
                         }
 
                         if (typePathElement != null) {
