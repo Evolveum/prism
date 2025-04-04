@@ -31,7 +31,7 @@ STRING_MULTILINE: '"""' ('\r')? '\n' .*?  '"""';
 
 //STRING_MULTILINE_START: '"""' ('\r')? '\n';
 
-STRING_BACKTICK: BACKTICK ((ESC SQOUTE) | ~[\n'])* BACKTICK;
+STRING_BACKTICK: BACKTICK (ESC BACKTICK| ~[\n`])* BACKTICK;
 
 
 STRING_BACKTICK_TRIQOUTE: '```' ('\r')? '\n' .*? '```';

@@ -155,7 +155,7 @@ public class LazyPrismContainerValue<C extends Containerable>
     }
 
     @Override
-    public PrismContainerValue<C> cloneComplex(CloneStrategy strategy) {
+    public PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
         if (strategy == CloneStrategy.LITERAL && !isMaterialized()) {
             var ret =  new LazyPrismContainerValue<>(this);
             if (!ret.isMaterialized()) {

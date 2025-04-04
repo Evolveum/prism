@@ -158,7 +158,7 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     PrismReferenceValue createImmutableClone();
 
     @Override
-    PrismReferenceValue cloneComplex(CloneStrategy strategy);
+    PrismReferenceValue cloneComplex(@NotNull CloneStrategy strategy);
 
     @Override
     Class<?> getRealClass();

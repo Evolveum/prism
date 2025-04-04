@@ -9,9 +9,6 @@ package com.evolveum.midpoint.util.statistics;
 
 import ch.qos.logback.classic.Level;
 
-/**
- *
- */
 public class OperationExecutionLogger {
 
     public static final String PROFILING_LOGGER_NAME = "PROFILING";

@@ -526,5 +526,21 @@ public class TestQueryValidation extends AbstractPrismTest {
                 """;
         var errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
         assertThat(errorList).map(AxiomQueryError::message).isEmpty();
+
+        query = """
+                @metadata/badStorage/createTimestamp < "2024-12-31""
+                """;
+        errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badStorage' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'createTimestamp' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
+
+
+        query = """
+                @metadata/storage/badCreateTimestamp < "2024-12-31""
+                """;
+        errorList = this.axiomQueryContentAssist.process(localTypeDefinition, query).validate();
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid item component 'badCreateTimestamp' definition.");
+        assertThat(errorList).map(AxiomQueryError::message).contains("Invalid '<' filter alias.");
     }
 }

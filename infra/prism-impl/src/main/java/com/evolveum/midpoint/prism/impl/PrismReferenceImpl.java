@@ -229,7 +229,7 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismReferenceImpl clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismReferenceImpl clone) {
         super.copyValues(strategy, clone);
         for (PrismReferenceValue value : getValues()) {
             try {
