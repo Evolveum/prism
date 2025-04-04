@@ -94,7 +94,7 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- Dependencies global versions -->
-        <commons.io.version>2.13.0</commons.io.version>
+        <commons.io.version>2.18.0</commons.io.version>
         <commons.lang.version>2.6</commons.lang.version>
         <slf4j.version>1.7.36</slf4j.version>
         <logback.version>1.2.11</logback.version>
