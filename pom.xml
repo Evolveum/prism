@@ -97,7 +97,7 @@
         <commons.io.version>2.18.0</commons.io.version>
         <commons.lang.version>2.6</commons.lang.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
+        <logback.version>1.2.13</logback.version>
         <testng.version>7.6.1</testng.version>
         <xml.resolver.version>1.2</xml.resolver.version>
         <!-- With M6 we get [WARNING] Corrupted channel by directly writing to native stream in forked JVM 1, we will try later versions. -->
