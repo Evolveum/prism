@@ -16,6 +16,7 @@ import java.util.function.BiConsumer;
 import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
+import com.evolveum.midpoint.prism.util.JavaTypeConverter;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.*;
@@ -208,17 +209,22 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                     //noinspection unchecked
                     value = (T) new PolyString((String) map.get("o"), (String) map.get("n"));
                 } else if (!type.isInstance(value)) {
-                    // Here if the schema is runtime and type is string, type was lost somewhere along the way.
-                    if (XmlTypeConverter.canConvert(type)
-                            && propertyDefinition.isRuntimeSchema()
-                            && value instanceof String stringValue) {
-                        //noinspection unchecked
-                        value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
-                    } else {
-                        // FIXME This is thrown also in cases when conversion is possible e.g. from int to double
-                        throw new SchemaException(
-                                "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(
-                                        definition.getTypeName(), type, definition.getItemName(), value.getClass()));
+                    try {
+                        //
+                        value = (T) JavaTypeConverter.convert(type, value);
+                    } catch (Exception e) {
+                        // one more attempt to convert the value
+                        // H=trere if the schema is runtime and type is string, type was lost somewhere along the way.
+                        if (XmlTypeConverter.canConvert(type)
+                                && propertyDefinition.isRuntimeSchema()
+                                && value instanceof String stringValue) {
+                            //noinspection unchecked
+                            value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
+                        } else {
+                            throw new SchemaException(
+                                    "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(
+                                            definition.getTypeName(), type, definition.getItemName(), value.getClass()));
+                        }
                     }
                 }
             }

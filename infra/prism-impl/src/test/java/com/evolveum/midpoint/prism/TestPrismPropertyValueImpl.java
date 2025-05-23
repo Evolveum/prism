@@ -23,8 +23,7 @@ public class TestPrismPropertyValueImpl extends AbstractPrismTest {
         };
     }
 
-    @Test(enabled = false, description = "Not implemented. Implementation task - MID-10372",
-            dataProvider = "conversionParameters")
+    @Test(dataProvider = "conversionParameters")
     void valueIsInteger_applyDefinitionWithDouble_conversionShouldPass(QName definitionType, Class<?> convertedType)
             throws SchemaException, IOException, SAXException {
         final PrismPropertyValueImpl<Integer> value = new PrismPropertyValueImpl<>(10);

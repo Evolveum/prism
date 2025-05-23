@@ -129,6 +129,9 @@ public class JavaTypeConverter {
         if (expectedType == String.class && rawValue instanceof Float) {
             return rawValue.toString();
         }
+        if ((expectedType == float.class || expectedType == Float.class) && rawValue instanceof Number) {
+            return ((Number) rawValue).floatValue();
+        }
 
         if (expectedType == double.class && rawValue instanceof Double) {
             return rawValue;
