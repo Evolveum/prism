@@ -148,7 +148,7 @@ public class PrismValueCollectionsUtil {
 
     @NotNull
     public static <T extends PrismValue> Collection<T> cloneCollection(Collection<T> values) {
-        return cloneCollectionComplex(CloneStrategy.LITERAL, values);
+        return cloneCollectionComplex(CloneStrategy.LITERAL_MUTABLE, values);
     }
 
     /**
@@ -215,7 +215,7 @@ public class PrismValueCollectionsUtil {
     }
 
     @NotNull
-    public static <T extends PrismValue> Collection<T> cloneCollectionComplex(CloneStrategy strategy, Collection<T> values) {
+    public static <T extends PrismValue> Collection<T> cloneCollectionComplex(@NotNull CloneStrategy strategy, Collection<T> values) {
         Collection<T> clones = new ArrayList<>();
         if (values != null) {
             for (T value : values) {

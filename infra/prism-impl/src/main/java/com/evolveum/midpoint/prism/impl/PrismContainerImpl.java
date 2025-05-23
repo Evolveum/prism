@@ -15,6 +15,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.deleg.PrismContainerValueDelegator;
 
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedItem;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -767,7 +769,7 @@ public class PrismContainerImpl<C extends Containerable>
 
     @Override
     public PrismContainer<C> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -776,13 +778,17 @@ public class PrismContainerImpl<C extends Containerable>
     }
 
     @Override
-    public PrismContainer<C> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismContainer<C> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedItem.from(this);
+        }
+
         PrismContainerImpl<C> clone = new PrismContainerImpl<>(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismContainerImpl<C> clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismContainerImpl<C> clone) {
         super.copyValues(strategy, clone);
         clone.compileTimeClass = this.compileTimeClass;
         for (PrismContainerValue<C> pval : getValues()) {

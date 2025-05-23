@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl.binding;
 
 import com.evolveum.midpoint.prism.*;
 
+import com.evolveum.midpoint.prism.impl.EmbeddedPrismObjectImpl;
 import com.evolveum.midpoint.prism.impl.PrismContainerImpl;
 
 import jakarta.xml.bind.annotation.XmlAttribute;
@@ -33,14 +34,19 @@ public abstract class AbstractMutableObjectable extends ObjectType implements Co
     @SuppressWarnings("rawtypes")
     public PrismObject asPrismContainer() {
         if (value instanceof PrismObjectValue objVal) {
-            var parent = value.getParent();
-            if (parent instanceof PrismObject) {
-                return (PrismObject) parent;
-            }
-            if (parent == null) {
+            var parent = objVal.getParent();
+            if (parent instanceof PrismObject prismObject) {
+                if (objVal.isImmutable()) {
+                    prismObject.freeze();
+                }
+                return prismObject;
+            } else if (parent == null) {
+                //noinspection unchecked
                 return new PrismObjectImpl<>(prismGetContainerName(), this.getClass(), objVal);
+            } else {
+                //noinspection unchecked
+                return new EmbeddedPrismObjectImpl<>(prismGetContainerName(), this.getClass(), objVal);
             }
-
         }
         if (value == null) {
             var object = new PrismObjectImpl<>(prismGetContainerName(), this.getClass());

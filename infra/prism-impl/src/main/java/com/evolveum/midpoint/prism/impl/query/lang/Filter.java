@@ -27,7 +27,8 @@ public class Filter {
 
         TYPE("@type"),
         PATH("@path"),
-        RELATION("@relation");
+        RELATION("@relation"),
+        METADATA("@metadata");
 
         private final String name;
 
@@ -42,8 +43,6 @@ public class Filter {
 
     public enum Name {
 
-        AND("and"),
-        OR("or"),
         EQUAL("equal"),
         LESS("less"),
         GREATER("greater"),
@@ -59,7 +58,6 @@ public class Filter {
         OWNED_BY_OID("ownedByOid"),
         IN_ORG("inOrg"),
         IS_ROOT("isRoot"),
-        NOT("not"),
         NOT_EQUAL("notEqual"),
         TYPE("type"),
         OWNED_BY("ownedBy"),
@@ -153,6 +151,28 @@ public class Filter {
             }
         }
     }
+
+    public enum LogicalFilter {
+
+        AND("and"),
+        OR("or"),
+        NOT("not");
+
+        private final QName name;
+
+        LogicalFilter(String name) {
+            this.name = new QName(QUERY_NS, name);
+        }
+
+        public QName getName() {
+            return name;
+        }
+
+        public String getLocalPart() {
+            return name.getLocalPart();
+        }
+    }
+
 
     public enum Token {
         REF_TARGET_ALIAS("@"),

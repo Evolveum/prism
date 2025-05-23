@@ -14,6 +14,7 @@ import com.evolveum.midpoint.prism.delta.ObjectDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.ObjectDeltaImpl;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedItem;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
@@ -70,6 +71,9 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
         } catch (SchemaException e) {
             // This should not happen
             throw new SystemException("Internal Error: " + e.getMessage(), e);
+        }
+        if (value.isImmutable()) {
+            freeze();
         }
     }
 
@@ -260,7 +264,7 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
 
     @Override
     public PrismObject<O> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -269,7 +273,11 @@ public class PrismObjectImpl<O extends Objectable> extends PrismContainerImpl<O>
     }
 
     @Override
-    public PrismObjectImpl<O> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismObject<O> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedItem.from(this);
+        }
+
         PrismMonitor monitor = PrismContext.get().getMonitor();
         if (monitor != null) {
             monitor.beforeObjectClone(this);

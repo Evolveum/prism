@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism.impl;
 import java.util.*;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedItem;
+
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.*;
@@ -366,7 +368,7 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
 
     @Override
     public PrismProperty<T> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -375,13 +377,17 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
     }
 
     @Override
-    public PrismProperty<T> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismProperty<T> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedItem.from(this);
+        }
+
         PrismPropertyImpl<T> clone = new PrismPropertyImpl<>(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismPropertyImpl<T> clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismPropertyImpl<T> clone) {
         super.copyValues(strategy, clone);
         for (PrismPropertyValue<T> value : getValues()) {
             clone.addValue(value.cloneComplex(strategy), false);

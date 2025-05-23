@@ -9,6 +9,8 @@ package com.evolveum.midpoint.prism;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.util.CloneUtil;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +25,9 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
 
 import java.util.Objects;
+
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
+import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 
 /**
  * @author Radovan Semancik
@@ -158,7 +163,19 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     PrismReferenceValue createImmutableClone();
 
     @Override
-    PrismReferenceValue cloneComplex(CloneStrategy strategy);
+    PrismReferenceValue cloneComplex(@NotNull CloneStrategy strategy);
+
+    default PrismReferenceValue copy() {
+        return cloneComplex(LITERAL_ANY);
+    }
+
+    default PrismReferenceValue mutableCopy() {
+        return cloneComplex(LITERAL_MUTABLE);
+    }
+
+    default PrismReferenceValue immutableCopy() {
+        return CloneUtil.immutableCopy(this);
+    }
 
     @Override
     Class<?> getRealClass();

@@ -181,9 +181,8 @@ public class DeltaBuilder<C extends Containerable>
         if (currentDelta.getEstimatedOldValues() == null && oldObject != null) {
             Item<?, ?> oldItem = oldObject.asPrismContainerValue().findItem(currentDelta.getPath());
             //noinspection unchecked
-            currentDelta.setEstimatedOldValues(
-                    oldItem != null ?
-                            CloneUtil.cloneCollectionMembers(oldItem.getValues()) : List.of());
+            currentDelta.setEstimatedOldValuesWithCloning(
+                    oldItem != null ? oldItem.getValues() : List.of());
         }
         if (!optimizing) {
             return true;

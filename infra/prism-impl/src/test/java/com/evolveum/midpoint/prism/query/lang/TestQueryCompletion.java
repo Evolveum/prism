@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.evolveum.midpoint.prism.foo.*;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.impl.query.lang.FilterProvider;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;
@@ -54,6 +55,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testRootCtx() {
         suggestion = getSuggestion("^");
+
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "@", "not"));
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
@@ -147,7 +149,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
     @Test
     public void testReferenceAndDereferencePath() {
         suggestion = getSuggestion("""
-                assignment^/targetRef/@/name = "End user"
+                assignment/targetRef^
                 """);
 
         PrismContainerDefinition<?> def = userDef.findItemDefinition(ItemPath.create(new QName("assignment")));
@@ -177,28 +179,81 @@ public class TestQueryCompletion extends AbstractPrismTest {
         suggestion = getSuggestion("""
                 assignment/targetRef/^@/name = "End user"
                 """);
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@", ":", "$", "..", "."));
-        assertThat(suggestion).map(Suggestion::name).contains(ref.getItemName().getLocalPart());
+        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@"));
 
         suggestion = getSuggestion("""
                 assignment/targetRef/^
                 """);
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@", ":", "$", "..", "."));
-        assertThat(suggestion).map(Suggestion::name).contains(ref.getItemName().getLocalPart());
+        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@"));
 
         suggestion = getSuggestion("""
-                assignment/targetRef/@/^name = "End user"
+                assignment/targetRef/@^/name = "End user"
+                """);
+        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("/"));
+
+        suggestion = getSuggestion("""
+                assignment/targetRef/@/^
                 """);
         PrismObjectDefinition<?> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByType(ref.getTargetTypeName());
         objDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
+    }
 
-        suggestion = getSuggestion("""
-                assignment/targetRef/@/^
-                """);
-        objDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
-            assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
+    @Test
+    public void testMetadataPath() {
+        var localValMetadataDef = getPrismContext().getSchemaRegistry().getValueMetadataDefinition();
+
+        suggestion = getSuggestion("^");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@meta^");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata^");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains("@metadata/" + metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata/^ ");
+        localValMetadataDef.getDefinitions().forEach(metadata -> {
+            assertThat(suggestion).map(Suggestion::name).contains(metadata.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata/storage^ ");
+        PrismContainerDefinition<?> metadataDefinition = getPrismContext().getSchemaRegistry().getValueMetadataDefinition();
+        metadataDefinition.getDefinitions().forEach(item -> {
+            assertThat(suggestion).map(Suggestion::name).contains(item.getItemName().getLocalPart());
+            if (item instanceof PrismContainerDefinition<?> containerDefinition) {
+                containerDefinition.getDefinitions().forEach(childItem -> {
+                    assertThat(suggestion).map(Suggestion::name).contains(item.getItemName().getLocalPart() + "/" + childItem.getItemName().getLocalPart());
+                });
+            }
+        });
+
+        for (Filter.Alias value : Filter.Alias.values()) {
+            assertThat(suggestion).map(Suggestion::name).contains(value.getName());
+        }
+
+        suggestion = getSuggestion("@metadata/storage/^ ");
+        PrismContainerDefinition<?> storageDef = metadataDefinition.findItemDefinition(ItemPath.create("storage"));
+        storageDef.getDefinitions().forEach(item -> {
+            assertThat(suggestion).map(Suggestion::name).contains(item.getItemName().getLocalPart());
+        });
+
+        suggestion = getSuggestion("@metadata/process/^ ");
+        PrismContainerDefinition<?> processDef = metadataDefinition.findItemDefinition(ItemPath.create("process"));
+        processDef.getDefinitions().forEach(item -> {
+            assertThat(suggestion).map(Suggestion::name).contains(item.getItemName().getLocalPart());
         });
     }
 
@@ -274,6 +329,11 @@ public class TestQueryCompletion extends AbstractPrismTest {
 
         suggestion = getSuggestion("givenName equal^ ");
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("[", "("));
+        FilterProvider.findFilterByItemDefinition(userDef.findItemDefinition(ItemPath.create(new QName("givenName"))), 15).forEach(
+            (name, alias) -> {
+                assertThat(suggestion).map(Suggestion::name).contains(name);
+            }
+        );
     }
 
     @Test
@@ -297,12 +357,22 @@ public class TestQueryCompletion extends AbstractPrismTest {
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
+        // value context can not contain infra filters
+        assertThat(suggestion).map(Suggestion::name).doesNotContainAnyElementsOf(Arrays.stream(Filter.Infra.values())
+                .map(Filter.Infra::getName)
+                .filter(name -> !Filter.Infra.METADATA.getName().equals(name))
+                .toList());
 
         suggestion = getSuggestion("givenName equal ^");
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of(".", "..", "@", "'", "\"", "("));
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
+        // value context can not contain infra filters
+        assertThat(suggestion).map(Suggestion::name).doesNotContainAnyElementsOf(Arrays.stream(Filter.Infra.values())
+                .map(Filter.Infra::getName)
+                .filter(name -> !Filter.Infra.METADATA.getName().equals(name))
+                .toList());
 
         assertThat(getSuggestion("givenName = 'John'^")).map(Suggestion::name).isEmpty();
         suggestion = getSuggestion("givenName ='John' ^");
@@ -338,8 +408,8 @@ public class TestQueryCompletion extends AbstractPrismTest {
         suggestion = getSuggestion("""
                 . referencedBy (^
                 """);
-
         List<String> infraFilters = new ArrayList<>(Arrays.stream(Filter.Infra.values()).map(Filter.Infra::getName).toList());
+        infraFilters.remove(Filter.Infra.METADATA.getName());
         assertThat(suggestion).map(Suggestion::name).containsAll(infraFilters);
 
         suggestion = getSuggestion("""
@@ -364,7 +434,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
         suggestion = getSuggestion("""
                 . referencedBy (
                    @type^ = AssignmentType
-                   and ^@path = targetRef
+                   and @path = targetRef
                    and . ownedBy (
                       @type = UserType
                       and @path = assignment
@@ -378,16 +448,16 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 . referencedBy (
                    @type = ^
                 """);
-        schemaRegistry.getSchemas().forEach(definition -> {
-            definition.getDefinitions().forEach(def -> {
-                assertThat(suggestion).map(Suggestion::name).contains(def.getTypeName().getLocalPart());
-            });
-        });
+        PrismObjectDefinition<?> objectTypeDefinition = schemaRegistry.findObjectDefinitionByType(getPrismContext().getDefaultReferenceTargetType());
+        schemaRegistry.findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class)
+                .getStaticSubTypes().forEach(objSubType -> {
+                    assertThat(suggestion).map(Suggestion::name).contains(objSubType.getTypeName().getLocalPart());
+                });
 
         suggestion = getSuggestion("""
                 . referencedBy (
                    @type = ^AssignmentType
-                   and @path = ^targetRef
+                   and @path = targetRef
                    and . ownedBy (
                       @type = UserType
                       and @path = assignment
@@ -395,11 +465,10 @@ public class TestQueryCompletion extends AbstractPrismTest {
                    )
                 )
                 """);
-        schemaRegistry.getSchemas().forEach(definition -> {
-            definition.getDefinitions().forEach(def -> {
-                assertThat(suggestion).map(Suggestion::name).contains(def.getTypeName().getLocalPart());
-            });
-        });
+        schemaRegistry.findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class)
+                .getStaticSubTypes().forEach(objSubType -> {
+                    assertThat(suggestion).map(Suggestion::name).contains(objSubType.getTypeName().getLocalPart());
+                });
 
         suggestion = getSuggestion("""
                 . referencedBy (
@@ -412,11 +481,10 @@ public class TestQueryCompletion extends AbstractPrismTest {
                    )
                 )
                 """);
-        schemaRegistry.getSchemas().forEach(definition -> {
-            definition.getDefinitions().forEach(def -> {
-                assertThat(suggestion).map(Suggestion::name).contains(def.getTypeName().getLocalPart());
-            });
-        });
+        schemaRegistry.findTypeDefinitionByCompileTimeClass(objectTypeDefinition.getCompileTimeClass(), TypeDefinition.class)
+                .getStaticSubTypes().forEach(objSubType -> {
+                    assertThat(suggestion).map(Suggestion::name).contains(objSubType.getTypeName().getLocalPart());
+                });
 
         suggestion = getSuggestion("""
                 . referencedBy (
@@ -429,6 +497,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                    )
                 )
                 """);
+
         userDef.getItemNames().stream().map(ItemName::first).filter(Objects::nonNull).forEach(itemName -> {
             assertThat(suggestion).map(Suggestion::name).contains(itemName.toString());
         });
@@ -446,7 +515,6 @@ public class TestQueryCompletion extends AbstractPrismTest {
                    @type = AssignmentType ^
                 """);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("and", "or",")"));
-
 
         suggestion = getSuggestion("""
                 . referencedBy (
@@ -481,7 +549,7 @@ public class TestQueryCompletion extends AbstractPrismTest {
                    )
                 )
                 """);
-        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@", "@type", "@path", "@relation", "targetRef", ".", ".."));
+        assertThat(suggestion).map(Suggestion::name).containsAll(List.of("@", "@type", "@path", "@relation", ".", ".."));
 
         suggestion = getSuggestion("""
                 . referencedBy (
@@ -504,6 +572,5 @@ public class TestQueryCompletion extends AbstractPrismTest {
                 )
                 """);
         assertThat(suggestion).map(Suggestion::name).containsAll(List.of("and", "or"));
-
     }
 }

@@ -125,6 +125,13 @@ public class MiscUtil {
         if (a.size() != b.size()) {
             return false;
         }
+
+        if (a.size() == 1) {
+            // In case of single value, we can compare values directly, no need for tracking
+            // and complex algorithm as bellow.
+            return comparator.test(a.iterator().next(), b.iterator().next());
+        }
+
         Collection<B> outstanding = new ArrayList<>(b.size());
         outstanding.addAll(b);
         for (A ao : a) {
@@ -149,7 +156,7 @@ public class MiscUtil {
     }
 
     public static <T> boolean unorderedArrayEquals(T[] a, T[] b) {
-        return unorderedArrayEquals(a, b, (o1, o2) -> o1.equals(o2));
+        return unorderedArrayEquals(a, b, Object::equals);
     }
 
     /**
@@ -165,6 +172,13 @@ public class MiscUtil {
         if (a.length != b.length) {
             return false;
         }
+
+        if (a.length == 1) {
+            // In case of single value, we can compare values directly, no need for tracking
+            // and complex algorithm as bellow.
+            return equalsChecker.test(a[0], b[0]);
+        }
+
         List<T> outstanding = Arrays.asList(b);
         for (T ao : a) {
             boolean found = false;
@@ -1289,6 +1303,13 @@ public class MiscUtil {
                 .toArray(value -> (T[]) Array.newInstance(nullable.getClass().getComponentType(), value));
     }
 
+    /** Converts naive-style patterns (e.g. "*.xml") to regex. */
+    public static String toRegex(String pattern) {
+        return pattern
+                .replace(".", "\\.")
+                .replace("*", ".*");
+    }
+
     @FunctionalInterface
     public interface ExceptionSupplier<E> {
         E get();
@@ -1391,15 +1412,15 @@ public class MiscUtil {
     }
 
     public static BigDecimal or0(BigDecimal value) {
-        return Objects.requireNonNullElse(value, BigDecimal.ZERO);
+        return value != null ? value : BigDecimal.ZERO;
     }
 
     public static int or0(Integer value) {
-        return Objects.requireNonNullElse(value, 0);
+        return value != null ? value : 0;
     }
 
     public static long or0(Long value) {
-        return Objects.requireNonNullElse(value, 0L);
+        return value != null ? value : 0L;
     }
 
     public static double or0(Double value) {

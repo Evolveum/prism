@@ -17,7 +17,10 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.delta.ItemMerger;
 import com.evolveum.midpoint.prism.key.NaturalKeyDefinition;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.path.InfraItemName;
+
+import com.evolveum.midpoint.prism.util.PrismUtil;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1436,7 +1439,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public PrismContainerValue<C> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -1446,7 +1449,11 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
-    public PrismContainerValueImpl<C> cloneComplex(CloneStrategy strategy) {    // TODO resolve also the definition?
+    public @NotNull PrismContainerValue<C> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this);
+        }
+
         PrismContainerValueImpl<C> clone = new PrismContainerValueImpl<>(
                 getOriginType(), getOriginObject(), getParent(), null, this.complexTypeDefinition);
         copyValues(strategy, clone);
@@ -1455,7 +1462,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     protected void copyValues(CloneStrategy strategy, PrismContainerValueImpl<C> clone) {
         super.copyValues(strategy, clone);
-        if (strategy == CloneStrategy.LITERAL) {
+        if (!strategy.ignoreContainerValueIds()) {
             clone.id = this.id;
         }
         for (Item<?, ?> item : this.items.values()) {
@@ -1512,9 +1519,6 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     private boolean equals(@NotNull PrismContainerValue<?> other, ParameterizedEquivalenceStrategy strategy) {
-        if (!super.equals(other, strategy)) {
-            return false;
-        }
         if (strategy.isConsideringContainerIds()) {
             if (!Objects.equals(id, other.getId())) {
                 return false;
@@ -1524,7 +1528,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return false;
             }
         }
-        return equalsItems((PrismContainerValue<C>) other, strategy);
+        // super.equals is called intentionally at the end, because it is quite expensive if metadata are present
+        return equalsItems((PrismContainerValue<C>) other, strategy)
+                && super.equals(other, strategy);
     }
 
     protected boolean equalsItems(PrismContainerValue<C> other, ParameterizedEquivalenceStrategy strategy) {
@@ -1739,6 +1745,9 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     /**
      * Returns a single-valued container (with a single-valued definition) holding just this value.
+     * If the value is immutable, the container will be immutable as well.
+     * If the value is parent-less, it will be put right into the container.
+     * Otherwise, the value will be cloned.
      *
      * *TODO* Consider moving this into some "util" class; it is not really in the spirit of prism.
      *
@@ -1749,20 +1758,13 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         ComplexTypeDefinition ctd = MiscUtil.stateNonNull(
                 getComplexTypeDefinition(),
                 "Cannot invoke 'asSingleValuedContainer' on a container value without CTD: %s", this);
-
-        PrismContainerDefinition<C> definition = PrismContext.get().definitionFactory().newContainerDefinition(itemName, ctd);
-        definition.mutator().setMaxOccurs(1);
-
-        PrismContainer<C> pc = definition.instantiate();
-        pc.add(clone());
-        return pc;
+        return PrismUtil.asSingleValuedContainer(itemName, this, ctd);
     }
 
     // EXPERIMENTAL. TODO write some tests
     // BEWARE, it expects that definitions for items are present. Otherwise definition-less single valued items will get overwritten.
     @Override
     @Experimental
-    @SuppressWarnings("unchecked")
     public void mergeContent(@NotNull PrismContainerValue<?> other, @NotNull List<QName> overwrite) throws SchemaException {
         List<ItemName> remainingToOverwrite = overwrite.stream().map(ItemName::fromQName).collect(Collectors.toList());
         for (Item<?, ?> otherItem : other.getItems()) {

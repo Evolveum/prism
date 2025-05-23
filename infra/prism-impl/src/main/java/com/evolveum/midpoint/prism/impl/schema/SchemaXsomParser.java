@@ -220,6 +220,8 @@ class SchemaXsomParser {
         DF_IGNORED_NAMESPACES.parse(ctdBuilder, sourceComplexType);
         DF_IS_ANY_XSD.parse(ctdBuilder, sourceComplexType);
         DF_DOCUMENTATION.parse(ctdBuilder, sourceComplexType);
+        DF_DISPLAY_NAME.parse(ctdBuilder, sourceComplexType.getAnnotation());
+        DF_HELP.parse(ctdBuilder, sourceComplexType.getAnnotation());
 
         parseXmlAttributes(ctdBuilder, sourceComplexType);
 
@@ -278,6 +280,8 @@ class SchemaXsomParser {
         DF_SUPERTYPE.parse(stdBuilder, simpleType);
         DF_INSTANTIATION_ORDER.parse(stdBuilder, simpleType);
         DF_DOCUMENTATION.parse(stdBuilder, simpleType);
+        DF_DISPLAY_NAME.parse(stdBuilder, simpleType.getAnnotation());
+        DF_HELP.parse(stdBuilder,simpleType.getAnnotation());
 
         // Here will be extra features parsing, when needed.
 
@@ -478,6 +482,8 @@ class SchemaXsomParser {
         DF_COMPOSITE_MARKER.parse(prdBuilder, annotation);
 
         parseItemDefinitionAnnotations(prdBuilder, annotation);
+
+        DF_INDEXED.parse(prdBuilder, annotation);
 
         // Here will be extra features parsing, when needed.
 

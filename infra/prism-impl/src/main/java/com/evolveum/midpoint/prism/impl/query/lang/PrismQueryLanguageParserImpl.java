@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 import com.google.common.collect.ImmutableList;
@@ -770,6 +771,10 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
     @Override
     public ObjectFilter parseFilter(ItemDefinition<?> definition, String query) throws SchemaException {
         AxiomQuerySource source = AxiomQuerySource.from(query);
+
+        for (AxiomQueryError error : source.syntaxErrors()) {
+            throw new SchemaException(error.message());
+        }
 
         if (source.root().filter() == null) {
             throw new IllegalArgumentException("Unable to parse query: " + query);

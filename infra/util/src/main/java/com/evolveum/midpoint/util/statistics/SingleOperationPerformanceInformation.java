@@ -11,15 +11,22 @@ import com.evolveum.midpoint.util.ShortDumpable;
 
 import java.util.Locale;
 
+import static com.evolveum.midpoint.util.NoValueUtil.NONE_LONG;
+
 /**
  *  Experimental.
  */
 public class SingleOperationPerformanceInformation implements ShortDumpable {
 
+    private static final long NONE = -1;
+
     private int invocationCount;
     private long totalTime;
-    private Long minTime;
-    private Long maxTime;
+    private long minTime = NONE;
+    private long maxTime = NONE;
+    private long ownTime = NONE;
+    private long minOwnTime = NONE;
+    private long maxOwnTime = NONE;
 
     public int getInvocationCount() {
         return invocationCount;
@@ -30,25 +37,51 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
     }
 
     public Long getMinTime() {
-        return minTime;
+        return minTime != NONE ? minTime : null;
     }
 
     public Long getMaxTime() {
-        return maxTime;
+        return maxTime != NONE ? maxTime : null;
+    }
+
+    public Long getOwnTime() {
+        return ownTime != NONE ? ownTime : null;
+    }
+
+    public Long getMinOwnTime() {
+        return minOwnTime != NONE ? minOwnTime : null;
+    }
+
+    public Long getMaxOwnTime() {
+        return maxOwnTime != NONE ? maxOwnTime : null;
     }
 
     public synchronized void register(OperationInvocationRecord operation) {
         invocationCount++;
         addTotalTime(operation.getElapsedTimeMicros());
+        var ownTime = operation.getOwnTimeMicros();
+        if (ownTime != NONE_LONG) {
+            addOwnTime(ownTime);
+        }
     }
 
     private void addTotalTime(long time) {
         totalTime += time;
-        if (minTime == null || time < minTime) {
+        if (minTime == NONE || time < minTime) {
             minTime = time;
         }
-        if (maxTime == null || time > maxTime) {
+        if (maxTime == NONE || time > maxTime) {
             maxTime = time;
+        }
+    }
+
+    private void addOwnTime(long time) {
+        ownTime = (ownTime == NONE ? 0 : ownTime) + time;
+        if (minOwnTime == NONE || time < minOwnTime) {
+            minOwnTime = time;
+        }
+        if (maxOwnTime == NONE || time > maxOwnTime) {
+            maxOwnTime = time;
         }
     }
 
@@ -61,6 +94,13 @@ public class SingleOperationPerformanceInformation implements ShortDumpable {
             sb.append(String.format(Locale.US, " (min/max/avg: %.2f/%.2f/%.2f)", minTime/1000.0, maxTime/1000.0,
                     (float) totalTime / invocationCount / 1000.0));
         }
+        if (ownTime != NONE) {
+            sb.append(", own time: ");
+            sb.append(ownTime/1000).append(" ms");
+            if (invocationCount > 0) {
+                sb.append(String.format(Locale.US, " (min/max/avg: %.2f/%.2f/%.2f)",
+                        minOwnTime/1000.0, maxOwnTime/1000.0, (float) ownTime / invocationCount / 1000.0));
+            }
+        }
     }
-
 }

@@ -131,7 +131,7 @@ public class ProfilingDataLog {
         }
     }
 
-    private static String formatExecutionTime(long est){
+    private static String formatExecutionTime(long est) {
         StringBuilder sb = new StringBuilder();
 
         OperationInvocationRecord.formatExecutionTime(sb, est);

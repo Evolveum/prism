@@ -38,6 +38,8 @@ public class TestSchemaContext extends AbstractPrismTest {
             PrismValue filterPrismValue = filterItem.getAnyValue();
             assertEquals(filterPrismValue.getSchemaContext().getItemDefinition().getTypeName(), roleType);
         }
+
+        assertEquals(objectItem.getParent().getSchemaContext().getItemDefinition().getTypeName(), roleType);
     }
 
     @Test

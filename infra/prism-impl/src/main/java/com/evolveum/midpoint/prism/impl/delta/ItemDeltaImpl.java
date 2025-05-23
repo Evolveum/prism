@@ -345,6 +345,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
+    public void addValue(@NotNull ModificationType modification, @NotNull V newValue) {
+        switch (modification) {
+            case ADD -> addValueToAdd(newValue);
+            case DELETE -> addValueToDelete(newValue);
+            case REPLACE -> addValueToReplace(newValue);
+        }
+    }
+
+    @Override
     public boolean removeValueToAdd(PrismValue valueToRemove) {
         return removeValue(valueToRemove, valuesToAdd, false);
     }
@@ -357,6 +366,15 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     @Override
     public boolean removeValueToReplace(PrismValue valueToRemove) {
         return removeValue(valueToRemove, valuesToReplace, false);
+    }
+
+    @Override
+    public boolean removeValue(@NotNull ModificationType modification, @NotNull PrismValue valueToRemove) {
+        return switch (modification) {
+            case ADD -> removeValueToAdd(valueToRemove);
+            case DELETE -> removeValueToDelete(valueToRemove);
+            case REPLACE -> removeValueToReplace(valueToRemove);
+        };
     }
 
     private boolean removeValue(PrismValue valueToRemove, Collection<V> set, boolean toDelete) {

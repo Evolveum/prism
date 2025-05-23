@@ -8,6 +8,9 @@
 package com.evolveum.midpoint.prism;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
 
 /**
  *  Something that can be made immutable.
@@ -16,6 +19,7 @@ public interface Freezable {
 
     boolean isImmutable();
 
+    /** Should be no-op (or very quick) if the object is already immutable. */
     void freeze();
 
     default void checkMutable() {
@@ -42,9 +46,28 @@ public interface Freezable {
         return freezable;
     }
 
+    /**
+     * Convenience variant to be used in fluent interfaces. The name is different from {@link #freeze()}
+     * to allow method references. TODO better name!
+     */
+    @Contract("null -> null; !null -> !null")
+    static <T extends Freezable> T doFreeze(T freezable) {
+        if (freezable != null) {
+            freezable.freeze();
+        }
+        return freezable;
+    }
+
     static void freezeNullable(Freezable target) {
         if (target != null) {
             target.freeze();
         }
+    }
+
+    static <C extends Collection<? extends Freezable>> @NotNull C freezeAll(@NotNull C collection) {
+        for (Freezable freezable : collection) {
+            freezable.freeze();
+        }
+        return collection;
     }
 }

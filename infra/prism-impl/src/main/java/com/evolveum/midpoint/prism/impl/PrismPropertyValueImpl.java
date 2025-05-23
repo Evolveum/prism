@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 import com.evolveum.midpoint.prism.impl.util.PrismUtilInternal;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.util.JavaTypeConverter;
@@ -388,11 +389,15 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     @Override
     public PrismPropertyValue<T> clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
-    public PrismPropertyValue<T> cloneComplex(CloneStrategy strategy) {
+    public PrismPropertyValue<T> cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedValue.from(this);
+        }
+
         PrismPropertyValueImpl<T> clone = new PrismPropertyValueImpl<>(getOriginType(), getOriginObject());
         copyValues(strategy, clone);
         return clone;

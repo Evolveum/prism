@@ -133,6 +133,20 @@ public class DefinitionFeatures {
                     PrismPresentationDefinition.Mutable::setDocumentation,
                     XsomParsers.DF_DOCUMENTATION_PARSER);
 
+    public static final DefinitionFeature<String, PrismPresentationDefinition.Mutable, XSAnnotation, ?> DF_DISPLAY_NAME =
+            DefinitionFeature.of(
+                    String.class,
+                    PrismPresentationDefinition.Mutable.class,
+                    PrismPresentationDefinition.Mutable::setDisplayName,
+                    XsomParsers.DF_DISPLAY_NAME_PARSER);
+
+    public static final DefinitionFeature<String, PrismPresentationDefinition.Mutable, XSAnnotation, ?> DF_HELP =
+            DefinitionFeature.of(
+                    String.class,
+                    PrismPresentationDefinition.Mutable.class,
+                    PrismPresentationDefinition.Mutable::setHelp,
+                    XsomParsers.DF_HELP_PARSER);
+
     public static final DefinitionFeature<QName, ComplexTypeDefinitionLikeBuilder, XSType, ?> DF_EXTENSION_REF =
             DefinitionFeature.of(
                     QName.class,
@@ -309,6 +323,28 @@ public class DefinitionFeatures {
             }
         };
 
+        public static final DefinitionFeatureParser<String, XSAnnotation> DF_DISPLAY_NAME_PARSER = new DefinitionFeatureParser<>() {
+            @Override
+            public @Nullable String getValue(@Nullable XSAnnotation annotation) {
+                Element element = getAnnotationElement(annotation, A_DISPLAY_NAME);
+                if (element == null) {
+                    return null;
+                }
+                return element.getTextContent();
+            }
+        };
+
+        public static final DefinitionFeatureParser<String, XSAnnotation> DF_HELP_PARSER = new DefinitionFeatureParser<>() {
+            @Override
+            public @Nullable String getValue(@Nullable XSAnnotation annotation) {
+                Element element = getAnnotationElement(annotation, A_HELP);
+                if (element == null) {
+                    return null;
+                }
+                return element.getTextContent();
+            }
+        };
+
         public static final DefinitionFeatureParser<String, Object> DF_DOCUMENTATION_PARSER = new DefinitionFeatureParser<>() {
             @Override
             public @Nullable String getValue(@Nullable Object sourceObject) {
@@ -481,7 +517,7 @@ public class DefinitionFeatures {
         public static DefinitionFeatureParser<SchemaContextDefinition, XSAnnotation> schemaContextDefinitionParser() {
             return new DefinitionFeatureParser<>() {
                 @Override
-                public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) {
+                public @Nullable SchemaContextDefinition getValue(@Nullable XSAnnotation annotation) throws SchemaException {
                     if (getAnnotationElement(annotation, A_SCHEMA_CONTEXT) != null) {
                         SchemaContextDefinition schemaContextDefinition = new SchemaContextDefinitionImpl();
                         Element typeElement = getAnnotationElement(annotation, A_TYPE);
@@ -490,7 +526,7 @@ public class DefinitionFeatures {
                         Element algorithmElement = getAnnotationElement(annotation, A_ALGORITHM);
 
                         if (typeElement != null) {
-                            schemaContextDefinition.setType(new QName(typeElement.getTextContent()));
+                            schemaContextDefinition.setType(DOMUtil.getQNameValue(typeElement));
                         }
 
                         if (typePathElement != null) {

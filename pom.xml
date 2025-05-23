@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.0.10</version>
+        <version>3.4.4</version>
         <!-- This parent also declares dependencies listed here:
         https://docs.spring.io/spring-boot/docs/2.7.3/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
@@ -100,7 +100,7 @@
         <!-- Non Spring Boot Dependencies -->
         <guice.version>4.2.1</guice.version>
         <xml.resolver.version>1.2</xml.resolver.version>
-        <commons.io.version>2.13.0</commons.io.version>
+        <commons.io.version>2.18.0</commons.io.version>
         <guava.version>32.1.2-jre</guava.version>
         <testng.version>7.8.0</testng.version>
         <checkstyle.version>3.3.0</checkstyle.version>

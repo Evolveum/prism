@@ -340,7 +340,7 @@ public class ValueMetadataAdapter implements ValueMetadata {
     }
 
     @Override
-    public PrismContainer<Containerable> cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismContainer<Containerable> cloneComplex(@NotNull CloneStrategy strategy) {
         return delegate.cloneComplex(strategy);
     }
 

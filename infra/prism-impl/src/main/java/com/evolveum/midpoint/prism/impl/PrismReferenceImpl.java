@@ -11,6 +11,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ReferenceDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.delta.ReferenceDeltaImpl;
+import com.evolveum.midpoint.prism.lazy.FlyweightClonedItem;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.util.DebugUtil;
@@ -213,8 +214,8 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     }
 
     @Override
-    public PrismReferenceImpl clone() {
-        return cloneComplex(CloneStrategy.LITERAL);
+    public PrismReference clone() {
+        return cloneComplex(CloneStrategy.LITERAL_MUTABLE);
     }
 
     @Override
@@ -223,13 +224,17 @@ public class PrismReferenceImpl extends ItemImpl<PrismReferenceValue, PrismRefer
     }
 
     @Override
-    public PrismReferenceImpl cloneComplex(CloneStrategy strategy) {
+    public @NotNull PrismReference cloneComplex(@NotNull CloneStrategy strategy) {
+        if (isImmutable() && !strategy.mutableCopy()) {
+            return FlyweightClonedItem.from(this);
+        }
+
         PrismReferenceImpl clone = new PrismReferenceImpl(getElementName(), getDefinition());
         copyValues(strategy, clone);
         return clone;
     }
 
-    protected void copyValues(CloneStrategy strategy, PrismReferenceImpl clone) {
+    protected void copyValues(@NotNull CloneStrategy strategy, PrismReferenceImpl clone) {
         super.copyValues(strategy, clone);
         for (PrismReferenceValue value : getValues()) {
             try {

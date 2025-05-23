@@ -162,6 +162,10 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     }
 
     @Override
+    default void addValue(@NotNull ModificationType modification, @NotNull V newValue) {
+        delegate().addValue(modification, newValue);
+    }
+    @Override
     default boolean removeValueToAdd(PrismValue valueToRemove) {
         return delegate().removeValueToAdd(valueToRemove);
     }
@@ -176,6 +180,10 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
         return delegate().removeValueToReplace(valueToRemove);
     }
 
+    @Override
+    default boolean removeValue(@NotNull ModificationType modification, @NotNull PrismValue valueToRemove) {
+        return delegate().removeValue(modification, valueToRemove);
+    }
     @Override
     default void mergeValuesToAdd(Collection<V> newValues) {
         delegate().mergeValuesToAdd(newValues);

@@ -1,5 +1,7 @@
 package com.evolveum.axiom.lang.antlr;
 
+import com.evolveum.midpoint.util.SingleLocalizableMessage;
+
 import org.antlr.v4.runtime.*;
 
 import java.util.ArrayList;
@@ -27,12 +29,12 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
         String errorMessage;
 
         if (offendingSymbol instanceof Token token) {
-            errorMessage = "Syntax error: Unexpected " + getDisplayTokenName(token.getType(), vocabulary) + " '" + token.getText() + "'";
+            errorMessage = "Syntax error: Unexpected " + getDisplayTokenName(token.getType(), vocabulary);
         } else {
             errorMessage = "Syntax error: " + msg;
         }
 
-        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, errorMessage));
+        syntaxErrors.add(new AxiomQueryError(line, line, charPositionInLine, charPositionInLine, new SingleLocalizableMessage(errorMessage), null));
     }
 
     public List<AxiomQueryError> getSyntaxErrors() {
@@ -63,5 +65,4 @@ public class AxiomQueryErrorListener extends BaseErrorListener {
 
         return "unknown token";
     }
-
 }

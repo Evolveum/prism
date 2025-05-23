@@ -10,6 +10,7 @@ import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.getRealValue
 import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.BiFunction;
@@ -144,6 +145,8 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void addValueToAdd(V newValue);
 
+    void addValue(@NotNull ModificationType modification, @NotNull V newValue);
+
     /** Uses {@link EquivalenceStrategy#REAL_VALUE_CONSIDER_DIFFERENT_IDS} for value matching. */
     boolean removeValueToAdd(PrismValue valueToRemove);
 
@@ -152,6 +155,8 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     /** Uses {@link EquivalenceStrategy#REAL_VALUE_CONSIDER_DIFFERENT_IDS} for value matching. */
     boolean removeValueToReplace(PrismValue valueToRemove);
+
+    boolean removeValue(@NotNull ModificationType modification, @NotNull PrismValue valueToRemove);
 
     default boolean containsValueToAdd(V value, ParameterizedEquivalenceStrategy strategy) {
         return MiscUtil.findWithComparator(getValuesToAdd(), value, strategy.prismValueComparator()) != null;
@@ -257,6 +262,21 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
     Collection<V> getEstimatedOldValues();
 
     void setEstimatedOldValues(Collection<V> estimatedOldValues);
+
+    default void setEstimatedOldValuesWithCloning(Collection<V> estimatedOldValues) {
+        var valuesToStore = new ArrayList<V>(estimatedOldValues.size());
+        for (V originalValue : estimatedOldValues) {
+            if (originalValue.isImmutable()) {
+                // There will be a parent but in estimated old values it should not be a problem
+                valuesToStore.add(originalValue);
+            } else {
+                //noinspection unchecked
+                valuesToStore.add(
+                        (V) originalValue.cloneComplex(CloneStrategy.LITERAL_IGNORING_EMBEDDED_OBJECTS_MUTABLE));
+            }
+        }
+        setEstimatedOldValues(valuesToStore);
+    }
 
     void addEstimatedOldValues(Collection<V> newValues);
 
