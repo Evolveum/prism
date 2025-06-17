@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.util;
 
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
@@ -36,7 +37,7 @@ public class RandomString {
         SYMBOLS[69] = '=';
     }
 
-    private final Random random = new Random();
+    private final Random random = new SecureRandom();
     private final char[] buf;
     private boolean readable = false;
 
