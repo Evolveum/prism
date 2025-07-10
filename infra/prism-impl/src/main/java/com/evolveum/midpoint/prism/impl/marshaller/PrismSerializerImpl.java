@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import jakarta.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class PrismSerializerImpl<T> implements PrismSerializer<T> {
@@ -127,10 +126,6 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
         } else {
             nameToUse = null;
         }
-//        else {
-//            // TODO derive from the value type itself? Not worth the effort.
-//            throw new IllegalArgumentException("Item name nor definition is not known for " + value);
-//        }
         RootXNodeImpl xroot = getMarshaller().marshalPrismValueAsRoot(value, nameToUse, itemDefinition, context, itemsToSkip);
         checkPostconditions(xroot); // TODO find better way
         return target.write(xroot, context);
@@ -163,17 +158,30 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
 
     @Override
     public T serializeRealValue(Object realValue) throws SchemaException {
-        PrismValue prismValue;
-        if (realValue instanceof Objectable) {
-            return serialize(((Objectable) realValue).asPrismObject(), itemName);        // to preserve OID and name
-        } else if (realValue instanceof Containerable) {
-            prismValue = ((Containerable) realValue).asPrismContainerValue();
-//        } else if (realValue instanceof Referencable) {     // TODO enable in 4.1
-//            prismValue = ((Referencable) realValue).asReferenceValue();
+        return serialize(toPrismValue(realValue), itemName);
+    }
+
+    private static PrismValue toPrismValue(Object realValue) {
+        if (realValue instanceof PrismValue prismValue) {
+            return prismValue; // Just a sanity check.
+        } else if (realValue instanceof Containerable containerable) {
+            return containerable.asPrismContainerValue();
+        } else if (realValue instanceof Referencable referencable) {
+            return referencable.asReferenceValue();
         } else {
-            prismValue = new PrismPropertyValueImpl<>(realValue);
+            return new PrismPropertyValueImpl<>(realValue);
         }
-        return serialize(prismValue, itemName);
+    }
+
+    @Override
+    public T serializePrismValueContent(PrismValue prismValue) throws SchemaException {
+        var xNode = getMarshaller().marshalPrismValueContent(prismValue, itemDefinition, context, itemsToSkip);
+        return target.write(xNode, context); // TODO check postconditions
+    }
+
+    @Override
+    public T serializeRealValueContent(Object value) throws SchemaException {
+        return serializePrismValueContent(toPrismValue(value));
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.ParserSource;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.SerializationContext;
+import com.evolveum.midpoint.prism.impl.lex.json.NullLexicalProcessor;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.xnode.XNode;
@@ -23,11 +24,10 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Takes care of converting between XNode tree and specific lexical representation (XML, JSON, YAML). As a special case,
- * NullLexicalProcessor uses XNode tree itself as a lexical representation.
+ * Takes care of converting between {@link XNode} tree and specific lexical representation (XML, JSON, YAML). As a special case,
+ * {@link NullLexicalProcessor} uses {@link XNode} tree itself as a lexical representation.
  *
  * @author semancik
- *
  */
 public interface LexicalProcessor<T> {
 
@@ -36,9 +36,7 @@ public interface LexicalProcessor<T> {
         return read(source, parsingContext, null);
     }
 
-
     RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) throws SchemaException, IOException;
-
 
     @NotNull
     List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException;
@@ -71,11 +69,13 @@ public interface LexicalProcessor<T> {
      */
     boolean canRead(@NotNull String dataString);
 
-    /**
-     * Serializes a root node into XNode tree.
-     */
-    @NotNull
-    T write(@NotNull RootXNode xnode, @Nullable SerializationContext serializationContext) throws SchemaException;
+    /** Serializes a root node. */
+    @NotNull T write(@NotNull RootXNode xnode, @Nullable SerializationContext serializationContext) throws SchemaException;
+
+    /** Serializes an arbitrary node. May not be supported for all representations. */
+    default @NotNull T write(@NotNull XNode xnode, @Nullable SerializationContext serializationContext) throws SchemaException {
+        throw new UnsupportedOperationException("Non-root node serialization is not supported by " + this.getClass().getName());
+    }
 
     /**
      * Serializes a non-root node into XNode tree.
