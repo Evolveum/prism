@@ -110,6 +110,18 @@ public interface PrismSerializer<T> {
 
     T serialize(JAXBElement<?> value) throws SchemaException;
     T serializeRealValue(Object value) throws SchemaException;
+
+    /**
+     * Serializes the content of a (structured) value, without the root element.
+     * Supported only for JSON/YAML.
+     */
+    T serializePrismValueContent(PrismValue value) throws SchemaException;
+
+    /**
+     * Analogous to {@link #serializePrismValueContent(PrismValue)} but accepting a real value.
+     */
+    T serializeRealValueContent(Object value) throws SchemaException;
+
     T serializeRealValue(Object value, QName rootName) throws SchemaException;
     T serializeAnyData(Object value) throws SchemaException;
     T serializeAnyData(Object value, QName rootName) throws SchemaException;

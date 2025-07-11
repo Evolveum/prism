@@ -22,7 +22,6 @@ import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
-import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.exception.SystemException;
@@ -32,10 +31,10 @@ import com.evolveum.midpoint.util.exception.SystemException;
  */
 abstract public class AbstractWriter {
 
-    private XNodeDefinition.Root schema;
+    private final XNodeDefinition.Root schema;
 
-    public AbstractWriter(@NotNull SchemaRegistry schemaRegistry) {
-        schema = schemaRegistry != null ? XNodeDefinition.root(schemaRegistry) : XNodeDefinition.empty();
+    AbstractWriter(@NotNull SchemaRegistry schemaRegistry) {
+        schema = XNodeDefinition.root(schemaRegistry);
     }
 
     public XNodeDefinition getSchema() {
@@ -48,8 +47,8 @@ abstract public class AbstractWriter {
     }
 
     @NotNull
-    public String write(@NotNull RootXNode root, SerializationContext prismSerializationContext) throws SchemaException {
-        return writeInternal((RootXNodeImpl) root, prismSerializationContext, false);
+    public String write(@NotNull XNode node, SerializationContext prismSerializationContext) throws SchemaException {
+        return writeInternal((XNodeImpl) node, prismSerializationContext, false);
     }
 
     @NotNull
