@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import com.evolveum.concepts.ValidationMessage;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -32,6 +33,8 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
     private Set<QName> lazyDeserialization = new HashSet<>();
+    private List<ValidationMessage> validationMessages = new ArrayList<>();
+    private boolean validate = false;
 
     private ParsingContextImpl() {
     }
@@ -190,5 +193,26 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     public ParsingContext enableLazyDeserializationFor(QName typeName) {
         lazyDeserialization.add(typeName);
         return this;
+    }
+
+    @Override
+    public ParsingContext validate() {
+        this.validate = true;
+        return this;
+    }
+
+    @Override
+    public boolean isValidate() {
+        return true;
+    }
+
+    @Override
+    public void setValidationMessage(ValidationMessage validationMessage) {
+        validationMessages.add(validationMessage);
+    }
+
+    @Override
+    public List<ValidationMessage> getValidationMessage() {
+        return validationMessages;
     }
 }

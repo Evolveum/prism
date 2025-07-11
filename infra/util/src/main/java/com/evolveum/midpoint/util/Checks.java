@@ -6,10 +6,14 @@
  */
 package com.evolveum.midpoint.util;
 
+import com.evolveum.concepts.SourceLocation;
+
 import com.google.common.base.Strings;
 import org.springframework.lang.NonNull;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import java.util.Arrays;
 
 public class Checks {
 
@@ -25,9 +29,9 @@ public class Checks {
      * @param info Arguments for exception message
      * @throws SchemaException Throws exception with formatted string if test is false
      */
-    public static void checkSchema(boolean test, String template, Object... info) throws SchemaException {
+    public static void checkSchema(boolean test, String template, SourceLocation sourceLocator, Object... info) throws SchemaException {
         if (!test) {
-            throw new SchemaException(Strings.lenientFormat(template, info));
+            throw new SchemaException(Strings.lenientFormat(template, info), sourceLocator);
         }
     }
 
@@ -39,9 +43,9 @@ public class Checks {
      * @return Object if not null
      */
     @NonNull
-    public static <T> T checkSchemaNotNull(T obj, String template, Object... info) throws SchemaException {
+    public static <T> T checkSchemaNotNull(T obj, String template, SourceLocation sourceLocator, Object... info) throws SchemaException {
         if (obj == null) {
-            throw new SchemaException(Strings.lenientFormat(template, info));
+            throw new SchemaException(Strings.lenientFormat(template, info), sourceLocator);
         }
         return obj;
     }

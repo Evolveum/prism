@@ -11,6 +11,7 @@ import java.util.*;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.Freezable;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.SerializationOptions;
@@ -463,6 +464,16 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
             ret.setValueParser(getValueParser().freeze());
         }
         return ret;
+    }
+
+    @Override
+    public void setSourceLocation(SourceLocation sourceLocation) {
+        this.sourceLocation = sourceLocation;
+    }
+
+    @Override
+    public SourceLocation getSourceLocation() {
+        return sourceLocation;
     }
 
     @Override

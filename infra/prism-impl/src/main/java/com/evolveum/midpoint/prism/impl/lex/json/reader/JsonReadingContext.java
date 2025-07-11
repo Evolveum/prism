@@ -12,6 +12,8 @@ import com.evolveum.midpoint.prism.impl.ParsingContextImpl;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.impl.xnode.XNodeDefinition;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
+
+import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;
 
 import org.jetbrains.annotations.NotNull;
@@ -57,10 +59,11 @@ class JsonReadingContext {
         return " At: " + getPositionSuffix();
     }
 
+    JsonLocation getLocation() {
+        return parser.getCurrentLocation();
+    }
+
     public XNodeDefinition.Root rootDefinition() {
         return rootContext;
     }
-
-
-
 }

@@ -314,7 +314,7 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private FuzzyMatchingMethod parseFuzzyMatchingMethod(XNodeImpl node) throws SchemaException {
-        Checks.checkSchema(node instanceof MapXNodeImpl, "method must be specified.");
+        Checks.checkSchema(node instanceof MapXNodeImpl, "method must be specified.", node.getSourceLocation());
         var root = (MapXNodeImpl) node;
         var method = root.getSingleEntryThatDoesNotMatch();
 
@@ -331,12 +331,12 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private <T> T requireValue(XNodeImpl map, QName name, QName typeName, Class<T> valueType) throws SchemaException {
-        Checks.checkSchema(map instanceof MapXNodeImpl, "Node must be map node.");
+        Checks.checkSchema(map instanceof MapXNodeImpl, "Node must be map node.", map.getSourceLocation());
         XNode maybe = ((MapXNode) map).get(name);
-        Checks.checkSchema(maybe != null, "Missing property %s", name);
-        Checks.checkSchema(maybe instanceof PrimitiveXNode<?>, "Node % must contain simple value", name);
+        Checks.checkSchema(maybe != null, "Missing property %s", map.getSourceLocation(), name);
+        Checks.checkSchema(maybe instanceof PrimitiveXNode<?>, "Node % must contain simple value", maybe.getSourceLocation(), name);
         T value = ((PrimitiveXNode<T>) maybe).getParsedValue(typeName, valueType);
-        Checks.checkSchema(value != null, "Value must be specified for %", name);
+        Checks.checkSchema(value != null, "Value must be specified for %", maybe.getSourceLocation(), name);
         return value;
     }
 

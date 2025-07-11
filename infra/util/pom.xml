@@ -96,5 +96,10 @@
             <artifactId>test-ng</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.evolveum.commons</groupId>
+            <artifactId>concepts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

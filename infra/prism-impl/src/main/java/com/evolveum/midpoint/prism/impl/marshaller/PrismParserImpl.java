@@ -22,6 +22,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import jakarta.xml.bind.JAXBElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import java.util.List;
 abstract class PrismParserImpl implements PrismParser {
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismParserImpl.class);
+//    private static final Logger log = LoggerFactory.getLogger(PrismParserImpl.class);
 
     @NotNull private final ParserSource source;
     private final String language;
@@ -210,6 +214,7 @@ abstract class PrismParserImpl implements PrismParser {
                     .parseObject(root, itemDefinition, itemName, typeName, typeClass, context);
             objects.add(object);
         }
+
         return objects;
     }
 
@@ -320,4 +325,10 @@ abstract class PrismParserImpl implements PrismParser {
         }
     }
     //endregion
+
+//    private void appendPosition() {
+//        SaxParser saxParser = new SaxParser();
+//        saxParser.parse();
+//
+//    }
 }

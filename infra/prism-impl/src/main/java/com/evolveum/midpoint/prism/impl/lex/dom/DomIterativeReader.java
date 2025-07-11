@@ -99,7 +99,7 @@ class DomIterativeReader {
         Document objectDoc = domConverter.buildDocument(stream);
         Element objectElement = DOMUtil.getFirstChildElement(objectDoc);
         DOMUtil.setNamespaceDeclarations(objectElement, rootNamespaceDeclarations);
-        RootXNodeImpl rootNode = new DomReader(objectElement, schemaRegistry, PrismNamespaceContext.EMPTY).read();
+        RootXNodeImpl rootNode = new DomReader(objectElement, schemaRegistry, PrismNamespaceContext.EMPTY, null).read();
         return handler.handleData(rootNode);
     }
 

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.xml.namespace.QName;
 
+import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemName;
 
@@ -27,6 +28,8 @@ public abstract class XNodeDefinition {
     private static final @NotNull QName FILTER_CLAUSE = new QName(PrismConstants.NS_QUERY, "filterClause");
 
     private final @NotNull ItemName name;
+
+    private SourceLocation sourceLocation;
 
     protected XNodeDefinition(ItemName name) {
         this.name = name;
@@ -168,6 +171,14 @@ public abstract class XNodeDefinition {
             return ret;
         }
         return unawareFrom(name);
+    }
+
+    public SourceLocation getSourceLocation() {
+        return sourceLocation;
+    }
+
+    public void setSourceLocation(SourceLocation sourceLocation) {
+        this.sourceLocation = sourceLocation;
     }
 
     public abstract ItemDefinition<?> itemDefinition();

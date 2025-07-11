@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.xnode;
 
 import java.util.*;
 
+import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.xnode.ListXNode;
@@ -229,5 +230,15 @@ public class ListXNodeImpl extends XNodeImpl implements List<XNodeImpl>, ListXNo
             ret.add((XNodeImpl) xNodeImpl.copy());
         }
         return ret;
+    }
+
+    @Override
+    public void setSourceLocation(SourceLocation sourceLocation) {
+        this.sourceLocation = sourceLocation;
+    }
+
+    @Override
+    public SourceLocation getSourceLocation() {
+        return null;
     }
 }

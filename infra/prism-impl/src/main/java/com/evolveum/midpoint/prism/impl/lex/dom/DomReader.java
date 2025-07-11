@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.dom;
 
+import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -33,10 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * TODO
@@ -58,7 +56,9 @@ class DomReader {
     @NotNull private final QName valueElementName;
     @NotNull private final QName metadataElementName;
 
-    DomReader(@NotNull Element root, SchemaRegistry schemaRegistry, PrismNamespaceContext rootContext) {
+    private List<XmlPositionTreeBuilder.XmlNode> positionList;
+
+    DomReader(@NotNull Element root, SchemaRegistry schemaRegistry, PrismNamespaceContext rootContext, List<XmlPositionTreeBuilder.XmlNode> positionList) {
         this.root = root;
         this.rootElementName = DOMUtil.getQName(root);
         this.schemaRegistry = schemaRegistry;
@@ -66,14 +66,19 @@ class DomReader {
         this.metadataElementName = new QName(schemaRegistry.getDefaultNamespace(), DomReader.METADATA_LOCAL_PART);
         this.rootContext = rootContext;
         this.schema = XNodeDefinition.root(schemaRegistry);
+        this.positionList = positionList;
     }
 
     DomReader(Document document, SchemaRegistry schemaRegistry) {
-        this(document, schemaRegistry, PrismNamespaceContext.EMPTY);
+        this(document, schemaRegistry, PrismNamespaceContext.EMPTY, null);
     }
 
-    DomReader(Document document, SchemaRegistry schemaRegistry, PrismNamespaceContext nsContext) {
-        this(DOMUtil.getFirstChildElement(document), schemaRegistry, nsContext);
+    DomReader(Document document, SchemaRegistry schemaRegistry, PrismNamespaceContext nsContext, List<XmlPositionTreeBuilder.XmlNode> positionList) {
+        this(DOMUtil.getFirstChildElement(document), schemaRegistry, nsContext, positionList);
+    }
+
+    public DomReader(Document document, @NotNull SchemaRegistry schemaRegistry, List<XmlPositionTreeBuilder.XmlNode> positionList) {
+        this(DOMUtil.getFirstChildElement(document), schemaRegistry, PrismNamespaceContext.EMPTY, positionList);
     }
 
     @NotNull
@@ -84,7 +89,7 @@ class DomReader {
             List<RootXNodeImpl> rv = new ArrayList<>();
             PrismNamespaceContext context = rootContext.childContext(DOMUtil.getNamespaceDeclarationsNonNull(root));
             for (Element child : DOMUtil.listChildElements(root)) {
-                rv.add(new DomReader(child, schemaRegistry, context.inherited()).read());
+                rv.add(new DomReader(child, schemaRegistry, context.inherited(), positionList).read());
             }
             return rv;
         }
@@ -93,6 +98,9 @@ class DomReader {
     @NotNull RootXNodeImpl read() throws SchemaException {
         RootXNodeImpl xroot = new RootXNodeImpl(rootElementName, rootContext);
         XNodeImpl xnode = readElementContent(root, null, schema, rootContext, false);
+        SourceLocation sourceLocation = findLocation(positionList, rootElementName.getLocalPart());
+        xroot.setSourceLocationOfKey(sourceLocation);
+        xnode.setSourceLocation(sourceLocation);
         xroot.setSubnode(xnode);
         return xroot;
     }
@@ -140,6 +148,11 @@ class DomReader {
         } else {
             node = parsePrimitiveElement(element, localNsCtx);
         }
+
+        SourceLocation sourceLocation = findLocation(positionList, element.getLocalName());
+        node.setSourceLocation(sourceLocation);
+        node.setSourceLocationOfKey(sourceLocation);
+
         readMetadata(element, node, localNsCtx);
         readMaxOccurs(element, node);
 
@@ -152,13 +165,16 @@ class DomReader {
         for (Element metadataChild : metadataChildren) {
             XNodeImpl metadata = readElementContent(metadataChild, schema.metadataDef(), schema, parentNsContext, false);
             if (metadata instanceof MapXNode) {
+                SourceLocation sourceLocation = findLocation(positionList, metadataChild.getLocalName());
+                metadata.setSourceLocation(sourceLocation);
+                metadata.setSourceLocationOfKey(sourceLocation);
                 if (node instanceof MetadataAware) {
                     ((MetadataAware) node).addMetadataNode((MapXNode) metadata);
                 } else {
-                    throw new SchemaException("Attempt to add metadata to non-metadata-aware XNode: " + node);
+                    throw new SchemaException("Attempt to add metadata to non-metadata-aware XNode: " + node, node.getSourceLocation());
                 }
             } else {
-                throw new SchemaException("Metadata is not of Map type: " + metadata);
+                throw new SchemaException("Metadata is not of Map type: " + metadata, node.getSourceLocation());
             }
         }
     }
@@ -345,6 +361,9 @@ class DomReader {
         PrimitiveXNodeImpl<T> xnode = new PrimitiveXNodeImpl<>(localNsContext);
         xnode.setValueParser(new NamespaceAwareValueParser<>(attr.getTextContent(), localNsContext));
         xnode.setAttribute(true);
+        SourceLocation sourceLocation = findLocation(positionList, attr.getName());
+        xnode.setSourceLocation(sourceLocation);
+        xnode.setSourceLocationOfKey(sourceLocation);
         return xnode;
     }
 
@@ -354,4 +373,21 @@ class DomReader {
         xschema.setSchemaElement(schemaElement);
         return xschema;
     }
+
+    private SourceLocation findLocation(List<XmlPositionTreeBuilder.XmlNode> nodeList, String element) {
+        SourceLocation sourceLocation = SourceLocation.unknown();
+
+        if (nodeList != null) {
+            for (XmlPositionTreeBuilder.XmlNode node : nodeList) {
+                if (node.name.equals(element)) {
+                    sourceLocation = SourceLocation.from("xNode", node.line, node.column);
+                    nodeList.remove(node);
+                    break;
+                }
+            }
+        }
+
+        return sourceLocation;
+    }
+
 }
