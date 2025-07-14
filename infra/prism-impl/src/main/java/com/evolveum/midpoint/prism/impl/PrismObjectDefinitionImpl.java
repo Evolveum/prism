@@ -54,7 +54,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable>
     @NotNull
     public PrismObject<O> instantiate() throws SchemaException {
         if (isAbstract()) {
-            throw new SchemaException("Cannot instantiate abstract definition " + this);
+            throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
         return new PrismObjectImpl<>(getItemName(), this);
     }
@@ -63,7 +63,7 @@ public class PrismObjectDefinitionImpl<O extends Objectable>
     @Override
     public PrismObject<O> instantiate(QName name) throws SchemaException {
         if (isAbstract()) {
-            throw new SchemaException("Cannot instantiate abstract definition " + this);
+            throw new SchemaException("Cannot instantiate abstract definition "+this);
         }
         name = DefinitionUtil.addNamespaceIfApplicable(name, this.itemName);
         return new PrismObjectImpl<>(name, this);

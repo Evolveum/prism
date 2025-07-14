@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
@@ -25,7 +24,6 @@ import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class MapXNodeImpl extends XNodeImpl implements MapXNode {
 

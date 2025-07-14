@@ -14,13 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
-import javax.xml.transform.Source;
 
-import com.evolveum.concepts.SourceLocation;
-
-import com.evolveum.concepts.ValidationMessage;
-
-import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.base.Strings;
@@ -163,16 +157,10 @@ class JsonObjectTokenReader {
 
     private @NotNull XNodeDefinition processFieldName(XNodeDefinition currentFieldName) throws IOException, SchemaException {
         String newFieldName = parser.getCurrentName();
-
         if (currentFieldName != null) {
             warnOrThrow("Two field names in succession: " + currentFieldName.getName() + " and " + newFieldName);
         }
-
-        XNodeDefinition xNodeDefinition = definition.resolve(newFieldName, namespaceContext());
-        JsonLocation jsonLocation = parser.currentLocation();
-        xNodeDefinition.setSourceLocation(SourceLocation.from("xNodeDefinition", jsonLocation.getLineNr(), jsonLocation.getColumnNr()));
-
-        return xNodeDefinition;
+        return definition.resolve(newFieldName, namespaceContext());
     }
 
     private @NotNull QName resolveQName(String name) throws SchemaException {
@@ -182,10 +170,9 @@ class JsonObjectTokenReader {
     private void processFieldValue(XNodeDefinition name) throws IOException, SchemaException {
         assert name != null;
         XNodeImpl value = readValue(name);
-        JsonLocation jsonLocation = parser.currentLocation();
-        value.setSourceLocation(SourceLocation.from("xNode", jsonLocation.getLineNr(), jsonLocation.getColumnNr()));
         value.setDefinition(name.itemDefinition());
-        PROCESSORS.getOrDefault(name.getName(), STANDARD_PROCESSOR).apply(this, name.getName(), value, name.getSourceLocation());
+        PROCESSORS.getOrDefault(name.getName(), STANDARD_PROCESSOR).apply(this, name.getName(), value);
+
     }
 
     private XNodeImpl readValue(XNodeDefinition fieldDef) throws IOException, SchemaException {
@@ -199,12 +186,12 @@ class JsonObjectTokenReader {
         return parentContext.inherited();
     }
 
-    private void processContextDeclaration(QName name, XNodeImpl value, SourceLocation sourceLocation) throws SchemaException {
+    private void processContextDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (value instanceof MapXNode) {
             Builder<String, String> nsCtx = ImmutableMap.<String, String>builder();
             for (Entry<QName, ? extends XNode> entry : ((MapXNode) value).toMap().entrySet()) {
                 String key = entry.getKey().getLocalPart();
-                String ns = getCurrentFieldStringValue(entry.getKey(), entry.getValue(), sourceLocation);
+                String ns = getCurrentFieldStringValue(entry.getKey(), entry.getValue());
                 nsCtx.put(key, ns);
             }
             this.map = new MapXNodeImpl(parentContext.childContext(nsCtx.build()));
@@ -213,35 +200,34 @@ class JsonObjectTokenReader {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    private void processStandardFieldValue(QName name, @NotNull XNodeImpl currentFieldValue, SourceLocation sourceLocation) {
+    private void processStandardFieldValue(QName name, @NotNull XNodeImpl currentFieldValue) {
         // MID-5326:
         //   If namespace is defined, fieldName is always qualified,
         //   If namespace is undefined, then we can not effectivelly distinguish between
-        currentFieldValue.setSourceLocationOfKey(sourceLocation);
         map.put(name, currentFieldValue);
     }
 
-    private void processIncompleteDeclaration(QName name, XNodeImpl currentFieldValue, SourceLocation sourceLocation) throws SchemaException {
+    private void processIncompleteDeclaration(QName name, XNodeImpl currentFieldValue) throws SchemaException {
         if (incomplete != null) {
-            warnOrThrow("Duplicate @incomplete marker found with the value: " + currentFieldValue, currentFieldValue.getSourceLocation());
+            warnOrThrow("Duplicate @incomplete marker found with the value: " + currentFieldValue);
         } else if (currentFieldValue instanceof PrimitiveXNodeImpl) {
             //noinspection unchecked
             Boolean realValue = ((PrimitiveXNodeImpl<Boolean>) currentFieldValue)
                     .getParsedValue(DOMUtil.XSD_BOOLEAN, Boolean.class, getEvaluationMode());
             incomplete = Boolean.TRUE.equals(realValue);
         } else {
-            warnOrThrow("@incomplete marker found with incompatible value: " + currentFieldValue, currentFieldValue.getSourceLocation());
+            warnOrThrow("@incomplete marker found with incompatible value: " + currentFieldValue);
         }
     }
 
-    private void processWrappedValue(QName name, XNodeImpl currentFieldValue, SourceLocation sourceLocation) throws SchemaException {
+    private void processWrappedValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
         if (wrappedValue != null) {
-            warnOrThrow("Value ('" + JsonInfraItems.PROP_VALUE + "') defined more than once", currentFieldValue.getSourceLocation());
+            warnOrThrow("Value ('" + JsonInfraItems.PROP_VALUE + "') defined more than once");
         }
         wrappedValue = currentFieldValue;
     }
 
-    private void processMetadataValue(QName name, XNodeImpl currentFieldValue, SourceLocation sourceLocation) throws SchemaException {
+    private void processMetadataValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
         if (currentFieldValue instanceof MapXNode) {
             metadata.add((MapXNode) currentFieldValue);
         } else if (currentFieldValue instanceof ListXNodeImpl) {
@@ -249,26 +235,26 @@ class JsonObjectTokenReader {
                 if (metadataValue instanceof MapXNode) {
                     metadata.add((MapXNode) metadataValue);
                 } else {
-                    warnOrThrow("Metadata is not a map XNode: " + metadataValue.debugDump(), currentFieldValue.getSourceLocation());
+                    warnOrThrow("Metadata is not a map XNode: " + metadataValue.debugDump());
                 }
             }
         } else {
-            warnOrThrow("Metadata is not a map or list XNode: " + currentFieldValue.debugDump(), currentFieldValue.getSourceLocation());
+            warnOrThrow("Metadata is not a map or list XNode: " + currentFieldValue.debugDump());
         }
     }
 
-    private void processElementNameDeclaration(QName name, XNodeImpl value, SourceLocation sourceLocation) throws SchemaException {
+    private void processElementNameDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (elementName != null) {
-            warnOrThrow("Element name defined more than once", value.getSourceLocation());
+            warnOrThrow("Element name defined more than once");
         }
-        String nsName = getCurrentFieldStringValue(name, value, sourceLocation);
+        String nsName = getCurrentFieldStringValue(name, value);
         @NotNull
         XNodeDefinition maybeDefinition = parentDefinition.resolve(nsName, namespaceContext());
         elementName = resolveQName(nsName);
         replaceDefinition(maybeDefinition);
     }
 
-    private void processId(QName name, XNodeImpl value, SourceLocation sourceLocation) {
+    private void processId(QName name, XNodeImpl value) {
         if (value instanceof PrimitiveXNodeImpl<?>) {
             ((PrimitiveXNodeImpl) value).setAttribute(true);
         }
@@ -279,25 +265,24 @@ class JsonObjectTokenReader {
         definition = definition.moreSpecific(maybeDefinition);
     }
 
-    private void processTypeDeclaration(QName name, XNodeImpl value, SourceLocation sourceLocation) throws SchemaException {
+    private void processTypeDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (typeName != null) {
-            warnOrThrow("Value type defined more than once", value.getSourceLocation());
+            warnOrThrow("Value type defined more than once");
         }
-
-        String stringValue = getCurrentFieldStringValue(name, value, sourceLocation);
+        String stringValue = getCurrentFieldStringValue(name, value);
         // TODO: Compat: We treat default prefixes as empty namespace, not default namespace
         typeName = XNodeDefinition.resolveQName(stringValue, namespaceContext());
         definition = definition.withType(typeName);
     }
 
-    private void processNamespaceDeclaration(QName name, XNodeImpl value, SourceLocation sourceLocation) throws SchemaException {
+    private void processNamespaceDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (namespaceSensitiveStarted) {
-            warnOrThrow("Namespace declared after other fields: " + ctx.getPositionSuffix(), value.getSourceLocation());
+            warnOrThrow("Namespace declared after other fields: " + ctx.getPositionSuffix());
         }
         if (map != null) {
-            warnOrThrow("Namespace defined more than once", value.getSourceLocation());
+            warnOrThrow("Namespace defined more than once");
         }
-        var ns = getCurrentFieldStringValue(name, value, sourceLocation);
+        var ns = getCurrentFieldStringValue(name, value);
         map = new MapXNodeImpl(parentContext.childContext(ImmutableMap.of("", ns)));
     }
 
@@ -312,7 +297,7 @@ class JsonObjectTokenReader {
         XNodeImpl ret;
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
             warnOrThrow("More than one of '" + PROP_VALUE + "', '" + PROP_INCOMPLETE
-                    + "' and regular content present", map.getSourceLocationOfKey());
+                    + "' and regular content present");
             ret = map;
         } else {
             if (haveIncomplete > 0) {
@@ -344,7 +329,7 @@ class JsonObjectTokenReader {
             if (rv instanceof MetadataAware) {
                 ((MetadataAware) rv).setMetadataNodes(metadata);
             } else {
-                warnOrThrow("Couldn't apply metadata to non-metadata-aware node: " + rv.getClass(), rv.getSourceLocation());
+                warnOrThrow("Couldn't apply metadata to non-metadata-aware node: " + rv.getClass());
             }
         }
     }
@@ -355,7 +340,7 @@ class JsonObjectTokenReader {
                 if (!wrappedValue.getElementName().equals(elementName)) {
                     warnOrThrow("Conflicting element names for '" + JsonInfraItems.PROP_VALUE
                             + "' (" + wrappedValue.getElementName()
-                            + ") and regular content (" + elementName + "; ) present", rv.getSourceLocation());
+                            + ") and regular content (" + elementName + "; ) present");
                 }
             }
             rv.setElementName(elementName);
@@ -367,18 +352,18 @@ class JsonObjectTokenReader {
         if (typeName != null) {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
                 warnOrThrow("Conflicting type names for '" + JsonInfraItems.PROP_VALUE
-                        + "' (" + wrappedValue.getTypeQName() + ") and regular content (" + typeName + ") present", rv.getSourceLocation());
+                        + "' (" + wrappedValue.getTypeQName() + ") and regular content (" + typeName + ") present");
             }
             rv.setTypeQName(typeName);
             rv.setExplicitTypeDeclaration(true);
         }
     }
 
-    private String getCurrentFieldStringValue(QName name, XNode currentFieldValue, SourceLocation sourceLocation) throws SchemaException {
+    private String getCurrentFieldStringValue(QName name, XNode currentFieldValue) throws SchemaException {
         if (currentFieldValue instanceof PrimitiveXNodeImpl) {
             return ((PrimitiveXNodeImpl<?>) currentFieldValue).getStringValue();
         } else {
-            warnOrThrow("Value of '" + name + "' attribute must be a primitive one. It is " + currentFieldValue + " instead", currentFieldValue.getSourceLocation());
+            warnOrThrow("Value of '" + name + "' attribute must be a primitive one. It is " + currentFieldValue + " instead");
             return "";
         }
     }
@@ -390,15 +375,12 @@ class JsonObjectTokenReader {
     private void warnOrThrow(String format, Object... args) throws SchemaException {
         String message = Strings.lenientFormat(format, args);
         ctx.prismParsingContext.warnOrThrow(LOGGER, message + ". At " + ctx.getPositionSuffix());
-        ctx.prismParsingContext.setValidationMessage(new ValidationMessage(message,
-                SourceLocation.from("validate", ctx.getLocation().getLineNr(), ctx.getLocation().getColumnNr()))
-        );
     }
 
     private static ItemProcessor namespaceSensitive(ItemProcessor processor) {
-        return (reader, name, value, sourceLocation) -> {
+        return (reader, name, value) -> {
             reader.startNamespaceSensitive();
-            processor.apply(reader, name, value, sourceLocation);
+            processor.apply(reader, name, value);
         };
     }
 
@@ -411,6 +393,7 @@ class JsonObjectTokenReader {
 
     @FunctionalInterface
     private interface ItemProcessor {
-        void apply(JsonObjectTokenReader reader, QName itemName, XNodeImpl value, SourceLocation sourceLocation) throws SchemaException;
+
+        void apply(JsonObjectTokenReader reader, QName itemName, XNodeImpl value) throws SchemaException;
     }
 }

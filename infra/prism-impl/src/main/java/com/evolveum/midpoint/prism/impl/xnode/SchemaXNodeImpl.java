@@ -6,8 +6,10 @@
  */
 package com.evolveum.midpoint.prism.impl.xnode;
 
-import com.evolveum.concepts.SourceLocation;
-import com.evolveum.midpoint.prism.xnode.*;
+import com.evolveum.midpoint.prism.xnode.MapXNode;
+import com.evolveum.midpoint.prism.xnode.MetadataAware;
+import com.evolveum.midpoint.prism.xnode.SchemaXNode;
+import com.evolveum.midpoint.prism.xnode.XNode;
 
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
@@ -129,15 +131,5 @@ public class SchemaXNodeImpl extends XNodeImpl implements SchemaXNode {
             return this;
         }
         return clone();
-    }
-
-    @Override
-    public void setSourceLocation(SourceLocation sourceLocation) {
-        this.sourceLocation = sourceLocation;
-    }
-
-    @Override
-    public SourceLocation getSourceLocation() {
-        return null;
     }
 }

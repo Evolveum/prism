@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.SourceLocation;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.util.exception.SchemaException;

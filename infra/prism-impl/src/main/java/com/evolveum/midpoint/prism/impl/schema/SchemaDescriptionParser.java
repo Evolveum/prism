@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.schema.SchemaDescription;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.util.Checks;
@@ -152,9 +151,9 @@ class SchemaDescriptionParser {
 
     private static void fetchBasicInfoFromSchema(SchemaDescriptionImpl desc) throws SchemaException {
         Element rootElement = desc.getDomElement();
-        Checks.checkSchema(DOMUtil.XSD_SCHEMA_ELEMENT.equals(DOMUtil.getQName(rootElement)), "Schema %s does not start with xsd:schema element", SourceLocation.unknown(), desc.getSourceDescription());
+        Checks.checkSchema(DOMUtil.XSD_SCHEMA_ELEMENT.equals(DOMUtil.getQName(rootElement)), "Schema %s does not start with xsd:schema element", desc.getSourceDescription());
         String targetNamespace = DOMUtil.getAttribute(rootElement, DOMUtil.XSD_ATTR_TARGET_NAMESPACE);
-        Checks.checkSchemaNotNull(targetNamespace, "Schema %s does not have targetNamespace attribute", SourceLocation.unknown(), desc.getSourceDescription());
+        Checks.checkSchemaNotNull(targetNamespace, "Schema %s does not have targetNamespace attribute", desc.getSourceDescription());
         desc.setNamespace(targetNamespace);
         Optional<Element> defaultPrefixElem = DOMUtil.getElement(rootElement, SCHEMA_ANNOTATION, SCHEMA_APP_INFO, A_DEFAULT_PREFIX);
         if(defaultPrefixElem.isPresent()) {

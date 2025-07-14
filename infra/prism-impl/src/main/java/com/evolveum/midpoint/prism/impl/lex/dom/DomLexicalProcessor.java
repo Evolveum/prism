@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.ParserConfigurationException;
 
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 
@@ -35,8 +34,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 
-import org.xml.sax.SAXException;
-
 public class DomLexicalProcessor implements LexicalProcessor<String> {
 
     public static final Trace LOGGER = TraceManager.getTrace(DomLexicalProcessor.class);
@@ -50,24 +47,14 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     @NotNull
     @Override
     public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) throws SchemaException, IOException {
-
-        List<XmlPositionTreeBuilder.XmlNode> positionTree = new ArrayList<>();
-
-        try {
-            positionTree = XmlPositionTreeBuilder.buildTree(source.getInputStream()).toNodeList();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-        }
-
-
         if (source instanceof ParserElementSource) {
             Element root = ((ParserElementSource) source).getElement();
-            return new DomReader(root, schemaRegistry, PrismNamespaceContext.EMPTY, positionTree).read();
+            return new DomReader(root, schemaRegistry, PrismNamespaceContext.EMPTY).read();
         } else {
             InputStream is = source.getInputStream();
             try {
                 Document document = DOMUtil.parse(is);
-                return new DomReader(document, schemaRegistry, positionTree).read();
+                return new DomReader(document, schemaRegistry).read();
             } finally {
                 if (source.closeStreamAfterParsing()) {
                     IOUtils.closeQuietly(is);
@@ -108,7 +95,6 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
 
     @Override
     public boolean canRead(@NotNull String dataString) {
-        // FIXME if snippet does stated with "<" and is xml ???
         return dataString.charAt(0) == '<'
                 || XML_DETECTION_PATTERN.matcher(dataString).find();
     }

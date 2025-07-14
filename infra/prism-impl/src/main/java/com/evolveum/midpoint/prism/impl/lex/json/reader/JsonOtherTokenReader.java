@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
-
-import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.node.ValueNode;
@@ -83,7 +81,6 @@ class JsonOtherTokenReader {
 
         ListXNodeImpl list = new ListXNodeImpl();
         Object tid = parser.getTypeId();
-
         if (tid != null) {
             list.setTypeQName(ctx.yamlTagResolver.tagToTypeName(tid, ctx));
         }
@@ -102,8 +99,8 @@ class JsonOtherTokenReader {
 
     private <T> PrimitiveXNodeImpl<T> parseToPrimitive() throws IOException, SchemaException {
         PrimitiveXNodeImpl<T> primitive = new PrimitiveXNodeImpl<>(this.parentContext);
-        Object tid = parser.getTypeId();
 
+        Object tid = parser.getTypeId();
         if (tid != null) {
             QName typeName = ctx.yamlTagResolver.tagToTypeName(tid, ctx);
             primitive.setTypeQName(typeName);

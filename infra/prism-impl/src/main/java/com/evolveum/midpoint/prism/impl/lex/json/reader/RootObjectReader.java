@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.SourceLocation;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismNamespaceContext;

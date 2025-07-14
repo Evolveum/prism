@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl.xnode;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
 import com.evolveum.midpoint.prism.Visitor;
 import com.evolveum.midpoint.prism.xnode.IncompleteMarkerXNode;
@@ -50,15 +49,4 @@ public class IncompleteMarkerXNodeImpl extends XNodeImpl implements IncompleteMa
     public XNode copy() {
         return this;
     }
-
-    @Override
-    public void setSourceLocation(SourceLocation sourceLocation) {
-        this.sourceLocation = sourceLocation;
-    }
-
-    @Override
-    public SourceLocation getSourceLocation() {
-        return null;
-    }
-
 }

@@ -31,7 +31,6 @@ public class JsonReader extends AbstractReader {
     @Override
     public boolean canRead(@NotNull String dataString) {
         // Second for is for multiple objects
-        // FIXME if does not strictly first char is "{" || "[" but tab, space, or other ???
         return dataString.startsWith("{") || dataString.startsWith("[");
     }
 

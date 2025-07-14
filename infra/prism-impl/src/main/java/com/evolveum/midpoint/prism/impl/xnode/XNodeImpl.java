@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.AbstractFreezable;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismConstants;
@@ -86,10 +85,6 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
     private transient Object parserData;
 
     private final PrismNamespaceContext namespaceContext;
-
-    public SourceLocation sourceLocation;
-
-    public SourceLocation sourceLocationOfKey;
 
     public XNodeImpl() {
         this(PrismNamespaceContext.EMPTY);
@@ -296,24 +291,6 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
     boolean metadataEquals(@NotNull List<MapXNode> metadata1, @NotNull List<MapXNode> metadata2) {
         return MiscUtil.unorderedCollectionEquals(metadata1, metadata2);
-    }
-
-    @Override
-    public SourceLocation getSourceLocation() {
-        return sourceLocation;
-    }
-
-    @Override
-    public void setSourceLocation(SourceLocation sourceLocation) {
-        this.sourceLocation = sourceLocation;
-    }
-
-    public SourceLocation getSourceLocationOfKey() {
-        return sourceLocationOfKey;
-    }
-
-    public void setSourceLocationOfKey(SourceLocation sourceLocationOfKey) {
-        this.sourceLocationOfKey = sourceLocationOfKey;
     }
 
     @Override

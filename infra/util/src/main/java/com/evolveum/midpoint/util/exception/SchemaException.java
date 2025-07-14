@@ -8,7 +8,6 @@ package com.evolveum.midpoint.util.exception;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.annotation.Experimental;
 
@@ -24,7 +23,6 @@ public class SchemaException extends CommonException {
     private static final long serialVersionUID = -6016220825724355014L;
 
     private QName propertyName;
-    private SourceLocation sourceLocation;
 
     public SchemaException() {
         super();
@@ -60,11 +58,6 @@ public class SchemaException extends CommonException {
         this.propertyName = propertyName;
     }
 
-    public SchemaException(String message, SourceLocation sourceLocation) {
-        super(message);
-        this.sourceLocation = sourceLocation;
-    }
-
     @Experimental // is this a good idea?
     public static SchemaException of(String messageTemplate, Object... arguments) {
         return new SchemaException(messageTemplate.formatted(arguments));
@@ -77,10 +70,6 @@ public class SchemaException extends CommonException {
 
     public QName getPropertyName() {
         return propertyName;
-    }
-
-    public SourceLocation getSourceLocation() {
-        return sourceLocation;
     }
 
     /** Provides additional context information to the exception by creating a wrapping one. */
