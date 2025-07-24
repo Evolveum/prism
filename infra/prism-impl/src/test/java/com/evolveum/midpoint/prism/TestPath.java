@@ -6,6 +6,7 @@
  */
 package com.evolveum.midpoint.prism;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.AssertJUnit.*;
 
 import java.util.Collections;
@@ -235,6 +236,23 @@ public class TestPath extends AbstractPrismTest {
 
         // THEN
         assertEquals("Remainder fooBar, fooNull", pathBar, remainder1);
+    }
+
+    @Test
+    public void testPathSetRemainder() {
+        var foo = ItemName.from(NS, "foo");
+        var bar = ItemName.from(NS, "bar");
+        var set = PathSet.of(foo.append(bar));
+
+        when();
+        var remainderSet = set.remainder(foo);
+
+        then();
+        assertThat(remainderSet.contains(bar))
+                .as("contains method return value")
+                .isTrue();
+
+        // we could not use assertThat(remainderSet).contains(bar), because it uses equality check which is not OK here
     }
 
     private void assertNormalizedPath(UniformItemPath normalized, Object... expected) {
