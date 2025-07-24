@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
+import com.evolveum.concepts.ValidationMessage;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -59,4 +60,10 @@ public interface ParsingContext extends Cloneable {
 
     boolean isUseLazyDeserializationFor(QName typeName);
     ParsingContext enableLazyDeserializationFor(QName typeName);
+
+    ParsingContext validation();
+    boolean isValidation();
+
+    public List<ValidationMessage> getValidationRecordList();
+    public void setValidationRecordList(ValidationMessage validationMessage);
 }

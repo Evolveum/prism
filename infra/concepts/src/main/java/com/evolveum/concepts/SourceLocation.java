@@ -6,8 +6,10 @@
  */
 package com.evolveum.concepts;
 
+import java.io.Serializable;
+
 // FIXME: Rename to LinedSourceLocation
-public class SourceLocation {
+public class SourceLocation implements Serializable {
 
     private static final SourceLocation UNKNOWN = new SourceLocation("unknown", 0, 0) {
 

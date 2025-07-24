@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.xnode;
 
+import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.util.DebugDumpable;
 import org.jetbrains.annotations.NotNull;
@@ -50,4 +51,7 @@ public interface XNode extends DebugDumpable, Visitable<XNode>, Cloneable, Copya
 
     void setDefinition(ItemDefinition<?> definition);
     ItemDefinition<?> getDefinition();
+
+    void setSourceLocation(SourceLocation sourceLocation);
+    SourceLocation getSourceLocation();
 }
