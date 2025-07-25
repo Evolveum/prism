@@ -39,7 +39,7 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
         this(List.of(), true);
     }
 
-    public PathSet(@NotNull Collection<ItemPath> initialContent) {
+    public PathSet(@NotNull Collection<? extends ItemPath> initialContent) {
         this(new ArrayList<>(initialContent), false);
     }
 
