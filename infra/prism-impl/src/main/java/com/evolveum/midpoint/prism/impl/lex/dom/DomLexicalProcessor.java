@@ -53,7 +53,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
 
             if (parsingContext.isValidation()) {
                 try {
-                    root = ValidatorUtil.saxParsing(source.getInputStream()).getDocumentElement();
+                    root = new StreamDomBuilder().parse(source.getInputStream()).getDocumentElement();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -69,7 +69,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
 
                 if (parsingContext.isValidation()) {
                     try {
-                        document = ValidatorUtil.saxParsing(source.getInputStream());
+                        document = new StreamDomBuilder().parse(source.getInputStream());
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -95,7 +95,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
 
             if (parsingContext.isValidation()) {
                 try {
-                    document = ValidatorUtil.saxParsing(source.getInputStream());
+                    document = new StreamDomBuilder().parse(source.getInputStream());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

@@ -1,12 +1,12 @@
 package com.evolveum.concepts;
 
-public enum ValidationMessageType {
+public enum ValidationLogType {
     WARNING("Warning"),
     ERROR("Error");
 
     private final String label;
 
-    ValidationMessageType(String label) {
+    ValidationLogType(String label) {
         this.label = label;
     }
 

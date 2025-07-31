@@ -12,7 +12,7 @@ import java.util.Objects;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.ValidationMessageType;
+import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -85,19 +85,21 @@ class JsonOtherTokenReader {
 
         ListXNodeImpl list = new ListXNodeImpl();
 
-        SourceLocation sourceLocation = SourceLocation.from("xNode", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr());
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, list, SourceLocation.from("xNode", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         Object tid = parser.getTypeId();
         if (tid != null) {
             list.setTypeQName(ctx.yamlTagResolver.tagToTypeName(tid, ctx));
         }
+
         for (;;) {
             JsonToken token = parser.nextToken();
+            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, list,
+                    SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                        list.getSourceLocation(), "",  msg);
                 ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
-                ValidatorUtil.registerRecord(ctx.prismParsingContext, ValidationMessageType.ERROR, msg, null, sourceLocation);
                 return list;
             } else if (token == JsonToken.END_ARRAY) {
                 return list;
@@ -115,6 +117,8 @@ class JsonOtherTokenReader {
             QName typeName = ctx.yamlTagResolver.tagToTypeName(tid, ctx);
             primitive.setTypeQName(typeName);
             primitive.setExplicitTypeDeclaration(true);
+            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
+                    SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         } else {
             // We don't try to determine XNode type from the implicit JSON/YAML type (integer, number, ...),
             // because XNode type prescribes interpretation in midPoint. E.g. YAML string type would be interpreted
@@ -127,15 +131,14 @@ class JsonOtherTokenReader {
         primitive.setAttribute(def.isXmlAttribute());
         // FIXME: Materialize when possible
 
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive, SourceLocation.from("xNode", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         return primitive;
     }
 
     private <T> PrimitiveXNodeImpl<T> parseToEmptyPrimitive() {
         PrimitiveXNodeImpl<T> primitive = new PrimitiveXNodeImpl<>();
         primitive.setValueParser(new JsonNullValueParser<>());
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive, SourceLocation.from("xNode", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
+                SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         return primitive;
     }
 

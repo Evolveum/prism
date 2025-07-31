@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -45,7 +46,9 @@ public class SaxElementHandler extends DefaultHandler {
             element = document.createElement(qName);
         }
 
-        element.setUserData(sourceLocationKey, SourceLocation.from("xNode", locator.getLineNumber(), locator.getColumnNumber()), null);
+        element.setUserData(sourceLocationKey,
+                SourceLocation.from("xNode", locator.getLineNumber(), locator.getColumnNumber()),
+                null);
 
         for (int i = 0; i < attributes.getLength(); i++) {
             String attrUri = attributes.getURI(i);

@@ -8,13 +8,17 @@
 package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.ValidationMessage;
+import com.evolveum.concepts.ValidationLog;
+import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.exception.ValidationException;
 import com.evolveum.midpoint.util.logging.Trace;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,8 +38,8 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
     private Set<QName> lazyDeserialization = new HashSet<>();
-    private boolean validation = false;
-    private final List<ValidationMessage> validationRecordList = new ArrayList<>();
+    private boolean isValidation = false;
+    private final List<ValidationLog> validationLogs = new ArrayList<>();
 
     private ParsingContextImpl() {
     }
@@ -198,19 +202,46 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
 
     @Override
     public boolean isValidation() {
-        return validation;
+        return isValidation;
     }
 
+    @Override
     public ParsingContext validation() {
-        this.validation = true;
+        isValidation = true;
         return this;
     }
 
-    public List<ValidationMessage> getValidationRecordList() {
-        return validationRecordList;
+    @Override
+    public List<ValidationLog> getValidationLogs() {
+        return validationLogs;
     }
 
-    public void setValidationRecordList(ValidationMessage validationMessage) {
-        this.validationRecordList.add(validationMessage);
+    @Override
+    public void validationLogger(boolean expression,
+            ValidationLogType validationLogType,
+            SourceLocation sourceLocation,
+            String technicalMessage,
+            String message, Object... info
+    ) {
+
+        if (!expression && isValidation()) {
+
+            if (sourceLocation == null) {
+                sourceLocation = SourceLocation.unknown();
+            }
+
+            this.validationLogs.add(
+                new ValidationLog(
+                        validationLogType,
+                        sourceLocation,
+                        technicalMessage,
+                        message.formatted(info)
+                )
+            );
+
+            if (validationLogType.equals(ValidationLogType.ERROR)) {
+                throw new ValidationException(this.validationLogs);
+            }
+        }
     }
 }

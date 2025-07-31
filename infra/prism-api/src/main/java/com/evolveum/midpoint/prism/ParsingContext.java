@@ -7,10 +7,15 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.concepts.ValidationMessage;
+import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.ValidationLog;
+import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
+
+import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
 import java.util.List;
@@ -61,9 +66,8 @@ public interface ParsingContext extends Cloneable {
     boolean isUseLazyDeserializationFor(QName typeName);
     ParsingContext enableLazyDeserializationFor(QName typeName);
 
-    ParsingContext validation();
-    boolean isValidation();
-
-    public List<ValidationMessage> getValidationRecordList();
-    public void setValidationRecordList(ValidationMessage validationMessage);
+    public ParsingContext validation();
+    public boolean isValidation();
+    public List<ValidationLog> getValidationLogs();
+    public void validationLogger(boolean expression, ValidationLogType validationLogType, SourceLocation sourceLocation, String technicalMessage, String message, Object... info);
 }
