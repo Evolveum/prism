@@ -106,11 +106,14 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
 
     @Override
     public void warnOrThrow(Trace logger, String message, Throwable t) throws SchemaException {
-        if (isCompat()) {
-            logger.warn("{}", message, t);
-            warn(message);
-        } else {
-            throw new SchemaException(message, t);
+        // FIXME maybe it would be good ide remove Warning from prism parsing and to keep just validations logs with exact position of log !!! start using validation logs instead of Warning everywhere
+        if (!isValidation()) {
+            if (isCompat()) {
+                logger.warn("{}", message, t);
+                warn(message);
+            } else {
+                throw new SchemaException(message, t);
+            }
         }
     }
 

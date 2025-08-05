@@ -7,6 +7,7 @@
 package com.evolveum.concepts;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 // FIXME: Rename to LinedSourceLocation
 public class SourceLocation implements Serializable {
@@ -74,4 +75,20 @@ public class SourceLocation implements Serializable {
         SourceLocation sourceLocation();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        SourceLocation that = (SourceLocation) obj;
+
+        return line == that.line &&
+                character == that.character &&
+                Objects.equals(sourceName, that.sourceName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceName, line, character);
+    }
 }

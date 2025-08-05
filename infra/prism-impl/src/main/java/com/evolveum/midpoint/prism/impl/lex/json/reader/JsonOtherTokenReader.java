@@ -93,7 +93,7 @@ class JsonOtherTokenReader {
         for (;;) {
             JsonToken token = parser.nextToken();
             ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, list,
-                    SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
 
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
@@ -118,7 +118,7 @@ class JsonOtherTokenReader {
             primitive.setTypeQName(typeName);
             primitive.setExplicitTypeDeclaration(true);
             ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
-                    SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         } else {
             // We don't try to determine XNode type from the implicit JSON/YAML type (integer, number, ...),
             // because XNode type prescribes interpretation in midPoint. E.g. YAML string type would be interpreted
@@ -138,7 +138,7 @@ class JsonOtherTokenReader {
         PrimitiveXNodeImpl<T> primitive = new PrimitiveXNodeImpl<>();
         primitive.setValueParser(new JsonNullValueParser<>());
         ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
-                SourceLocation.from("", parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         return primitive;
     }
 

@@ -61,7 +61,7 @@ public class StreamDomBuilder {
                     Element elem = doc.createElementNS(namespaceURI, qName);
                     TagPosition position = trackingReader.pollTag(TagPosition.Type.START);
                     elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
-                            SourceLocation.from("", position.line(), position.column()), null);
+                            SourceLocation.from(null, position.line(), position.column()), null);
 
                     // Add attributes (with namespace and prefix)
                     for (int i = 0; i < reader.getAttributeCount(); i++) {

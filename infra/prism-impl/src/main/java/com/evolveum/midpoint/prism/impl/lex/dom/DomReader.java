@@ -147,7 +147,6 @@ class DomReader {
             node = parsePrimitiveElement(element, localNsCtx);
         }
 
-//        System.out.println(node + " ===>>> " + getSourceLocation(element));
         ValidatorUtil.setPositionToXNode(parsingContext, node, getSourceLocation(element));
 
         readMetadata(element, node, localNsCtx);
@@ -169,14 +168,14 @@ class DomReader {
                     String msg = "Attempt to add metadata to non-metadata-aware XNode: %s";
                     parsingContext.validationLogger(false, ValidationLogType.ERROR,
                             node.getSourceLocation(), msg.formatted(node),
-                            msg, "");
+                            msg, node.getElementName());
                     throw new SchemaException(String.format(msg, node));
                 }
             } else {
-                String msg = "Metadata is not of Map type:  %s";
+                String msg = "Metadata is not of Map type: %s";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
                         node.getSourceLocation(), msg.formatted(metadata),
-                        msg, "");
+                        msg, metadata.getElementName());
                 throw new SchemaException(String.format(msg, metadata));
             }
         }
@@ -206,7 +205,7 @@ class DomReader {
             String msg = "Expected numeric value for %s attribute on %s but got %s";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
                     null, msg.formatted(PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString),
-                    msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), "", maxOccursString);
+                    msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), element.getLocalName(), maxOccursString);
             throw new SchemaException(String.format(msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString));
         }
     }
@@ -227,7 +226,7 @@ class DomReader {
             String msg = "List should have no application attributes: %s";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
                     null, msg.formatted(element),
-                    msg, "");
+                    msg, element.getLocalName());
             throw new SchemaException(String.format(msg, element));
         }
         return parseElementList(DOMUtil.listChildElements(element), null, parentDef, parentNsContext, true);
@@ -333,7 +332,7 @@ class DomReader {
             } else {
                 String msg = "Too many schema elements";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                        null, "", msg);
+                        xmap.getSourceLocation(), "", msg);
                 throw new SchemaException(msg);
             }
         } else if (elements.size() == 1) {
