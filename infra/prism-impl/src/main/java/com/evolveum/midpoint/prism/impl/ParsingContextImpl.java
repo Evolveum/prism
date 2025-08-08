@@ -7,12 +7,18 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.ValidationLog;
+import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
+import com.evolveum.midpoint.util.exception.ValidationException;
 import com.evolveum.midpoint.util.logging.Trace;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +38,8 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
     private Set<QName> lazyDeserialization = new HashSet<>();
+    private boolean isValidation = false;
+    private final List<ValidationLog> validationLogs = new ArrayList<>();
 
     private ParsingContextImpl() {
     }
@@ -98,11 +106,14 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
 
     @Override
     public void warnOrThrow(Trace logger, String message, Throwable t) throws SchemaException {
-        if (isCompat()) {
-            logger.warn("{}", message, t);
-            warn(message);
-        } else {
-            throw new SchemaException(message, t);
+        // FIXME maybe it would be good ide remove Warning from prism parsing and to keep just validations logs with exact position of log !!! start using validation logs instead of Warning everywhere
+        if (!isValidation()) {
+            if (isCompat()) {
+                logger.warn("{}", message, t);
+                warn(message);
+            } else {
+                throw new SchemaException(message, t);
+            }
         }
     }
 
@@ -190,5 +201,50 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     public ParsingContext enableLazyDeserializationFor(QName typeName) {
         lazyDeserialization.add(typeName);
         return this;
+    }
+
+    @Override
+    public boolean isValidation() {
+        return isValidation;
+    }
+
+    @Override
+    public ParsingContext validation() {
+        isValidation = true;
+        return this;
+    }
+
+    @Override
+    public List<ValidationLog> getValidationLogs() {
+        return validationLogs;
+    }
+
+    @Override
+    public void validationLogger(boolean expression,
+            ValidationLogType validationLogType,
+            SourceLocation sourceLocation,
+            String technicalMessage,
+            String message, Object... info
+    ) {
+
+        if (!expression && isValidation()) {
+
+            if (sourceLocation == null) {
+                sourceLocation = SourceLocation.unknown();
+            }
+
+            this.validationLogs.add(
+                new ValidationLog(
+                        validationLogType,
+                        sourceLocation,
+                        technicalMessage,
+                        message.formatted(info)
+                )
+            );
+
+            if (validationLogType.equals(ValidationLogType.ERROR)) {
+                throw new ValidationException(this.validationLogs);
+            }
+        }
     }
 }

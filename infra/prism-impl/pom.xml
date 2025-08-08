@@ -148,6 +148,12 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.evolveum.commons</groupId>
+            <artifactId>concepts</artifactId>
+            <version>4.11-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
