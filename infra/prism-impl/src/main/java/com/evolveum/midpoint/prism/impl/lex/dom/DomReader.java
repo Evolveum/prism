@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.impl.lex.dom;
 
 import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
@@ -153,6 +154,7 @@ class DomReader {
         readMaxOccurs(element, node);
 
         setTypeAndElementName(xsiType, elementName, node, storeElementName);
+        node.setDefinition(itemDef.itemDefinition());
 
         return node;
     }
@@ -167,15 +169,15 @@ class DomReader {
                 } else {
                     String msg = "Attempt to add metadata to non-metadata-aware XNode: %s";
                     parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                            node.getSourceLocation(), msg.formatted(node),
-                            msg, node.getElementName());
+                            node.getSourceLocation(), new TechnicalMessage(msg, node),
+                            msg, ValidatorUtil.objectToString(node));
                     throw new SchemaException(String.format(msg, node));
                 }
             } else {
                 String msg = "Metadata is not of Map type: %s";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                        node.getSourceLocation(), msg.formatted(metadata),
-                        msg, metadata.getElementName());
+                        node.getSourceLocation(), new TechnicalMessage(msg, metadata),
+                        msg, ValidatorUtil.objectToString(metadata));
                 throw new SchemaException(String.format(msg, metadata));
             }
         }
@@ -185,6 +187,8 @@ class DomReader {
         String maxOccursString = element.getAttributeNS(
                 PrismConstants.A_MAX_OCCURS.getNamespaceURI(),
                 PrismConstants.A_MAX_OCCURS.getLocalPart());
+
+        ValidatorUtil.setPositionToXNode(parsingContext, xnode, getSourceLocation(element));
 
         if (!StringUtils.isBlank(maxOccursString)) {
             int maxOccurs = parseMultiplicity(maxOccursString, element);
@@ -204,8 +208,8 @@ class DomReader {
         } else {
             String msg = "Expected numeric value for %s attribute on %s but got %s";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    null, msg.formatted(PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString),
-                    msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), element.getLocalName(), maxOccursString);
+                    getSourceLocation(element), new TechnicalMessage(msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString),
+                    msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), ValidatorUtil.objectToString(element), maxOccursString);
             throw new SchemaException(String.format(msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString));
         }
     }
@@ -225,8 +229,8 @@ class DomReader {
         if (DOMUtil.hasApplicationAttributes(element)) {
             String msg = "List should have no application attributes: %s";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    null, msg.formatted(element),
-                    msg, element.getLocalName());
+                    getSourceLocation(element), new TechnicalMessage(msg, element),
+                    msg, ValidatorUtil.objectToString(element));
             throw new SchemaException(String.format(msg, element));
         }
         return parseElementList(DOMUtil.listChildElements(element), null, parentDef, parentNsContext, true);
@@ -301,6 +305,7 @@ class DomReader {
 
     private QName getHierarchyRoot(QName name) {
         ItemDefinition<?> def = schemaRegistry.findItemDefinitionByElementName(name);
+
         if (def == null || !def.isHeterogeneousListItem()) {
             return name;
         } else {
@@ -332,7 +337,7 @@ class DomReader {
             } else {
                 String msg = "Too many schema elements";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                        xmap.getSourceLocation(), "", msg);
+                        xmap.getSourceLocation(), new TechnicalMessage(msg), msg);
                 throw new SchemaException(msg);
             }
         } else if (elements.size() == 1) {
@@ -356,7 +361,8 @@ class DomReader {
         if (!storeElementNames && itemDef == null) {
             String msg = "When !storeElementNames the element name must be specified";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    null, "", msg);
+                    elements.isEmpty() ? null : getSourceLocation(elements.get(0)),
+                    new TechnicalMessage(msg), msg);
 
             throw new IllegalArgumentException(msg);
         }

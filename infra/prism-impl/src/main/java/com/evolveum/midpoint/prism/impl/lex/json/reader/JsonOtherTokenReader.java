@@ -12,6 +12,7 @@ import java.util.Objects;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
@@ -98,7 +99,7 @@ class JsonOtherTokenReader {
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                        list.getSourceLocation(), "",  msg);
+                        list.getSourceLocation(), new TechnicalMessage(msg),  msg);
                 ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
                 return list;
             } else if (token == JsonToken.END_ARRAY) {

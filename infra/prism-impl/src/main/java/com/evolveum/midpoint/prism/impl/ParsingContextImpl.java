@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.impl;
 
 import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLog;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.ParsingContext;
@@ -223,7 +224,7 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     public void validationLogger(boolean expression,
             ValidationLogType validationLogType,
             SourceLocation sourceLocation,
-            String technicalMessage,
+            TechnicalMessage technicalMessage,
             String message, Object... info
     ) {
 
