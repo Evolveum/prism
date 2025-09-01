@@ -95,6 +95,12 @@ public class StreamDomBuilder {
                     }
                 }
 
+                case XMLStreamConstants.COMMENT -> {
+                    if (current != null) {
+                        trackingReader.pollTag(TagPosition.Type.START);
+                    }
+                }
+
                 case XMLStreamConstants.END_ELEMENT -> {
                     if (current != null) {
                         Node parent = current.getParentNode();

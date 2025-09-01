@@ -1,5 +1,7 @@
 package com.evolveum.midpoint.prism.impl.lex.dom.locator;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.*;
 
@@ -40,7 +42,7 @@ public class PositionTrackingReader extends Reader {
     }
 
     @Override
-    public int read(char[] cbuf, int off, int len) throws IOException {
+    public int read(char @NotNull [] cbuf, int off, int len) throws IOException {
         int n = in.read(cbuf, off, len);
         for (int i = 0; i < n; i++) {
             char ch = cbuf[off + i];
