@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
@@ -147,7 +148,7 @@ class JsonObjectTokenReader {
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a map structure";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                        null, "",  msg);
+                        null, new TechnicalMessage(msg),  msg);
                 warnOrThrow(msg);
                 ctx.setAborted();
                 break;
@@ -163,12 +164,12 @@ class JsonObjectTokenReader {
     }
 
     private @NotNull XNodeDefinition processFieldName(XNodeDefinition currentFieldName) throws IOException, SchemaException {
-        String newFieldName = parser.getCurrentName();
+        String newFieldName = parser.currentName();
         if (currentFieldName != null) {
             String msg = "Two field names in succession: %s and %s";
 
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    null, "",  msg, currentFieldName.getName(), newFieldName);
+                    null, new TechnicalMessage(msg),  msg, ValidatorUtil.objectToString(currentFieldName), newFieldName);
             warnOrThrow(msg.formatted(currentFieldName.getName(), newFieldName));
         }
 
@@ -184,7 +185,7 @@ class JsonObjectTokenReader {
     private void processFieldValue(XNodeDefinition name) throws IOException, SchemaException {
         assert name != null;
         XNodeImpl value = readValue(name);
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value, SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
+
         value.setDefinition(name.itemDefinition());
         PROCESSORS.getOrDefault(name.getName(), STANDARD_PROCESSOR).apply(this, name.getName(), value);
     }
@@ -195,15 +196,12 @@ class JsonObjectTokenReader {
 
     private PrismNamespaceContext namespaceContext() {
         if (map != null) {
-            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, map, SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
             return map.namespaceContext();
         }
         return parentContext.inherited();
     }
 
     private void processContextDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value, SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (value instanceof MapXNode) {
             Builder<String, String> nsCtx = ImmutableMap.<String, String>builder();
             for (Entry<QName, ? extends XNode> entry : ((MapXNode) value).toMap().entrySet()) {
@@ -212,8 +210,6 @@ class JsonObjectTokenReader {
                 nsCtx.put(key, ns);
             }
             this.map = new MapXNodeImpl(parentContext.childContext(nsCtx.build()));
-            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, map,
-                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
             return;
         }
         throw new UnsupportedOperationException("Not implemented");
@@ -223,20 +219,14 @@ class JsonObjectTokenReader {
         // MID-5326:
         //   If namespace is defined, fieldName is always qualified,
         //   If namespace is undefined, then we can not effectivelly distinguish between
-
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, currentFieldValue,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         map.put(name, currentFieldValue);
     }
 
     private void processIncompleteDeclaration(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, currentFieldValue,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (incomplete != null) {
             String msg = "Duplicate @incomplete marker found with the value: %s";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    currentFieldValue.getSourceLocation(), msg.formatted(currentFieldValue),
+                    currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue),
                     "Duplicate @incomplete marker found");
             warnOrThrow(String.format(msg, currentFieldValue));
         } else if (currentFieldValue instanceof PrimitiveXNodeImpl) {
@@ -247,20 +237,17 @@ class JsonObjectTokenReader {
         } else {
             String msg = "@incomplete marker found with incompatible value: %s";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    currentFieldValue.getSourceLocation(), msg.formatted(currentFieldValue),
+                    currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue),
                     "@incomplete marker found");
             warnOrThrow(String.format(msg, currentFieldValue));
         }
     }
 
     private void processWrappedValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, currentFieldValue,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (wrappedValue != null) {
             String msg = "Value (' %s ') defined more than once";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    currentFieldValue.getSourceLocation(), "",  msg, JsonInfraItems.PROP_VALUE);
+                    currentFieldValue.getSourceLocation(), new TechnicalMessage(msg),  msg, JsonInfraItems.PROP_VALUE);
             warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE));
 
         }
@@ -268,10 +255,6 @@ class JsonObjectTokenReader {
     }
 
     private void processMetadataValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, currentFieldValue,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (currentFieldValue instanceof MapXNode) {
             metadata.add((MapXNode) currentFieldValue);
         } else if (currentFieldValue instanceof ListXNodeImpl) {
@@ -281,27 +264,25 @@ class JsonObjectTokenReader {
                 } else {
                     String msg = "Metadata is not a map XNode: %s";
                     ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                            metadataValue.getSourceLocation(), msg.formatted(metadataValue.debugDump()), msg, "");
+                            metadataValue.getSourceLocation(), new TechnicalMessage(msg, metadataValue.debugDump()),
+                            msg, ValidatorUtil.objectToString(metadataValue));
                     warnOrThrow(String.format(msg, metadataValue.debugDump()));
                 }
             }
         } else {
             String msg = "Metadata is not a map or list XNode: %s";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    currentFieldValue.getSourceLocation(), msg.formatted(currentFieldValue.debugDump()), msg, "");
+                    currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue.debugDump()),
+                    msg, ValidatorUtil.objectToString(currentFieldValue));
             warnOrThrow(String.format(msg, currentFieldValue.debugDump()));
         }
     }
 
     private void processElementNameDeclaration(QName name, XNodeImpl value) throws SchemaException {
-
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (elementName != null) {
             String msg = "Element name defined more than once";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    value.getSourceLocation(), "",  msg);
+                    value.getSourceLocation(), new TechnicalMessage(msg),  msg);
             warnOrThrow(msg);
         }
         String nsName = getCurrentFieldStringValue(name, value);
@@ -312,9 +293,6 @@ class JsonObjectTokenReader {
     }
 
     private void processId(QName name, XNodeImpl value) {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (value instanceof PrimitiveXNodeImpl<?>) {
             ((PrimitiveXNodeImpl) value).setAttribute(true);
         }
@@ -326,13 +304,10 @@ class JsonObjectTokenReader {
     }
 
     private void processTypeDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (typeName != null) {
             String msg = "Value type defined more than once";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    value.getSourceLocation(), "",  msg);
+                    value.getSourceLocation(), new TechnicalMessage(msg),  msg);
             warnOrThrow(msg);
         }
         String stringValue = getCurrentFieldStringValue(name, value);
@@ -342,19 +317,17 @@ class JsonObjectTokenReader {
     }
 
     private void processNamespaceDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, value,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (namespaceSensitiveStarted) {
             String msg = "Namespace declared after other fields: %s";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    value.getSourceLocation(), "",  msg, "");
+                    value.getSourceLocation(), new TechnicalMessage(msg, ctx.getPositionSuffix()),
+                    "Namespace declared after other fields");
             warnOrThrow(String.format(msg, ctx.getPositionSuffix()));
         }
         if (map != null) {
             String msg = "Namespace defined more than once";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    value.getSourceLocation(), "",  msg);
+                    value.getSourceLocation(), new TechnicalMessage(msg), msg);
             warnOrThrow(msg);
         }
         var ns = getCurrentFieldStringValue(name, value);
@@ -374,7 +347,7 @@ class JsonObjectTokenReader {
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
             String msg = "More than one of '%s', '%s' and regular content present";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    map.getSourceLocation(), "",  msg, PROP_VALUE, PROP_INCOMPLETE);
+                    map.getSourceLocation(), new TechnicalMessage(msg, PROP_VALUE, PROP_INCOMPLETE),  msg, PROP_VALUE, PROP_INCOMPLETE);
             warnOrThrow(String.format(msg, PROP_VALUE, PROP_INCOMPLETE));
             ret = map;
         } else {
@@ -404,31 +377,26 @@ class JsonObjectTokenReader {
     }
 
     private void addMetadataTo(XNodeImpl rv) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, rv,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (!metadata.isEmpty()) {
             if (rv instanceof MetadataAware) {
                 ((MetadataAware) rv).setMetadataNodes(metadata);
             } else {
                 String msg = "Couldn't apply metadata to non-metadata-aware node: %s";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                        rv.getSourceLocation(), msg.formatted(rv), msg, "");
+                        rv.getSourceLocation(), new TechnicalMessage(msg, rv),
+                        "Couldn't apply metadata to non-metadata-aware node");
                 warnOrThrow(String.format(msg, rv.getClass()));
             }
         }
     }
 
     private void addElementNameTo(XNodeImpl rv) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, rv,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (elementName != null) {
             if (wrappedValue != null && wrappedValue.getElementName() != null) {
                 if (!wrappedValue.getElementName().equals(elementName)) {
                     String msg = "Conflicting element names for '%s' (%s) and regular content (%s; ) present";
                     ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                            rv.getSourceLocation(), msg.formatted(JsonInfraItems.PROP_VALUE, wrappedValue.getElementName(), elementName),
+                            rv.getSourceLocation(), new TechnicalMessage(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getElementName(), elementName),
                             msg, JsonInfraItems.PROP_VALUE, "", elementName);
                     warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getElementName(), elementName));
                 }
@@ -438,14 +406,11 @@ class JsonObjectTokenReader {
     }
 
     private void addTypeNameTo(XNodeImpl rv) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, rv,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (typeName != null) {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
                 String msg = "Conflicting type names for '%s' (%s) and regular content (%s) present";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                        rv.getSourceLocation(), msg.formatted(JsonInfraItems.PROP_VALUE, wrappedValue.getTypeQName().getLocalPart(), typeName),
+                        rv.getSourceLocation(), new TechnicalMessage(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getTypeQName().getLocalPart(), typeName),
                         msg, JsonInfraItems.PROP_VALUE, "", typeName);
                 warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getTypeQName(), typeName));
             }
@@ -455,15 +420,12 @@ class JsonObjectTokenReader {
     }
 
     private String getCurrentFieldStringValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, currentFieldValue,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
         if (currentFieldValue instanceof PrimitiveXNodeImpl) {
             return ((PrimitiveXNodeImpl<?>) currentFieldValue).getStringValue();
         } else {
             String msg = "Value of '%s' attribute must be a primitive one. It is %s instead";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                    currentFieldValue.getSourceLocation(), msg.formatted(name, currentFieldValue),
+                    currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, name, currentFieldValue),
                     msg, name, "");
             warnOrThrow(String.format(msg, name, currentFieldValue));
             return "";
@@ -490,8 +452,6 @@ class JsonObjectTokenReader {
         namespaceSensitiveStarted = true;
         if (map == null) {
             map = new MapXNodeImpl(parentContext);
-            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, map,
-                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         }
     }
 

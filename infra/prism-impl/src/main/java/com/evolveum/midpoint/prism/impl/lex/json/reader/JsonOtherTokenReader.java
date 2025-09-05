@@ -12,7 +12,9 @@ import java.util.Objects;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLogType;
+import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -60,24 +62,38 @@ class JsonOtherTokenReader {
 
     @NotNull XNodeImpl readValue() throws IOException, SchemaException {
         JsonToken currentToken = Objects.requireNonNull(parser.currentToken(), "currentToken");
+        SourceLocation sourceLocation = SourceLocation.from(null,
+                parser.currentLocation().getLineNr(),
+                parser.currentLocation().getColumnNr()
+        );
+
+        @NotNull XNodeImpl xNode;
 
         switch (currentToken) {
             case START_OBJECT:
-                return new JsonObjectTokenReader(ctx, parentContext, def, parentDef).read();
+                xNode = new JsonObjectTokenReader(ctx, parentContext, def, parentDef).read();
+                break;
             case START_ARRAY:
-                return parseToList();
+                xNode = parseToList();
+                break;
             case VALUE_STRING:
             case VALUE_TRUE:
             case VALUE_FALSE:
             case VALUE_NUMBER_FLOAT:
             case VALUE_NUMBER_INT:
             case VALUE_EMBEDDED_OBJECT:             // assuming it's a scalar value e.g. !!binary (TODO)
-                return parseToPrimitive();
+                xNode = parseToPrimitive();
+                break;
             case VALUE_NULL:
-                return parseToEmptyPrimitive();
+                xNode = parseToEmptyPrimitive();
+                break;
             default:
                 throw new SchemaException("Unexpected current token: " + currentToken + ". At: " + ctx.getPositionSuffix());
         }
+
+        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, xNode, sourceLocation);
+
+        return xNode;
     }
 
     private ListXNodeImpl parseToList() throws SchemaException, IOException {
@@ -92,13 +108,10 @@ class JsonOtherTokenReader {
 
         for (;;) {
             JsonToken token = parser.nextToken();
-            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, list,
-                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
-
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
-                        list.getSourceLocation(), "",  msg);
+                        list.getSourceLocation(), new TechnicalMessage(msg),  msg);
                 ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
                 return list;
             } else if (token == JsonToken.END_ARRAY) {
@@ -117,8 +130,6 @@ class JsonOtherTokenReader {
             QName typeName = ctx.yamlTagResolver.tagToTypeName(tid, ctx);
             primitive.setTypeQName(typeName);
             primitive.setExplicitTypeDeclaration(true);
-            ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
-                    SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         } else {
             // We don't try to determine XNode type from the implicit JSON/YAML type (integer, number, ...),
             // because XNode type prescribes interpretation in midPoint. E.g. YAML string type would be interpreted
@@ -137,8 +148,6 @@ class JsonOtherTokenReader {
     private <T> PrimitiveXNodeImpl<T> parseToEmptyPrimitive() {
         PrimitiveXNodeImpl<T> primitive = new PrimitiveXNodeImpl<>();
         primitive.setValueParser(new JsonNullValueParser<>());
-        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, primitive,
-                SourceLocation.from(null, parser.currentLocation().getLineNr(), parser.currentLocation().getColumnNr()));
         return primitive;
     }
 
