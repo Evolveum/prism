@@ -25,6 +25,8 @@ public interface XNodeFactory {
 
     <T> PrimitiveXNode<T> primitive(T value);
 
+    <T> PrimitiveXNode<T> primitive(T value, PrismNamespaceContext namespaceContext);
+
     <T> PrimitiveXNode<T> primitiveAttribute(T value);
 
     <T> PrimitiveXNode<T> primitive(ValueParser<T> valueParser);
@@ -44,4 +46,5 @@ public interface XNodeFactory {
     MapXNode map(PrismNamespaceContext namespaceContext, QName key, XNode value);
 
     ListXNode list(XNode... nodes);
+
 }
