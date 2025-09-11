@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 
 import com.evolveum.axiom.lang.antlr.AxiomQueryError;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 import com.google.common.collect.ImmutableList;
@@ -50,6 +51,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
 
     private static final Map<String, Class<?>> POLYSTRING_PROPS = ImmutableMap.<String, Class<?>>builder()
             .put(Filter.PolyStringKeyword.ORIG.getName(), String.class).put(Filter.PolyStringKeyword.NORM.getName(), String.class).build();
+
+    /**
+     * Used for resolving placeholder for OID values (e.g. inOid filter).
+     */
+    private static final PrismPropertyDefinition OID_FAKE_DEFINITION = PrismContext.get().definitionFactory()
+            .newPropertyDefinition(new QName("oid_fake_definition"), DOMUtil.XSD_STRING);
 
     public interface ItemFilterFactory {
         ObjectFilter create(QueryParsingContext.Local context, ItemPath itemPath, ItemDefinition<?> itemDef,
@@ -499,6 +506,13 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
                     if (matchingRule != null) {
                         scope = Scope.valueOf(matchingRule.getLocalPart());
                     }
+
+                    var placeholder = subfilterOrValue.placeholder();
+                    if (placeholder != null) {
+                        var boundValue = (String) context.root().createOrResolvePlaceholder(placeholder, OID_FAKE_DEFINITION);
+                        return OrgFilterImpl.createOrg(boundValue, scope);
+                    }
+
                     return OrgFilterImpl.createOrg(requireLiteral(String.class, filterName, subfilterOrValue.singleValue()), scope);
                 }
             })

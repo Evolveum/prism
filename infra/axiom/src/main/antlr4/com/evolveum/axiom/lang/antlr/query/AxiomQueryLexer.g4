@@ -15,7 +15,7 @@ SEP: [ \n\r\t]+;
 AND_KEYWORD: 'and'|'AND';
 OR_KEYWORD: 'or'|'OR';
 NOT_KEYWORD: 'not'|'NOT';
-IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-]*;
+IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_\-.]*;
 
 fragment SQOUTE : '\'';
 fragment DQOUTE : '"';
