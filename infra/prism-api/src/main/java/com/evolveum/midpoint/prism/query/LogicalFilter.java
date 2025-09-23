@@ -8,8 +8,10 @@
 package com.evolveum.midpoint.prism.query;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 /**
  *
@@ -46,5 +48,10 @@ public interface LogicalFilter extends ObjectFilter {
         return true;
     }
 
-    //String getDebugDumpOperationName();
+    @Override
+    default void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        for (var condition : getConditions()) {
+            condition.collectUsedPaths(base, pathConsumer, expandReferences);
+        }
+    }
 }

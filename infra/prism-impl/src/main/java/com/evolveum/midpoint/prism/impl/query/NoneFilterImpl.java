@@ -8,9 +8,12 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 import com.evolveum.midpoint.prism.query.NoneFilter;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
+
+import java.util.function.Consumer;
 
 /**
  * Filter designed to explicitly match nothing. It is used in some special cases, e.g.
@@ -77,6 +80,11 @@ public class NoneFilterImpl extends ObjectFilterImpl implements NoneFilter {
     @Override
     public int hashCode() {
         return 0;
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+        // NOOP
     }
 
 }

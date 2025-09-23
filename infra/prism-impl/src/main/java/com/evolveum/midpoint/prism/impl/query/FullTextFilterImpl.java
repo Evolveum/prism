@@ -9,6 +9,9 @@ package com.evolveum.midpoint.prism.impl.query;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Consumer;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
@@ -150,5 +153,10 @@ public final class FullTextFilterImpl extends ObjectFilterImpl implements FullTe
     @Override
     public int hashCode() {
         return Objects.hash(values, expression);
+    }
+
+    @Override
+    public void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences) {
+
     }
 }

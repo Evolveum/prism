@@ -7,6 +7,9 @@
 package com.evolveum.midpoint.prism.query;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
+
+import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -53,4 +56,6 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
     default boolean matchesOnly(ItemPath... paths) {
         return false;
     }
+
+    void collectUsedPaths(TypedItemPath base, Consumer<TypedItemPath> pathConsumer, boolean expandReferences);
 }
