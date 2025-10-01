@@ -376,7 +376,7 @@ public class PrismContainerDefinitionImpl<C extends Containerable>
         ComplexTypeDefinition originalComplexTypeDefinition = getComplexTypeDefinition();
         ComplexTypeDefinition cloneComplexTypeDefinition = originalComplexTypeDefinition.clone();
         setComplexTypeDefinition(cloneComplexTypeDefinition);
-        ((ComplexTypeDefinitionImpl) cloneComplexTypeDefinition).replaceDefinition(itemName, newDefinition);
+        cloneComplexTypeDefinition.mutator().replaceDefinition(itemName, newDefinition);
     }
 
     /**
