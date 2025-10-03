@@ -7,12 +7,15 @@
 package com.evolveum.midpoint.prism.query;
 
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
 public interface PrismQuerySerialization {
 
     PrismNamespaceContext namespaceContext();
 
     String filterText();
+
+    SearchFilterType toSearchFilterType();
 
     class NotSupportedException extends Exception {
 

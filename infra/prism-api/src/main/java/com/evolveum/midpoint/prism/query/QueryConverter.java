@@ -50,6 +50,15 @@ public interface QueryConverter {
 
     SearchFilterType createSearchFilterType(ObjectFilter filter) throws SchemaException;
 
+    /**
+     * Creates search  filter type from Object Filter
+     * @param filter Filter to be serialized
+     * @param forceAxiom If true, filter will be serialized in Query Language
+     * @return
+     * @throws SchemaException
+     */
+    SearchFilterType createSearchFilterType(ObjectFilter filter, boolean forceAxiom) throws SchemaException;
+
     ObjectFilter createObjectFilter(Class<?> clazz, SearchFilterType filterType)
             throws SchemaException;
 
