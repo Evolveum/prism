@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2024-2025 Evolveum and contributors
  *
- * This work is dual-licensed under the Apache License 2.0
- * and European Union default License. See LICENSE file for details.
+ * Licensed under the EUPL-1.2 or later.
  */
+
 package com.evolveum.midpoint.prism.deleg;
 
 import com.evolveum.midpoint.prism.*;

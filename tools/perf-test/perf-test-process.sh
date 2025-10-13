@@ -2,9 +2,9 @@
 #
 # Copyright (C) 2010-2021 Evolveum and contributors
 #
-# This work is dual-licensed under the Apache License 2.0
-# and European Union Public License. See LICENSE file for details.
+# Licensed under the EUPL-1.2 or later.
 #
+
 # If TGZFILE is set in environment, the file with existing results will be imported.
 # Git commit, branch and build ID will be taken from the file name.
 # Example of old files import:

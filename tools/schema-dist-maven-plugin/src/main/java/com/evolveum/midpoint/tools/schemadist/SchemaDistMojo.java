@@ -1,11 +1,9 @@
 /*
  * Copyright (c) 2014 Evolveum and contributors
  *
- * This work is dual-licensed under the Apache License 2.0
- * and European Union Public License. See LICENSE file for details.
- *
- * This file is inspired and uses minor parts of the maven-dependency-plugin by Brian Fox.
+ * Licensed under the EUPL-1.2 or later.
  */
+
 
 package com.evolveum.midpoint.tools.schemadist;
 

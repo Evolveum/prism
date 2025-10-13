@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
   ~ Copyright (c) 2010-2017 Evolveum and contributors
   ~
-  ~ This work is dual-licensed under the Apache License 2.0
-  ~ and European Union Public License. See LICENSE file for details.
+  ~ Licensed under the EUPL-1.2 or later.
   -->
-<!--
 
+<!--
 Used by prism tests. It would be better if this file would be placed in "test" directory, but there are
 some classloading issues preventing that (maybe Thread.currentThread().getContextClassLoader() in
 SchemaRegistry should be changed to something else but I'd like not to break anything in production code
 my changing it).
 
 So, to ensure this file won't be used in production, it is called 'catalog-test.xml'.
-
 -->
+
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="public">
 
     <public publicId="http://prism.evolveum.com/xml/ns/public/annotation-3" uri="../xml/ns/public/annotation-3.xsd" />
