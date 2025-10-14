@@ -370,6 +370,7 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
      */
     void removeMetadataFromPaths(List<? extends ItemPath> pathsToRemoveMetadata) throws SchemaException;
 
+    /** BEWARE!! Assumes the container has no parent! Otherwise item.getPath() provides wrong values. */
     void removeItems(List<? extends ItemPath> itemsToRemove);
 
     void removeOperationalItems();
