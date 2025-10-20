@@ -38,8 +38,8 @@
     </organization>
     <licenses>
         <license>
-            <name>Apache License v2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>European Union Public License</name>
+            <url>https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -516,8 +516,8 @@
                             <Organization>Evolveum</Organization>
                             <Organization-URL>https://www.evolveum.com</Organization-URL>
                             <Bugtracking-System>https://support.evolveum.com</Bugtracking-System>
-                            <License>dual-licensed under the Apache License 2.0 and European Union Public License</License>
-                            <License-URL>https://www.apache.org/licenses/LICENSE-2.0.txt and https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</License-URL>
+                            <License>EUPL-1.2 or later</License>
+                            <License-URL>https://joinup.ec.europa.eu/collection/eupl/eupl-text-11-12</License-URL>
                         </manifestEntries>
                     </archive>
                 </configuration>
