@@ -4,14 +4,6 @@
   ~
   ~ Licensed under the EUPL-1.2 or later.
   -->
-
-<!DOCTYPE ANY[ <!ENTITY file SYSTEM "file:///etc/hostname"> ]>
-<!--
-  ~ Copyright (c) 2010-2019 Evolveum and contributors
-  ~
-  ~ This work is dual-licensed under the Apache License 2.0
-  ~ and European Union Public License. See LICENSE file for details.
-  -->
 <user oid="c0c010c0-d34d-b33f-f00d-111111111111" version="42"
         xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
         xmlns:xsd='http://www.w3.org/2001/XMLSchema'
