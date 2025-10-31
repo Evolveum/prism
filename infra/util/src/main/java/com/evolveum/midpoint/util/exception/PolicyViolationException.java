@@ -38,6 +38,11 @@ public class PolicyViolationException extends CommonException {
         super(message, cause);
     }
 
+    public PolicyViolationException(LocalizableMessage userFriendlyMessage, String technicalMessage) {
+        this(userFriendlyMessage);
+        setTechnicalMessage(technicalMessage);
+    }
+
     @Override
     public String getErrorTypeMessage() {
         return "Policy violation";
