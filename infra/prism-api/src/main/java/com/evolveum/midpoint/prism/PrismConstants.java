@@ -52,6 +52,7 @@ public class PrismConstants {
     public static final QName XML_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "xml");
     public static final QName EXCHANGE_EMAIL_ADDRESSES_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "exchangeEmailAddresses");
     public static final QName DISTINGUISHED_NAME_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "distinguishedName");
+    public static final QName VARIABLE_BINDING_DEF_MATCHING_RULE_NAME = new QName(NS_MATCHING_RULE, "variableBindingDef");
 
     public static final String NS_POLY_STRING_NORMALIZER = NS_PREFIX + "poly-string-normalizer-3";
 
