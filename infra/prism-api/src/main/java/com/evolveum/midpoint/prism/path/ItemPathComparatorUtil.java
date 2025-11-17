@@ -143,4 +143,27 @@ public class ItemPathComparatorUtil {
         return ItemPathImpl.createFromIterator(
                 mainIterator.iteratorSkippingArtificialIdSegments());
     }
+
+    public static boolean endsWith(@NotNull ItemPath fullPath, @NotNull ItemPath suffix) {
+
+        List<?> full = fullPath.namedSegmentsOnly().getSegments();
+        List<?> tail = suffix.namedSegmentsOnly().getSegments();
+
+        if (tail.size() > full.size()) {
+            return false;
+        }
+
+        int start = full.size() - tail.size();
+
+        for (int segmentIndex = 0; segmentIndex < tail.size(); segmentIndex++) {
+            Object fullSegment = full.get(start + segmentIndex);
+            Object suffixSegment = tail.get(segmentIndex);
+
+            if (!ItemPathComparatorUtil.segmentsEquivalent(fullSegment, suffixSegment)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }

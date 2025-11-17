@@ -760,6 +760,11 @@ public interface ItemPath extends ShortDumpable, Serializable {
     }
     //endregion
 
+    /** Checks if this path ends with the given suffix path. */
+    default boolean endsWith(ItemPath suffix) {
+        return ItemPathComparatorUtil.endsWith(this, suffix);
+    }
+
     //region Diagnostics
     @Override
     default void shortDump(StringBuilder sb) {
