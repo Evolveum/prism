@@ -1232,6 +1232,16 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     @Override
+    public ObjectQuery createObjectQuery(ComplexTypeDefinition complexTypeDefinition, QueryType queryBean)
+            throws SchemaException {
+        if (queryBean == null) {
+            return null;
+        }
+        var itemDef = PrismContext.get().definitionFactory().newContainerDefinition(new QName("value"), complexTypeDefinition);
+        return createObjectQueryInternal(itemDef, queryBean.getFilter(), queryBean.getPaging());
+    }
+
+    @Override
     public ObjectQuery createObjectQuery(Class<?> clazz, SearchFilterType filterType)
             throws SchemaException {
         return createObjectQueryInternal(clazz, filterType, null);

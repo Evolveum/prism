@@ -42,6 +42,12 @@ public interface QueryConverter {
 
     ObjectQuery createObjectQuery(Class<?> clazz, QueryType queryType) throws SchemaException;
 
+    /**
+     * Converts query bean to {@link ObjectQuery} using provided complex type definition. Useful especially for shadows,
+     * as they do not have a common (system-wide) definition for their attributes.
+     */
+    ObjectQuery createObjectQuery(ComplexTypeDefinition complexTypeDefinition, QueryType queryBean) throws SchemaException;
+
     ObjectQuery createObjectQuery(Class<?> clazz, SearchFilterType filterType) throws SchemaException;
 
     // 2. Serializing
