@@ -561,8 +561,6 @@ model common-core {
                  - cpt. Jack Sparrow
                  - William "Bootstrap" Turner
                  - James W. Random, PhD.
-                 - Vladimir Iljic Lenin
-                 - Josip Broz Tito
                  - Chuck Norris
             """;
             // <a:displayName>UserType.fullName</a:displayName>
