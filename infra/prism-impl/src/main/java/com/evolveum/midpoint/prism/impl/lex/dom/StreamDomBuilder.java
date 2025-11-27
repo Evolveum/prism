@@ -13,10 +13,7 @@ import org.w3c.dom.Node;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -60,8 +57,12 @@ public class StreamDomBuilder {
 
                     Element elem = doc.createElementNS(namespaceURI, qName);
                     TagPosition position = trackingReader.pollTag(TagPosition.Type.START);
-                    elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
-                            SourceLocation.from(null, position.line(), position.column()), null);
+
+                    if (position != null) {
+                        Location location = reader.getLocation();
+                        elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
+                                SourceLocation.from(null, location.getLineNumber(), position.column()), null);
+                    }
 
                     // Add attributes (with namespace and prefix)
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
