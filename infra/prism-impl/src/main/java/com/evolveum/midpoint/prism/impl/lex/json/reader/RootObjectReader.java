@@ -41,6 +41,8 @@ class RootObjectReader {
     void read() throws SchemaException, IOException {
         XNodeImpl xnode = new JsonOtherTokenReader(ctx, nsContext, def, def).readValue();
         RootXNodeImpl root = postProcessValueToRoot(xnode, null);
+        root.setDefinition(def.itemDefinition());
+
         if (!ctx.objectHandler.handleData(root)) {
             ctx.setAborted();
         }

@@ -81,7 +81,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         super();
         this.text = text;
         var xnodeFactory = PrismContext.get().xnodeFactory();
-        var textNode = xnodeFactory.primitive(text);
+        var textNode = xnodeFactory.primitive(text, namespaceContext.inherited());
         filterClauseXNode = xnodeFactory.map(namespaceContext, F_TEXT, textNode);
     }
 

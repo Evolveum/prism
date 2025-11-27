@@ -142,6 +142,7 @@ public abstract class XNodeDefinition {
 
     public XNodeDefinition child(ItemName name) {
         XNodeDefinition maybe = resolveLocally(ItemName.from(name.getNamespaceURI(), name.getLocalPart()));
+
         if(maybe != null) {
             return maybe;
         }

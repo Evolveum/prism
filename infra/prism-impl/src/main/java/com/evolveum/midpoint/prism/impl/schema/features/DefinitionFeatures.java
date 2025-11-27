@@ -560,6 +560,14 @@ public class DefinitionFeatures {
             return (value, target) -> target.addAnnotation(annotationName, value);
         }
 
+        public static @NotNull DefinitionFeatureSerializer<Boolean> aBooleanDefaultFalse(@NotNull QName annotationName) {
+            return (value, target) -> {
+                if (value) {
+                    target.addAnnotation(annotationName, true);
+                }
+            };
+        }
+
         public static @NotNull DefinitionFeatureSerializer<QName> qName(@NotNull QName annotationName) {
             return (value, target) -> target.addAnnotation(annotationName, value);
         }

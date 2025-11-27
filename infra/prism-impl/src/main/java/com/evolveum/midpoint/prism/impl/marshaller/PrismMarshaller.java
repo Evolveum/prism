@@ -19,6 +19,7 @@ import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.MetadataAware;
+import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.JAXBUtil;
 import com.evolveum.midpoint.util.QNameUtil;
@@ -122,6 +123,21 @@ public class PrismMarshaller {
         XNodeImpl valueNode = marshalItemValue(value, realItemDefinition, realItemTypeName, context, itemsToSkip);
         addTypeDefinitionIfNeeded(realItemName, realItemTypeName, valueNode);
         return new RootXNodeImpl(realItemName, valueNode);
+    }
+
+    /**
+     * As {@link #marshalItemAsRoot(Item, QName, ItemDefinition, SerializationContext, PathSet)} but works without providing
+     * the root (item-level) {@link XNode}. Useful for JSON/YAML, not suitable for XML.
+     */
+    @NotNull XNodeImpl marshalPrismValueContent(
+            @NotNull PrismValue value,
+            ItemDefinition<?> itemDefinition,
+            SerializationContext context,
+            PathSet itemsToSkip) throws SchemaException {
+        ItemInfo<?> itemInfo = ItemInfo.determineFromValue(value, null, itemDefinition, getSchemaRegistry());
+        ItemDefinition<?> realItemDefinition = itemInfo.getItemDefinition();
+        QName realItemTypeName = itemInfo.getTypeName();
+        return marshalItemValue(value, realItemDefinition, realItemTypeName, context, itemsToSkip);
     }
 
     /**

@@ -11,6 +11,12 @@ import java.io.IOException;
 import java.util.Objects;
 import javax.xml.namespace.QName;
 
+import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
+import com.evolveum.concepts.ValidationLogType;
+import com.evolveum.midpoint.prism.ParsingContext;
+import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.node.ValueNode;
@@ -56,38 +62,57 @@ class JsonOtherTokenReader {
 
     @NotNull XNodeImpl readValue() throws IOException, SchemaException {
         JsonToken currentToken = Objects.requireNonNull(parser.currentToken(), "currentToken");
+        SourceLocation sourceLocation = SourceLocation.from(null,
+                parser.currentLocation().getLineNr(),
+                parser.currentLocation().getColumnNr()
+        );
+
+        @NotNull XNodeImpl xNode;
 
         switch (currentToken) {
             case START_OBJECT:
-                return new JsonObjectTokenReader(ctx, parentContext, def, parentDef).read();
+                xNode = new JsonObjectTokenReader(ctx, parentContext, def, parentDef).read();
+                break;
             case START_ARRAY:
-                return parseToList();
+                xNode = parseToList();
+                break;
             case VALUE_STRING:
             case VALUE_TRUE:
             case VALUE_FALSE:
             case VALUE_NUMBER_FLOAT:
             case VALUE_NUMBER_INT:
             case VALUE_EMBEDDED_OBJECT:             // assuming it's a scalar value e.g. !!binary (TODO)
-                return parseToPrimitive();
+                xNode = parseToPrimitive();
+                break;
             case VALUE_NULL:
-                return parseToEmptyPrimitive();
+                xNode = parseToEmptyPrimitive();
+                break;
             default:
                 throw new SchemaException("Unexpected current token: " + currentToken + ". At: " + ctx.getPositionSuffix());
         }
+
+        ValidatorUtil.setPositionToXNode(ctx.prismParsingContext, xNode, sourceLocation);
+
+        return xNode;
     }
 
     private ListXNodeImpl parseToList() throws SchemaException, IOException {
         Validate.notNull(parser.currentToken());
 
         ListXNodeImpl list = new ListXNodeImpl();
+
         Object tid = parser.getTypeId();
         if (tid != null) {
             list.setTypeQName(ctx.yamlTagResolver.tagToTypeName(tid, ctx));
         }
+
         for (;;) {
             JsonToken token = parser.nextToken();
             if (token == null) {
-                ctx.prismParsingContext.warnOrThrow(LOGGER, "Unexpected end of data while parsing a list structure at " + ctx.getPositionSuffix());
+                String msg = "Unexpected end of data while parsing a list structure at ";
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                        list.getSourceLocation(), new TechnicalMessage(msg),  msg);
+                ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
                 return list;
             } else if (token == JsonToken.END_ARRAY) {
                 return list;
@@ -116,6 +141,7 @@ class JsonOtherTokenReader {
         primitive.setValueParser(vp);
         primitive.setAttribute(def.isXmlAttribute());
         // FIXME: Materialize when possible
+
         return primitive;
     }
 

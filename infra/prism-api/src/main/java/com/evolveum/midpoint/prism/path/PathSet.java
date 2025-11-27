@@ -39,7 +39,7 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
         this(List.of(), true);
     }
 
-    public PathSet(@NotNull Collection<ItemPath> initialContent) {
+    public PathSet(@NotNull Collection<? extends ItemPath> initialContent) {
         this(new ArrayList<>(initialContent), false);
     }
 
@@ -71,6 +71,10 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
         return content.isEmpty();
     }
 
+    /**
+     * Does not strictly conform to `contains` method contract: the object in the set may not be strictly `equals` to `o`.
+     * (As described in class javadoc.)
+     */
     @Override
     public boolean contains(Object o) {
         return o instanceof ItemPath && ItemPathCollectionsUtil.containsEquivalent(content, (ItemPath) o);

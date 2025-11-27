@@ -41,11 +41,18 @@ public class XNodeFactoryImpl implements XNodeFactory {
     }
 
     @Override
+    public <T> PrimitiveXNode<T> primitive(T value, PrismNamespaceContext namespaceContext) {
+        return new PrimitiveXNodeImpl<>(value, namespaceContext);
+    }
+
+    @Override
     public <T> PrimitiveXNode<T> primitiveAttribute(T value) {
         PrimitiveXNodeImpl<T> rv = new PrimitiveXNodeImpl<>(value);
         rv.setAttribute(true);
         return rv;
     }
+
+
 
     @Override
     public <T> PrimitiveXNode<T> primitive(ValueParser<T> valueParser) {

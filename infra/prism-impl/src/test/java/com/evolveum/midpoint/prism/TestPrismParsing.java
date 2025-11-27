@@ -20,8 +20,12 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.foo.AssignmentType;
 import com.evolveum.midpoint.prism.xnode.*;
 
+import com.evolveum.midpoint.util.MiscUtil;
+
+import org.jetbrains.annotations.NotNull;
 import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.delta.DiffUtil;
@@ -418,6 +422,57 @@ public abstract class TestPrismParsing extends AbstractPrismTest {
         assertAliceMetadata(testSerializeMetadata(alice, PrismContext.LANG_XML));
         assertAliceMetadata(testSerializeMetadata(alice, PrismContext.LANG_JSON));
         assertAliceMetadata(testSerializeMetadata(alice, PrismContext.LANG_YAML));
+    }
+
+    /** Tests {@link PrismSerializer#serializePrismValueContent(PrismValue)} method. */
+    @Test
+    public void test800ParsingValueContent() throws Exception {
+        skipTestIf(getOutputFormat().equals(PrismContext.LANG_XML), "XML does not support PrismValue serialization");
+
+        var prismContext = getPrismContext();
+
+        given("a PrismValue");
+        var itemFactory = prismContext.itemFactory();
+        //noinspection unchecked
+        PrismContainerDefinition<AssignmentType> definition = MiscUtil.extractSingletonRequired(
+                prismContext.getSchemaRegistry().findItemDefinitionsByCompileTimeClass(AssignmentType.class, PrismContainerDefinition.class));
+        var assignment = definition.instantiate();
+        var pcv = assignment.createNewValue();
+        var identifier = itemFactory.createProperty(AssignmentType.F_IDENTIFIER);
+        identifier.setRealValue("123");
+        pcv.add(identifier);
+        var description = itemFactory.createProperty(AssignmentType.F_DESCRIPTION);
+        description.setRealValue("assignment 123");
+        pcv.add(description);
+
+        when("serializing PrismValue content");
+        var text = prismContext.serializerFor(getOutputFormat()).serializePrismValueContent(pcv);
+
+        then("text is OK");
+        System.out.println("Serialized form:\n" + text);
+
+        // This is an approximate check, as the output format may differ in details. But it should be roughly OK.
+        var normalizedText = getNormalizedText(text);
+        if (getOutputFormat().equals(PrismContext.LANG_JSON)) {
+            assertThat(normalizedText).isEqualTo(getNormalizedText("""
+                    {
+                      "identifier" : "123",
+                      "description" : "assignment 123"
+                    }
+                    """));
+        } else if (getOutputFormat().equals(PrismContext.LANG_YAML)) {
+            assertThat(normalizedText).isEqualTo(getNormalizedText("""
+                    ---
+                    identifier: "123"
+                    description: "assignment 123"
+                    """));
+        }
+
+        // Parsing tests are in midPoint (schema module), as they require some features not available in foo objects here.
+    }
+
+    private static @NotNull String getNormalizedText(String text) {
+        return text.replaceAll("\\s+", " ").trim();
     }
 
     private void assertAliceMetadata(RootXNode alice) throws SchemaException {

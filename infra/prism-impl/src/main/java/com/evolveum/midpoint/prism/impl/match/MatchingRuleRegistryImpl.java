@@ -67,7 +67,7 @@ public class MatchingRuleRegistryImpl implements MatchingRuleRegistry {
         throw new SchemaException("Couldn't find matching rule named '" + ruleName + "'");
     }
 
-    void registerMatchingRule(MatchingRule<?> rule) {
+    public void registerMatchingRule(MatchingRule<?> rule) {
         matchingRules.put(rule.getName(), rule);
     }
 

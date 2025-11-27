@@ -37,6 +37,11 @@ public interface PrismPropertyDefinition<T>
         return PrismItemMatchingDefinition.super.getTypeClass();
     }
 
+    default boolean isEnum() {
+        var typeClass = getTypeClass();
+        return typeClass != null && typeClass.isEnum();
+    }
+
     default boolean isAnyType() {
         return DOMUtil.XSD_ANYTYPE.equals(getTypeName());
     }

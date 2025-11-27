@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 
 import org.apache.commons.io.IOUtils;
@@ -48,13 +49,35 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     @Override
     public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) throws SchemaException, IOException {
         if (source instanceof ParserElementSource) {
-            Element root = ((ParserElementSource) source).getElement();
-            return new DomReader(root, schemaRegistry, PrismNamespaceContext.EMPTY).read();
+            Element root;
+
+            if (parsingContext.isValidation()) {
+                try {
+                    root = new StreamDomBuilder().parse(source.getInputStream()).getDocumentElement();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                root = ((ParserElementSource) source).getElement();
+            }
+
+            return new DomReader(root, schemaRegistry, PrismNamespaceContext.EMPTY, parsingContext).read();
         } else {
             InputStream is = source.getInputStream();
             try {
-                Document document = DOMUtil.parse(is);
-                return new DomReader(document, schemaRegistry).read();
+                Document document;
+
+                if (parsingContext.isValidation()) {
+                    try {
+                        document = new StreamDomBuilder().parse(source.getInputStream());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    document = DOMUtil.parse(is);
+                }
+
+                return new DomReader(document, schemaRegistry, parsingContext).read();
             } finally {
                 if (source.closeStreamAfterParsing()) {
                     IOUtils.closeQuietly(is);
@@ -68,8 +91,19 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     public List<RootXNodeImpl> readObjects(@NotNull ParserSource source, @NotNull ParsingContext parsingContext) throws SchemaException, IOException {
         InputStream is = source.getInputStream();
         try {
-            Document document = DOMUtil.parse(is);
-            return new DomReader(document, schemaRegistry).readObjects();
+            Document document;
+
+            if (parsingContext.isValidation()) {
+                try {
+                    document = new StreamDomBuilder().parse(source.getInputStream());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                document = DOMUtil.parse(is);
+            }
+
+            return new DomReader(document, schemaRegistry, parsingContext).readObjects();
         } finally {
             if (source.closeStreamAfterParsing()) {
                 IOUtils.closeQuietly(is);
@@ -82,7 +116,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
             @NotNull ParsingContext parsingContext, RootXNodeHandler handler)
             throws SchemaException, IOException {
         new DomIterativeReader(source, handler, schemaRegistry)
-                .readObjectsIteratively();
+                .readObjectsIteratively(parsingContext);
     }
 
 

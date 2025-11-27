@@ -73,6 +73,11 @@ public class DelegatingLexicalProcessor implements LexicalProcessor<String> {
         return writer.write(xnode, serializationContext);
     }
 
+    @Override
+    public @NotNull String write(@NotNull XNode xnode, @Nullable SerializationContext serializationContext) throws SchemaException {
+        return writer.write(xnode, serializationContext);
+    }
+
     @NotNull
     @Override
     public String write(@NotNull XNode xnode,

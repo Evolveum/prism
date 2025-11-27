@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.util.QNameUtil;
@@ -54,6 +55,14 @@ public class ItemPathComparatorUtil {
                 }
                 return rv;
             }
+        }
+
+        /** Skips artificial ID segments when iterating */
+        public @NotNull Iterator<?> iteratorSkippingArtificialIdSegments() {
+            // We simply ignore "nextIsArtificialId" flag and return the remaining components
+            return components
+                    .subList(i, components.size())
+                    .iterator();
         }
     }
 
@@ -131,6 +140,30 @@ public class ItemPathComparatorUtil {
                         "' because it does not contain corresponding segment; it has '" + mainSegment + "' instead.");
             }
         }
-        return ItemPathImpl.createFromIterator(mainIterator);
+        return ItemPathImpl.createFromIterator(
+                mainIterator.iteratorSkippingArtificialIdSegments());
+    }
+
+    public static boolean endsWith(@NotNull ItemPath fullPath, @NotNull ItemPath suffix) {
+
+        List<?> full = fullPath.namedSegmentsOnly().getSegments();
+        List<?> tail = suffix.namedSegmentsOnly().getSegments();
+
+        if (tail.size() > full.size()) {
+            return false;
+        }
+
+        int start = full.size() - tail.size();
+
+        for (int segmentIndex = 0; segmentIndex < tail.size(); segmentIndex++) {
+            Object fullSegment = full.get(start + segmentIndex);
+            Object suffixSegment = tail.get(segmentIndex);
+
+            if (!ItemPathComparatorUtil.segmentsEquivalent(fullSegment, suffixSegment)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

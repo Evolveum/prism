@@ -17,6 +17,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 
@@ -50,7 +51,7 @@ class DomIterativeReader {
     }
 
     // code taken from Validator class
-    public void readObjectsIteratively() throws SchemaException, IOException {
+    public void readObjectsIteratively(ParsingContext parsingContext) throws SchemaException, IOException {
         InputStream is = source.getInputStream();
         XMLStreamReader stream = null;
         try {
@@ -65,7 +66,7 @@ class DomIterativeReader {
 
             QName objectsMarker = PrismContext.get().getObjectsElementName();
             if (objectsMarker != null && !QNameUtil.match(stream.getName(), objectsMarker)) {
-                readSingleObjectIteratively(stream, rootNamespaceDeclarations, domConverter, handler);
+                readSingleObjectIteratively(stream, rootNamespaceDeclarations, domConverter, handler, parsingContext);
             }
             for (int i = 0; i < stream.getNamespaceCount(); i++) {
                 rootNamespaceDeclarations.put(stream.getNamespacePrefix(i), stream.getNamespaceURI(i));
@@ -73,7 +74,7 @@ class DomIterativeReader {
             while (stream.hasNext()) {
                 eventType = stream.next();
                 if (eventType == XMLStreamConstants.START_ELEMENT) {
-                    if (!readSingleObjectIteratively(stream, rootNamespaceDeclarations, domConverter, handler)) {
+                    if (!readSingleObjectIteratively(stream, rootNamespaceDeclarations, domConverter, handler, parsingContext)) {
                         return;
                     }
                 }
@@ -94,12 +95,13 @@ class DomIterativeReader {
 
     private boolean readSingleObjectIteratively(
             XMLStreamReader stream, Map<String, String> rootNamespaceDeclarations,
-            DOMConverter domConverter, LexicalProcessor.RootXNodeHandler handler)
+            DOMConverter domConverter, LexicalProcessor.RootXNodeHandler handler,
+            ParsingContext parsingContext)
             throws XMLStreamException, SchemaException {
         Document objectDoc = domConverter.buildDocument(stream);
         Element objectElement = DOMUtil.getFirstChildElement(objectDoc);
         DOMUtil.setNamespaceDeclarations(objectElement, rootNamespaceDeclarations);
-        RootXNodeImpl rootNode = new DomReader(objectElement, schemaRegistry, PrismNamespaceContext.EMPTY).read();
+        RootXNodeImpl rootNode = new DomReader(objectElement, schemaRegistry, PrismNamespaceContext.EMPTY, parsingContext).read();
         return handler.handleData(rootNode);
     }
 
