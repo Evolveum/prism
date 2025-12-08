@@ -147,7 +147,7 @@ class JsonObjectTokenReader {
             JsonToken token = parser.nextToken();
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a map structure";
-                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                         null, new TechnicalMessage(msg),  msg);
                 warnOrThrow(msg);
                 ctx.setAborted();
@@ -168,7 +168,7 @@ class JsonObjectTokenReader {
         if (currentFieldName != null) {
             String msg = "Two field names in succession: %s and %s";
 
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     null, new TechnicalMessage(msg),  msg, ValidatorUtil.objectToString(currentFieldName), newFieldName);
             warnOrThrow(msg.formatted(currentFieldName.getName(), newFieldName));
         }
@@ -225,7 +225,7 @@ class JsonObjectTokenReader {
     private void processIncompleteDeclaration(QName name, XNodeImpl currentFieldValue) throws SchemaException {
         if (incomplete != null) {
             String msg = "Duplicate @incomplete marker found with the value: %s";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue),
                     "Duplicate @incomplete marker found");
             warnOrThrow(String.format(msg, currentFieldValue));
@@ -236,7 +236,7 @@ class JsonObjectTokenReader {
             incomplete = Boolean.TRUE.equals(realValue);
         } else {
             String msg = "@incomplete marker found with incompatible value: %s";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue),
                     "@incomplete marker found");
             warnOrThrow(String.format(msg, currentFieldValue));
@@ -246,7 +246,7 @@ class JsonObjectTokenReader {
     private void processWrappedValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
         if (wrappedValue != null) {
             String msg = "Value (' %s ') defined more than once";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg),  msg, JsonInfraItems.PROP_VALUE);
             warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE));
 
@@ -263,7 +263,7 @@ class JsonObjectTokenReader {
                     metadata.add((MapXNode) metadataValue);
                 } else {
                     String msg = "Metadata is not a map XNode: %s";
-                    ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                    ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                             metadataValue.getSourceLocation(), new TechnicalMessage(msg, metadataValue.debugDump()),
                             msg, ValidatorUtil.objectToString(metadataValue));
                     warnOrThrow(String.format(msg, metadataValue.debugDump()));
@@ -271,7 +271,7 @@ class JsonObjectTokenReader {
             }
         } else {
             String msg = "Metadata is not a map or list XNode: %s";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, currentFieldValue.debugDump()),
                     msg, ValidatorUtil.objectToString(currentFieldValue));
             warnOrThrow(String.format(msg, currentFieldValue.debugDump()));
@@ -281,7 +281,7 @@ class JsonObjectTokenReader {
     private void processElementNameDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (elementName != null) {
             String msg = "Element name defined more than once";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     value.getSourceLocation(), new TechnicalMessage(msg),  msg);
             warnOrThrow(msg);
         }
@@ -306,7 +306,7 @@ class JsonObjectTokenReader {
     private void processTypeDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (typeName != null) {
             String msg = "Value type defined more than once";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     value.getSourceLocation(), new TechnicalMessage(msg),  msg);
             warnOrThrow(msg);
         }
@@ -319,14 +319,14 @@ class JsonObjectTokenReader {
     private void processNamespaceDeclaration(QName name, XNodeImpl value) throws SchemaException {
         if (namespaceSensitiveStarted) {
             String msg = "Namespace declared after other fields: %s";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     value.getSourceLocation(), new TechnicalMessage(msg, ctx.getPositionSuffix()),
                     "Namespace declared after other fields");
             warnOrThrow(String.format(msg, ctx.getPositionSuffix()));
         }
         if (map != null) {
             String msg = "Namespace defined more than once";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     value.getSourceLocation(), new TechnicalMessage(msg), msg);
             warnOrThrow(msg);
         }
@@ -346,7 +346,7 @@ class JsonObjectTokenReader {
 
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
             String msg = "More than one of '%s', '%s' and regular content present";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     map.getSourceLocation(), new TechnicalMessage(msg, PROP_VALUE, PROP_INCOMPLETE),  msg, PROP_VALUE, PROP_INCOMPLETE);
             warnOrThrow(String.format(msg, PROP_VALUE, PROP_INCOMPLETE));
             ret = map;
@@ -382,7 +382,7 @@ class JsonObjectTokenReader {
                 ((MetadataAware) rv).setMetadataNodes(metadata);
             } else {
                 String msg = "Couldn't apply metadata to non-metadata-aware node: %s";
-                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                         rv.getSourceLocation(), new TechnicalMessage(msg, rv),
                         "Couldn't apply metadata to non-metadata-aware node");
                 warnOrThrow(String.format(msg, rv.getClass()));
@@ -395,7 +395,7 @@ class JsonObjectTokenReader {
             if (wrappedValue != null && wrappedValue.getElementName() != null) {
                 if (!wrappedValue.getElementName().equals(elementName)) {
                     String msg = "Conflicting element names for '%s' (%s) and regular content (%s; ) present";
-                    ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                    ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                             rv.getSourceLocation(), new TechnicalMessage(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getElementName(), elementName),
                             msg, JsonInfraItems.PROP_VALUE, "", elementName);
                     warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getElementName(), elementName));
@@ -409,7 +409,7 @@ class JsonObjectTokenReader {
         if (typeName != null) {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
                 String msg = "Conflicting type names for '%s' (%s) and regular content (%s) present";
-                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                         rv.getSourceLocation(), new TechnicalMessage(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getTypeQName().getLocalPart(), typeName),
                         msg, JsonInfraItems.PROP_VALUE, "", typeName);
                 warnOrThrow(String.format(msg, JsonInfraItems.PROP_VALUE, wrappedValue.getTypeQName(), typeName));
@@ -424,7 +424,7 @@ class JsonObjectTokenReader {
             return ((PrimitiveXNodeImpl<?>) currentFieldValue).getStringValue();
         } else {
             String msg = "Value of '%s' attribute must be a primitive one. It is %s instead";
-            ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+            ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg, name, currentFieldValue),
                     msg, name, "");
             warnOrThrow(String.format(msg, name, currentFieldValue));

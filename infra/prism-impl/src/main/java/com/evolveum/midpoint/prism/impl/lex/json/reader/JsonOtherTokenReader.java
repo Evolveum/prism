@@ -62,7 +62,7 @@ class JsonOtherTokenReader {
 
     @NotNull XNodeImpl readValue() throws IOException, SchemaException {
         JsonToken currentToken = Objects.requireNonNull(parser.currentToken(), "currentToken");
-        SourceLocation sourceLocation = SourceLocation.from(null,
+        SourceLocation sourceLocation = SourceLocation.from("unknown",
                 parser.currentLocation().getLineNr(),
                 parser.currentLocation().getColumnNr()
         );
@@ -110,7 +110,7 @@ class JsonOtherTokenReader {
             JsonToken token = parser.nextToken();
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
-                ctx.prismParsingContext.validationLogger(false, ValidationLogType.WARNING,
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                         list.getSourceLocation(), new TechnicalMessage(msg),  msg);
                 ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
                 return list;

@@ -47,7 +47,7 @@ public class SaxElementHandler extends DefaultHandler {
         }
 
         element.setUserData(sourceLocationKey,
-                SourceLocation.from(null, locator.getLineNumber(), locator.getColumnNumber()),
+                SourceLocation.from("unknown", locator.getLineNumber(), locator.getColumnNumber()),
                 null);
 
         for (int i = 0; i < attributes.getLength(); i++) {
