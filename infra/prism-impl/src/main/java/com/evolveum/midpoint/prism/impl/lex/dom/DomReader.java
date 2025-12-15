@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.dom;
 
+import com.evolveum.concepts.Argument;
 import com.evolveum.concepts.SourceLocation;
 import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLogType;
@@ -34,10 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * TODO
@@ -167,16 +165,16 @@ class DomReader {
                 if (node instanceof MetadataAware) {
                     ((MetadataAware) node).addMetadataNode((MapXNode) metadata);
                 } else {
-                    String msg = "Attempt to add metadata to non-metadata-aware XNode: %s";
+                    String msg = "Attempt to add metadata to non-metadata-aware 'XNode': '%s'";
                     parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                            node.getSourceLocation(), new TechnicalMessage(msg, node),
+                            node.getSourceLocation(), new TechnicalMessage(msg, new Argument(node, Argument.ArgumentType.XNODE)),
                             msg, ValidatorUtil.objectToString(node));
                     throw new SchemaException(String.format(msg, node));
                 }
             } else {
-                String msg = "Metadata is not of Map type: %s";
+                String msg = "Metadata is not of 'Map' type: '%s'";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                        node.getSourceLocation(), new TechnicalMessage(msg, metadata),
+                        node.getSourceLocation(), new TechnicalMessage(msg, new Argument(metadata, Argument.ArgumentType.RAW)),
                         msg, ValidatorUtil.objectToString(metadata));
                 throw new SchemaException(String.format(msg, metadata));
             }
@@ -206,9 +204,13 @@ class DomReader {
         if (StringUtils.isNumeric(maxOccursString)) {
             return Integer.parseInt(maxOccursString);
         } else {
-            String msg = "Expected numeric value for %s attribute on %s but got %s";
+            String msg = "Expected numeric value for '%s' attribute on '%s' but got '%s'";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    getSourceLocation(element), new TechnicalMessage(msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString),
+                    getSourceLocation(element),
+                    new TechnicalMessage(msg,
+                            new Argument(PrismConstants.A_MAX_OCCURS.getLocalPart(), Argument.ArgumentType.STRING),
+                            new Argument(DOMUtil.getQName(element), Argument.ArgumentType.STRING),
+                            new Argument(maxOccursString, Argument.ArgumentType.STRING)),
                     msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), ValidatorUtil.objectToString(element), maxOccursString);
             throw new SchemaException(String.format(msg, PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString));
         }
@@ -227,9 +229,9 @@ class DomReader {
     // all the sub-elements should be compatible (this is not enforced here, however)
     private ListXNodeImpl readElementContentToList(Element element, XNodeDefinition parentDef, PrismNamespaceContext parentNsContext) throws SchemaException {
         if (DOMUtil.hasApplicationAttributes(element)) {
-            String msg = "List should have no application attributes: %s";
+            String msg = "List should have no application attributes: '%s'";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    getSourceLocation(element), new TechnicalMessage(msg, element),
+                    getSourceLocation(element), new TechnicalMessage(msg, new Argument(element, Argument.ArgumentType.ELEMENT)),
                     msg, ValidatorUtil.objectToString(element));
             throw new SchemaException(String.format(msg, element));
         }
@@ -359,7 +361,7 @@ class DomReader {
     @Contract("!null, null, false -> fail")
     private ListXNodeImpl parseElementList(List<Element> elements, @Nullable XNodeDefinition itemDef, @NotNull XNodeDefinition parentDef, PrismNamespaceContext parentNsContext, boolean storeElementNames) throws SchemaException {
         if (!storeElementNames && itemDef == null) {
-            String msg = "When !storeElementNames the element name must be specified";
+            String msg = "When '!storeElementNames' the element name must be specified";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
                     elements.isEmpty() ? null : getSourceLocation(elements.get(0)),
                     new TechnicalMessage(msg), msg);
