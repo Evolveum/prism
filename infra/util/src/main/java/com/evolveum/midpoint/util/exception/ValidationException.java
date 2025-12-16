@@ -1,6 +1,5 @@
 package com.evolveum.midpoint.util.exception;
 
-import com.evolveum.concepts.SourceLocation;
 import com.evolveum.concepts.ValidationLog;
 
 import java.util.ArrayList;

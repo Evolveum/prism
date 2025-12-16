@@ -12,7 +12,7 @@ public record ValidationLog(
         SourceLocation location,
 
         /*
-         * More detailed message for technical processing (maybe using AI model)
+         * More detailed message for technical processing
          */
         TechnicalMessage technicalMessage,
 

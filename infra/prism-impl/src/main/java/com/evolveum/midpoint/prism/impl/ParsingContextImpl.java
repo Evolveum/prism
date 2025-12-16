@@ -225,7 +225,8 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
             ValidationLogType validationLogType,
             SourceLocation sourceLocation,
             TechnicalMessage technicalMessage,
-            String message, Object... info
+            String message,
+            Object... info
     ) {
 
         if (!expression && isValidation()) {
@@ -242,10 +243,6 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
                         message.formatted(info)
                 )
             );
-
-            if (validationLogType.equals(ValidationLogType.ERROR)) {
-                throw new ValidationException(this.validationLogs);
-            }
         }
     }
 }

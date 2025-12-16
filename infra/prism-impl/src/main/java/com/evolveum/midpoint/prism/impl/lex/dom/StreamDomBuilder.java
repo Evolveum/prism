@@ -2,8 +2,6 @@ package com.evolveum.midpoint.prism.impl.lex.dom;
 
 import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
-import com.evolveum.midpoint.prism.impl.lex.dom.locator.PositionTrackingReader;
-import com.evolveum.midpoint.prism.impl.lex.dom.locator.TagPosition;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -37,11 +35,10 @@ public class StreamDomBuilder {
      * @throws Exception
      */
     public Document parse(InputStream is) throws XMLStreamException {
-        PositionTrackingReader trackingReader = new PositionTrackingReader(new InputStreamReader(is));
         Document doc = documentBuilder.newDocument();
 
         XMLInputFactory factory = XMLInputFactory.newInstance();
-        XMLStreamReader reader = factory.createXMLStreamReader(trackingReader);
+        XMLStreamReader reader = factory.createXMLStreamReader(new InputStreamReader(is));
 
         Element current = null;
 
@@ -56,13 +53,10 @@ public class StreamDomBuilder {
                     String namespaceURI = reader.getNamespaceURI();
 
                     Element elem = doc.createElementNS(namespaceURI, qName);
-                    TagPosition position = trackingReader.pollTag(TagPosition.Type.START);
 
-                    if (position != null) {
-                        Location location = reader.getLocation();
-                        elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
-                                SourceLocation.from(null, location.getLineNumber(), position.column()), null);
-                    }
+                    Location location = reader.getLocation();
+                    elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
+                            SourceLocation.from("unknown", location.getLineNumber(), location.getColumnNumber()), null);
 
                     // Add attributes (with namespace and prefix)
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -93,12 +87,6 @@ public class StreamDomBuilder {
                         if (!text.isBlank()) {
                             current.appendChild(doc.createTextNode(text));
                         }
-                    }
-                }
-
-                case XMLStreamConstants.COMMENT -> {
-                    if (current != null) {
-                        trackingReader.pollTag(TagPosition.Type.START);
                     }
                 }
 
