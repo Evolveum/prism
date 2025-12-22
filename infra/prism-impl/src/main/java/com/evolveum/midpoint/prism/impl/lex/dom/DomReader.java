@@ -158,7 +158,8 @@ class DomReader {
     }
 
     private void readMetadata(@NotNull Element element, XNodeImpl node, PrismNamespaceContext parentNsContext) throws SchemaException {
-        List<Element> metadataChildren = DOMUtil.getMatchingChildElements(element, metadataElementName);
+        List<Element>  metadataChildren = DOMUtil.getMatchingChildElements(element, metadataElementName);
+
         for (Element metadataChild : metadataChildren) {
             XNodeImpl metadata = readElementContent(metadataChild, schema.metadataDef(), schema, parentNsContext, false);
             if (metadata instanceof MapXNode) {
@@ -174,7 +175,7 @@ class DomReader {
             } else {
                 String msg = "Metadata is not of 'Map' type: '%s'";
                 parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                        node.getSourceLocation(), new TechnicalMessage(msg, new Argument(metadata, Argument.ArgumentType.RAW)),
+                        metadata.getSourceLocation(), new TechnicalMessage(msg, new Argument(metadata, Argument.ArgumentType.RAW)),
                         msg, ValidatorUtil.objectToString(metadata));
                 throw new SchemaException(String.format(msg, metadata));
             }
@@ -267,7 +268,7 @@ class DomReader {
         return xmap;
     }
 
-    private boolean isList(@NotNull Element element, @NotNull @Nullable XNodeDefinition itemDef, @Nullable QName xsiType) {
+    private boolean isList(@NotNull Element element, @NotNull XNodeDefinition itemDef, @Nullable QName xsiType) {
         String isListAttribute = DOMUtil.getAttribute(element, DOMUtil.IS_LIST_ATTRIBUTE_NAME);
         if (StringUtils.isNotEmpty(isListAttribute)) {
             return Boolean.parseBoolean(isListAttribute);
@@ -363,7 +364,7 @@ class DomReader {
         if (!storeElementNames && itemDef == null) {
             String msg = "When '!storeElementNames' the element name must be specified";
             parsingContext.validationLogger(false, ValidationLogType.ERROR,
-                    elements.isEmpty() ? null : getSourceLocation(elements.get(0)),
+                    getSourceLocationFromListElement(elements),
                     new TechnicalMessage(msg), msg);
 
             throw new IllegalArgumentException(msg);
@@ -407,5 +408,13 @@ class DomReader {
         }
 
         return null;
+    }
+
+    private SourceLocation getSourceLocationFromListElement(List<Element> elements) {
+        if (elements == null || elements.isEmpty()) {
+            return null;
+        }
+
+        return getSourceLocation(elements.getFirst());
     }
 }

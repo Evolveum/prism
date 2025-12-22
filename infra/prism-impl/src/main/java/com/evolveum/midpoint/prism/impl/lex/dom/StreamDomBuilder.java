@@ -3,6 +3,8 @@ package com.evolveum.midpoint.prism.impl.lex.dom;
 import com.evolveum.concepts.SourceLocation;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
+import com.evolveum.midpoint.util.DOMUtil;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,7 +58,7 @@ public class StreamDomBuilder {
 
                     Location location = reader.getLocation();
                     elem.setUserData(ValidatorUtil.SOURCE_LOCATION_OF_ELEMENT_KEY,
-                            SourceLocation.from("unknown", location.getLineNumber(), location.getColumnNumber()), null);
+                            SourceLocation.from(SourceLocation.unknown().getSource(), location.getLineNumber(), location.getColumnNumber()), null);
 
                     // Add attributes (with namespace and prefix)
                     for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -69,6 +71,17 @@ public class StreamDomBuilder {
 
                         Attr attr = doc.createAttributeNS(attrNS, attrQName);
                         attr.setValue(attrValue);
+                        elem.setAttributeNodeNS(attr);
+                    }
+
+                    // Add namespace with prefix
+                    for (int i = 0; i < reader.getNamespaceCount(); i++) {
+                        String attrNamespacePrefix = reader.getNamespacePrefix(i);
+                        String attrQName = (attrNamespacePrefix != null && !attrNamespacePrefix.isEmpty())
+                                ? DOMUtil.W3C_XML_SCHEMA_XMLNS_PREFIX + ":" + attrNamespacePrefix : DOMUtil.W3C_XML_SCHEMA_XMLNS_PREFIX;
+
+                        Attr attr = doc.createAttributeNS(DOMUtil.W3C_XML_SCHEMA_XMLNS_URI, attrQName);
+                        attr.setValue(reader.getNamespaceURI(i));
                         elem.setAttributeNodeNS(attr);
                     }
 

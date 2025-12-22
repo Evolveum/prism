@@ -347,7 +347,7 @@ class JsonObjectTokenReader {
         XNodeImpl ret;
 
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
-            String msg = "More than one of ''%s'', ''%s'' and regular content present";
+            String msg = "More than one of '%s', '%s' and regular content present";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     map.getSourceLocation(), new TechnicalMessage(msg,
                             new Argument(PROP_VALUE, Argument.ArgumentType.STRING),
@@ -399,7 +399,7 @@ class JsonObjectTokenReader {
         if (elementName != null) {
             if (wrappedValue != null && wrappedValue.getElementName() != null) {
                 if (!wrappedValue.getElementName().equals(elementName)) {
-                    String msg = "Conflicting element names for ''%s'' ('%s') and regular content ('%s'; ) present";
+                    String msg = "Conflicting element names for '%s' ('%s') and regular content ('%s'; ) present";
                     ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                             rv.getSourceLocation(), new TechnicalMessage(msg,
                                     new Argument(JsonInfraItems.PROP_VALUE, Argument.ArgumentType.STRING),
@@ -416,7 +416,7 @@ class JsonObjectTokenReader {
     private void addTypeNameTo(XNodeImpl rv) throws SchemaException {
         if (typeName != null) {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
-                String msg = "Conflicting type names for ''%s'' ('%s') and regular content ('%s') present";
+                String msg = "Conflicting type names for '%s' ('%s') and regular content ('%s') present";
                 ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                         rv.getSourceLocation(), new TechnicalMessage(msg,
                                 new Argument(JsonInfraItems.PROP_VALUE, Argument.ArgumentType.STRING),
@@ -434,7 +434,7 @@ class JsonObjectTokenReader {
         if (currentFieldValue instanceof PrimitiveXNodeImpl) {
             return ((PrimitiveXNodeImpl<?>) currentFieldValue).getStringValue();
         } else {
-            String msg = "Value of ''%s'' attribute must be a primitive one. It is '%s' instead";
+            String msg = "Value of '%s' attribute must be a primitive one. It is '%s' instead";
             ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
                     currentFieldValue.getSourceLocation(), new TechnicalMessage(msg,
                             new Argument(name, Argument.ArgumentType.QNAME),

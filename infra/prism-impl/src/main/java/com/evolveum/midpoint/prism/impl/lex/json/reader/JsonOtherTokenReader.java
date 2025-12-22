@@ -62,7 +62,7 @@ class JsonOtherTokenReader {
 
     @NotNull XNodeImpl readValue() throws IOException, SchemaException {
         JsonToken currentToken = Objects.requireNonNull(parser.currentToken(), "currentToken");
-        SourceLocation sourceLocation = SourceLocation.from("unknown",
+        SourceLocation sourceLocation = SourceLocation.from(SourceLocation.unknown().getSource(),
                 parser.currentLocation().getLineNr(),
                 parser.currentLocation().getColumnNr()
         );

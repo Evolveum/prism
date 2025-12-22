@@ -9,8 +9,8 @@
 package com.evolveum.concepts;
 
 public record Argument(
-        Object argument,
-        ArgumentType argumentType
+        Object value,
+        ArgumentType type
 ) {
 
     public enum ArgumentType {

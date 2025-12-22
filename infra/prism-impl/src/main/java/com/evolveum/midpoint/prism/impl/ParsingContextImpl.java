@@ -13,13 +13,10 @@ import com.evolveum.concepts.ValidationLog;
 import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
-import com.evolveum.midpoint.prism.xnode.XNode;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.exception.ValidationException;
 import com.evolveum.midpoint.util.logging.Trace;
 
 import javax.xml.namespace.QName;
-import javax.xml.transform.Source;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;

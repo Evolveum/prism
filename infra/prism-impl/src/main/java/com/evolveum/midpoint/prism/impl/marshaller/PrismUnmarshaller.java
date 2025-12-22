@@ -114,7 +114,7 @@ public class PrismUnmarshaller {
                 typeClass, PrismObjectDefinition.class, pc, schemaRegistry);
 
         XNodeImpl child = root.getSubnode();
-        msg = "Cannot parse object from element ''%s'', we need 'Map'";
+        msg = "Cannot parse object from element '%s', we need 'Map'";
         if (pc.isValidation()) {
             pc.validationLogger(child instanceof MapXNodeImpl,
                     ValidationLogType.ERROR, child.getSourceLocation(), new TechnicalMessage(msg, new Argument(child, Argument.ArgumentType.XNODE)),
@@ -124,11 +124,11 @@ public class PrismUnmarshaller {
         checkArgument(child instanceof MapXNodeImpl,
                 msg, child.getClass().getSimpleName());
 
-        msg = "Cannot parse object from element ''%s'', there is no definition for that element";
+        msg = "Cannot parse object from element '%s', there is no definition for that element";
 
         if (pc.isValidation()) {
             TechnicalMessage technicalMsg = new TechnicalMessage(
-                    msg + " can you clarify the definition based on the expected definitions from list: ''%s''",
+                    msg + " can you clarify the definition based on the expected definitions from list: '%s'",
                     new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME), new Argument(findPresumedDefinitionByElement(itemInfo.getItemName(), null), Argument.ArgumentType.DEFINITION));
             pc.validationLogger(itemInfo.getItemDefinition() != null,
                     ValidationLogType.ERROR, child.getSourceLocation(), technicalMsg, msg, ValidatorUtil.objectToString(itemInfo.getItemName()));
@@ -580,7 +580,7 @@ public class PrismUnmarshaller {
             if (itemSchema != null) {
                 // If we already have schema for this namespace then a missing element is
                 // an error. We positively know that it is not in the schema.
-                String msg = "Item ''%s'' has no definition (schema present, in '%s'), while parsing '%s'";
+                String msg = "Item '%s' has no definition (schema present, in '%s'), while parsing '%s'";
 
                 if (pc.isValidation()) {
                     TechnicalMessage technicalMsg = new TechnicalMessage(
