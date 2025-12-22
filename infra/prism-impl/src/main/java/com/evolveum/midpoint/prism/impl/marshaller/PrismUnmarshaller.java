@@ -16,10 +16,7 @@ import java.util.Map.Entry;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.Argument;
-import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
-import com.evolveum.concepts.ValidationLogType;
+import com.evolveum.concepts.*;
 import com.evolveum.midpoint.prism.impl.lazy.LazyPrismContainerValue;
 
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
@@ -100,7 +97,7 @@ public class PrismUnmarshaller {
         String msg = "Cannot parse object from element '%s', the element does not define an object, it is defined as '%s'";
         if (pc.isValidation()) {
             pc.validationLogger(itemDefinition == null || itemDefinition instanceof PrismObjectDefinition,
-                    ValidationLogType.ERROR, root.getSourceLocation(), new TechnicalMessage(msg,
+                    ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, root.getSourceLocation(), new TechnicalMessage(msg,
                             new Argument(itemName, Argument.ArgumentType.QNAME),
                             new Argument(itemDefinition, Argument.ArgumentType.DEFINITION)),
                     msg, itemName, itemDefinition);
@@ -117,7 +114,7 @@ public class PrismUnmarshaller {
         msg = "Cannot parse object from element '%s', we need 'Map'";
         if (pc.isValidation()) {
             pc.validationLogger(child instanceof MapXNodeImpl,
-                    ValidationLogType.ERROR, child.getSourceLocation(), new TechnicalMessage(msg, new Argument(child, Argument.ArgumentType.XNODE)),
+                    ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, child.getSourceLocation(), new TechnicalMessage(msg, new Argument(child, Argument.ArgumentType.XNODE)),
                     msg, ValidatorUtil.objectToString(child));
         }
 
@@ -127,11 +124,11 @@ public class PrismUnmarshaller {
         msg = "Cannot parse object from element '%s', there is no definition for that element";
 
         if (pc.isValidation()) {
-            TechnicalMessage technicalMsg = new TechnicalMessage(
-                    msg + " can you clarify the definition based on the expected definitions from list: '%s'",
-                    new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME), new Argument(findPresumedDefinitionByElement(itemInfo.getItemName(), null), Argument.ArgumentType.DEFINITION));
             pc.validationLogger(itemInfo.getItemDefinition() != null,
-                    ValidationLogType.ERROR, child.getSourceLocation(), technicalMsg, msg, ValidatorUtil.objectToString(itemInfo.getItemName()));
+                    ValidationLogType.ERROR, ValidationLogType.Specification.MISSING_DEFINITION, child.getSourceLocation(), new TechnicalMessage(
+                            msg + " can you clarify the definition based on the expected definitions from list: '%s'",
+                            new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME), new Argument(findPresumedDefinitionByElement(itemInfo.getItemName(), null), Argument.ArgumentType.DEFINITION)),
+                    msg, ValidatorUtil.objectToString(itemInfo.getItemName()));
         }
 
         ItemDefinition<?> itemDef = checkSchemaNotNull(itemInfo.getItemDefinition(),
@@ -140,7 +137,7 @@ public class PrismUnmarshaller {
         msg = "Cannot parse object from element '%s' the element does not define an object, it is defined as '%s'";
         if (pc.isValidation()) {
             pc.validationLogger(itemDef instanceof PrismObjectDefinition,
-                    ValidationLogType.ERROR, child.getSourceLocation(),
+                    ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, child.getSourceLocation(),
                     new TechnicalMessage(msg,
                             new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME),
                             new Argument(itemInfo.getItemDefinition(), Argument.ArgumentType.DEFINITION)),
@@ -212,7 +209,7 @@ public class PrismUnmarshaller {
             String msg = "Couldn't parse general object with no type name and unknown element name: '%s'";
             if (pc.isValidation()) {
                 pc.validationLogger(schemaRegistry.findItemDefinitionByElementName(itemName) == null,
-                        ValidationLogType.ERROR, root.getSourceLocation(), new TechnicalMessage(msg, new Argument(itemName, Argument.ArgumentType.QNAME)),
+                        ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, root.getSourceLocation(), new TechnicalMessage(msg, new Argument(itemName, Argument.ArgumentType.QNAME)),
                         msg, ValidatorUtil.objectToString(itemName));
             }
             ItemDefinition<?> itemDefinition = checkSchemaNotNull(schemaRegistry.findItemDefinitionByElementName(itemName),
@@ -234,7 +231,7 @@ public class PrismUnmarshaller {
             @NotNull QName itemName, ItemDefinition<?> itemDefinition, @NotNull ParsingContext pc) throws SchemaException {
         if (pc.isValidation()) {
             pc.validationLogger(!(node instanceof RootXNode),
-                    ValidationLogType.ERROR, node.getSourceLocation(),
+                    ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                     new TechnicalMessage(""), "Node does not 'RootXNode'");
         }
         Validate.isTrue(!(node instanceof RootXNode));
@@ -246,7 +243,7 @@ public class PrismUnmarshaller {
                 String msg = "'Node' has an explicit type corresponding to container ('%s') but parseItemInternal was called without definition: '%s'";
                 if (pc.isValidation()) {
                     pc.validationLogger(false,
-                            ValidationLogType.ERROR, node.getSourceLocation(),
+                            ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                             new TechnicalMessage(msg,
                                     new Argument(pcd, Argument.ArgumentType.DEFINITION),
                                     new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
@@ -268,7 +265,7 @@ public class PrismUnmarshaller {
             String msg = "Attempt to parse unknown definition type '%s'";
             if (pc.isValidation()) {
                 pc.validationLogger(false,
-                        ValidationLogType.ERROR, node.getSourceLocation(),
+                        ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                         new TechnicalMessage(msg, new Argument(itemDefinition.getDisplayName(), Argument.ArgumentType.STRING)), msg, itemDefinition.getDisplayName());
             }
             throw new IllegalArgumentException(msg.formatted(itemDefinition.getClass().getName()));
@@ -291,7 +288,7 @@ public class PrismUnmarshaller {
             if (containerDef instanceof PrismObject && list.size() > 1) {
                 String msg = "Multiple values for a 'PrismObject': '%s'";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR, node.getSourceLocation(),
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                             new TechnicalMessage(msg, new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
                             msg, node.getElementName());
                 }
@@ -380,7 +377,7 @@ public class PrismUnmarshaller {
             if (!prim.isEmpty()) {
                 String msg = "Cannot parse container value from (non-empty) '%s'";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR, node.getSourceLocation(),
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                             new TechnicalMessage(msg, new Argument(node, Argument.ArgumentType.XNODE)),
                             msg, ValidatorUtil.objectToString(node.getElementName()));
                 }
@@ -390,7 +387,7 @@ public class PrismUnmarshaller {
         } else {
             String msg = "Cannot parse container value from '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR, node.getSourceLocation(),
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
                         new TechnicalMessage(msg, new Argument(node, Argument.ArgumentType.XNODE)),
                         msg, ValidatorUtil.objectToString(node.getElementName()));
             }
@@ -464,7 +461,7 @@ public class PrismUnmarshaller {
         if (xsiTypeDef == null) {
             String msg = "Unknown type '%s' in '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR, xnode.getSourceLocation(),
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
                         new TechnicalMessage(msg,
                                 new Argument(xsiTypeName, Argument.ArgumentType.RAW),
                                 new Argument(xnode, Argument.ArgumentType.XNODE)),
@@ -482,7 +479,7 @@ public class PrismUnmarshaller {
             // parsing failures because of undefined items.
             String msg = "Ignoring explicit type definition {} because equal or even more specific one is present: {}";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR, xnode.getSourceLocation(),
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
                         new TechnicalMessage(msg,
                                 new Argument(xsiTypeDef, Argument.ArgumentType.DEFINITION),
                                 new Argument(containerTypeDef, Argument.ArgumentType.DEFINITION)),
@@ -503,7 +500,7 @@ public class PrismUnmarshaller {
             final QName itemName = entry.getKey();
             String msg = "'Null' item name while parsing '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(itemName != null, ValidationLogType.ERROR, map.getSourceLocation(),
+                pc.validationLogger(itemName != null, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, map.getSourceLocation(),
                         new TechnicalMessage(msg, new Argument(map.debugDumpLazily(), Argument.ArgumentType.RAW)),
                         msg, ValidatorUtil.objectToString(map.getElementName()));
             }
@@ -554,7 +551,7 @@ public class PrismUnmarshaller {
             if (migration.getOperation() == SchemaMigrationOperation.REMOVED) {
                 String msg = "Item '%s' was removed from the schema, skipped processing of that item";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR, sourceLocation,
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, sourceLocation,
                             new TechnicalMessage(msg, new Argument(itemName, Argument.ArgumentType.QNAME)),
                             msg, ValidatorUtil.objectToString(itemName));
                 }
@@ -563,7 +560,7 @@ public class PrismUnmarshaller {
             } else {
                 String msg = "Unsupported migration operation '%s' for item '%s' (in '%s') while parsing ";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR,
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             sourceLocation, new TechnicalMessage(msg,
                                     new Argument(migration.getOperation(), Argument.ArgumentType.UNKNOW),
                                     new Argument(itemName, Argument.ArgumentType.QNAME),
@@ -583,14 +580,13 @@ public class PrismUnmarshaller {
                 String msg = "Item '%s' has no definition (schema present, in '%s'), while parsing '%s'";
 
                 if (pc.isValidation()) {
-                    TechnicalMessage technicalMsg = new TechnicalMessage(
-                            msg + " can you clarify the definition based on the expected definitions from list: '%s'",
-                            new Argument(itemName, Argument.ArgumentType.QNAME),
-                            new Argument(containerDef, Argument.ArgumentType.DEFINITION),
-                            new Argument(object.debugDump(), Argument.ArgumentType.RAW),
-                            new Argument(findPresumedDefinitionByElement(itemName, typeDefinition), Argument.ArgumentType.DEFINITION_LIST));
-                    pc.validationLogger(false, ValidationLogType.ERROR,
-                            sourceLocation, technicalMsg,
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.MISSING_DEFINITION,
+                            sourceLocation, new TechnicalMessage(
+                                    msg + " can you clarify the definition based on the expected definitions from list: '%s'",
+                                    new Argument(itemName, Argument.ArgumentType.QNAME),
+                                    new Argument(containerDef, Argument.ArgumentType.DEFINITION),
+                                    new Argument(object.debugDump(), Argument.ArgumentType.RAW),
+                                    new Argument(findPresumedDefinitionByElement(itemName, typeDefinition), Argument.ArgumentType.DEFINITION_LIST)),
                             msg, itemName.getLocalPart(), containerDef.getDisplayName(), object.getClass().getSimpleName());
                 }
                 pc.warnOrThrow(LOGGER, msg.formatted(
@@ -605,14 +601,13 @@ public class PrismUnmarshaller {
             String msg = "Item '%s' has no definition (in value '%s') " + "while parsing '%s'";
 
             if (pc.isValidation()) {
-                TechnicalMessage technicalMsg = new TechnicalMessage(
-                        msg + " can you clarify the definition based on the expected definitions from list: '%s'",
-                        new Argument(itemName, Argument.ArgumentType.QNAME),
-                        new Argument(typeDefinition, Argument.ArgumentType.DEFINITION),
-                        new Argument(object.debugDump(), Argument.ArgumentType.RAW),
-                        new Argument(findPresumedDefinitionByElement(itemName, typeDefinition), Argument.ArgumentType.DEFINITION_LIST));
-                pc.validationLogger(false, ValidationLogType.ERROR,
-                        sourceLocation, technicalMsg,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.MISSING_DEFINITION,
+                        sourceLocation, new TechnicalMessage(
+                                msg + " can you clarify the definition based on the expected definitions from list: '%s'",
+                                new Argument(itemName, Argument.ArgumentType.QNAME),
+                                new Argument(typeDefinition, Argument.ArgumentType.DEFINITION),
+                                new Argument(object.debugDump(), Argument.ArgumentType.RAW),
+                                new Argument(findPresumedDefinitionByElement(itemName, typeDefinition), Argument.ArgumentType.DEFINITION_LIST)),
                         msg, itemName.getLocalPart(), ValidatorUtil.objectToString(typeDefinition), object.getClass().getSimpleName());
             }
             pc.warnOrThrow(LOGGER, msg.formatted(itemName, typeDefinition, object.debugDump()));
@@ -656,7 +651,7 @@ public class PrismUnmarshaller {
         if (node instanceof ListXNodeImpl listNode && !node.isHeterogeneousList()) {
             String msg = "Attempt to store multiple values in single-valued property '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(itemDefinition == null || itemDefinition.isMultiValue() || listNode.size() <= 1, ValidationLogType.ERROR,
+                pc.validationLogger(itemDefinition == null || itemDefinition.isMultiValue() || listNode.size() <= 1, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         node.getSourceLocation(), new TechnicalMessage(msg, new Argument(itemName, Argument.ArgumentType.QNAME)),
                         msg, itemName.getLocalPart());
             }
@@ -700,7 +695,7 @@ public class PrismUnmarshaller {
         } else {
             String msg = "Cannot parse property from '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         node.getSourceLocation(), new TechnicalMessage(msg, new Argument(node, Argument.ArgumentType.XNODE)),
                         msg, ValidatorUtil.objectToString(node.getElementName()));
             }
@@ -721,7 +716,7 @@ public class PrismUnmarshaller {
             } catch (SchemaException e) {
                 String msg = "Couldn't add a value of '%s' to the containing item: '%s'";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR,
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             sourceLocation, new TechnicalMessage(msg,
                                     new Argument(value, Argument.ArgumentType.UNKNOW),
                                     new Argument(e.getMessage(), Argument.ArgumentType.STRING)),
@@ -747,7 +742,7 @@ public class PrismUnmarshaller {
             if (!isValueAllowed(realValue, definition)) {
                 String msg = "Unknown (not allowed) value of type '%s'. Value: '%s'. Allowed values: '%s'";
                 if (pc.isValidation()) {
-                    pc.validationLogger(false, ValidationLogType.ERROR,
+                    pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             node.getSourceLocation(), new TechnicalMessage(msg,
                                     new Argument(typeName, Argument.ArgumentType.QNAME),
                                     new Argument(realValue, Argument.ArgumentType.UNKNOW),
@@ -769,7 +764,7 @@ public class PrismUnmarshaller {
         } else {
             String msg = "Cannot parse as '%s' because bean unmarshaller cannot process it (generated bean classes are missing?): '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         node.getSourceLocation(), new TechnicalMessage(msg,
                                 new Argument(typeName, Argument.ArgumentType.QNAME),
                                 new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
@@ -887,7 +882,7 @@ public class PrismUnmarshaller {
         } else {
             String msg = "Cannot parse reference from '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         node.getSourceLocation(), new TechnicalMessage(msg, new Argument(node, Argument.ArgumentType.XNODE)),
                         msg, ValidatorUtil.objectToString(node.getElementName()));
             }
@@ -933,7 +928,7 @@ public class PrismUnmarshaller {
             @NotNull ParsingContext pc, boolean allowMissingRefTypesOverride) throws SchemaException {
         String msg = "Cannot parse reference from '%s'";
         if (pc.isValidation()) {
-            pc.validationLogger(definition.getTargetTypeName() != null, ValidationLogType.ERROR,
+            pc.validationLogger(definition.getTargetTypeName() != null, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                     xnode.getSourceLocation(), new TechnicalMessage(msg, new Argument(definition.getItemName(), Argument.ArgumentType.UNKNOW)),
                     msg, definition.getItemName());
         }
@@ -948,7 +943,7 @@ public class PrismUnmarshaller {
             if (!pc.isAllowMissingRefTypes() && !allowMissingRefTypesOverride) {
                 msg = "Target type in reference '%s' not specified in reference nor in the schema";
                 if (pc.isValidation()) {
-                    pc.validationLogger(definition.getTargetTypeName() != null, ValidationLogType.ERROR,
+                    pc.validationLogger(definition.getTargetTypeName() != null, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             map.getSourceLocation(), new TechnicalMessage(msg, new Argument(definition.getItemName(), Argument.ArgumentType.UNKNOW)),
                             msg, definition.getItemName());
                 }
@@ -964,7 +959,7 @@ public class PrismUnmarshaller {
                 msg = "Target type specified in reference '%s' ('%s') does not match target type in schema ('%s')";
                 boolean expression = prismContext.getSchemaRegistry().isAssignableFrom(defTargetType, targetType);
                 if (pc.isValidation()) {
-                    pc.validationLogger(expression, ValidationLogType.ERROR,
+                    pc.validationLogger(expression, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             map.getSourceLocation(), new TechnicalMessage(msg,
                                     new Argument(definition.getItemName(), Argument.ArgumentType.UNKNOW),
                                     new Argument(targetType, Argument.ArgumentType.QNAME),
@@ -980,12 +975,11 @@ public class PrismUnmarshaller {
             msg = "No definition for type '%s' in reference";
             var object = schemaRegistry.findObjectDefinitionByType(targetType);
             if (pc.isValidation()) {
-                TechnicalMessage technicalMsg = new TechnicalMessage(
-                        msg + " can you clarify the definition based on the expected definitions from list: '%s'",
-                        new Argument(targetType, Argument.ArgumentType.QNAME),
-                        new Argument(findPresumedDefinitionByElement(targetType, null), Argument.ArgumentType.DEFINITION_LIST));
-                pc.validationLogger(object != null, ValidationLogType.ERROR,
-                        map.getSourceLocation(), technicalMsg,
+                pc.validationLogger(object != null, ValidationLogType.ERROR, ValidationLogType.Specification.MISSING_DEFINITION,
+                        map.getSourceLocation(), new TechnicalMessage(
+                                msg + " can you clarify the definition based on the expected definitions from list: '%s'",
+                                new Argument(targetType, Argument.ArgumentType.QNAME),
+                                new Argument(findPresumedDefinitionByElement(targetType, null), Argument.ArgumentType.DEFINITION_LIST)),
                         msg, targetType.getLocalPart());
             }
 
@@ -1024,7 +1018,7 @@ public class PrismUnmarshaller {
             MapXNodeImpl objectMapNode = toObjectMapNode(xrefObject, pc);
             msg = "Cannot parse object from '%s' without knowing its type";
             if (pc.isValidation()) {
-                pc.validationLogger(targetType != null, ValidationLogType.ERROR,
+                pc.validationLogger(targetType != null, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         xrefObject.getSourceLocation(), new TechnicalMessage(msg, new Argument(xrefObject, Argument.ArgumentType.XNODE)),
                         msg, ValidatorUtil.objectToString(xrefObject.getElementName()));
             }
@@ -1064,7 +1058,7 @@ public class PrismUnmarshaller {
             // TODO ...or warn
             String msg = "Cannot parse object from '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         xNode.getSourceLocation(), new TechnicalMessage(msg, new Argument(xNode, Argument.ArgumentType.XNODE)),
                         msg, ValidatorUtil.objectToString(xNode.getElementName()));
             }
@@ -1081,7 +1075,7 @@ public class PrismUnmarshaller {
                 String msg = "'OID' in reference ('%s') does not match 'OID' in composite object ('%s')";
                 boolean expression = refVal.getOid().equals(object.getOid());
                 if (pc.isValidation()) {
-                    pc.validationLogger(expression, ValidationLogType.ERROR,
+                    pc.validationLogger(expression, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                             sourceLocation, new TechnicalMessage(msg,
                                     new Argument(refVal.getOid(), Argument.ArgumentType.STRING),
                                     new Argument(object.getOid(), Argument.ArgumentType.STRING)),
@@ -1098,7 +1092,7 @@ public class PrismUnmarshaller {
             String msg = "Target type in reference ('%s') does not match type in composite object ('%s')";
             boolean expression = refVal.getTargetType().equals(objectTypeName);
             if (pc.isValidation()) {
-                pc.validationLogger(expression, ValidationLogType.ERROR,
+                pc.validationLogger(expression, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         sourceLocation, new TechnicalMessage(msg,
                                 new Argument(refVal.getTargetType(), Argument.ArgumentType.QNAME),
                                 new Argument(objectTypeName, Argument.ArgumentType.QNAME)),
@@ -1124,7 +1118,7 @@ public class PrismUnmarshaller {
 
         String msg = "No object definition for composite object in reference element '%s'";
         if (pc.isValidation()) {
-            pc.validationLogger(objectDefinition != null, ValidationLogType.ERROR,
+            pc.validationLogger(objectDefinition != null, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                     map.getSourceLocation(), new TechnicalMessage(msg, new Argument(definition.getItemName(), Argument.ArgumentType.UNKNOW)),
                     msg, definition.getDisplayName());
         }
@@ -1135,7 +1129,7 @@ public class PrismUnmarshaller {
         } catch (SchemaException e) {
             msg = "'%s' while parsing composite object in reference element '%s'";
             if (pc.isValidation()) {
-                pc.validationLogger(false, ValidationLogType.ERROR,
+                pc.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         map.getSourceLocation(), new TechnicalMessage(msg,
                                 new Argument(e.getMessage(), Argument.ArgumentType.STRING),
                                 new Argument(definition.getItemName(), Argument.ArgumentType.UNKNOW)),

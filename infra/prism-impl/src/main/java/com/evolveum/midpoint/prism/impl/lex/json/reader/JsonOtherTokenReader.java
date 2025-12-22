@@ -110,7 +110,7 @@ class JsonOtherTokenReader {
             JsonToken token = parser.nextToken();
             if (token == null) {
                 String msg = "Unexpected end of data while parsing a list structure at ";
-                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR,
+                ctx.prismParsingContext.validationLogger(false, ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW,
                         list.getSourceLocation(), new TechnicalMessage(msg),  msg);
                 ctx.prismParsingContext.warnOrThrow(LOGGER, msg + ctx.getPositionSuffix());
                 return list;

@@ -4,6 +4,12 @@ public enum ValidationLogType {
     WARNING("Warning"),
     ERROR("Error");
 
+    public enum Specification {
+        MISSING_DEFINITION,
+        MISSING_NAMESPACE,
+        UNKNOW
+    }
+
     private final String label;
 
     ValidationLogType(String label) {

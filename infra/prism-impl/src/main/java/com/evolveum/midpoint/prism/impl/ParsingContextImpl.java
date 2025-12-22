@@ -220,6 +220,7 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     @Override
     public void validationLogger(boolean expression,
             ValidationLogType validationLogType,
+            ValidationLogType.Specification specification,
             SourceLocation sourceLocation,
             TechnicalMessage technicalMessage,
             String message,
@@ -235,6 +236,7 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
             this.validationLogs.add(
                 new ValidationLog(
                         validationLogType,
+                        specification,
                         sourceLocation,
                         technicalMessage,
                         message.formatted(info)

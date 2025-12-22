@@ -6,6 +6,8 @@ public record ValidationLog(
          */
         ValidationLogType validationLogType,
 
+        ValidationLogType.Specification specification,
+
         /*
          * Localization of log
          */
