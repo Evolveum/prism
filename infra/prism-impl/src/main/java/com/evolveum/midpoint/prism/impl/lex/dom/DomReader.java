@@ -415,6 +415,6 @@ class DomReader {
             return null;
         }
 
-        return getSourceLocation(elements.getFirst());
+        return getSourceLocation(elements.get(0));
     }
 }
