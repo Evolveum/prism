@@ -479,8 +479,9 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, Schema
             this.schemaRegistryState = schemaRegistryStateLocale;
             initEntityResolver();
 
-            invalidateCaches();
             staticNamespaceContext = staticPrefixes.build();
+
+            invalidateCaches();
         } catch (SAXException ex) {
             if (ex instanceof SAXParseException sex) {
                 throw new SchemaException("Error parsing schema " + sex.getSystemId() + " line " + sex.getLineNumber() + ": " + sex.getMessage(), sex);
