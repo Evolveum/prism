@@ -44,7 +44,11 @@ public abstract class AbstractReader {
 
     @NotNull protected final SchemaRegistry schemaRegistry;
 
-    private final PrismNamespaceContext namespaceContext;
+    /**
+     * Can't be final, as prism context reload can update namespace context.
+     * E.g. because of reloading dynamic schemas.
+     */
+    private PrismNamespaceContext namespaceContext;
 
     public static final ObjectMapper OBJECT_MAPPER;
 
@@ -64,7 +68,14 @@ public abstract class AbstractReader {
         // would put any undefined element to default namespace (usually common)
         // which will break in places, where namespace change is expected
         // and final item name is not directly defined in parent.
-        this.namespaceContext = schemaRegistry.staticNamespaceContext().withoutDefault();
+
+        this.schemaRegistry.registerInvalidationListener(() -> reloadNamespaceContext());
+
+        reloadNamespaceContext();
+    }
+
+    private void reloadNamespaceContext() {
+        namespaceContext = schemaRegistry.staticNamespaceContext().withoutDefault();
     }
 
     @NotNull
