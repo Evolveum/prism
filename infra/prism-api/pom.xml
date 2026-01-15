@@ -13,7 +13,7 @@
     <parent>
         <artifactId>prism</artifactId>
         <groupId>com.evolveum.prism</groupId>
-        <version>4.11-M1</version>
+        <version>4.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>prism-api</artifactId>
@@ -99,13 +99,13 @@
         <dependency>
             <groupId>com.evolveum.axiom</groupId>
             <artifactId>axiom</artifactId>
-            <version>4.11-M1</version>
+            <version>4.11-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.evolveum.commons</groupId>
             <artifactId>concepts</artifactId>
-            <version>4.11-M1</version>
+            <version>4.11-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
