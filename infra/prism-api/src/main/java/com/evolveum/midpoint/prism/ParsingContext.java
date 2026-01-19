@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLog;
-import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
@@ -29,15 +26,27 @@ public interface ParsingContext extends Cloneable {
 
     boolean isStrict();
 
+    @Deprecated
     void warn(Trace logger, String message);
 
+    @Deprecated
     void warnOrThrow(Trace logger, String message) throws SchemaException;
 
+    @Deprecated
     void warnOrThrow(Trace logger, String message, Throwable t) throws SchemaException;
 
+    void warn(Trace logger, ValidationLog validationLog);
+
+    void warnOrThrow(Trace logger, ValidationLog validationLog) throws SchemaException;
+
+    void warnOrThrow(Trace logger, ValidationLog validationLog, Throwable t) throws SchemaException;
+
+    @Deprecated
     void warn(String message);
 
-    List<String> getWarnings();
+    void warn(ValidationLog validationLog);
+
+    List<ValidationLog>  getWarnings();
 
     boolean hasWarnings();
 
@@ -66,6 +75,6 @@ public interface ParsingContext extends Cloneable {
 
     ParsingContext validation();
     boolean isValidation();
-    List<ValidationLog> getValidationLogs();
-    void validationLogger(boolean expression, ValidationLogType validationLogType, ValidationLogType.Specification specification, SourceLocation sourceLocation, TechnicalMessage technicalMessage, String message, Object... info);
+//    List<ValidationLog> getValidationLogs();
+//    void validationLogger(boolean expression, ValidationLogType validationLogType, ValidationLogType.Specification specification, SourceLocation sourceLocation, TechnicalMessage technicalMessage, String message, Object... info);
 }

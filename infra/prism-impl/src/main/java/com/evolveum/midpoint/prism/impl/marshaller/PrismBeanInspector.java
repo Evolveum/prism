@@ -7,7 +7,9 @@
 
 package com.evolveum.midpoint.prism.impl.marshaller;
 
+import com.evolveum.concepts.*;
 import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
@@ -44,9 +46,12 @@ public class PrismBeanInspector {
 
     @NotNull private PrismContext prismContext;
 
+    private ParsingContext parsingContext;
+
     public PrismBeanInspector(@NotNull PrismContext prismContext) {
         Validate.notNull(prismContext, "prismContext");
         this.prismContext = prismContext;
+        parsingContext = prismContext.getDefaultParsingContext();
     }
 
     //region Caching mechanism (multiple dimensions)
@@ -338,18 +343,32 @@ public class PrismBeanInspector {
         try {
             return Class.forName(pkg.getName()+".ObjectFactory");
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Cannot find object factory class in package "+pkg.getName()+": "+e.getMessage(), e);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Cannot find object factory class in package %s: %s",
+                            new Argument(pkg.getName(), Argument.ArgumentType.STRING),
+                            new Argument(e.getMessage(), Argument.ArgumentType.STRING)),
+                    "Cannot find object factory class in package %s: %s".formatted(pkg.getName(), e.getMessage()));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message(), e);
         }
     }
 
     private Class getObjectFactoryClassUncached(String namespaceUri) {
         SchemaDescription schemaDescription = prismContext.getSchemaRegistry().findSchemaDescriptionByNamespace(namespaceUri);
         if (schemaDescription == null) {
-            throw new IllegalArgumentException("Cannot find object factory class for namespace "+namespaceUri+": unknown schema namespace");
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Cannot find object factory class for namespace %s: unknown schema namespace", new Argument(namespaceUri, Argument.ArgumentType.STRING)),
+                    "Cannot find object factory class for namespace %s: unknown schema namespace".formatted(namespaceUri));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         Package compileTimeClassesPackage = schemaDescription.getCompileTimeClassesPackage();
         if (compileTimeClassesPackage == null) {
-            throw new IllegalArgumentException("Cannot find object factory class for namespace "+namespaceUri+": not a compile-time schema");
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Cannot find object factory class for namespace %s: not a compile-time schema", new Argument(namespaceUri, Argument.ArgumentType.STRING)),
+                    "Cannot find object factory class for namespace %s: not a compile-time schema".formatted(namespaceUri));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         return getObjectFactoryClassUncached(compileTimeClassesPackage);
     }
@@ -418,7 +437,11 @@ public class PrismBeanInspector {
 
         XmlType xmlType = beanClass.getAnnotation(XmlType.class);
         if (xmlType == null) {
-            throw new IllegalArgumentException("Cannot marshall "+beanClass+" it does not have @XmlType annotation");
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                new TechnicalMessage("Cannot marshall %s it does not have @XmlType annotation", new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
+                "Cannot marshall %s it does not have @XmlType annotation".formatted(beanClass));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
 
         String[] myPropOrder = xmlType.propOrder();
@@ -550,15 +573,27 @@ public class PrismBeanInspector {
     @NotNull
     Type getTypeArgument(Type origType, String desc) {
         if (!(origType instanceof ParameterizedType)) {
-            throw new IllegalArgumentException("Not a parametrized type "+desc);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Not a parametrized type %s", new Argument(desc, Argument.ArgumentType.STRING)),
+                    "Not a parametrized type %s".formatted(desc));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         ParameterizedType parametrizedType = (ParameterizedType)origType;
         Type[] actualTypeArguments = parametrizedType.getActualTypeArguments();
         if (actualTypeArguments == null || actualTypeArguments.length == 0) {
-            throw new IllegalArgumentException("No type arguments for getter "+desc);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("No type arguments for getter %s", new Argument(desc, Argument.ArgumentType.STRING)),
+                    "No type arguments for getter %s".formatted(desc));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         if (actualTypeArguments.length > 1) {
-            throw new IllegalArgumentException("Too many type arguments for getter for "+desc);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Too many type arguments for getter for %s", new Argument(desc, Argument.ArgumentType.STRING)),
+                    "Too many type arguments for getter for %s".formatted(desc));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         return actualTypeArguments[0];
     }
@@ -570,17 +605,37 @@ public class PrismBeanInspector {
         } else if (type instanceof WildcardType) {
             WildcardType wildcard = ((WildcardType) type);
             if (wildcard.getUpperBounds().length != 1) {
-                throw new IllegalArgumentException("Wrong number of upper bounds for " + type + " ("
-                        + wildcard.getUpperBounds().length + "): " + desc);
+                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                        new TechnicalMessage("Wrong number of upper bounds for %s (%s): %s",
+                                new Argument(type, Argument.ArgumentType.UNKNOW),
+                                new Argument(wildcard.getUpperBounds().length, Argument.ArgumentType.INT),
+                                new Argument(desc, Argument.ArgumentType.STRING)),
+                        "Wrong number of upper bounds for %s (%s): %s".formatted(type, wildcard.getUpperBounds().length, desc));
+                parsingContext.warn(validationLog);
+                throw new IllegalArgumentException(validationLog.message());
             }
             Type upper = wildcard.getUpperBounds()[0];
             if (upper instanceof Class) {
                 return (Class) upper;
             } else {
-                throw new IllegalArgumentException("Upper bound for " + type + " is not a class, it is " + type + ": " + desc);
+                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                        new TechnicalMessage("Upper bound for %s is not a class, it is %s: %s",
+                                new Argument(type, Argument.ArgumentType.UNKNOW),
+                                new Argument(type, Argument.ArgumentType.UNKNOW),
+                                new Argument(desc, Argument.ArgumentType.STRING)),
+                        "Upper bound for %s is not a class, it is %s: %s".formatted(type, type, desc));
+                parsingContext.warn(validationLog);
+                throw new IllegalArgumentException(validationLog.message());
             }
         } else {
-            throw new IllegalArgumentException(type + "is not a class nor wildcard type: " + type + ": " + desc);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("%s is not a class nor wildcard type: %s: %s",
+                            new Argument(type, Argument.ArgumentType.UNKNOW),
+                            new Argument(type, Argument.ArgumentType.UNKNOW),
+                            new Argument(desc, Argument.ArgumentType.STRING)),
+                    "%s is not a class nor wildcard type: %s: %s".formatted(type, type, desc));
+            parsingContext.warn(validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
     }
 
@@ -589,7 +644,12 @@ public class PrismBeanInspector {
         SchemaRegistry schemaRegistry = prismContext.getSchemaRegistry();
         TypeDefinition typeDef = schemaRegistry.findTypeDefinitionByCompileTimeClass(beanClass, TypeDefinition.class);
         if (typeDef == null) {
-            throw new SchemaException("No type definition for " + beanClass);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("No type definition for %s",
+                            new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
+                    "No type definition for %s".formatted(beanClass));
+            parsingContext.warn(validationLog);
+            throw new SchemaException(validationLog.message());
         }
         List<TypeDefinition> subTypes = new ArrayList<>(typeDef.getStaticSubTypes());
         subTypes.sort(Comparator.comparing(TypeDefinition::getInstantiationOrder, nullsLast(naturalOrder())));
@@ -600,24 +660,42 @@ public class PrismBeanInspector {
             }
             if (matches(subType, fields)) {
                 if (matchingDefinition != null) {
-                    throw new SchemaException("Couldn't unambiguously determine a subclass for " + beanClass
-                            + " instantiation (fields: " + fields + "). Candidates: " + matchingDefinition + ", " + subType);
+                    ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                            new TechnicalMessage("No type definition for %s",
+                                    new Argument(beanClass, Argument.ArgumentType.UNKNOW),
+                                    new Argument(fields, Argument.ArgumentType.UNKNOW),
+                                    new Argument(matchingDefinition, Argument.ArgumentType.UNKNOW),
+                                    new Argument(subType, Argument.ArgumentType.UNKNOW)),
+                            "Couldn't unambiguously determine a subclass for %s instantiation (fields: %s). Candidates: %s, %s".formatted(beanClass, fields, matchingDefinition, subType));
+                    parsingContext.warn(validationLog);
+                    throw new SchemaException(validationLog.message());
                 }
                 matchingDefinition = subType;
             }
         }
         if (matchingDefinition == null) {
             final int max = 5;
-            throw new SchemaException("Couldn't find a subclass of " + beanClass + " that would contain fields " + fields + ". Considered "
-                    + subTypes.subList(0, Math.min(subTypes.size(), max))
-                    + (subTypes.size() >= max ? " (...)" : ""));
+
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Couldn't find a subclass of %s that would contain fields %s. Considered  %s %s",
+                            new Argument(beanClass, Argument.ArgumentType.UNKNOW),
+                            new Argument(fields, Argument.ArgumentType.UNKNOW),
+                            new Argument(subTypes.subList(0, Math.min(subTypes.size(), max)), Argument.ArgumentType.UNKNOW),
+                            new Argument((subTypes.size() >= max ? " (...)" : ""), Argument.ArgumentType.STRING)),
+                    "Couldn't find a subclass of %s that would contain fields %s. Considered  %s %s".formatted(beanClass, fields, subTypes.subList(0, Math.min(subTypes.size(), max)), (subTypes.size() >= max ? " (...)" : "")));
+            parsingContext.warn(validationLog);
+            throw new SchemaException(validationLog.message());
         }
         //noinspection unchecked
         Class<? extends T> compileTimeClass = (Class<? extends T>) matchingDefinition.getCompileTimeClass();
         if (compileTimeClass != null) {
             return compileTimeClass;
         } else {
-            throw new SchemaException("No compile time class defined for " + matchingDefinition);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("No compile time class defined for %s", new Argument(matchingDefinition, Argument.ArgumentType.DEFINITION)),
+                    "No compile time class defined for %s".formatted(matchingDefinition));
+            parsingContext.warn(validationLog);
+            throw new SchemaException(validationLog.message());
         }
     }
 

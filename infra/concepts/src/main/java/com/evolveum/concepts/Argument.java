@@ -15,11 +15,14 @@ public record Argument(
 
     public enum ArgumentType {
         XNODE,
+        XMAP,
+        XLIST,
         QNAME,
         ELEMENT,
         DEFINITION,
         DEFINITION_LIST,
         STRING,
+        INT,
         RAW,
         UNKNOW
     }

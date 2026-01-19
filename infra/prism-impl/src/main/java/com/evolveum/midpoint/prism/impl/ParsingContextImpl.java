@@ -7,10 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLog;
-import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -31,13 +28,13 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     private XNodeProcessorEvaluationMode evaluationMode = XNodeProcessorEvaluationMode.STRICT;
     private boolean allowMissingRefTypes;
     private boolean convertUnknownTypesToRaw;
-    private final List<String> warnings = new ArrayList<>();
+    // FIXME rename to a more accurate name
+    private final List<ValidationLog> warnings = new ArrayList<>();
     /** Not checking for duplicates when adding parsed data. For trusted sources. */
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
     private Set<QName> lazyDeserialization = new HashSet<>();
     private boolean isValidation = false;
-    private final List<ValidationLog> validationLogs = new ArrayList<>();
 
     private ParsingContextImpl() {
     }
@@ -104,24 +101,47 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
 
     @Override
     public void warnOrThrow(Trace logger, String message, Throwable t) throws SchemaException {
-        // FIXME maybe it would be good ide remove Warning from prism parsing and to keep just validations logs with exact position of log !!! start using validation logs instead of Warning everywhere
-        if (!isValidation()) {
-            if (isCompat()) {
-                logger.warn("{}", message, t);
-                warn(message);
-            } else {
-                throw new SchemaException(message, t);
-            }
+        if (isCompat()) {
+            logger.warn("{}", message, t);
+            warn(message);
+        } else {
+            throw new SchemaException(message, t);
+        }
+    }
+
+    @Override
+    public void warn(Trace logger, ValidationLog validationLog) {
+        logger.warn("{}", validationLog.message());
+        warn(validationLog);
+    }
+
+    @Override
+    public void warnOrThrow(Trace logger, ValidationLog validationLog) throws SchemaException {
+        warnOrThrow(logger, validationLog, null);
+    }
+
+    @Override
+    public void warnOrThrow(Trace logger, ValidationLog validationLog, Throwable t) throws SchemaException {
+        if (isCompat()) {
+            logger.warn("{}", validationLog.message(), t);
+            warn(validationLog);
+        } else {
+            throw new SchemaException(validationLog.message(), t);
         }
     }
 
     @Override
     public void warn(String message) {
-        warnings.add(message);
+        warnings.add(new ValidationLog(null, null, null, null, message));
     }
 
     @Override
-    public List<String> getWarnings() {
+    public void warn(ValidationLog validationLog) {
+        warnings.add(validationLog);
+    }
+
+    @Override
+    public List<ValidationLog> getWarnings() {
         return warnings;
     }
 
@@ -210,38 +230,5 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     public ParsingContext validation() {
         isValidation = true;
         return this;
-    }
-
-    @Override
-    public List<ValidationLog> getValidationLogs() {
-        return validationLogs;
-    }
-
-    @Override
-    public void validationLogger(boolean expression,
-            ValidationLogType validationLogType,
-            ValidationLogType.Specification specification,
-            SourceLocation sourceLocation,
-            TechnicalMessage technicalMessage,
-            String message,
-            Object... info
-    ) {
-
-        if (!expression && isValidation()) {
-
-            if (sourceLocation == null) {
-                sourceLocation = SourceLocation.unknown();
-            }
-
-            this.validationLogs.add(
-                new ValidationLog(
-                        validationLogType,
-                        specification,
-                        sourceLocation,
-                        technicalMessage,
-                        message.formatted(info)
-                )
-            );
-        }
     }
 }

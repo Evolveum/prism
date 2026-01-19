@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.marshaller;
 
+import com.evolveum.concepts.*;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
@@ -229,7 +230,11 @@ abstract class PrismParserImpl implements PrismParser {
     Object doParseItemOrRealValue() throws IOException, SchemaException {
         RootXNodeImpl xnode = getLexicalProcessor().read(source, context, itemDefinition);
         if (itemDefinition != null || itemName != null || typeName != null || typeClass != null) {
-            throw new IllegalArgumentException("Item definition, item name, type name and type class must be null when calling parseItemOrRealValue.");
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+                    new TechnicalMessage("Item definition, item name, type name and type class must be null when calling parseItemOrRealValue."),
+                    "Item definition, item name, type name and type class must be null when calling parseItemOrRealValue.");
+            context.warnOrThrow(LOGGER, validationLog);
+            throw new IllegalArgumentException(validationLog.message());
         }
         return prismContext.getPrismUnmarshaller().parseItemOrRealValue(xnode, context);
     }
@@ -255,8 +260,13 @@ abstract class PrismParserImpl implements PrismParser {
             value.setParent(null);
             return value;
         } else {
-            throw new IllegalStateException("Expected one item value, got " + item.getValues().size()
-                    + " while parsing " + item);
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+                    new TechnicalMessage("Expected one item value, got %s while parsing %s",
+                            new Argument(item.getValues().size(), Argument.ArgumentType.INT),
+                            new Argument(item, Argument.ArgumentType.UNKNOW)),
+                    "Expected one item value, got %s while parsing %s".formatted(item.getValues().size(), item));
+            context.warn(LOGGER, validationLog);
+            throw new IllegalStateException(validationLog.message());
         }
     }
 
@@ -293,8 +303,13 @@ abstract class PrismParserImpl implements PrismParser {
                 RawType value = property.getRealValue();
                 return (T) new RawObjectType(value);
             } else {
+                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, root.getSourceLocation(),
+                        new TechnicalMessage("Value was parsed as %s instead of PrismObject",
+                            new Argument(parsed.getClass().getName(), Argument.ArgumentType.STRING)),
+                        "Value was parsed as %s instead of PrismObject".formatted(parsed.getClass().getName()));
+                context.warnOrThrow(LOGGER, validationLog);
                 // Fail horribly
-                throw new SchemaException("Value was parsed as " + parsed.getClass().getName() + "instead of PrismObject");
+                throw new SchemaException(validationLog.message());
             }
         } else {
             PrismValue prismValue = doParseItemValue(root, clazz);
