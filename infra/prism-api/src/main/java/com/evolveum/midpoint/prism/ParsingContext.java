@@ -46,7 +46,7 @@ public interface ParsingContext extends Cloneable {
 
     void warn(ValidationLog validationLog);
 
-    List<ValidationLog>  getWarnings();
+    List<ValidationLog> getWarnings();
 
     boolean hasWarnings();
 
@@ -75,6 +75,4 @@ public interface ParsingContext extends Cloneable {
 
     ParsingContext validation();
     boolean isValidation();
-//    List<ValidationLog> getValidationLogs();
-//    void validationLogger(boolean expression, ValidationLogType validationLogType, ValidationLogType.Specification specification, SourceLocation sourceLocation, TechnicalMessage technicalMessage, String message, Object... info);
 }
