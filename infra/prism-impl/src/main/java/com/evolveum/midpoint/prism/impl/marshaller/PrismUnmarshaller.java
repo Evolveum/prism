@@ -1110,7 +1110,7 @@ public class PrismUnmarshaller {
     }
 
     /**
-     * Looks for the expected object definitions for children to perform a hint in validation response
+     * Looks for a definition for the root element based on its children
      * @param rootXNode root element of object which missing definition
      * @return list of assumed definitions of root element in snippet code
      */
@@ -1132,13 +1132,13 @@ public class PrismUnmarshaller {
         }
 
         Set<ItemPath> resultCollectItemPath = new LinkedHashSet<>();
-        int segmentPath = 0;
+        int segmentPathLevel = 0;
 
-        collectItemPath(rootXNode.getSubnode(), ItemPath.EMPTY_PATH, segmentPath, resultCollectItemPath);
+        collectItemPath(rootXNode.getSubnode(), ItemPath.EMPTY_PATH, segmentPathLevel, resultCollectItemPath);
         do {
-            segmentPath++;
+            segmentPathLevel++;
             resultCollectItemPath.clear();
-            collectItemPath(rootXNode.getSubnode(), ItemPath.EMPTY_PATH, segmentPath, resultCollectItemPath);
+            collectItemPath(rootXNode.getSubnode(), ItemPath.EMPTY_PATH, segmentPathLevel, resultCollectItemPath);
 
             definitions.removeIf(def -> {
                 if (def instanceof PrismContainerDefinition<?> containerDefinition) {
@@ -1147,7 +1147,7 @@ public class PrismUnmarshaller {
                 }
                 return false;
             });
-        } while (!resultCollectItemPath.isEmpty() && segmentPath < 1);
+        } while (!resultCollectItemPath.isEmpty() && segmentPathLevel < 1);
 
         return definitions;
     }
