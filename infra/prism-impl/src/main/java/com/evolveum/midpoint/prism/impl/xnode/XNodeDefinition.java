@@ -465,7 +465,7 @@ public abstract class XNodeDefinition {
                 return awareFrom(proposed, childDef, true);
             }
             // Fallback to infra properties such as id, version serialized without @ prefix
-            if (PrismConstants.T_ID.getLocalPart().equals(localName)) {
+            if (itemDefinition.isMultiValue() && PrismConstants.T_ID.getLocalPart().equals(localName)) {
                 return unawareFrom(PrismConstants.T_ID);
             }
 
