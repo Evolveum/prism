@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.marshaller;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
@@ -207,9 +208,14 @@ public class PrismUnmarshaller {
             QName itemName = root.getRootElementName();
 
             ItemDefinition<?> itemDefinition = checkSchemaNotNull(schemaRegistry.findItemDefinitionByElementName(itemName), pc,
-                    new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, root.getSourceLocation(),
-                        new TechnicalMessage("Couldn't parse general object with no type name and unknown element name: '%s'", new Argument(itemName, Argument.ArgumentType.QNAME)),
-                        "Couldn't parse general object with no type name and unknown element name: '%s'".formatted(itemName)));
+                    () -> new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            root.getSourceLocation(),
+                            new TechnicalMessage("Couldn't parse general object with no type name and unknown element name: '%s'",
+                                    new Argument(itemName, Argument.ArgumentType.QNAME)),
+                            "Couldn't parse general object with no type name and unknown element name: '%s'".formatted(itemName)
+                    ));
 
             return parseItem(root, itemDefinition, itemName, null, null, pc);
         }
@@ -939,7 +945,7 @@ public class PrismUnmarshaller {
         QName targetType = map.getParsedPrimitiveValue(XNodeImpl.KEY_REFERENCE_TYPE.getLocalPart(), DOMUtil.XSD_QNAME);
         if (targetType == null) {
             if (!pc.isAllowMissingRefTypes() && !allowMissingRefTypesOverride) {
-                targetType = checkSchemaNotNull(definition.getTargetTypeName(), pc, new ValidationLog(
+                targetType = checkSchemaNotNull(definition.getTargetTypeName(), pc, () -> new ValidationLog(
                         ValidationLogType.ERROR,
                         ValidationLogType.Specification.UNKNOW,
                         map.getSourceLocation(),
@@ -969,15 +975,15 @@ public class PrismUnmarshaller {
         PrismObjectDefinition<Objectable> objectDefinition = null;
         if (targetType != null) {
             var objDef =  schemaRegistry.findObjectDefinitionByType(targetType);
-            objectDefinition = checkSchemaNotNull(objDef, pc,
-                    new ValidationLog(
+            QName finalTargetType = targetType;
+            objectDefinition = checkSchemaNotNull(objDef, pc, () -> new ValidationLog(
                             ValidationLogType.ERROR,
                             ValidationLogType.Specification.MISSING_DEFINITION,
                             map.getSourceLocation(),
                             new TechnicalMessage("No definition for type '%s' in reference can you clarify the definition based on the expected definitions from list: '%s'",
-                                new Argument(targetType, Argument.ArgumentType.QNAME),
-                                new Argument(findSupposedDefinitionByElement(targetType, objDef), Argument.ArgumentType.DEFINITION_LIST)),
-                            "No definition for type '%s' in reference".formatted(targetType)));
+                                new Argument(finalTargetType, Argument.ArgumentType.QNAME),
+                                new Argument(findSupposedDefinitionByElement(finalTargetType, objDef), Argument.ArgumentType.DEFINITION_LIST)),
+                            "No definition for type '%s' in reference".formatted(finalTargetType)));
             refVal.setTargetType(targetType);
         }
 
@@ -1009,13 +1015,14 @@ public class PrismUnmarshaller {
         XNodeImpl xrefObject = map.get(XNodeImpl.KEY_REFERENCE_OBJECT.withoutNamespace());
         if (xrefObject != null) {
             MapXNodeImpl objectMapNode = toObjectMapNode(xrefObject, pc);
-            checkSchemaNotNull(targetType, pc, new ValidationLog(
+            QName finalTargetType1 = targetType;
+            checkSchemaNotNull(targetType, pc, () -> new ValidationLog(
                     ValidationLogType.ERROR,
                     ValidationLogType.Specification.MISSING_DEFINITION,
                     map.getSourceLocation(),
                     new TechnicalMessage("No definition for type '%s' in reference.",
-                            new Argument(targetType, Argument.ArgumentType.QNAME)),
-                    "No definition for type '%s' in reference".formatted(targetType)));
+                            new Argument(finalTargetType1, Argument.ArgumentType.QNAME)),
+                    "No definition for type '%s' in reference".formatted(finalTargetType1)));
             PrismObject<Objectable> object = parseObject(objectMapNode, objectDefinition, pc);
             setReferenceObject(refVal, object, pc, xrefObject.getSourceLocation());
         }
@@ -1117,7 +1124,7 @@ public class PrismUnmarshaller {
             objectDefinition = schemaRegistry.findObjectDefinitionByType(targetTypeName);
         }
 
-        checkSchemaNotNull(objectDefinition, pc, new ValidationLog(
+        checkSchemaNotNull(objectDefinition, pc, () -> new ValidationLog(
                 ValidationLogType.ERROR,
                 ValidationLogType.Specification.UNKNOW,
                 map.getSourceLocation(),
@@ -1310,10 +1317,11 @@ public class PrismUnmarshaller {
     }
 
     // FIXME duplicate in {@link  com.evolveum.midpoint.util.Checks}
-    private <T> T checkSchemaNotNull(T obj, ParsingContext parsingContext, ValidationLog validationLog) throws SchemaException {
+    private <T> T checkSchemaNotNull(T obj, ParsingContext parsingContext, Supplier<ValidationLog> validationLog) throws SchemaException {
         if (obj == null) {
-            parsingContext.warnOrThrow(LOGGER, () -> validationLog);
-            throw new SchemaException(validationLog.message());
+            ValidationLog validationLog1 = validationLog.get();
+            parsingContext.warnOrThrow(LOGGER, validationLog1);
+            throw new SchemaException(validationLog1.message());
         }
         return obj;
     }
