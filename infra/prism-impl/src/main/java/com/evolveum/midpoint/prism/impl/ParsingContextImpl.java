@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  *
@@ -118,6 +119,11 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     @Override
     public void warnOrThrow(Trace logger, ValidationLog validationLog) throws SchemaException {
         warnOrThrow(logger, validationLog, null);
+    }
+
+    @Override
+    public void warnOrThrow(Trace logger, Supplier<ValidationLog> validationLog) throws SchemaException {
+        warnOrThrow(logger, validationLog.get());
     }
 
     @Override

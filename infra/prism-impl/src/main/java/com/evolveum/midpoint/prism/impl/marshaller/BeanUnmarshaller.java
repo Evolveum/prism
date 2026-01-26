@@ -107,7 +107,10 @@ public class BeanUnmarshaller {
                 // most probably dynamically defined enum (TODO clarify)
                 classType = (Class<T>) String.class;
             } else {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xnode.getSourceLocation(),
                         new TechnicalMessage("Couldn't unmarshal '%s'. Type definition = '%s'",
                                 new Argument(typeQName, Argument.ArgumentType.QNAME),
                                 new Argument(td, Argument.ArgumentType.DEFINITION)),
@@ -129,7 +132,10 @@ public class BeanUnmarshaller {
             Class<?> requested = ClassUtils.primitiveToWrapper(beanClass);
             Class<?> actual = ClassUtils.primitiveToWrapper(value.getClass());
             if (!requested.isAssignableFrom(actual)) {
-                pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+                pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xnode.getSourceLocation(),
                         new TechnicalMessage("Unmarshal returned a value of '%s' ('%s') which is not of requested type ('%s')",
                                 new Argument(value, Argument.ArgumentType.UNKNOW),
                                 new Argument(actual, Argument.ArgumentType.UNKNOW),
@@ -142,8 +148,12 @@ public class BeanUnmarshaller {
 
     private <T> T unmarshalInternal(@NotNull XNodeImpl xnode, @NotNull Class<T> beanClass, @NotNull ParsingContext pc) throws SchemaException {
         if (beanClass == null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
-                    new TechnicalMessage("No bean class for node: '%s'", new Argument(xnode.debugDump(), Argument.ArgumentType.RAW)),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xnode.getSourceLocation(),
+                    new TechnicalMessage("No bean class for node: '%s'",
+                            new Argument(xnode.debugDump(), Argument.ArgumentType.RAW)),
                     "No bean class for node");
             pc.warn(LOGGER, validationLog);
             throw new IllegalStateException(validationLog.message());
@@ -151,7 +161,10 @@ public class BeanUnmarshaller {
         if (xnode instanceof RootXNodeImpl) {
             XNodeImpl subnode = ((RootXNodeImpl) xnode).getSubnode();
             if (subnode == null) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xnode.getSourceLocation(),
                         new TechnicalMessage("Couldn't parse '%s' from a root node with a null content: '%s'",
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW),
                                 new Argument(xnode.debugDump(), Argument.ArgumentType.RAW)),
@@ -162,7 +175,10 @@ public class BeanUnmarshaller {
                 return unmarshal(subnode, beanClass, pc);
             }
         } else if (!(xnode instanceof MapXNodeImpl) && !(xnode instanceof PrimitiveXNodeImpl) && !xnode.isHeterogeneousList()) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xnode.getSourceLocation(),
                     new TechnicalMessage("Couldn't parse '%s' from non-map/non-primitive/non-hetero-list node: '%s'",
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW),
                             new Argument(xnode.debugDump(), Argument.ArgumentType.RAW)),
@@ -238,7 +254,10 @@ public class BeanUnmarshaller {
                     return bean;
                 }
             }
-            pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, prim.getSourceLocation(),
+            pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    prim.getSourceLocation(),
                     new TechnicalMessage("Cannot convert primitive value to bean of type '%s'",
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
                     "Cannot convert primitive value to bean of type '%s'".formatted(beanClass)));
@@ -262,7 +281,10 @@ public class BeanUnmarshaller {
         try {
             valueField.set(instance, value);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, prim.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    prim.getSourceLocation(),
                     new TechnicalMessage("Cannot set primitive value to field '%s' of bean '%s': '%s'",
                             new Argument(valueField.getName(), Argument.ArgumentType.STRING),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -301,7 +323,10 @@ public class BeanUnmarshaller {
                 // TODO fix this BRUTAL HACK - it is here because of c:ConditionalSearchFilterType
                 return unmarshalFromMapOrHeteroListToBean(bean, mapOrList, Collections.singleton("condition"), pc);
             } else {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, mapOrList.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        mapOrList.getSourceLocation(),
                         new TechnicalMessage("SearchFilterType is not supported in combination of heterogeneous list."),
                         "SearchFilterType is not supported in combination of heterogeneous list.");
                 pc.warn(LOGGER, validationLog);
@@ -333,7 +358,10 @@ public class BeanUnmarshaller {
         try {
             bean = beanClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xnode.getSourceLocation(),
                     new TechnicalMessage("Cannot instantiate bean of type '%s': '%s'",
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW),
                             new Argument(e.getMessage(), Argument.ArgumentType.STRING)),
@@ -364,8 +392,12 @@ public class BeanUnmarshaller {
             QName keyQName = beanMarshaller.getHeterogeneousListPropertyName(beanClass);
             unmarshalEntry(bean, beanClass, keyQName, mapOrList, mapOrList, true, pc);
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, mapOrList.getSourceLocation(),
-                    new TechnicalMessage("Not a map nor heterogeneous list: '%s'", new Argument(mapOrList.debugDump(), Argument.ArgumentType.RAW)),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    mapOrList.getSourceLocation(),
+                    new TechnicalMessage("Not a map nor heterogeneous list: '%s'",
+                            new Argument(mapOrList.debugDump(), Argument.ArgumentType.RAW)),
                     "Not a map nor heterogeneous list");
             throw new IllegalStateException(validationLog.message());
         }
@@ -506,7 +538,10 @@ public class BeanUnmarshaller {
         final boolean wrapInJaxbElement = mechanism.wrapInJaxbElement;
 
         if (Element.class.isAssignableFrom(mechanism.paramType)) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("DOM not supported in field '%s' in '%s'",
                             new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -535,7 +570,10 @@ public class BeanUnmarshaller {
         }
 
         if (!(node instanceof ListXNodeImpl) && Object.class.equals(paramType) && !storeAsRawType) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("Object property (without @Raw) not supported in field '%s' in '%s'",
                             new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -576,8 +614,12 @@ public class BeanUnmarshaller {
                             if (isHeteroListProperty) {
                                 QName elementName = xsubsubnode.getElementName();
                                 if (elementName == null) {
-                                    pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsubsubnode.getSourceLocation(),
-                                            new TechnicalMessage("Heterogeneous list with a no-elementName node: '%s'", new Argument(xsubsubnode, Argument.ArgumentType.XNODE)),
+                                    pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                                            ValidationLogType.ERROR,
+                                            ValidationLogType.Specification.UNKNOW,
+                                            xsubsubnode.getSourceLocation(),
+                                            new TechnicalMessage("Heterogeneous list with a no-elementName node: '%s'",
+                                                    new Argument(xsubsubnode, Argument.ArgumentType.XNODE)),
                                             "Heterogeneous list with a no-elementName node"));
                                 }
                                 Class valueClass = value.getClass();
@@ -598,7 +640,10 @@ public class BeanUnmarshaller {
                                     if (itemDefOpt.isPresent()) {
                                         jaxbElementName = itemDefOpt.get().getItemName();
                                     } else {
-                                        pc.warn(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsubsubnode.getSourceLocation(),
+                                        pc.warn(LOGGER, new ValidationLog(
+                                                ValidationLogType.ERROR,
+                                                ValidationLogType.Specification.UNKNOW,
+                                                xsubsubnode.getSourceLocation(),
                                                 new TechnicalMessage("Heterogeneous list member with unknown element name '%s': '%s'",
                                                         new Argument(elementName, Argument.ArgumentType.STRING),
                                                         new Argument(value, Argument.ArgumentType.UNKNOW)),
@@ -640,7 +685,10 @@ public class BeanUnmarshaller {
             try {
                 setter.invoke(bean, propValue);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Cannot invoke setter '%s' on bean of type '%s': '%s'",
                                 new Argument(setter, Argument.ArgumentType.UNKNOW),
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -655,7 +703,10 @@ public class BeanUnmarshaller {
             try {
                 getterReturn = getter.invoke(bean);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Cannot invoke getter '%s' on bean of type '%s': '%s'",
                                 new Argument(getter, Argument.ArgumentType.UNKNOW),
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -667,7 +718,10 @@ public class BeanUnmarshaller {
             try {
                 col = (Collection<Object>)getterReturn;
             } catch (ClassCastException e) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Getter '%s' on bean of type '%s' returned '%s' instead of collection",
                                 new Argument(getter, Argument.ArgumentType.UNKNOW),
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -683,7 +737,10 @@ public class BeanUnmarshaller {
                     col.add(propVal);
                 }
             } else if (!problem) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Strange. Multival property '%s' in '%s' produced null values list, parsed from '%s'",
                                 new Argument(propName, Argument.ArgumentType.UNKNOW),
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -696,7 +753,10 @@ public class BeanUnmarshaller {
                 checkJaxbElementConsistence(col, pc);
             }
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("Uh? No setter nor getter."),"Uh? No setter nor getter.");
             pc.warn(LOGGER, validationLog);
             throw new IllegalStateException(validationLog.message());
@@ -716,7 +776,10 @@ public class BeanUnmarshaller {
                     .filter(def -> def.getCompileTimeClass() != null && expectedType.isAssignableFrom(def.getCompileTimeClass()))
                     .collect(Collectors.toList());
             if (suitableTypes.isEmpty()) {
-                pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Couldn't derive suitable type based on element name ('%s'). Candidate types:  '%s'; expected type: '%s'",
                                 new Argument(node.getElementName(), Argument.ArgumentType.STRING),
                                 new Argument(candidateTypes, Argument.ArgumentType.UNKNOW),
@@ -724,7 +787,10 @@ public class BeanUnmarshaller {
                         "Couldn't derive suitable type based on element name ('%s'). Candidate types: '%s'; expected type: '%s'".formatted(node.getElementName(), candidateTypes, expectedType)));
                 return null;
             } else if (suitableTypes.size() > 1) {
-                pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+                pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        node.getSourceLocation(),
                         new TechnicalMessage("Couldn't derive single suitable type based on element name ('%s'). Suitable types: '%s'",
                                 new Argument(node.getElementName(), Argument.ArgumentType.STRING),
                                 new Argument(suitableTypes, Argument.ArgumentType.UNKNOW)),
@@ -843,7 +909,10 @@ public class BeanUnmarshaller {
                 // for a getter that returns a collection (Collection<Whatever>)
                 getter = inspector.findPropertyGetter(beanClass, actualPropertyName);
                 if (getter == null) {
-                    pc.warnOrThrow(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                    pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            xNode.getSourceLocation(),
                             new TechnicalMessage("Cannot find setter or getter for field '%s' in '%s'",
                                     new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                                     new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -864,7 +933,10 @@ public class BeanUnmarshaller {
                 //                    TODO some handling for the returned generic parameter types
                 Type[] genericTypes = setter.getGenericParameterTypes();
                 if (genericTypes.length != 1) {
-                    ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                    ValidationLog validationLog = new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            xNode.getSourceLocation(),
                             new TechnicalMessage("Too lazy to handle this."),"Too lazy to handle this.");
                     pc.warn(LOGGER, validationLog);
                     throw new IllegalArgumentException(validationLog.message());
@@ -879,7 +951,10 @@ public class BeanUnmarshaller {
                         // This is the case of Collection<JAXBElement<?>>
                         // we need to extract the specific type from the factory method
                         if (elementFactoryMethod == null) {
-                            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                            ValidationLog validationLog = new ValidationLog(
+                                    ValidationLogType.ERROR,
+                                    ValidationLogType.Specification.UNKNOW,
+                                    xNode.getSourceLocation(),
                                     new TechnicalMessage("Wildcard type in JAXBElement field specification and no factory method found for field '%s' in '%s', cannot determine collection type (inner type argument)",
                                             new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -895,7 +970,10 @@ public class BeanUnmarshaller {
                             // This is the case of JAXBElement<Whatever>
                             paramType = (Class<?>) factoryMethodTypeArgument;
                             if (Object.class.equals(paramType) && !storeAsRawType) {
-                                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                                ValidationLog validationLog = new ValidationLog(
+                                        ValidationLogType.ERROR,
+                                        ValidationLogType.Specification.UNKNOW,
+                                        xNode.getSourceLocation(),
                                         new TechnicalMessage("Factory method '%s' type argument is Object (without @Raw) for field '%s' in '%s', property '%s'",
                                                 new Argument(elementFactoryMethod, Argument.ArgumentType.UNKNOW),
                                                 new Argument(actualPropertyName, Argument.ArgumentType.STRING),
@@ -906,7 +984,10 @@ public class BeanUnmarshaller {
                                 throw new IllegalArgumentException(validationLog.message());
                             }
                         } else {
-                            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                            ValidationLog validationLog = new ValidationLog(
+                                    ValidationLogType.ERROR,
+                                    ValidationLogType.Specification.UNKNOW,
+                                    xNode.getSourceLocation(),
                                     new TechnicalMessage("Cannot determine factory method return type, got '%s' - for field '%s' in '%s', cannot determine collection type (inner type argument)",
                                             new Argument(factoryMethodTypeArgument, Argument.ArgumentType.UNKNOW),
                                             new Argument(actualPropertyName, Argument.ArgumentType.STRING),
@@ -928,7 +1009,10 @@ public class BeanUnmarshaller {
 
         private void computeParamTypeFromGetter(String propName, Class<?> getterReturnType, XNode xNode, ParsingContext pc) throws SchemaException {
             if (!Collection.class.isAssignableFrom(getterReturnType)) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xNode.getSourceLocation(),
                         new TechnicalMessage("Cannot find setter for field '%s' in '%s'. The getter was found, but it does not return collection - so it cannot be used to set the value.",
                                 new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -959,7 +1043,10 @@ public class BeanUnmarshaller {
                         if (elementFactoryMethod == null) {
                             elementFactoryMethod = findElementFactoryMethod(propName, pc);
                             if (elementFactoryMethod == null) {
-                                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                                ValidationLog validationLog = new ValidationLog(
+                                        ValidationLogType.ERROR,
+                                        ValidationLogType.Specification.UNKNOW,
+                                        xNode.getSourceLocation(),
                                         new TechnicalMessage("Wildcard type in JAXBElement field specification and no factory method found for field '%s' in '%s', cannot determine collection type (inner type argument)",
                                                 new Argument(actualPropertyName, Argument.ArgumentType.STRING),
                                                 new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -977,7 +1064,10 @@ public class BeanUnmarshaller {
                             // This is the case of JAXBElement<Whatever>
                             paramType = (Class<?>) factoryMethodTypeArgument;
                             if (Object.class.equals(paramType) && !storeAsRawType) {
-                                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                                ValidationLog validationLog = new ValidationLog(
+                                        ValidationLogType.ERROR,
+                                        ValidationLogType.Specification.UNKNOW,
+                                        xNode.getSourceLocation(),
                                         new TechnicalMessage("Factory method '%s' type argument is Object (and not @Raw) for field '%s' in '%s', property '%s'",
                                                 new Argument(elementFactoryMethod, Argument.ArgumentType.UNKNOW),
                                                 new Argument(actualPropertyName, Argument.ArgumentType.STRING),
@@ -988,7 +1078,10 @@ public class BeanUnmarshaller {
                                 throw new IllegalArgumentException(validationLog.message());
                             }
                         } else {
-                            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                            ValidationLog validationLog = new ValidationLog(
+                                    ValidationLogType.ERROR,
+                                    ValidationLogType.Specification.UNKNOW,
+                                    xNode.getSourceLocation(),
                                     new TechnicalMessage("Cannot determine factory method return type, got '%s' - for field '%s' in '%s', cannot determine collection type (inner type argument)",
                                             new Argument(factoryMethodTypeArgument, Argument.ArgumentType.UNKNOW),
                                             new Argument(actualPropertyName, Argument.ArgumentType.STRING),
@@ -998,7 +1091,10 @@ public class BeanUnmarshaller {
                             throw new IllegalArgumentException(validationLog.message());
                         }
                     } else {
-                        ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                        ValidationLog validationLog = new ValidationLog(
+                                ValidationLogType.ERROR,
+                                ValidationLogType.Specification.UNKNOW,
+                                xNode.getSourceLocation(),
                                 new TechnicalMessage("Ejha! '%s' '%s' from '%s' from '%s' in '%s' '%s'",
                                         new Argument(innerTypeArgument, Argument.ArgumentType.UNKNOW),
                                         new Argument(innerTypeArgument.getClass(), Argument.ArgumentType.UNKNOW),
@@ -1015,7 +1111,10 @@ public class BeanUnmarshaller {
                     if (rawTypeArgument instanceof Class) {        // ??? rawTypeArgument is the 'Whatever' part
                         paramType = (Class<?>) rawTypeArgument;
                     } else {
-                        ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                        ValidationLog validationLog = new ValidationLog(
+                                ValidationLogType.ERROR,
+                                ValidationLogType.Specification.UNKNOW,
+                                xNode.getSourceLocation(),
                                 new TechnicalMessage("EH? Eh!? '%s' '%s' from '%s' from '%s' in '%s' '%s'",
                                         new Argument(typeArgument, Argument.ArgumentType.UNKNOW),
                                         new Argument(typeArgument.getClass(), Argument.ArgumentType.UNKNOW),
@@ -1029,7 +1128,10 @@ public class BeanUnmarshaller {
                     }
                 }
             } else {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xNode.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xNode.getSourceLocation(),
                         new TechnicalMessage("EH? '%s' '%s' from '%s' from '%s' in '%s' '%s'",
                                 new Argument(typeArgument, Argument.ArgumentType.UNKNOW),
                                 new Argument(typeArgument.getClass(), Argument.ArgumentType.UNKNOW),
@@ -1050,12 +1152,14 @@ public class BeanUnmarshaller {
         if (elementMethod != null) {
             unmarshallToAnyUsingGetter(bean, elementMethod, key, node, pc);
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("No field '%s' in class '%s' (and no element method in object factory too)",
                             new Argument(propName, Argument.ArgumentType.STRING),
                             new Argument(bean.getClass(), Argument.ArgumentType.UNKNOW)),
-                    "No field '%s' in class '%s' (and no element method in object factory too)".formatted(propName, bean.getClass()));
-            pc.warnOrThrow(LOGGER, validationLog);
+                    "No field '%s' in class '%s' (and no element method in object factory too)".formatted(propName, bean.getClass())));
         }
     }
 
@@ -1063,7 +1167,10 @@ public class BeanUnmarshaller {
     private Object wrapInJaxbElement(Object propVal, Object objectFactory, Method factoryMethod, String propName,
             Class beanClass, ParsingContext pc) {
         if (factoryMethod == null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Param type is JAXB element but no factory method found for it, property '%s' in '%s'",
                             new Argument(propName, Argument.ArgumentType.STRING),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
@@ -1074,7 +1181,10 @@ public class BeanUnmarshaller {
         try {
             return factoryMethod.invoke(objectFactory, propVal);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Unable to invoke factory method '%s' on '%s' for property '%s' in '%s'",
                             new Argument(factoryMethod, Argument.ArgumentType.UNKNOW),
                             new Argument(objectFactory.getClass(), Argument.ArgumentType.UNKNOW),
@@ -1113,7 +1223,12 @@ public class BeanUnmarshaller {
                     if (pc.isStrict()) {
                         throw new SchemaException(m);
                     } else {
-                        pc.warn(LOGGER, new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(), new TechnicalMessage(m), m));
+                        pc.warn(LOGGER, new ValidationLog(
+                                ValidationLogType.ERROR,
+                                ValidationLogType.Specification.UNKNOW,
+                                SourceLocation.unknown(),
+                                new TechnicalMessage(m), m)
+                        );
                     }
                 }
             }
@@ -1128,8 +1243,12 @@ public class BeanUnmarshaller {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Part that couldn't be parsed:\n{}", xsubnode.debugDump());
             }
-            pc.warn(new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsubnode.getSourceLocation(),
-                    new TechnicalMessage("Couldn't parse part of the document. It will be ignored. Document part:\n '%s'", new Argument(xsubnode, Argument.ArgumentType.XNODE)),
+            pc.warn(new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xsubnode.getSourceLocation(),
+                    new TechnicalMessage("Couldn't parse part of the document. It will be ignored. Document part:\n '%s'",
+                            new Argument(xsubnode, Argument.ArgumentType.XNODE)),
                     "Couldn't parse part of the document. It will be ignored."));
 
             return true;
@@ -1161,7 +1280,10 @@ public class BeanUnmarshaller {
         try {
             subBeanElement = (JAXBElement<S>) elementFactoryMethod.invoke(objectFactory, subBean);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Cannot invoke factory method '%s' on '%s' with '%s': '%s'"),
                     "Cannot invoke factory method '%s' on '%s' with '%s': '%s'".formatted(elementFactoryMethod, objectFactoryClass, subBean, e1));
             pc.warn(LOGGER, validationLog);
@@ -1173,7 +1295,10 @@ public class BeanUnmarshaller {
         try {
             getterReturn = getter.invoke(bean);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Cannot invoke getter '%s' on bean of type '%s': '%s'",
                             new Argument(getter, Argument.ArgumentType.UNKNOW),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -1184,7 +1309,10 @@ public class BeanUnmarshaller {
         try {
             col = (Collection<Object>)getterReturn;
         } catch (ClassCastException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Getter '%s' on bean of type '%s' returned '%s' instead of collection",
                             new Argument(getter, Argument.ArgumentType.UNKNOW),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW),
@@ -1205,7 +1333,10 @@ public class BeanUnmarshaller {
         try {
             return objectFactoryClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    SourceLocation.unknown(),
                     new TechnicalMessage("Getter '%s' on bean of type '%s' returned '%s' instead of collection",
                             new Argument(objectFactoryClass.getName(), Argument.ArgumentType.UNKNOW),
                             new Argument(e.getMessage(), Argument.ArgumentType.STRING)),
@@ -1258,7 +1389,10 @@ public class BeanUnmarshaller {
             } else if (xsubnode instanceof ListXNodeImpl) {
                 ListXNodeImpl xlist = (ListXNodeImpl)xsubnode;
                 if (xlist.size() > 1) {
-                    ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsubnode.getSourceLocation(),
+                    ValidationLog validationLog = new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            xsubnode.getSourceLocation(),
                             new TechnicalMessage("Cannot set multi-value value to a single valued property '%s' of '%s'",
                                     new Argument(fieldName, Argument.ArgumentType.STRING),
                                     new Argument(classType, Argument.ArgumentType.UNKNOW)),
@@ -1273,7 +1407,10 @@ public class BeanUnmarshaller {
                     }
                 }
             } else {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsubnode.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xsubnode.getSourceLocation(),
                         new TechnicalMessage("Cannot parse '%s' to a bean '%s'",
                                 new Argument(xsubnode, Argument.ArgumentType.XNODE),
                                 new Argument(classType, Argument.ArgumentType.UNKNOW)),
@@ -1309,8 +1446,13 @@ public class BeanUnmarshaller {
             return null;
         }
         if (!(xsub instanceof SchemaXNodeImpl)) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsub.getSourceLocation(),
-                    new TechnicalMessage("Cannot parse '%s' to a bean '%s'", new Argument(xsub, Argument.ArgumentType.XNODE)), "Cannot parse schema from node.");
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xsub.getSourceLocation(),
+                    new TechnicalMessage("Cannot parse '%s' to a bean '%s'",
+                            new Argument(xsub, Argument.ArgumentType.XNODE)),
+                    "Cannot parse schema from node.");
             pc.warn(LOGGER, validationLog);
             throw new IllegalArgumentException(validationLog.message());
         }
@@ -1320,8 +1462,13 @@ public class BeanUnmarshaller {
     SchemaDefinitionType unmarshalSchemaDefinitionType(SchemaXNodeImpl xsub, ParsingContext pc) throws SchemaException{
         Element schemaElement = xsub.getSchemaElement();
         if (schemaElement == null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xsub.getSourceLocation(),
-                    new TechnicalMessage("Empty schema in '%s'", new Argument(xsub, Argument.ArgumentType.XNODE)), "Empty schema in node");
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xsub.getSourceLocation(),
+                    new TechnicalMessage("Empty schema in '%s'",
+                            new Argument(xsub, Argument.ArgumentType.XNODE)),
+                    "Empty schema in node");
             pc.warn(LOGGER, validationLog);
             throw new SchemaException(validationLog.message());
         }
@@ -1388,8 +1535,12 @@ public class BeanUnmarshaller {
         Map<String,String> lang = unmarshalLang(xLang, pc);
 
         if (orig == null && translation == null && lang == null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, map.getSourceLocation(),
-                    new TechnicalMessage("Null polystring orig (no translation nor lang) in '%s'", new Argument(map, Argument.ArgumentType.XNODE)),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    map.getSourceLocation(),
+                    new TechnicalMessage("Null polystring orig (no translation nor lang) in '%s'",
+                            new Argument(map, Argument.ArgumentType.XNODE)),
                     "Null polystring orig (no translation nor lang) in map node.");
             pc.warn(LOGGER, validationLog);
             throw new SchemaException(validationLog.message());
@@ -1407,8 +1558,12 @@ public class BeanUnmarshaller {
             return null;
         }
         if (!(xLang instanceof MapXNodeImpl)) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xLang.getSourceLocation(),
-                    new TechnicalMessage("Null polystring orig (no translation nor lang) in '%s'", new Argument(xLang, Argument.ArgumentType.XNODE)),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    xLang.getSourceLocation(),
+                    new TechnicalMessage("Null polystring orig (no translation nor lang) in '%s'",
+                            new Argument(xLang, Argument.ArgumentType.XNODE)),
                     "Polystring lang is not a map nor empty primitive node, it is lang node");
             pc.warn(LOGGER, validationLog);
             throw new SchemaException(validationLog.message());
@@ -1419,8 +1574,12 @@ public class BeanUnmarshaller {
             QName key = xLangEntry.getKey();
             XNodeImpl xLangEntryVal = xLangEntry.getValue();
             if (!(xLangEntryVal instanceof PrimitiveXNodeImpl)) {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xLangEntryVal.getSourceLocation(),
-                        new TechnicalMessage("Polystring lang for key '%s' is not primitive, it is '%s'", new Argument(xLang, Argument.ArgumentType.XNODE)),
+                ValidationLog validationLog = new ValidationLog(
+                        ValidationLogType.ERROR,
+                        ValidationLogType.Specification.UNKNOW,
+                        xLangEntryVal.getSourceLocation(),
+                        new TechnicalMessage("Polystring lang for key '%s' is not primitive, it is '%s'",
+                                new Argument(xLang, Argument.ArgumentType.XNODE)),
                         "Polystring lang for key '%s' is not primitive, it is lang node".formatted(key.getLocalPart()));
                 pc.warn(LOGGER, validationLog);
                 throw new SchemaException(validationLog.message());
@@ -1443,7 +1602,10 @@ public class BeanUnmarshaller {
         } else if (value == null) {
             polyString = null;
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("Couldn't convert '%s' to a PolyString; while parsing '%s'",
                             new Argument(value, Argument.ArgumentType.XNODE),
                             new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
@@ -1460,7 +1622,10 @@ public class BeanUnmarshaller {
         } else if (PolyStringType.class.equals(beanClass)) {
             return new PolyStringType(polyString);
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    node.getSourceLocation(),
                     new TechnicalMessage("Wrong class for PolyString value:  '%s'",
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
                     "Wrong class for PolyString value:  '%s'".formatted(beanClass));
@@ -1470,7 +1635,10 @@ public class BeanUnmarshaller {
     }
 
     private Object notSupported(XNodeImpl node, Class<?> beanClass, ParsingContext pc) {
-        ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, node.getSourceLocation(),
+        ValidationLog validationLog = new ValidationLog(
+                ValidationLogType.ERROR,
+                ValidationLogType.Specification.UNKNOW,
+                node.getSourceLocation(),
                 new TechnicalMessage("The following couldn't be parsed as  '%s': '%s'",
                         new Argument(beanClass, Argument.ArgumentType.UNKNOW),
                         new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
@@ -1489,7 +1657,10 @@ public class BeanUnmarshaller {
         // used e.g. when reading report templates (embedded XML)
         // A necessary condition: there may be only one map entry.
         if (map.size() > 1) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, map.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    map.getSourceLocation(),
                     new TechnicalMessage("Map with more than one item cannot be parsed as a string: '%s'",
                             new Argument(map, Argument.ArgumentType.XMAP)),
                     "Map with more than one item cannot be parsed as a string: map node");
@@ -1532,12 +1703,14 @@ public class BeanUnmarshaller {
             }
         }
         if (javaEnumString == null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, prim.getSourceLocation(),
+            pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                    ValidationLogType.ERROR,
+                    ValidationLogType.Specification.UNKNOW,
+                    prim.getSourceLocation(),
                     new TechnicalMessage("Cannot find enum value for string '%s' in '%s'",
                             new Argument(primValue, Argument.ArgumentType.STRING),
                             new Argument(beanClass, Argument.ArgumentType.UNKNOW)),
-                    "Cannot find enum value for string '%s' in '%s'".formatted(primValue, beanClass));
-            pc.warnOrThrow(LOGGER, validationLog);
+                    "Cannot find enum value for string '%s' in '%s'".formatted(primValue, beanClass)));
             return null;
         }
 
