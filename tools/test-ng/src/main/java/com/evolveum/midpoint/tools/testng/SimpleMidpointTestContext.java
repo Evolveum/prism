@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.tools.testng;
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.ITestResult;
 
 public class SimpleMidpointTestContext implements MidpointTestContext {
@@ -30,6 +31,12 @@ public class SimpleMidpointTestContext implements MidpointTestContext {
     public String getTestMethodName() {
         return testResult.getMethod().getMethodName();
     }
+
+    /**
+     * Needed for multi-threaded tests that need to set copy of test context to
+     * thread-local variables in individual threads.
+     */
+    public ITestResult getTestResult() { return testResult; }
 
     public static SimpleMidpointTestContext create(ITestResult testResult) {
         SimpleMidpointTestContext ctx = new SimpleMidpointTestContext(testResult);
