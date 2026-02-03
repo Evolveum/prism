@@ -225,7 +225,7 @@ class QueryParsingContext {
 
     static class WithoutPlaceholders implements PreparedPrismQuery {
 
-        private static ObjectFilter filter;
+        private final ObjectFilter filter;
 
         public WithoutPlaceholders(ObjectFilter maybeFilter) {
             filter = maybeFilter;
