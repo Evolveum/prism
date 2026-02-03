@@ -503,6 +503,15 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
                     return false;
                 }
             }
+            if (this.getOriginObject() != null || other.getOriginObject() != null) {
+                if (this.getOriginObject() == null || other.getOriginObject() == null) {
+                    // one is null the other is not
+                    return false;
+                }
+                if (!this.getOriginObject().equals(other.getOriginObject())) {
+                    return false;
+                }
+            }
         }
         if (!equalsTargetType(other)) {
             return false;
