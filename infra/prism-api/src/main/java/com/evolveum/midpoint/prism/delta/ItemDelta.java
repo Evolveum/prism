@@ -286,8 +286,24 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
 
     void normalize();
 
+    /**
+     * Tells if this delta replaces an existing value.
+     *
+     * NOTE: If the item is single valued, the "replace" delta may also represent an **add** delta. The semantics is
+     * that it replaces empty/missing value with a new value.
+     *
+     * @return True if this item delta replaces an existing value.
+     */
     boolean isReplace();
 
+    /**
+     * Tells if this delta adds a new value.
+     *
+     * NOTE: If the item is single valued, the add delta may be also represented as **replace** delta, in which case
+     * this method will return `false`
+     *
+     * @return True if this item delta adds a value.
+     */
     boolean isAdd();
 
     boolean isDelete();
