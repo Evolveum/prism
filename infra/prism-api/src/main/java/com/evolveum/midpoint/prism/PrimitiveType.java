@@ -29,7 +29,7 @@ public enum PrimitiveType {
     DATETIME("dateTime"),
     DURATION("duration"),
     BYTE("byte"),
-    QNAME("qname"),
+    QNAME("QName"),
     ANYURI("anyURI");
 
     private final String localName;
