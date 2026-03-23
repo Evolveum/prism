@@ -78,13 +78,29 @@ public class PrismUtil {
     }
 
     public static <O extends Objectable> void setDeltaOldValue(PrismObject<O> oldObject, ItemDelta<?, ?> itemDelta) {
+        setDeltaOldValueInternal(oldObject, itemDelta, false);
+    }
+
+    public static <O extends Objectable> void setDeltaOldValueForAudit(PrismObject<O> oldObject, ItemDelta<?, ?> itemDelta) {
+        setDeltaOldValueInternal(oldObject, itemDelta, true);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static <O extends Objectable> void setDeltaOldValueInternal(
+            PrismObject<O> oldObject, ItemDelta<?, ?> itemDelta, boolean mutableValuesForAudit) {
         if (oldObject == null) {
             return;
         }
         Item<PrismValue, ItemDefinition<?>> itemOld = oldObject.findItem(itemDelta.getPath());
         if (itemOld != null) {
-            //noinspection unchecked,rawtypes
-            itemDelta.setEstimatedOldValuesWithCloning((Collection) itemOld.getValues());
+            if (mutableValuesForAudit) {
+                itemDelta.setEstimatedOldValues((Collection) itemOld.getValues().stream()
+                        .map(value -> value != null ? value.mutableCopy() : null)
+                        .toList());
+            } else {
+                //noinspection unchecked,rawtypes
+                itemDelta.setEstimatedOldValuesWithCloning((Collection) itemOld.getValues());
+            }
         }
     }
 
