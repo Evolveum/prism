@@ -1609,7 +1609,7 @@ public class BeanUnmarshaller {
                     new TechnicalMessage("Couldn't convert '%s' to a PolyString; while parsing '%s'",
                             new Argument(value, Argument.ArgumentType.XNODE),
                             new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
-                    "Couldn't convert '%s' to a PolyString; while parsing node".formatted(value));
+                    "Couldn't convert '%s' to a PolyString; while parsing".formatted(value));
             pc.warn(LOGGER, validationLog);
             throw new IllegalStateException(validationLog.message());
         }

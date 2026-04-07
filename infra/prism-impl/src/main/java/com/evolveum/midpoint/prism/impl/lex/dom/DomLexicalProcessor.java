@@ -12,8 +12,9 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
 
-import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
+import com.evolveum.concepts.*;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 
 import org.apache.commons.io.IOUtils;
@@ -54,7 +55,25 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
             if (parsingContext.isValidation()) {
                 try {
                     root = new StreamDomBuilder().parse(source.getInputStream()).getDocumentElement();
-                } catch (Exception e) {
+                } catch (XMLStreamException e) {
+                    validationLogging(
+                            parsingContext,
+                            e.getMessage().replace("at " + e.getLocation().toString(), ""),
+                            SourceLocation.from(
+                                    SourceLocation.unknown().getSource(),
+                                    e.getLocation().getLineNumber(),
+                                    e.getLocation().getColumnNumber()
+                            )
+                    );
+
+                    throw new RuntimeException(e);
+                }  catch (Exception e) {
+                    validationLogging(
+                            parsingContext,
+                            e.getMessage(),
+                            SourceLocation.unknown()
+                    );
+
                     throw new RuntimeException(e);
                 }
             } else {
@@ -70,7 +89,25 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
                 if (parsingContext.isValidation()) {
                     try {
                         document = new StreamDomBuilder().parse(source.getInputStream());
-                    } catch (Exception e) {
+                    } catch (XMLStreamException e) {
+                        validationLogging(
+                                parsingContext,
+                                e.getMessage().replace("at " + e.getLocation().toString(), ""),
+                                SourceLocation.from(
+                                        SourceLocation.unknown().getSource(),
+                                        e.getLocation().getLineNumber(),
+                                        e.getLocation().getColumnNumber()
+                                )
+                        );
+
+                        throw new RuntimeException(e);
+                    }  catch (Exception e) {
+                        validationLogging(
+                                parsingContext,
+                                e.getMessage(),
+                                SourceLocation.unknown()
+                        );
+
                         throw new RuntimeException(e);
                     }
                 } else {
@@ -96,7 +133,25 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
             if (parsingContext.isValidation()) {
                 try {
                     document = new StreamDomBuilder().parse(source.getInputStream());
-                } catch (Exception e) {
+                } catch (XMLStreamException e) {
+                    validationLogging(
+                            parsingContext,
+                            e.getMessage().replace("at " + e.getLocation().toString(), ""),
+                            SourceLocation.from(
+                                    SourceLocation.unknown().getSource(),
+                                    e.getLocation().getLineNumber(),
+                                    e.getLocation().getColumnNumber()
+                            )
+                    );
+
+                    throw new RuntimeException(e);
+                }  catch (Exception e) {
+                    validationLogging(
+                            parsingContext,
+                            e.getMessage(),
+                            SourceLocation.unknown()
+                    );
+
                     throw new RuntimeException(e);
                 }
             } else {
@@ -118,7 +173,6 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
         new DomIterativeReader(source, handler, schemaRegistry)
                 .readObjectsIteratively(parsingContext);
     }
-
 
     @Override
     public boolean canRead(@NotNull File file) {
@@ -191,5 +245,14 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
         } else {
             throw e;
         }
+    }
+
+    private void validationLogging(ParsingContext pc, String message, SourceLocation sourceLocation) throws SchemaException {
+        pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                ValidationLogType.ERROR,
+                ValidationLogType.Specification.UNKNOW,
+                sourceLocation,
+                new TechnicalMessage(message),
+                message));
     }
 }

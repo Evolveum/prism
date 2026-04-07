@@ -8,15 +8,19 @@
 package com.evolveum.concepts;
 
 public record ValidationLog(
+
         /*
-         * Kind of log
+         * Kind of Validation log
          */
         ValidationLogType validationLogType,
 
+        /*
+         * Specification of Validation log
+         */
         ValidationLogType.Specification specification,
 
         /*
-         * Localization of log
+         * Localization of Validation log
          */
         SourceLocation location,
 
@@ -26,7 +30,7 @@ public record ValidationLog(
         TechnicalMessage technicalMessage,
 
         /*
-         * User friendly message
+         * User-friendly message
          */
         String message
 ) {}
