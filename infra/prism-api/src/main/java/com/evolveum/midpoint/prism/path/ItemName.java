@@ -27,6 +27,7 @@ public class ItemName extends QName implements ItemPath {
      */
     private static final Interner<WithoutPrefix> WITHOUT_PREFIX = Interners.newStrongInterner();
 
+    /** @deprecated Use use {@link ItemName#from(String, String)} instead. */
     @Deprecated
     public ItemName(String namespaceURI, String localPart) {
         super(namespaceURI, localPart);
