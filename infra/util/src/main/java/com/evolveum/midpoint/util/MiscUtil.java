@@ -995,9 +995,10 @@ public class MiscUtil {
         try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(file))) {
             ZipEntry zipEntry = new ZipEntry(entryName);
             zipOut.putNextEntry(zipEntry);
-            try (Writer writer = new OutputStreamWriter(zipOut, charset)) {
-                writer.write(content);
-            }
+            Writer writer = new OutputStreamWriter(zipOut, charset);
+            writer.write(content);
+            writer.flush();
+            zipOut.closeEntry();
         }
     }
     // More serious would be to read XML directly from the input stream -- fixme some day
