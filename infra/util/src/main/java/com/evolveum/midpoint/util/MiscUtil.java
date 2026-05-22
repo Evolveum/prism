@@ -1518,6 +1518,11 @@ public class MiscUtil {
         return concatenation;
     }
 
+    /**
+     * Improved handling of String to byte[] transformation. It's handled via {@link String#getBytes(Charset)}
+     * unless {@link #STRING_SIZE_THRESHOLD} is hit. In that case it's handled via streams to avoid double
+     * size byte[] pre-allocation, potentially hitting limit of 2GB length of byte array. See MID-11015 for more information.
+     */
     public static byte[] stringToBytes(String str) {
         if (str == null) {
             return null;
