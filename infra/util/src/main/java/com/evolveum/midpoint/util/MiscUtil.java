@@ -60,6 +60,13 @@ public class MiscUtil {
     private static final DatatypeFactory DATATYPE_FACTORY;
     private static final int DEFAULT_DIAG_INFO_LENGTH = 300;
 
+
+    /**
+     * Threshold for which String to byte[] will be handled via stream to avoid double size byte[] pre-allocation,
+     * potentially hitting limit of 2GB length of byte array. See MID-11015 for more information.
+     */
+    private static final int STRING_SIZE_THRESHOLD = 500_000_000;
+
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();
@@ -1495,5 +1502,27 @@ public class MiscUtil {
         concatenation.addAll(collection1);
         concatenation.addAll(collection2);
         return concatenation;
+    }
+
+    public static byte[] stringToBytes(String str) {
+        if (str == null) {
+            return null;
+        }
+
+        // this condition is here to avoid String.getBytes() fail even for strings that are smaller
+        // than 2GB because of byte[] pre-allocation. See MID-11015 for details.
+        if (str.length() < STRING_SIZE_THRESHOLD) {
+            return str.getBytes(StandardCharsets.UTF_8);
+        }
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                OutputStreamWriter osw = new OutputStreamWriter(bos, StandardCharsets.UTF_8)) {
+            osw.write(str);
+            osw.flush();
+
+            return bos.toByteArray();
+        } catch (IOException e) {
+            throw new SystemException("This shouldn't happen", e);
+        }
     }
 }
