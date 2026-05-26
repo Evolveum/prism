@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.prism;
 
 import static com.evolveum.midpoint.prism.schema.PrismSchemaBuildingUtil.addNewComplexTypeDefinition;
+
 import static org.testng.AssertJUnit.*;
 
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.DEFAULT_NAMESPACE_PREFIX;
@@ -15,10 +16,13 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.constructInitial
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyDefinitionMutator;
+import com.evolveum.midpoint.prism.impl.EnumerationTypeDefinitionImpl;
 import com.evolveum.midpoint.prism.impl.schema.SchemaParsingUtil;
 import com.evolveum.midpoint.prism.schema.PrismSchemaBuildingUtil;
 
@@ -26,6 +30,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.evolveum.midpoint.prism.impl.schema.PrismSchemaImpl;
@@ -50,6 +55,11 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
     private static final int SCHEMA_ROUNDTRIP_LOOP_ATTEMPTS = 10;
     private static final String WEAPON_PASSWORD_LOCAL_NAME = "password";
     private static final String WEAPON_BLADE_LOCAL_NAME = "blade";
+    private static final String WEAPON_RARITY_TYPE_LOCAL_NAME = "WeaponRarityType";
+    private static final String WEAPON_RARITY_LOCAL_NAME = "rarity";
+    private static final String JAKARTA_JAXB_NAMESPACE = "https://jakarta.ee/xml/ns/jaxb";
+    private static final String JAXB_TYPESAFE_ENUM_CLASS = "typesafeEnumClass";
+    private static final String JAXB_TYPESAFE_ENUM_MEMBER = "typesafeEnumMember";
 
     @BeforeSuite
     public void setupDebug() {
@@ -96,6 +106,26 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         }
     }
 
+    /** Verifies that enum JAXB customizations do not produce a resolvable XSD import. MID-10558 */
+    @Test
+    public void testSchemaWithEnumerationDoesNotImportJaxbNamespace() throws Exception {
+        constructInitializedPrismContext();
+        PrismSchema schema = constructSchemaWithEnumeration();
+
+        Document xsdDocument = schema.serializeToXsd();
+        Element xsdElement = DOMUtil.getFirstChildElement(xsdDocument);
+
+        assertNoImport(xsdElement, JAKARTA_JAXB_NAMESPACE);
+        assertElementPresent(xsdElement, JAKARTA_JAXB_NAMESPACE, JAXB_TYPESAFE_ENUM_CLASS);
+        assertElementPresent(xsdElement, JAKARTA_JAXB_NAMESPACE, JAXB_TYPESAFE_ENUM_MEMBER);
+
+        PrismSchema reparsedSchema = SchemaParsingUtil.createAndParse(xsdElement, true, "serialized enumeration schema");
+        EnumerationTypeDefinition rarityDefinition = reparsedSchema.findTypeDefinitionByType(
+                new QName(NS_MY_SCHEMA, WEAPON_RARITY_TYPE_LOCAL_NAME), EnumerationTypeDefinition.class);
+        assertNotNull("No re-parsed enumeration definition", rarityDefinition);
+        assertEquals("Unexpected number of enum values", 3, rarityDefinition.getValues().size());
+    }
+
     private void schemaRoundtrip() throws SchemaException {
         PrismSchema schema = constructSchema();
         assertSchema(schema);
@@ -133,6 +163,23 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         createTimestampPropertyDef.setOperational(true);
 
         PrismSchemaBuildingUtil.addNewContainerDefinition(schema, WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
+
+        return schema;
+    }
+
+    private PrismSchema constructSchemaWithEnumeration() {
+        PrismSchemaImpl schema = new PrismSchemaImpl(NS_MY_SCHEMA);
+
+        var enumTypeName = new QName(NS_MY_SCHEMA, WEAPON_RARITY_TYPE_LOCAL_NAME);
+        schema.mutator().add(new EnumerationTypeDefinitionImpl(
+                enumTypeName,
+                DOMUtil.XSD_STRING,
+                List.of(
+                        new EnumerationTypeDefinitionImpl.ValueDefinitionImpl("common", null, "COMMON"),
+                        new EnumerationTypeDefinitionImpl.ValueDefinitionImpl("rare", null, "RARE"),
+                        new EnumerationTypeDefinitionImpl.ValueDefinitionImpl("legendary", null, "LEGENDARY"))));
+
+        PrismSchemaBuildingUtil.addNewPropertyDefinition(schema, WEAPON_RARITY_LOCAL_NAME, enumTypeName);
 
         return schema;
     }
@@ -177,6 +224,21 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
 
     private void assertPrefix(String expectedPrefix, Element element) {
         assertEquals("Wrong prefix on element " + DOMUtil.getQName(element), expectedPrefix, element.getPrefix());
+    }
+
+    private void assertNoImport(Element xsdElement, String namespace) {
+        NodeList imports = xsdElement.getElementsByTagNameNS(XMLConstants.W3C_XML_SCHEMA_NS_URI, "import");
+        for (int i = 0; i < imports.getLength(); i++) {
+            Element importElement = (Element) imports.item(i);
+            assertFalse(
+                    "Unexpected import for " + namespace,
+                    namespace.equals(importElement.getAttribute("namespace")));
+        }
+    }
+
+    private void assertElementPresent(Element xsdElement, String namespace, String localName) {
+        NodeList elements = xsdElement.getElementsByTagNameNS(namespace, localName);
+        assertTrue("No element {" + namespace + "}" + localName, elements.getLength() > 0);
     }
 
 }

@@ -8,9 +8,10 @@
 package com.evolveum.midpoint.prism.impl.schema.features;
 
 import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.getAnnotationElement;
+import static com.evolveum.midpoint.prism.impl.xjc.JaxbCustomizationConstants.TYPESAFE_ENUM_MEMBER;
+import static com.evolveum.midpoint.prism.impl.xjc.JaxbCustomizationConstants.TYPESAFE_ENUM_MEMBER_LEGACY;
 
 import java.util.List;
-import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
 import com.sun.xml.xsom.*;
@@ -25,10 +26,6 @@ import com.evolveum.midpoint.util.MiscUtil;
 
 public class EnumerationValuesXsomParser
         implements DefinitionFeatureParser<List<EnumerationTypeDefinition.ValueDefinition>, XSSimpleType> {
-
-    public static final QName TYPESAFE_ENUM_MEMBER = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumMember");
-    public static final QName TYPESAFE_ENUM_CLASS = new QName("https://jakarta.ee/xml/ns/jaxb", "typesafeEnumClass");
-    private static final QName TYPESAFE_ENUM_MEMBER_LEGACY = new QName("http://java.sun.com/xml/ns/jaxb","typesafeEnumMember");
 
     @Override
     public @Nullable List<EnumerationTypeDefinition.ValueDefinition> getValue(@Nullable XSSimpleType simpleType) {
