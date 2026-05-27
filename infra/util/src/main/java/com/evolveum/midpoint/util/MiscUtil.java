@@ -1387,4 +1387,8 @@ public class MiscUtil {
             throw new SystemException("This shouldn't happen", e);
         }
     }
+
+    public static String sanitizeSessionId(String sessionId) {
+        return StringUtils.left(sessionId, 6);
+    }
 }
