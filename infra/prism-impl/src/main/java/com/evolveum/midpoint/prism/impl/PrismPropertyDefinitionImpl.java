@@ -15,7 +15,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
 import com.evolveum.midpoint.prism.path.ItemName;
-
 import com.evolveum.midpoint.prism.schema.SerializablePropertyDefinition;
 import com.evolveum.midpoint.util.DisplayableValue;
 
@@ -67,7 +66,7 @@ public class PrismPropertyDefinitionImpl<T>
         PrismItemMatchingDefinition.Delegable<T>,
         PrismItemMatchingDefinition.Mutator.Delegable,
         PrismPropertyLikeDefinitionBuilder<T>,
-        SerializablePropertyDefinition {
+        SerializablePropertyDefinition<T> {
 
     // TODO some documentation
     @Serial private static final long serialVersionUID = 7259761997904371009L;
@@ -106,6 +105,16 @@ public class PrismPropertyDefinitionImpl<T>
     public PrismPropertyDefinitionImpl(QName elementName, QName typeName, T defaultValue, QName definedInType) {
         this(elementName, typeName, definedInType);
         setDefaultValue(defaultValue);
+    }
+
+    @Override
+    public Collection<? extends DisplayableValue<T>> getAllowedValues() {
+        return PrismItemValuesDefinition.Delegable.super.getAllowedValues();
+    }
+
+    @Override
+    public Collection<? extends DisplayableValue<T>> getSuggestedValues() {
+        return PrismItemValuesDefinition.Delegable.super.getSuggestedValues();
     }
 
     @Override

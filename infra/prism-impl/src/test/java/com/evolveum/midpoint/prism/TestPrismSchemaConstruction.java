@@ -15,6 +15,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.constructInitial
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
@@ -28,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import com.evolveum.midpoint.prism.impl.DisplayableValueImpl;
 import com.evolveum.midpoint.prism.impl.schema.PrismSchemaImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
@@ -125,12 +127,19 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         ComplexTypeDefinitionMutator weaponTypeDef = addNewComplexTypeDefinition(schema, WEAPON_TYPE_LOCAL_NAME).mutator();
         PrismPropertyDefinitionMutator<?> kindPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_KIND_QNAME, DOMUtil.XSD_STRING);
         kindPropertyDef.setDisplayName("Weapon kind");
+        //noinspection unchecked
+        ((PrismPropertyDefinition.PrismPropertyDefinitionMutator) kindPropertyDef).setAllowedValues(List.of(
+                new DisplayableValueImpl<>("sword", "Sword", null),
+                new DisplayableValueImpl<>("bow", "Bow", null)));
         weaponTypeDef.createPropertyDefinition(WEAPON_BRAND_LOCAL_NAME, PrismInternalTestUtil.WEAPONS_WEAPON_BRAND_TYPE_QNAME);
         weaponTypeDef.createPropertyDefinition(WEAPON_PASSWORD_LOCAL_NAME, PrismInternalTestUtil.DUMMY_PROTECTED_STRING_TYPE);
         weaponTypeDef.createPropertyDefinition(WEAPON_BLADE_LOCAL_NAME, PrismInternalTestUtil.EXTENSION_BLADE_TYPE_QNAME);
         PrismPropertyDefinitionMutator<?> createTimestampPropertyDef = weaponTypeDef.createPropertyDefinition(WEAPON_CREATE_TIMESTAMP_QNAME, DOMUtil.XSD_DATETIME);
         createTimestampPropertyDef.setDisplayName("Create timestamp");
         createTimestampPropertyDef.setOperational(true);
+        //noinspection unchecked
+        ((PrismPropertyDefinition.PrismPropertyDefinitionMutator) createTimestampPropertyDef).setSuggestedValues(List.of(
+                new DisplayableValueImpl<>("2024-01-01T00:00:00Z", "New Year 2024", null)));
 
         PrismSchemaBuildingUtil.addNewContainerDefinition(schema, WEAPON_LOCAL_NAME, WEAPON_TYPE_LOCAL_NAME);
 
@@ -153,6 +162,9 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         PrismAsserts.assertDefinition(kindPropertyDef, WEAPON_KIND_QNAME, DOMUtil.XSD_STRING, 1, 1);
         assertEquals("Wrong kindPropertyDef displayName", "Weapon kind", kindPropertyDef.getDisplayName());
         assertFalse("kindPropertyDef IS operational", kindPropertyDef.isOperational());
+        Collection<?> allowedValues = kindPropertyDef.getAllowedValues();
+        assertNotNull("kindPropertyDef allowedValues is null", allowedValues);
+        assertEquals("Wrong kindPropertyDef allowedValues size", 2, allowedValues.size());
 
         PrismPropertyDefinition brandPropertyDef = (PrismPropertyDefinition) weaponTypeDefIter.next();
         PrismAsserts.assertDefinition(brandPropertyDef, new QName(NS_MY_SCHEMA, WEAPON_BRAND_LOCAL_NAME),
@@ -170,6 +182,9 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         PrismAsserts.assertDefinition(createTimestampPropertyDef, WEAPON_CREATE_TIMESTAMP_QNAME, DOMUtil.XSD_DATETIME, 1, 1);
         assertEquals("Wrong createTimestampPropertyDef displayName", "Create timestamp", createTimestampPropertyDef.getDisplayName());
         assertTrue("createTimestampPropertyDef not operational", createTimestampPropertyDef.isOperational());
+        Collection<?> suggestedValues = createTimestampPropertyDef.getSuggestedValues();
+        assertNotNull("createTimestampPropertyDef suggestedValues is null", suggestedValues);
+        assertEquals("Wrong createTimestampPropertyDef suggestedValues size", 1, suggestedValues.size());
 
         PrismContainerDefinition<?> weaponContDef = (PrismContainerDefinition<?>) schemaDefIter.next();
         assertEquals("Wrong complex type def in weaponContDef", weaponTypeDef, weaponContDef.getComplexTypeDefinition());
