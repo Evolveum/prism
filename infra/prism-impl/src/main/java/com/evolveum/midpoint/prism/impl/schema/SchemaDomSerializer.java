@@ -40,6 +40,7 @@ import com.evolveum.midpoint.prism.schema.DefinitionFeatureSerializer.Serializat
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.DisplayableValue;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
@@ -137,7 +138,7 @@ public class SchemaDomSerializer {
                 if (definition instanceof SerializableContainerDefinition pcd) {
                     // Container definitions are serialized as <complexType> and top-level <element> definitions in XSD.
                     serializeContainerDefinition(pcd, documentRootElement);
-                } else if (definition instanceof SerializablePropertyDefinition ppd) {
+                } else if (definition instanceof SerializablePropertyDefinition<?> ppd) {
                     // Add top-level property definition. It will create <element> XSD definition
                     serializePropertyDefinition(ppd, documentRootElement);
                 } else if (definition instanceof SerializableComplexTypeDefinition
@@ -225,7 +226,7 @@ public class SchemaDomSerializer {
      * @param propertyDef midPoint PropertyDefinition
      * @param parent element under which the definition will be added
      */
-    private void serializePropertyDefinition(SerializablePropertyDefinition propertyDef, Element parent) {
+    private void serializePropertyDefinition(SerializablePropertyDefinition<?> propertyDef, Element parent) {
         Element itemElement = createItemElement(propertyDef, parent);
 
         var appInfo = createAppInfoAnnotationsTarget(itemElement);
@@ -234,6 +235,8 @@ public class SchemaDomSerializer {
 
         addAnnotation(A_MATCHING_RULE, propertyDef.getMatchingRuleQName(), appInfo.appInfoElement);
         addAnnotation(A_VALUE_ENUMERATION_REF, propertyDef.getValueEnumerationRef(), appInfo.appInfoElement);
+        serializeDisplayableValues(A_ALLOWED_VALUES, propertyDef.getAllowedValues(), appInfo.appInfoElement);
+        serializeDisplayableValues(A_SUGGESTED_VALUES, propertyDef.getSuggestedValues(), appInfo.appInfoElement);
 
         addExtraFeatures(propertyDef, appInfo);
 
@@ -343,7 +346,7 @@ public class SchemaDomSerializer {
         definitionsParent.appendChild(sequence);
 
         for (var itemDef : ctd.getDefinitionsToSerialize()) {
-            if (itemDef instanceof SerializablePropertyDefinition ppd) {
+            if (itemDef instanceof SerializablePropertyDefinition<?> ppd) {
                 serializePropertyDefinition(ppd, sequence);
             } else if (itemDef instanceof SerializableContainerDefinition pcd) {
                 serializeContainerDefinition(pcd, sequence);
@@ -421,6 +424,21 @@ public class SchemaDomSerializer {
         aia.removeIfNotNeeded();
 
         return enumeration;
+    }
+
+    private void serializeDisplayableValues(QName wrapperQName, Collection<? extends DisplayableValue<?>> values, Element parent) {
+        if (values == null || values.isEmpty()) {
+            return;
+        }
+        Element wrapper = createElement(wrapperQName);
+        parent.appendChild(wrapper);
+        for (DisplayableValue<?> dv : values) {
+            Element valueEl = createElement(A_VALUE);
+            wrapper.appendChild(valueEl);
+            addAnnotation(A_KEY, String.valueOf(dv.getValue()), valueEl);
+            addAnnotation(A_LABEL, dv.getLabel(), valueEl);
+            addAnnotation(A_DESCRIPTION, dv.getDescription(), valueEl);
+        }
     }
 
     private static void addExtraFeatures(SerializableDefinition definition, AppInfoSerializationTarget appInfo) {
