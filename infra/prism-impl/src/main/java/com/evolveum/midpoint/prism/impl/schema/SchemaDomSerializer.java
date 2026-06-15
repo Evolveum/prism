@@ -588,11 +588,15 @@ public class SchemaDomSerializer {
     }
 
     /**
-     * Make sure that the namespace will be added to import definitions.
+     * Makes sure that the namespace will be added to import definitions,
+     * unless it is a known annotation/customization namespace that should NOT be imported as XSD.
+     *
      * @param namespace namespace to import
      */
     private void addToImports(String namespace) {
-        importNamespaces.add(namespace);
+        if (NonImportableSchemaNamespace.isImportable(namespace)) {
+            importNamespaces.add(namespace);
+        }
     }
 
     /**
