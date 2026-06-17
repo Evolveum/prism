@@ -35,6 +35,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.schema.PrismSchema;
 import com.evolveum.midpoint.prism.util.PrismAsserts;
 import com.evolveum.midpoint.util.DOMUtil;
+import com.evolveum.midpoint.util.DisplayableValue;
 import com.evolveum.midpoint.util.PrettyPrinter;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
@@ -119,6 +120,49 @@ public class TestPrismSchemaConstruction extends AbstractPrismTest {
         System.out.println("Re-parsed schema");
         System.out.println(reparsedSchema.debugDump());
         assertSchema(reparsedSchema);
+    }
+
+    /**
+     * Regression test: allowed values derived from {@code xsd:enumeration} facets must not be wiped out
+     * when parsing a property that has no {@code <a:allowedValues>} annotation. Such a schema is
+     * hand-written (the long-standing enum mechanism); the enum {@code simpleType} is the only source
+     * of allowed values, so they must survive the parse.
+     */
+    @Test
+    public void testEnumerationAllowedValuesSurviveParsing() throws Exception {
+        PrismContext ctx = constructInitializedPrismContext();
+
+        String xsd = ""
+                + "<xsd:schema elementFormDefault='qualified'"
+                + "            targetNamespace='" + NS_MY_SCHEMA + "'"
+                + "            xmlns:tns='" + NS_MY_SCHEMA + "'"
+                + "            xmlns:a='" + PrismConstants.NS_ANNOTATION + "'"
+                + "            xmlns:xsd='http://www.w3.org/2001/XMLSchema'>"
+                + "    <xsd:simpleType name='MarkType'>"
+                + "        <xsd:restriction base='xsd:string'>"
+                + "            <xsd:enumeration value='pegLeg'/>"
+                + "            <xsd:enumeration value='noEye'/>"
+                + "            <xsd:enumeration value='hook'/>"
+                + "        </xsd:restriction>"
+                + "    </xsd:simpleType>"
+                + "    <xsd:complexType name='PirateType'>"
+                + "        <xsd:sequence>"
+                + "            <xsd:element name='mark' type='tns:MarkType' minOccurs='0'/>"
+                + "        </xsd:sequence>"
+                + "    </xsd:complexType>"
+                + "</xsd:schema>";
+
+        Element xsdElement = DOMUtil.getFirstChildElement(DOMUtil.parseDocument(xsd));
+        PrismSchema schema = SchemaParsingUtil.createAndParse(xsdElement, true, "enum regression schema");
+
+        ComplexTypeDefinition pirateTypeDef = schema.findComplexTypeDefinitionByType(new QName(NS_MY_SCHEMA, "PirateType"));
+        assertNotNull("No PirateType definition", pirateTypeDef);
+        PrismPropertyDefinition<?> markDef = pirateTypeDef.findPropertyDefinition(new ItemName(NS_MY_SCHEMA, "mark"));
+        assertNotNull("No mark property definition", markDef);
+
+        Collection<? extends DisplayableValue<?>> allowedValues = markDef.getAllowedValues();
+        assertNotNull("Enum-derived allowedValues were wiped out", allowedValues);
+        assertEquals("Wrong number of enum allowed values", 3, allowedValues.size());
     }
 
     private PrismSchema constructSchema() {

@@ -13,6 +13,8 @@ import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_ACCESS;
+import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_ALLOWED_VALUES;
+import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_SUGGESTED_VALUES;
 import static com.evolveum.midpoint.util.MiscUtil.argNonNull;
 
 import java.util.Collection;
@@ -235,8 +237,8 @@ public class SchemaDomSerializer {
 
         addAnnotation(A_MATCHING_RULE, propertyDef.getMatchingRuleQName(), appInfo.appInfoElement);
         addAnnotation(A_VALUE_ENUMERATION_REF, propertyDef.getValueEnumerationRef(), appInfo.appInfoElement);
-        serializeDisplayableValues(A_ALLOWED_VALUES, propertyDef.getAllowedValues(), appInfo.appInfoElement);
-        serializeDisplayableValues(A_SUGGESTED_VALUES, propertyDef.getSuggestedValues(), appInfo.appInfoElement);
+        DF_ALLOWED_VALUES.serialize(propertyDef, appInfo);
+        DF_SUGGESTED_VALUES.serialize(propertyDef, appInfo);
 
         addExtraFeatures(propertyDef, appInfo);
 
@@ -689,6 +691,11 @@ public class SchemaDomSerializer {
                         A_REF.getLocalPart(),
                         value);
             }
+        }
+
+        @Override
+        public void addDisplayableValues(QName wrapperName, Collection<? extends DisplayableValue<?>> values) {
+            schemaSerializer.serializeDisplayableValues(wrapperName, values, appInfoElement);
         }
 
         private Element addNewElement(QName qname) {

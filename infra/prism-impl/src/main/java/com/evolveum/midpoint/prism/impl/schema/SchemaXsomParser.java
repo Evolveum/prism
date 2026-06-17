@@ -782,10 +782,10 @@ class SchemaXsomParser {
         DF_INDEX_ONLY.parse(ppdBuilder, annotation);
         DF_MATCHING_RULE.parse(ppdBuilder, annotation);
         DF_VALUE_ENUMERATION_REF.parse(ppdBuilder, annotation);
-        //noinspection unchecked
-        ppdBuilder.setAllowedValues((Collection) parseDisplayableValues(annotation, A_ALLOWED_VALUES));
-        //noinspection unchecked
-        ppdBuilder.setSuggestedValues((Collection) parseDisplayableValues(annotation, A_SUGGESTED_VALUES));
+        // These are non-destructive by construction: the feature is applied only when its annotation
+        // is actually present, so enum-derived allowed values set above (parseEnumAllowedValues) are kept.
+        DF_ALLOWED_VALUES.parse(ppdBuilder, annotation);
+        DF_SUGGESTED_VALUES.parse(ppdBuilder, annotation);
 
         return ppdBuilder;
     }
@@ -847,28 +847,6 @@ class SchemaXsomParser {
             }
         }
         return original;
-    }
-
-    private Collection<? extends DisplayableValue<?>> parseDisplayableValues(
-            @Nullable XSAnnotation annotation, QName wrapperQName) {
-        Element wrapper = getAnnotationElement(annotation, wrapperQName);
-        if (wrapper == null) {
-            return null;
-        }
-        List<DisplayableValue<?>> result = new ArrayList<>();
-        for (Element valueEl : DOMUtil.listChildElements(wrapper)) {
-            List<Element> keyElements = DOMUtil.getChildElements(valueEl, A_KEY);
-            if (keyElements.isEmpty()) {
-                continue;
-            }
-            String key = keyElements.get(0).getTextContent();
-            String label = DOMUtil.getChildElements(valueEl, A_LABEL).stream()
-                    .findFirst().map(Element::getTextContent).orElse(null);
-            String description = DOMUtil.getChildElements(valueEl, A_DESCRIPTION).stream()
-                    .findFirst().map(Element::getTextContent).orElse(null);
-            result.add(new DisplayableValueImpl<>(key, label, description));
-        }
-        return result.isEmpty() ? null : List.copyOf(result);
     }
 
     private void parseItemDefinitionAnnotations(ItemDefinitionLikeBuilder builder, XSAnnotation sourceAnnotation)

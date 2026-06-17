@@ -7,9 +7,12 @@
 
 package com.evolveum.midpoint.prism.schema;
 
+import java.util.Collection;
 import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
+
+import com.evolveum.midpoint.util.DisplayableValue;
 
 /**
  * Serializes given feature, currently into XSD DOM.
@@ -28,5 +31,11 @@ public interface DefinitionFeatureSerializer<V> {
         void addAnnotation(QName name, String value);
         void addAnnotation(QName qname, QName value);
         void addRefAnnotation(QName qname, QName value);
+
+        /**
+         * Adds a wrapper element ({@code wrapperName}) holding a structured {@code <value>} child element
+         * for each {@link DisplayableValue} (key/label/description). Used for {@code allowedValues}/{@code suggestedValues}.
+         */
+        void addDisplayableValues(QName wrapperName, Collection<? extends DisplayableValue<?>> values);
     }
 }
