@@ -1260,6 +1260,8 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             FilterContext filter) throws SchemaException {
         List<FilterContext> andChildren = new ArrayList<>();
         expand(andChildren, AndFilterContext.class, AndFilterContext::filter, Collections.singletonList(filter));
+        // Unwrap redundant parentheses around a single target wrapper, preserving logical groups.
+        unwrapParenthesizedItemFilters(andChildren);
 
         boolean oidNullAsAny = !andContains(Filter.ReferencedKeyword.OID.getName(), andChildren);
         boolean typeNullAsAny = !andContains(Filter.ReferencedKeyword.TARGET_TYPE.getName(), andChildren);
@@ -1277,7 +1279,12 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
             targetType = PrismContext.get().getSchemaRegistry().selectMoreSpecific(type, targetType);
         }
         ObjectFilter targetFilter = null;
-        if (andChildren.size() == 1) {
+        if (andChildren.size() > 1) {
+            // Reject multiple sibling target wrappers instead of silently ignoring their conditions.
+            throw new SchemaException(
+                    "Only one target filter wrapper is supported in reference matches; "
+                            + "combine target conditions inside @ matches (...) or target matches (...).");
+        } else if (andChildren.size() == 1) {
             var targetCtx = consumeFromAnd(Filter.Token.REF_TARGET_ALIAS.getName(), MATCHES.getName(), andChildren);
             if (targetCtx == null) {
                 targetCtx = consumeFromAnd(Filter.ReferencedKeyword.TARGET.getName(), MATCHES.getName(), andChildren);
@@ -1309,6 +1316,29 @@ public class PrismQueryLanguageParserImpl implements PrismQueryLanguageParser {
         result.setTargetTypeNullAsAny(typeNullAsAny);
 
         return result;
+    }
+
+    /**
+     * Unwraps redundant parentheses around single item filters so parenthesized and
+     * unparenthesized forms are handled identically, while preserving logical groups.
+     */
+    private void unwrapParenthesizedItemFilters(List<FilterContext> filters) {
+        var iterator = filters.listIterator();
+        while (iterator.hasNext()) {
+            iterator.set(unwrapParenthesizedItemFilter(iterator.next()));
+        }
+    }
+
+    private FilterContext unwrapParenthesizedItemFilter(FilterContext filter) {
+        while (filter instanceof SubFilterContext subfilter) {
+            var nested = subfilter.subfilterSpec().filter();
+            if (nested instanceof GenFilterContext || nested instanceof SubFilterContext) {
+                filter = nested;
+            } else {
+                break;
+            }
+        }
+        return filter;
     }
 
     private Map<String, Object> valuesFromFilter(String typeName, Map<String, Class<?>> props, FilterContext child,

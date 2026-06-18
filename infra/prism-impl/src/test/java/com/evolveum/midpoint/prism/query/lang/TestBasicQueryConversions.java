@@ -27,6 +27,7 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.foo.AccountType;
 import com.evolveum.midpoint.prism.foo.ActivationType;
 import com.evolveum.midpoint.prism.foo.AssignmentType;
+import com.evolveum.midpoint.prism.foo.RoleType;
 import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.match.MatchingRuleRegistryFactory;
 import com.evolveum.midpoint.prism.impl.query.*;
@@ -40,6 +41,7 @@ import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.ObjectQuery;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
+import com.evolveum.midpoint.prism.query.RefFilter;
 import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
@@ -536,6 +538,140 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
         verify(UserType.class, "accountRef matches (relation = a-relation and @ matches (attributes exists))", filter);
     }
 
+    /**
+     * Verifies parenthesized nested filters are accepted for a reference match.
+     */
+    @Test
+    public void testRefWithParenthesizedNested() throws Exception {
+        RefFilterImpl filter = (RefFilterImpl) getPrismContext().queryFor(UserType.class)
+                .item(UserType.F_ACCOUNT_REF).refRelation(new QName("a-relation"))
+                .buildFilter();
+        filter.setFilter(getPrismContext().queryFor(AccountType.class).exists(AccountType.F_ATTRIBUTES).buildFilter());
+
+        ObjectFilter parsed = queryParser().parseFilter(UserType.class,
+                "accountRef matches (relation = a-relation and (@ matches (attributes exists)))");
+
+        assertFilterEquals(parsed, filter);
+    }
+
+    /**
+     * Verifies redundant parentheses around the @ target wrapper do not change the parsed filter.
+     */
+    @Test
+    public void testRefWithTargetTypeAndParenthesizedTargetAlias() throws Exception {
+        ObjectFilter unparenthesized = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and @ matches (name = "abcd")
+            )
+            """);
+
+        ObjectFilter parenthesized = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and (@ matches (name = "abcd"))
+            )
+            """);
+
+        ObjectFilter doubleParenthesized = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and ((@ matches (name = "abcd")))
+            )
+            """);
+
+        assertFilterEquals(parenthesized, unparenthesized);
+        assertFilterEquals(doubleParenthesized, unparenthesized);
+    }
+
+    /**
+     * Verifies redundant target-wrapper parentheses work together with reference metadata.
+     */
+    @Test
+    public void testRefWithMetadataAndParenthesizedTargetAlias() throws Exception {
+        ObjectFilter unparenthesized = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and relation = a-relation
+                and @ matches (name = "abcd")
+            )
+            """);
+
+        ObjectFilter parenthesized = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and relation = a-relation
+                and (@ matches (name = "abcd"))
+            )
+            """);
+
+        assertFilterEquals(parenthesized, unparenthesized);
+    }
+
+    /**
+     * Verifies the target keyword and @ alias have equivalent parenthesized target-filter semantics.
+     */
+    @Test
+    public void testRefWithParenthesizedTargetKeyword() throws Exception {
+        ObjectFilter targetAlias = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and @ matches (name = "abcd")
+            )
+            """);
+
+        ObjectFilter targetKeyword = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and (target matches (name = "abcd"))
+            )
+            """);
+
+        assertFilterEquals(targetKeyword, targetAlias);
+    }
+
+    /**
+     * Verifies conjunction inside one @ target wrapper becomes the referenced target filter.
+     */
+    @Test
+    public void testRefWithCompoundAndInsideTargetAlias() throws Exception {
+        ObjectFilter parsed = queryParser().parseFilter(UserType.class, """
+            assignment/targetRef matches (
+                targetType = RoleType
+                and @ matches (
+                    name = "abcd"
+                    and description = "test"
+                )
+            )
+            """);
+
+        assertRefTargetFilterEquals(parsed, """
+            name = "abcd"
+            and description = "test"
+            """);
+    }
+
+    /**
+     * Verifies multiple sibling target wrappers are rejected instead of being silently omitted.
+     */
+    @Test
+    public void testRefWithMultipleSiblingTargetWrappersIsRejected() {
+        assertMultipleTargetWrappersRejected("""
+            assignment/targetRef matches (
+                targetType = RoleType
+                and @ matches (name = "abcd")
+                and @ matches (description = "test")
+            )
+            """);
+
+        assertMultipleTargetWrappersRejected("""
+            assignment/targetRef matches (
+                targetType = RoleType
+                and (@ matches (name = "abcd") and @ matches (description = "test"))
+            )
+            """);
+    }
+
     @Test
     public void testRefRelationNegative() throws Exception {
         ObjectFilter filter = getPrismContext().queryFor(UserType.class)
@@ -718,6 +854,26 @@ public class TestBasicQueryConversions extends AbstractPrismTest {
                 .newPropertyDefinition(itemName, itemType);
         ObjectFilter filter = filterSupplier.apply(path, definition);
         return filter;
+    }
+
+    private void assertUnsupportedReferenceTargetGroup(String query) {
+        Assertions.assertThatThrownBy(() -> queryParser().parseFilter(UserType.class, query))
+                .isInstanceOf(SchemaException.class)
+                .hasMessageContaining("Additional unsupported filter specified");
+    }
+
+    private void assertMultipleTargetWrappersRejected(String query) {
+        Assertions.assertThatThrownBy(() -> queryParser().parseFilter(UserType.class, query))
+                .isInstanceOf(SchemaException.class)
+                .hasMessageContaining("Only one target filter wrapper is supported in reference matches")
+                .hasMessageContaining("combine target conditions inside @ matches (...) or target matches (...)");
+    }
+
+    private void assertRefTargetFilterEquals(ObjectFilter refFilter, String expectedTargetFilter) throws SchemaException {
+        Assertions.assertThat(refFilter).isInstanceOf(RefFilter.class);
+        ObjectFilter actual = ((RefFilter) refFilter).getFilter();
+        ObjectFilter expected = queryParser().parseFilter(RoleType.class, expectedTargetFilter);
+        assertFilterEquals(actual, expected);
     }
 
 }
