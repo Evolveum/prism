@@ -6,6 +6,7 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -57,7 +58,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 })
 public class PagingType implements PlainStructured, Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     protected ItemPathType orderBy;
 

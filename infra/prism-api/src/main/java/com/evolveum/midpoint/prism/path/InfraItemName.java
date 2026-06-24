@@ -20,9 +20,6 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.util.DebugUtil;
-import com.evolveum.midpoint.util.QNameUtil;
-
 /**
  *
  * Item Name of Infra Model Items.

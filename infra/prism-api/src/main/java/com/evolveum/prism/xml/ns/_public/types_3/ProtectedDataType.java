@@ -6,6 +6,7 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
@@ -38,7 +39,7 @@ import com.evolveum.midpoint.util.QNameUtil;
         ProtectedStringType.class
 })
 public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStructured.WithoutStrategy, JaxbVisitable {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ProtectedDataType");
     public static final QName F_ENCRYPTED_DATA = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "encryptedData");
@@ -201,14 +202,12 @@ public abstract class ProtectedDataType<T> implements ProtectedData<T>, PlainStr
     }
 
     private boolean addContent(Object newObject) {
-        if (newObject instanceof String) {
-            String s = (String) newObject;
+        if (newObject instanceof String s) {
             if (StringUtils.isNotBlank(s)) {
                 clearValue = (T) s;
             }
             return true;
-        } else if (newObject instanceof JAXBElement<?>) {
-            JAXBElement<?> jaxbElement = (JAXBElement<?>) newObject;
+        } else if (newObject instanceof JAXBElement<?> jaxbElement) {
             if (QNameUtil.match(F_ENCRYPTED_DATA, jaxbElement.getName())) {
                 encryptedDataType = (EncryptedDataType) jaxbElement.getValue();
                 return true;

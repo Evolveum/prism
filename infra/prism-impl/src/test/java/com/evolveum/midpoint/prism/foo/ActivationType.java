@@ -14,6 +14,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -57,7 +58,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 public class ActivationType
         implements Serializable, Containerable {
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
 
     public static final ItemName F_ENABLED = ItemName.from(ObjectType.NS_FOO, "enabled");
     public static final ItemName F_VALID_FROM = ItemName.from(ObjectType.NS_FOO, "validFrom");

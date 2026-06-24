@@ -482,7 +482,7 @@ public class MiscUtil {
             if (val == null) {
                 continue;
             }
-            if (val instanceof String && ((String) val).isEmpty()) {
+            if (val instanceof String string && string.isEmpty()) {
                 continue;
             }
             return false;
@@ -501,7 +501,7 @@ public class MiscUtil {
             if (val == null) {
                 return true;
             }
-            if (val instanceof String && ((String) val).isEmpty()) {
+            if (val instanceof String string && string.isEmpty()) {
                 return true;
             }
         }
@@ -802,8 +802,8 @@ public class MiscUtil {
     }
 
     public static boolean isCollectionOf(Object object, @NotNull Class<?> memberClass) {
-        return object instanceof Collection
-                && ((Collection<?>) object).stream().allMatch(member -> member != null && memberClass.isAssignableFrom(member.getClass()));
+        return object instanceof Collection<?> collection
+                && collection.stream().allMatch(member -> member != null && memberClass.isAssignableFrom(member.getClass()));
     }
 
     public static <E> Function<Object, Stream<E>> instancesOf(Class<E> cls) {
@@ -911,10 +911,10 @@ public class MiscUtil {
     @SuppressWarnings("WeakerAccess")
     public static <T> void unwrapTunnelledException(TunnelException te) throws CommonException {
         Throwable cause = te.getCause();
-        if (cause instanceof CommonException) {
-            throw (CommonException) cause;
-        } else if (cause instanceof RuntimeException) {
-            throw (RuntimeException) cause;
+        if (cause instanceof CommonException exception) {
+            throw exception;
+        } else if (cause instanceof RuntimeException exception) {
+            throw exception;
         } else {
             throw te;
         }
@@ -922,8 +922,8 @@ public class MiscUtil {
 
     public static <T> void unwrapTunnelledExceptionToRuntime(TunnelException te) {
         Throwable cause = te.getCause();
-        if (cause instanceof RuntimeException) {
-            throw (RuntimeException) cause;
+        if (cause instanceof RuntimeException exception) {
+            throw exception;
         } else {
             throw new SystemException(te);
         }

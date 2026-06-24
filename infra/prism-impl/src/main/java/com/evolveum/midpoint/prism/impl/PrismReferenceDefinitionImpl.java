@@ -125,8 +125,8 @@ public class PrismReferenceDefinitionImpl
             var first = path.first();
             ItemPath rest = path.rest();
             var targetType = getTargetTypeName();
-            if (first instanceof ObjectReferencePathSegment) {
-                var typeHint = ((ObjectReferencePathSegment) first).typeHint();
+            if (first instanceof ObjectReferencePathSegment segment) {
+                var typeHint = segment.typeHint();
                 if (typeHint.isPresent()) {
                     targetType = typeHint.get();
                 }

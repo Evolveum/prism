@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.util.LocalizableMessage;
 
 /**
@@ -15,7 +17,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
  *
  */
 public class ObjectAlreadyExistsException extends CommonException {
-    private static final long serialVersionUID = -2851816602797097915L;
+    @Serial private static final long serialVersionUID = -2851816602797097915L;
 
     public ObjectAlreadyExistsException() {
     }

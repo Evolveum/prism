@@ -12,6 +12,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.util.DebugDumpable;
@@ -47,7 +49,7 @@ import com.evolveum.midpoint.util.DebugUtil;
 })
 public class QueryType implements PlainStructured.WithoutStrategy, DebugDumpable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "QueryType");
     public static final QName F_DESCRIPTION = new QName(PrismConstants.NS_QUERY, "description");

@@ -71,8 +71,8 @@ class DocumentWriter {
     }
 
     public void write(XNodeImpl xnode) throws IOException {
-        if (xnode instanceof RootXNodeImpl) {
-            write(((RootXNodeImpl) xnode).toMapXNode(), staticNamespaces, false, schema);
+        if (xnode instanceof RootXNodeImpl impl) {
+            write(impl.toMapXNode(), staticNamespaces, false, schema);
         } else {
             write(xnode, staticNamespaces, false, schema);
         }
@@ -84,16 +84,16 @@ class DocumentWriter {
             return;
         }
         itemDef = moreSpecificDefinition(xnode, itemDef);
-        if (xnode instanceof MapXNodeImpl) {
-            writeMap((MapXNodeImpl) xnode, currentNamespace, itemDef);
+        if (xnode instanceof MapXNodeImpl mapXNode) {
+            writeMap(mapXNode, currentNamespace, itemDef);
         } else if (!wrappingValue && needsValueWrapping(xnode)) {
             writeWithValueWrapped(xnode, currentNamespace, itemDef);
-        } else if (xnode instanceof ListXNodeImpl) {
-            writeList((ListXNodeImpl) xnode, currentNamespace, itemDef);
-        } else if (xnode instanceof PrimitiveXNodeImpl) {
-            writePrimitive((PrimitiveXNodeImpl<?>) xnode, currentNamespace, itemDef);
-        } else if (xnode instanceof SchemaXNodeImpl) {
-            writeSchema((SchemaXNodeImpl) xnode);
+        } else if (xnode instanceof ListXNodeImpl listXNode) {
+            writeList(listXNode, currentNamespace, itemDef);
+        } else if (xnode instanceof PrimitiveXNodeImpl<?> primitiveXNode) {
+            writePrimitive(primitiveXNode, currentNamespace, itemDef);
+        } else if (xnode instanceof SchemaXNodeImpl schemaXNode) {
+            writeSchema(schemaXNode);
         } else if (xnode instanceof IncompleteMarkerXNodeImpl) {
             writeIncomplete();
         } else {
@@ -187,13 +187,13 @@ class DocumentWriter {
          **/
         if (primitive.isParsed()) {
             Object value = primitive.getValue();
-            if (value instanceof ItemPathType) {
-                value = ((ItemPathType) value).getItemPath();
+            if (value instanceof ItemPathType type) {
+                value = type.getItemPath();
             }
-            if (value instanceof ItemPath) {
-                writeItemPath((ItemPath) value, context);
-            } else if (value instanceof QName) {
-                writeQName((QName) value, context);
+            if (value instanceof ItemPath path) {
+                writeItemPath(path, context);
+            } else if (value instanceof QName name) {
+                writeQName(name, context);
 
             } else {
                 generator.writeObject(value);
@@ -269,8 +269,8 @@ class DocumentWriter {
     }
 
     private void writeMetadataIfNeeded(XNodeImpl xnode, PrismNamespaceContext currentNamespace) throws IOException {
-        if (xnode instanceof MetadataAware) {
-            List<MapXNode> metadataNodes = ((MetadataAware) xnode).getMetadataNodes();
+        if (xnode instanceof MetadataAware aware) {
+            List<MapXNode> metadataNodes = aware.getMetadataNodes();
             if (!metadataNodes.isEmpty()) {
                 generator.writeFieldName(JsonInfraItems.PROP_METADATA);
                 if (metadataNodes.size() == 1) {
@@ -394,7 +394,7 @@ class DocumentWriter {
     }
 
     private boolean isAttribute(XNodeImpl node) {
-        return node instanceof PrimitiveXNodeImpl && ((PrimitiveXNodeImpl) node).isAttribute();
+        return node instanceof PrimitiveXNodeImpl pxni && pxni.isAttribute();
     }
 
     private boolean namespaceMatch(String currentNamespace, String itemNamespace) {

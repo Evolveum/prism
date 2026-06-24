@@ -16,8 +16,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
-import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.evolveum.midpoint.prism.*;
@@ -119,8 +117,8 @@ public class PrismUtil {
         }
         if (matchingRule == null) {
             if (a instanceof byte[]) {
-                if (b instanceof byte[]) {
-                    return Arrays.equals((byte[]) a, (byte[]) b);
+                if (b instanceof byte[] bytes) {
+                    return Arrays.equals((byte[]) a, bytes);
                 } else {
                     return false;
                 }
@@ -137,15 +135,15 @@ public class PrismUtil {
         if (object == null) {
             return null;
         }
-        if (object instanceof Collection) {
-            return ((Collection<?>) object).stream()
+        if (object instanceof Collection<?> collection) {
+            return collection.stream()
                     .map(o -> serializeQuietly(prismContext, o))
                     .collect(Collectors.joining("; "));
         }
         try {
             PrismSerializer<String> serializer = prismContext.xmlSerializer();
-            if (object instanceof Item) {
-                return serializer.serialize((Item) object);
+            if (object instanceof Item item) {
+                return serializer.serialize(item);
             } else {
                 return serializer.serializeRealValue(object, new QName("value"));
             }

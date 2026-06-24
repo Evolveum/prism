@@ -14,8 +14,9 @@ import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
 import jakarta.xml.bind.annotation.*;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -28,12 +29,12 @@ import javax.xml.namespace.QName;
         OwnedObjectSelectorType.class
 })
 public class SubjectedObjectSelectorType extends ObjectSelectorType {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "SubjectedObjectSelectorType");
     public static final ItemName F_ALLOW_INACTIVE = new ItemName(ObjectType.NS_FOO, "allowInactive");
     public static final Producer<SubjectedObjectSelectorType> FACTORY = new Producer<SubjectedObjectSelectorType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public SubjectedObjectSelectorType run() {
             return new SubjectedObjectSelectorType();

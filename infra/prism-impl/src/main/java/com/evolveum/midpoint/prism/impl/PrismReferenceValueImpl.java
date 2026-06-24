@@ -12,7 +12,8 @@ import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.schemaContext.SchemaContextImpl;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
-import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
@@ -479,7 +480,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
 
     @Override
     public boolean equals(PrismValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        return other instanceof PrismReferenceValue && equals((PrismReferenceValue) other, strategy);
+        return other instanceof PrismReferenceValue prv && equals(prv, strategy);
     }
 
     @SuppressWarnings({ "RedundantIfStatement" })

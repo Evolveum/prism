@@ -52,46 +52,46 @@ public class StructuredCopy {
             return null;
         }
         Object ret;
-        if (value instanceof PlainStructured) {
-            ret = of((PlainStructured) value);
-        } else if (value instanceof PolyString) {
-            ret = of((PolyString) value);
-        } else if (value instanceof Referencable) {
-            ret = of((Referencable) value);
-        } else if (value instanceof Containerable) {
-            ret = of((Containerable) value);
-        } else if (value instanceof String) {
-            ret = of((String) value);
-        } else if (value instanceof Integer) {
-            ret = of((Integer) value);
-        } else if (value instanceof BigInteger) {
-            ret = of((BigInteger) value);
-        } else if (value instanceof BigDecimal) {
-            ret = of((BigDecimal) value);
-        } else if (value instanceof Double) {
-            ret = of((Double) value);
-        } else if (value instanceof Float) {
-            ret = of((Float) value);
-        } else if (value instanceof Long) {
-            ret = of((Long) value);
-        } else if (value instanceof Short) {
-            ret = of((Short) value);
-        } else if (value instanceof Byte) {
-            ret = of((Byte) value);
-        } else if (value instanceof Boolean) {
-            ret = of((Boolean) value);
-        } else if (value instanceof XMLGregorianCalendar) {
-            ret = of((XMLGregorianCalendar) value);
-        } else if (value instanceof Duration) {
-            ret = of((Duration) value);
-        } else if (value instanceof QName) {
-            ret = of((QName) value);
-        } else if (value instanceof byte[]) {
-            ret = of((byte[]) value);
-        } else if (value instanceof JAXBElement<?>) {
-            ret = of((JAXBElement<?>) value);
-        } else if (value instanceof Cloneable) {
-            ret = clone((Cloneable) value);
+        if (value instanceof PlainStructured structured) {
+            ret = of(structured);
+        } else if (value instanceof PolyString string1) {
+            ret = of(string1);
+        } else if (value instanceof Referencable referencable) {
+            ret = of(referencable);
+        } else if (value instanceof Containerable containerable) {
+            ret = of(containerable);
+        } else if (value instanceof String string) {
+            ret = of(string);
+        } else if (value instanceof Integer integer) {
+            ret = of(integer);
+        } else if (value instanceof BigInteger integer) {
+            ret = of(integer);
+        } else if (value instanceof BigDecimal decimal) {
+            ret = of(decimal);
+        } else if (value instanceof Double casted) {
+            ret = of(casted);
+        } else if (value instanceof Float casted) {
+            ret = of(casted);
+        } else if (value instanceof Long casted) {
+            ret = of(casted);
+        } else if (value instanceof Short casted) {
+            ret = of(casted);
+        } else if (value instanceof Byte casted) {
+            ret = of(casted);
+        } else if (value instanceof Boolean casted) {
+            ret = of(casted);
+        } else if (value instanceof XMLGregorianCalendar calendar) {
+            ret = of(calendar);
+        } else if (value instanceof Duration duration) {
+            ret = of(duration);
+        } else if (value instanceof QName name) {
+            ret = of(name);
+        } else if (value instanceof byte[] bytes) {
+            ret = of(bytes);
+        } else if (value instanceof JAXBElement<?> element) {
+            ret = of(element);
+        } else if (value instanceof Cloneable cloneable) {
+            ret = clone(cloneable);
         } else if (value instanceof Enum<?>) {
             ret = value;
         } else {

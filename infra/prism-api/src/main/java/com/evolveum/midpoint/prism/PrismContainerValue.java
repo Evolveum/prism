@@ -267,11 +267,11 @@ public interface PrismContainerValue<C extends Containerable> extends PrismValue
     boolean isIdOnly();
 
     static boolean isIdOnly(PrismValue value) {
-        return value instanceof PrismContainerValue && ((PrismContainerValue<?>) value).isIdOnly();
+        return value instanceof PrismContainerValue<?> pcv && pcv.isIdOnly();
     }
 
     static Long getId(PrismValue value) {
-        return value instanceof PrismContainerValue ? ((PrismContainerValue<?>) value).getId() : null;
+        return value instanceof PrismContainerValue<?> pcv ? pcv.getId() : null;
     }
 
     static boolean idsMatch(PrismValue v1, PrismValue v2) {

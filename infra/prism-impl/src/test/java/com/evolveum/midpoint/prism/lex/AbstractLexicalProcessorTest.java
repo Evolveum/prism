@@ -295,8 +295,8 @@ public abstract class AbstractLexicalProcessorTest extends AbstractPrismTest {
 
     @SuppressWarnings("SameParameterValue")
     private void assertUserJackXNodeOrdering(String message, XNode xnode) {
-        if (xnode instanceof RootXNodeImpl) {
-            xnode = ((RootXNodeImpl) xnode).getSubnode();
+        if (xnode instanceof RootXNodeImpl impl) {
+            xnode = impl.getSubnode();
         }
         MapXNodeImpl xmap = getAssertXNode(message + ": top", xnode, MapXNodeImpl.class);
         Set<Entry<QName, XNodeImpl>> reTopMapEntrySet = xmap.entrySet();

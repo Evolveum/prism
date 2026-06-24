@@ -7,7 +7,6 @@
 package com.evolveum.prism.codegen.impl;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
-import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
@@ -18,7 +17,6 @@ import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.prism.codegen.binding.ContainerableContract;
 import com.evolveum.prism.codegen.binding.ItemBinding;
-import com.evolveum.prism.codegen.binding.StructuredContract;
 import com.evolveum.prism.codegen.binding.TypeBinding;
 import com.google.common.base.CaseFormat;
 import com.sun.codemodel.ClassType;

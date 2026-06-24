@@ -6,7 +6,6 @@
 
 package com.evolveum.midpoint.prism.util;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.evolveum.midpoint.prism.PrismContext;

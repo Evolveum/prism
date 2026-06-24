@@ -126,12 +126,12 @@ public class QueryWriter implements Builder<PrismQuerySerialization>, PrismQuery
 
     public void writeRawValue(Object rawValue, boolean escapeQName) {
         target.emitSpace();
-        if (rawValue instanceof ItemPath) {
-            writePath((ItemPath) rawValue);
+        if (rawValue instanceof ItemPath path) {
+            writePath(path);
             return;
         }
-        if (rawValue instanceof QName) {
-            writeQName((QName) rawValue, escapeQName);
+        if (rawValue instanceof QName name) {
+            writeQName(name, escapeQName);
             return;
         }
         if (rawValue instanceof TypeSafeEnum enumValue) {

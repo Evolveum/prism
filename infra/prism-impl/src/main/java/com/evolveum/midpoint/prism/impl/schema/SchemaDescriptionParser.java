@@ -72,7 +72,7 @@ class SchemaDescriptionParser {
         } catch (IOException e) {
             throw new SchemaException("Cannot parse schema from system resource " + resourcePath, e);
         }
-        Element rootElement = node instanceof Element ? (Element) node : DOMUtil.getFirstChildElement(node);
+        Element rootElement = node instanceof Element element ? element : DOMUtil.getFirstChildElement(node);
         QName rootElementQName = DOMUtil.getQName(rootElement);
         if (QNAME_DEFINITIONS.equals(rootElementQName)) {
             Element types = DOMUtil.getChildElement(rootElement, QNAME_TYPES);

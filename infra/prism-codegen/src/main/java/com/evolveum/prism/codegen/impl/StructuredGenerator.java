@@ -135,8 +135,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             current = null;
             if (superType != null) {
                 var superContract = bindingFor(superType).getDefaultContract();
-                if (superContract instanceof StructuredContract) {
-                    current = (StructuredContract) superContract;
+                if (superContract instanceof StructuredContract structuredContract) {
+                    current = structuredContract;
                 }
             }
         }
@@ -204,8 +204,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             // If binding is structured, generate begin / end method
 
             var targetContract = bindingFor(definition.getDefinition().getTypeName()).getDefaultContract();
-            if (targetContract instanceof ReferenceContract) {
-                var refClazz = codeModel().ref(((ReferenceContract) targetContract).fullyQualifiedName());
+            if (targetContract instanceof ReferenceContract referenceContract) {
+                var refClazz = codeModel().ref(referenceContract.fullyQualifiedName());
                 declareReferenceMethod(clazz, definition.fieldName(), refClazz, (m,r) -> {});
                 declareReferenceMethod(clazz, definition.fieldName(), refClazz, (method,refVal) -> {
                     var relation = method.param(QName.class, "relation");
@@ -230,8 +230,8 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
             }
 
             // Generate begin only for structured, non substituble, non-abstract complex types
-            if (targetContract instanceof StructuredContract
-                    && !((StructuredContract) targetContract).getTypeDefinition().isAbstract()
+            if (targetContract instanceof StructuredContract structuredContract
+                    && !structuredContract.getTypeDefinition().isAbstract()
                     && !type.erasure().equals(clazz(JAXBElement.class))) {
                 var beginMethod = clazz.method(JMod.PUBLIC, type, "begin" + definition.getJavaName());
                 value = beginMethod.body().decl(type, "value", JExpr._new(type));

@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.foo;
 import com.evolveum.midpoint.prism.*;
 
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
-import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
@@ -17,6 +16,8 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ import java.util.List;
 })
 public abstract class AssignmentHolderType extends ObjectType implements Objectable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "AssignmentHolderType");
     public static final ItemName F_ASSIGNMENT = ItemName.interned(NS_FOO, "assignment");
     public static final ItemName F_ITERATION = ItemName.interned(NS_FOO, "iteration");

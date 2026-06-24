@@ -336,8 +336,8 @@ public final class PrismForJAXBUtil {
 
     public static PrismObject setupContainerValue(PrismObject prismObject, PrismContainerValue containerValue) {
         PrismContainerable<?> parent = containerValue.getParent();
-        if (parent instanceof PrismObject) {
-            return (PrismObject) parent;
+        if (parent instanceof PrismObject object) {
+            return object;
         }
         try {
             prismObject.setValue(containerValue);
@@ -404,14 +404,14 @@ public final class PrismForJAXBUtil {
     }
 
     public static void accept(Object object, JaxbVisitor visitor) {
-        if (object instanceof JaxbVisitable) {
-            ((JaxbVisitable) object).accept(visitor);
-        } else if (object instanceof Collection) {
-            for (Object item : ((Collection) object)) {
+        if (object instanceof JaxbVisitable visitable) {
+            visitable.accept(visitor);
+        } else if (object instanceof Collection collection) {
+            for (Object item : collection) {
                 accept(item, visitor);
             }
-        } else if (object instanceof JAXBElement) {
-            accept(((JAXBElement) object).getValue(), visitor);
+        } else if (object instanceof JAXBElement element) {
+            accept(element.getValue(), visitor);
         }
     }
 

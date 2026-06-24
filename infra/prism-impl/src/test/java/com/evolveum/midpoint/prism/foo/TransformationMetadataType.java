@@ -17,8 +17,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -29,12 +30,12 @@ import javax.xml.namespace.QName;
 })
 public class TransformationMetadataType  extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "TransformationMetadataType");
     public static final ItemName F_MAPPING_TRANSFORMATION = ItemName.interned(ObjectType.NS_FOO, "mappingTransformation");
     public static final Producer<TransformationMetadataType> FACTORY = new Producer<TransformationMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public TransformationMetadataType run() {
             return new TransformationMetadataType();

@@ -6,7 +6,6 @@
 
 package com.evolveum.midpoint.tools.testng;
 
-import org.jetbrains.annotations.NotNull;
 import org.testng.ITestResult;
 
 public class SimpleMidpointTestContext implements MidpointTestContext {

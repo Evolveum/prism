@@ -475,9 +475,9 @@ public abstract class XNodeDefinition {
 
         @Override
         public @NotNull XNodeDefinition moreSpecific(@NotNull XNodeDefinition other) {
-            if(other instanceof ComplexTypeAware) {
+            if(other instanceof ComplexTypeAware aware) {
                 ComplexTypeDefinition localType = this.typeDefinition;
-                ComplexTypeDefinition otherType = ((ComplexTypeAware) other).typeDefinition;
+                ComplexTypeDefinition otherType = aware.typeDefinition;
                 if(localType == otherType) {
                     return other;
                 }

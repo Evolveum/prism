@@ -56,9 +56,9 @@ public class CloneUtil {
             return orig;
         } else if (origClass.isArray()) {
             return cloneArray(orig);
-        } else if (orig instanceof PolyString) {
+        } else if (orig instanceof PolyString string) {
             //noinspection unchecked
-            return (T) clonePolyString((PolyString) orig);
+            return (T) clonePolyString(string);
         } else if (orig instanceof String) {
             // String is immutable
             return orig;
@@ -69,28 +69,28 @@ public class CloneUtil {
             return orig;
         } else if (orig instanceof LocalizableMessage) {
             return orig;        // all fields are final
-        } else if (orig instanceof RawType) {
+        } else if (orig instanceof RawType type1) {
             //noinspection unchecked
-            return (T) ((RawType) orig).clone();
-        } else if (orig instanceof Item<?,?>) {
+            return (T) type1.clone();
+        } else if (orig instanceof Item<?,?> item) {
             //noinspection unchecked
-            return (T) ((Item<?,?>)orig).clone();
-        } else if (orig instanceof PrismValue) {
+            return (T) item.clone();
+        } else if (orig instanceof PrismValue value) {
             //noinspection unchecked
-            return (T) ((PrismValue)orig).clone();
-        } else if (orig instanceof ObjectDelta<?>) {
+            return (T) value.clone();
+        } else if (orig instanceof ObjectDelta<?> delta1) {
             //noinspection unchecked
-            return (T) ((ObjectDelta<?>)orig).clone();
-        } else if (orig instanceof ObjectDeltaType) {
+            return (T) delta1.clone();
+        } else if (orig instanceof ObjectDeltaType type) {
             //noinspection unchecked
-            return (T) ((ObjectDeltaType) orig).clone();
-        } else if (orig instanceof ItemDelta<?,?>) {
+            return (T) type.clone();
+        } else if (orig instanceof ItemDelta<?,?> delta) {
             //noinspection unchecked
-            return (T) ((ItemDelta<?,?>)orig).clone();
-        } else if (orig instanceof Definition) {
+            return (T) delta.clone();
+        } else if (orig instanceof Definition definition) {
             //noinspection unchecked
-            return (T) ((Definition)orig).clone();
-        } else if (orig instanceof XMLGregorianCalendar) {
+            return (T) definition.clone();
+        } else if (orig instanceof XMLGregorianCalendar calendar) {
             /*
              * In some environments we cannot clone XMLGregorianCalendar because of this:
              * Error when cloning class org.apache.xerces.jaxp.datatype.XMLGregorianCalendarImpl, will try serialization instead.
@@ -98,13 +98,13 @@ public class CloneUtil {
              * class org.apache.xerces.jaxp.datatype.XMLGregorianCalendarImpl with modifiers "public"
              */
             //noinspection unchecked
-            return (T) XmlTypeConverter.createXMLGregorianCalendar((XMLGregorianCalendar) orig);
-        } else if (orig instanceof Duration) {
+            return (T) XmlTypeConverter.createXMLGregorianCalendar(calendar);
+        } else if (orig instanceof Duration duration) {
             /*
              * The following is because of: "Cloning a Serializable (class com.sun.org.apache.xerces.internal.jaxp.datatype.DurationImpl). It could harm performance."
              */
             //noinspection unchecked
-            return (T) XmlTypeConverter.createDuration(((Duration) orig));
+            return (T) XmlTypeConverter.createDuration(duration);
         } else if (orig instanceof BigInteger || orig instanceof BigDecimal) {
             // todo could we use "instanceof Number" here instead?
             //noinspection RedundantCast
@@ -125,11 +125,11 @@ public class CloneUtil {
             // The result is different from shallow cloning. But we probably can live with this.
             //noinspection unchecked
             return (T) CloneUtil.cloneCollectionMembers((Collection) orig);
-        } else if (orig instanceof Serializable) {
+        } else if (orig instanceof Serializable serializable) {
             // Brute force
             PERFORMANCE_ADVISOR.info("Cloning a Serializable ({}). It could harm performance.", orig.getClass());
             //noinspection unchecked
-            return (T)SerializationUtils.clone((Serializable)orig);
+            return (T)SerializationUtils.clone(serializable);
         } else {
             throw new IllegalArgumentException("Cannot clone " + orig + " (" + origClass + ")");
         }
@@ -184,9 +184,9 @@ public class CloneUtil {
         List<T> clonedCollection = new ArrayList<>(collection.size());
         for (T element : collection) {
             T elementCopy;
-            if (element instanceof Containerable) {
+            if (element instanceof Containerable containerable) {
                 //noinspection unchecked
-                elementCopy = ((Containerable) element).cloneWithoutId();
+                elementCopy = containerable.cloneWithoutId();
             } else {
                 elementCopy = clone(element);
             }

@@ -13,11 +13,12 @@ import com.evolveum.midpoint.prism.xnode.XNode;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public abstract class LazyXNodeBasedPrismValue<M extends XNode, F> extends AbstractFreezable implements Serializable {
 
-    private static final long serialVersionUID = 42L;
+    @Serial private static final long serialVersionUID = 42L;
 
     protected record Source<M extends XNode>(ParsingContext parsingContext, M value) implements Serializable {
 

@@ -9,6 +9,7 @@ package com.evolveum.midpoint.prism.impl;
 import static com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy.DATA;
 import static com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy.DEFAULT_FOR_EQUALS;
 
+import java.io.Serial;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -49,7 +50,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
  */
 public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>> extends AbstractFreezable implements Item<V, D>, TransformableItem {
 
-    private static final long serialVersionUID = 510000191615288733L;
+    @Serial private static final long serialVersionUID = 510000191615288733L;
 
     // The object should basically work without definition and prismContext. This is the
     // usual case when it is constructed "out of the blue", e.g. as a new JAXB object
@@ -233,19 +234,19 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
         acceptParentVisitor(v -> {
             Object pathComponent;
             if (v instanceof Item) {
-                if (v instanceof ItemImpl) {
-                    pathComponent = ((ItemImpl) v).getPathComponent();
+                if (v instanceof ItemImpl impl) {
+                    pathComponent = impl.getPathComponent();
                 } else {
                     throw new IllegalStateException("Expected ItemImpl but got " + v.getClass());
                 }
             } else if (v instanceof PrismValue) {
-                if (v instanceof PrismValueImpl) {
-                    pathComponent = ((PrismValueImpl) v).getPathComponent();
+                if (v instanceof PrismValueImpl impl) {
+                    pathComponent = impl.getPathComponent();
                 } else {
                     throw new IllegalStateException("Expected PrismValueImpl but got " + v.getClass());
                 }
-            } else if (v instanceof Itemable) {     // e.g. a delta
-                pathComponent = ((Itemable) v).getPath();
+            } else if (v instanceof Itemable itemable) {     // e.g. a delta
+                pathComponent = itemable.getPath();
             } else {
                 throw new IllegalStateException("Expected Item or PrismValue but got " + v.getClass());
             }
@@ -721,8 +722,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     @Override
     public void recomputeAllValues() {
         accept(visitable -> {
-            if (visitable instanceof PrismPropertyValue<?>) {
-                ((PrismPropertyValue<?>) visitable).recompute(PrismContext.get());
+            if (visitable instanceof PrismPropertyValue<?> value) {
+                value.recompute(PrismContext.get());
             }
         });
     }
@@ -908,10 +909,10 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     public boolean equals(Object obj, @NotNull EquivalenceStrategy strategy) {
         if (!(obj instanceof Item)) {
             return false;
-        } else if (strategy instanceof ParameterizedEquivalenceStrategy) {
+        } else if (strategy instanceof ParameterizedEquivalenceStrategy equivalenceStrategy) {
             // note that the counter is increased in the called equals(..) method - because that method can be called also
             // independently from this site
-            return equals(obj, (ParameterizedEquivalenceStrategy) strategy);
+            return equals(obj, equivalenceStrategy);
         } else {
             incrementObjectCompareCounterIfNeeded(obj);
             return strategy.equals(this, (Item<?, ?>) obj);
@@ -1017,8 +1018,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
     public Long getHighestId() {
         Holder<Long> highest = new Holder<>();
         this.accept(visitable -> {
-            if (visitable instanceof PrismContainerValue) {
-                Long id = ((PrismContainerValue<?>) visitable).getId();
+            if (visitable instanceof PrismContainerValue<?> value) {
+                Long id = value.getId();
                 if (id != null && (highest.isEmpty() || id > highest.getValue())) {
                     highest.setValue(id);
                 }
@@ -1035,8 +1036,8 @@ public abstract class ItemImpl<V extends PrismValue, D extends ItemDefinition<?>
             setDefinition(newDefinition);
         }
         for (V pval : values) {
-            if (pval instanceof TransformableValue) {
-                ((TransformableValue) pval).transformDefinition(parent, definition, transformation);
+            if (pval instanceof TransformableValue value) {
+                value.transformDefinition(parent, definition, transformation);
             }
         }
     }

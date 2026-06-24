@@ -96,10 +96,10 @@ public class ItemFactoryImpl implements ItemFactory {
 
     @Override
     public PrismValue createValue(Object realValue) {
-        if (realValue instanceof Containerable) {
-            return ((Containerable) realValue).asPrismContainerValue();
-        } else if (realValue instanceof Referencable) {
-            return ((Referencable) realValue).asReferenceValue();
+        if (realValue instanceof Containerable containerable) {
+            return containerable.asPrismContainerValue();
+        } else if (realValue instanceof Referencable referencable) {
+            return referencable.asReferenceValue();
         } else {
             return createPropertyValue(realValue);
         }

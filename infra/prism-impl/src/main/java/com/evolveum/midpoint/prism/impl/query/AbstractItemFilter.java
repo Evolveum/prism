@@ -10,7 +10,6 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 import com.evolveum.midpoint.prism.query.ItemFilter;
-import com.evolveum.midpoint.prism.query.ObjectFilter;
 
 import org.jetbrains.annotations.NotNull;
 

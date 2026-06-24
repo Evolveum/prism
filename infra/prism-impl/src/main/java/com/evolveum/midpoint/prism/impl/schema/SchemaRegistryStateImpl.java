@@ -22,7 +22,6 @@ import javax.xml.validation.SchemaFactory;
 
 import com.evolveum.axiom.concepts.CheckedFunction;
 import com.evolveum.midpoint.prism.impl.schemaContext.resolver.ContextResolverFactoryImpl;
-import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
@@ -42,7 +41,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.ComplexTypeDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.DefinitionFactoryImpl;
+import com.evolveum.midpoint.prism.impl.DummyPrismObjectDefinition;
+import com.evolveum.midpoint.prism.impl.TypeDefinitionImpl;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.prism.xml.XsdTypeMapper;
 import com.evolveum.midpoint.util.*;
@@ -1043,8 +1045,8 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                 return;
             }
             TypeDefinition superTypeDef = schemaRegistryState.findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
-            if (superTypeDef instanceof TypeDefinitionImpl) {
-                ((TypeDefinitionImpl) superTypeDef).addStaticSubType(typeDefinition);
+            if (superTypeDef instanceof TypeDefinitionImpl impl) {
+                impl.addStaticSubType(typeDefinition);
             }
         }
 

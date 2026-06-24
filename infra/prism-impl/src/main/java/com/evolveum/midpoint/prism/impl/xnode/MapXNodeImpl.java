@@ -247,15 +247,15 @@ public class MapXNodeImpl extends XNodeImpl implements MapXNode {
             // are grouped together in DomLexicalProcessor). Therefore we can afford optimistic approach: first try and if
             // there's a problem, correct it.
             ListXNodeImpl valueToStore;
-            if (previous instanceof ListXNodeImpl) {
-                valueToStore = (ListXNodeImpl) previous;
+            if (previous instanceof ListXNodeImpl impl) {
+                valueToStore = impl;
             } else {
                 // FIXME: Is this correct?
                 valueToStore = new ListXNodeImpl(previous.namespaceContext());
                 valueToStore.add(previous);
             }
-            if (otherValue instanceof ListXNodeImpl) {
-                valueToStore.addAll((ListXNodeImpl) otherValue);
+            if (otherValue instanceof ListXNodeImpl impl) {
+                valueToStore.addAll(impl);
             } else {
                 valueToStore.add((XNodeImpl) otherValue);
             }

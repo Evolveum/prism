@@ -14,13 +14,12 @@
 
 package com.evolveum.midpoint.prism.foo;
 
-import java.io.Serializable;
+import java.io.Serial;
 
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 
 import jakarta.xml.bind.annotation.*;
 
-import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.path.ItemName;
 
@@ -53,7 +52,7 @@ import com.evolveum.midpoint.prism.path.ItemName;
 })
 public class AssignmentType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
 
     public static final ItemName F_IDENTIFIER = ItemName.from(ObjectType.NS_FOO, "identifier");
     public static final ItemName F_DESCRIPTION = ItemName.from(ObjectType.NS_FOO, "description");

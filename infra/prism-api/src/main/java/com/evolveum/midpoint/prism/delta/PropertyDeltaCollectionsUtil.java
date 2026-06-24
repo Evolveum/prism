@@ -19,19 +19,19 @@ import java.util.Collection;
 public class PropertyDeltaCollectionsUtil {
 
     public static <T> PropertyDelta<T> findPropertyDelta(Collection<? extends ItemDelta> modifications, ItemPath propertyPath) {
-        for (ItemDelta delta: modifications) {
-            if (delta instanceof PropertyDelta && delta.getPath().equivalent(propertyPath)) {
-                return (PropertyDelta) delta;
+        for (var delta: modifications) {
+            if (delta instanceof PropertyDelta propertyDelta && delta.getPath().equivalent(propertyPath)) {
+                return propertyDelta;
             }
         }
         return null;
     }
 
     public static <T> PropertyDelta<T> findPropertyDelta(Collection<? extends ItemDelta> modifications, QName propertyName) {
-        for (ItemDelta delta: modifications) {
-            if (delta instanceof PropertyDelta && delta.getParentPath().isEmpty() &&
+        for (var delta: modifications) {
+            if (delta instanceof PropertyDelta propertyDelta && delta.getParentPath().isEmpty() &&
                     QNameUtil.match(delta.getElementName(), propertyName)) {
-                return (PropertyDelta) delta;
+                return propertyDelta;
             }
         }
         return null;

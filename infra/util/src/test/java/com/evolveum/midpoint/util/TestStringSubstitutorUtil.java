@@ -7,12 +7,13 @@
 package com.evolveum.midpoint.util;
 
 import com.evolveum.midpoint.tools.testng.AbstractUnitTest;
-import com.evolveum.midpoint.util.template.*;
+import com.evolveum.midpoint.util.template.StringSubstitutorUtil;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertEquals;
 
 public class TestStringSubstitutorUtil extends AbstractUnitTest {
 

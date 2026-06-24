@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 /**
  * Specific kind of SchemaException. Used e.g. to treat "no name" problems in previewChanges method nicely.
  * SchemaException.propertyName:=UserType.F_NAME could be used as well, but it's a bit ambiguous.
@@ -14,7 +16,7 @@ package com.evolveum.midpoint.util.exception;
  * A little bit experimental. (We certainly don't want to have millions of exception types.)
  */
 public class NoFocusNameSchemaException extends SchemaException {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public NoFocusNameSchemaException(String message) {
         super(message);

@@ -30,8 +30,6 @@ import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.JAXBUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
-import com.evolveum.midpoint.util.logging.Trace;
-import com.evolveum.midpoint.util.logging.TraceManager;
 
 /**
  * A set of ugly hacks that are needed for prism and "real" JAXB to coexist. We hate it be we need it.
@@ -57,17 +55,16 @@ public class JaxbDomHackImpl implements JaxbDomHack {
             return def;
         }
 
-        if (valueElements instanceof Element) {
+        if (valueElements instanceof Element element) {
             // Try to locate xsi:type definition in the element
-            def = resolveDynamicItemDefinition(elementQName, (Element) valueElements);
+            def = resolveDynamicItemDefinition(elementQName, element);
         }
 
-        if (valueElements instanceof List){
-            List elements = (List) valueElements;
+        if (valueElements instanceof List elements){
             if (elements.size() == 1){
                 Object element = elements.get(0);
-                if (element instanceof JAXBElement){
-                    Object val = ((JAXBElement) element).getValue();
+                if (element instanceof JAXBElement<?> bElement){
+                    Object val = bElement.getValue();
                     if (val.getClass().isPrimitive()){
                         QName typeName = XsdTypeMapper.toXsdType(val.getClass());
                         PrismPropertyDefinitionImpl propDef = new PrismPropertyDefinitionImpl(elementQName, typeName);
@@ -93,28 +90,18 @@ public class JaxbDomHackImpl implements JaxbDomHack {
         // QName elementName = null;
         // Set it to multi-value to be on the safe side
         int maxOccurs = -1;
-//        for (Object element : valueElements) {
-            // if (elementName == null) {
-            // elementName = JAXBUtil.getElementQName(element);
-            // }
-            // TODO: try JAXB types
-            if (element instanceof Element) {
-                Element domElement = (Element) element;
-                if (DOMUtil.hasXsiType(domElement)) {
-                    typeName = DOMUtil.resolveXsiType(domElement);
-                    if (typeName != null) {
-                        String maxOccursString = domElement.getAttributeNS(
-                                PrismConstants.A_MAX_OCCURS.getNamespaceURI(),
-                                PrismConstants.A_MAX_OCCURS.getLocalPart());
-                        if (!StringUtils.isBlank(maxOccursString)) {
-                            // TODO
-//                            maxOccurs = parseMultiplicity(maxOccursString, elementName);
-                        }
-//                        break;
-                    }
+        if (DOMUtil.hasXsiType(element)) {
+            typeName = DOMUtil.resolveXsiType(element);
+            if (typeName != null) {
+                String maxOccursString = element.getAttributeNS(
+                        PrismConstants.A_MAX_OCCURS.getNamespaceURI(),
+                        PrismConstants.A_MAX_OCCURS.getLocalPart());
+                if (!StringUtils.isBlank(maxOccursString)) {
+                    // TODO
+                    // maxOccurs = parseMultiplicity(maxOccursString, elementName);
                 }
             }
-//        }
+        }
         // FIXME: now the definition assumes property, may also be property
         // container?
         if (typeName == null) {
@@ -146,12 +133,10 @@ public class JaxbDomHackImpl implements JaxbDomHack {
 
         PrismContext prismContext = PrismContext.get();
         Item<IV,ID> subItem;
-        if (element instanceof Element) {
+        if (element instanceof Element domElement) {
             // DOM Element
-            subItem = prismContext.parserFor((Element) element).name(elementName).definition(itemDefinition).parseItem();
-        } else if (element instanceof JAXBElement<?>) {
-            // JAXB Element
-            JAXBElement<?> jaxbElement = (JAXBElement<?>)element;
+            subItem = prismContext.parserFor(domElement).name(elementName).definition(itemDefinition).parseItem();
+        } else if (element instanceof JAXBElement<?> jaxbElement) {
             Object jaxbBean = jaxbElement.getValue();
             if (itemDefinition == null) {
                 throw new SchemaException("No definition for item "+elementName+" in container "+definition+" (parsed from raw element)", elementName);
@@ -162,9 +147,9 @@ public class JaxbDomHackImpl implements JaxbDomHack {
                 property.setRealValue(jaxbBean);
                 subItem = (Item<IV,ID>) property;
             } else if (itemDefinition instanceof PrismContainerDefinition<?>) {
-                if (jaxbBean instanceof Containerable) {
+                if (jaxbBean instanceof Containerable containerable) {
                     PrismContainer<?> container = ((PrismContainerDefinition<?>)itemDefinition).instantiate();
-                    PrismContainerValue subValue = ((Containerable)jaxbBean).asPrismContainerValue();
+                    PrismContainerValue subValue = containerable.asPrismContainerValue();
                     container.add(subValue);
                     subItem = (Item<IV,ID>) container;
                 } else {
@@ -172,9 +157,9 @@ public class JaxbDomHackImpl implements JaxbDomHack {
                 }
             } else if (itemDefinition instanceof PrismReferenceDefinition) {
                 // TODO
-                if (jaxbBean instanceof Referencable){
+                if (jaxbBean instanceof Referencable referencable){
                     PrismReference reference = ((PrismReferenceDefinition)itemDefinition).instantiate();
-                    PrismReferenceValue refValue = ((Referencable) jaxbBean).asReferenceValue();
+                    PrismReferenceValue refValue = referencable.asReferenceValue();
                     reference.merge(refValue);
                     subItem = (Item<IV,ID>) reference;
                 } else{
@@ -208,10 +193,9 @@ public class JaxbDomHackImpl implements JaxbDomHack {
             PrismPropertyValue<Object> pval = (PrismPropertyValue)value;
             if (pval.isRaw() && parent.getDefinition() == null) {
                 XNodeImpl rawElement = (XNodeImpl) pval.getRawElement();
-                if (rawElement instanceof MapXNodeImpl) {
-                    return domLexicalProcessor.writeXMapToElement((MapXNodeImpl)rawElement, elementName);
-                } else if (rawElement instanceof PrimitiveXNodeImpl<?>) {
-                    PrimitiveXNodeImpl<?> xprim = (PrimitiveXNodeImpl<?>)rawElement;
+                if (rawElement instanceof MapXNodeImpl impl) {
+                    return domLexicalProcessor.writeXMapToElement(impl, elementName);
+                } else if (rawElement instanceof PrimitiveXNodeImpl<?> xprim) {
                     String stringValue = xprim.getStringValue();
                     Element element = DOMUtil.createElement(DOMUtil.getDocument(), elementName);
                     element.setTextContent(stringValue);
@@ -231,8 +215,7 @@ public class JaxbDomHackImpl implements JaxbDomHack {
             }
         } else if (value instanceof PrismReferenceValue) {
             return PrismContext.get().domSerializer().serialize(value, elementName);
-        } else if (value instanceof PrismContainerValue<?>) {
-            PrismContainerValue<?> pval = (PrismContainerValue<?>)value;
+        } else if (value instanceof PrismContainerValue<?> pval) {
             if (pval.getParent().getCompileTimeClass() == null) {
                 // This has to be runtime schema without a compile-time representation.
                 // We need to convert it to DOM

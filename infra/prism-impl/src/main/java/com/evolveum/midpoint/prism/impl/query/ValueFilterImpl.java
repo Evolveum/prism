@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,12 +16,13 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.path.TypedItemPath;
 
-import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.ExpressionWrapper;
+import com.evolveum.midpoint.prism.ItemDefinition;
+import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;
 import com.evolveum.midpoint.prism.path.ItemName;
@@ -34,7 +36,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition<?>>
         extends AbstractItemFilter implements ValueFilter<V, D> {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     /**
      * This is a definition of the item pointed to by "fullPath".

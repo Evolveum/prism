@@ -12,12 +12,9 @@ import com.evolveum.midpoint.prism.delta.ItemDelta;
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.impl.metadata.ValueMetadataAdapter;
-import com.evolveum.midpoint.prism.impl.schemaContext.resolver.ContextResolverFactoryImpl;
 import com.evolveum.midpoint.prism.schema.SchemaLookup;
-import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
-import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
@@ -248,8 +245,8 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public boolean equals(PrismValue otherValue, @NotNull EquivalenceStrategy equivalenceStrategy) {
-        if (equivalenceStrategy instanceof ParameterizedEquivalenceStrategy) {   // todo or skip this check?
-            return equals(otherValue, (ParameterizedEquivalenceStrategy) equivalenceStrategy);
+        if (equivalenceStrategy instanceof ParameterizedEquivalenceStrategy strategy) {   // todo or skip this check?
+            return equals(otherValue, strategy);
         } else {
             return equivalenceStrategy.equals(this, otherValue);
         }

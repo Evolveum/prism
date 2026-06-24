@@ -107,8 +107,8 @@ public abstract class BaseItemMerger<T extends Item<?, ?>> implements ItemMerger
     <PV extends PrismValue> PV createMarkedClone(PV sourceValue) throws SchemaException {
         //noinspection unchecked
         PV clone = (PV) sourceValue.clone();
-        if (clone instanceof PrismContainerValue<?>) {
-            ((PrismContainerValue<?>) clone).setId(null);
+        if (clone instanceof PrismContainerValue<?> value) {
+            value.setId(null);
         }
         if (originMarker != null) {
             originMarker.mark(clone);

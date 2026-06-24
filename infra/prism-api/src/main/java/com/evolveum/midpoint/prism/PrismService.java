@@ -7,8 +7,6 @@
 
 package com.evolveum.midpoint.prism;
 
-import com.evolveum.axiom.concepts.Lazy;
-
 import java.util.Objects;
 import java.util.function.Supplier;
 

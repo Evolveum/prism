@@ -17,8 +17,6 @@ import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * @author semancik
  */

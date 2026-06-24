@@ -199,8 +199,8 @@ public class PrismPrettyPrinter {
     // Note that expectedIndent applies only to lines after the first one. The caller is responsible for preparing
     // indentation for the first line.
     public static void debugDumpValue(StringBuilder sb, int expectedIndent, Object value, QName elementName, String defaultLanguage) {
-        if (value instanceof DebugDumpable) {
-            sb.append(((DebugDumpable)value).debugDump(expectedIndent));
+        if (value instanceof DebugDumpable dumpable) {
+            sb.append(dumpable.debugDump(expectedIndent));
             return;
         }
         String formatted;

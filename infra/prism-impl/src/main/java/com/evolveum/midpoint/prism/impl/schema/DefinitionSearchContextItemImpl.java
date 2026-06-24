@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.schema;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.schema.GlobalDefinitionSearchContext;
 
 public class DefinitionSearchContextItemImpl<ID extends ItemDefinition> implements GlobalDefinitionSearchContext<ID> {

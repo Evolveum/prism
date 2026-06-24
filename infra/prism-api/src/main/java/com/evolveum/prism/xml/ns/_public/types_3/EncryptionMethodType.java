@@ -17,6 +17,7 @@ package com.evolveum.prism.xml.ns._public.types_3;
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -58,7 +59,7 @@ import jakarta.xml.bind.annotation.XmlType;
 public class EncryptionMethodType  implements Serializable, Cloneable, JaxbVisitable {
 
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @XmlElement(required = true)
     @XmlSchemaType(name = "anyURI")

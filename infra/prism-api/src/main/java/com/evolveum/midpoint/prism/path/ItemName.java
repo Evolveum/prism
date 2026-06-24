@@ -8,7 +8,6 @@ package com.evolveum.midpoint.prism.path;
 
 import java.util.Collections;
 import java.util.List;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 import com.google.common.base.Strings;
@@ -49,8 +48,8 @@ public class ItemName extends QName implements ItemPath {
         if (name == null) {
             return null;
         }
-        if (name instanceof ItemName) {
-            return (ItemName) name;
+        if (name instanceof ItemName itemName) {
+            return itemName;
         }
         if (Strings.isNullOrEmpty(name.getPrefix())) {
             // FIXME: Should we use interned? would not this slow-down this construction?

@@ -41,7 +41,10 @@ import org.xml.sax.SAXParseException;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.impl.PrismPropertyDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.PrismReferenceDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.XmlEntityResolver;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;
@@ -969,8 +972,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, Schema
 
     @Override
     public Class<?> determineClassForItemDefinition(ItemDefinition<?> itemDefinition) {
-        if (itemDefinition instanceof PrismContainerDefinition) {
-            Class<?> cls = ((PrismContainerDefinition) itemDefinition).getCompileTimeClass();
+        if (itemDefinition instanceof PrismContainerDefinition definition) {
+            Class<?> cls = definition.getCompileTimeClass();
             if (cls != null) {
                 return cls;
             }

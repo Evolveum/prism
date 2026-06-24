@@ -111,8 +111,8 @@ public class TestPrismParsingJson extends TestPrismParsing {
     private static final <E extends T,T extends XNode> E get(Class<T> type, MapXNode root, String... path) {
         XNode current = root;
         for(String cmp : path) {
-            if(current instanceof MapXNode) {
-                current = ((MapXNode) current).get(new QName(cmp));
+            if(current instanceof MapXNode node) {
+                current = node.get(new QName(cmp));
             } else if(current != null) {
                 throw new AssertionError(cmp + " should be MapXNode not " + current.getClass().getSimpleName());
             } else {

@@ -94,16 +94,16 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
     @Override
     public T serialize(@NotNull Item<?, ?> item) throws SchemaException {
         PrismMonitor monitor = PrismContext.get().getMonitor();
-        if (monitor != null && item instanceof PrismObject) {
-            monitor.beforeObjectSerialization((PrismObject<?>) item);
+        if (monitor != null && item instanceof PrismObject<?> object) {
+            monitor.beforeObjectSerialization(object);
         }
         try {
             RootXNodeImpl xroot = getMarshaller().marshalItemAsRoot(item, itemName, itemDefinition, context, itemsToSkip);
             checkPostconditions(xroot); // TODO find better way
             return target.write(xroot, context);
         } finally {
-            if (monitor != null && item instanceof PrismObject) {
-                monitor.afterObjectSerialization((PrismObject<?>) item);
+            if (monitor != null && item instanceof PrismObject<?> object1) {
+                monitor.afterObjectSerialization(object1);
             }
         }
     }
@@ -224,7 +224,7 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
     private void checkTypeResolvable(RootXNodeImpl root) {
         root.accept(n -> {
             QName type;
-            if (n instanceof XNodeImpl && (type = ((XNodeImpl) n).getTypeQName()) != null && ((XNodeImpl) n).isExplicitTypeDeclaration()) {
+            if (n instanceof XNodeImpl impl && (type = impl.getTypeQName()) != null && impl.isExplicitTypeDeclaration()) {
                 if (prismContext.getSchemaRegistry().determineClassForType(type) == null) {
                     // it could be sufficient to find a TD
                     if (prismContext.getSchemaRegistry().findTypeDefinitionByType(type) == null) {

@@ -17,8 +17,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -30,13 +31,13 @@ import javax.xml.namespace.QName;
 })
 public class MarkingRuleSpecificationType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "MarkingRuleSpecificationType");
     public static final ItemName F_RULE_ID = ItemName.interned(ObjectType.NS_FOO, "ruleId");
     public static final ItemName F_TRANSITIONAL = ItemName.interned(ObjectType.NS_FOO, "transitional");
     public static final Producer<MarkingRuleSpecificationType> FACTORY = new Producer<MarkingRuleSpecificationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public MarkingRuleSpecificationType run() {
             return new MarkingRuleSpecificationType();

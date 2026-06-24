@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.delta;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.PrismValueDeltaSetTriple;
 import com.evolveum.midpoint.prism.polystring.PolyString;
-import com.evolveum.midpoint.util.Processor;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,8 +70,7 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
         if (anyValue == null) {
             return null;
         }
-        if (anyValue instanceof PrismPropertyValue<?>) {
-            PrismPropertyValue<?> pval = (PrismPropertyValue<?>)anyValue;
+        if (anyValue instanceof PrismPropertyValue<?> pval) {
             Object realValue = pval.getValue();
             if (realValue == null) {
                 return null;
@@ -172,15 +170,15 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
                 continue;
             }
             if (!allowEmptyRealValues) {
-                if (val instanceof PrismPropertyValue<?>) {
-                    Object realValue = ((PrismPropertyValue<?>)val).getValue();
-                    if (realValue instanceof String) {
-                        if (((String)realValue).isEmpty()) {
+                if (val instanceof PrismPropertyValue<?> value) {
+                    Object realValue = value.getValue();
+                    if (realValue instanceof String string) {
+                        if (string.isEmpty()) {
                             iterator.remove();
                             continue;
                         }
-                    } else if (realValue instanceof PolyString) {
-                        if (((PolyString)realValue).isEmpty()) {
+                    } else if (realValue instanceof PolyString string) {
+                        if (string.isEmpty()) {
                             iterator.remove();
                             continue;
                         }

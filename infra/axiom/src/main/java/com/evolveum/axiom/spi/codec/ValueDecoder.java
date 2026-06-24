@@ -5,7 +5,6 @@
  */
 
 package com.evolveum.axiom.spi.codec;
-import java.util.function.Function;
 
 import com.evolveum.axiom.api.schema.AxiomSchemaContext;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;

@@ -9,7 +9,6 @@ package com.evolveum.axiom.api.schema;
 import java.util.Collection;
 import java.util.Optional;
 
-import com.evolveum.axiom.api.AxiomInfraValue;
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomValue;
 

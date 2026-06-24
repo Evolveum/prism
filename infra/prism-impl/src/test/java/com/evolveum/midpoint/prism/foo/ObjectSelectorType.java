@@ -6,17 +6,18 @@
 
 package com.evolveum.midpoint.prism.foo;
 
-import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
+import com.evolveum.midpoint.prism.PrismContainer;
+import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 import com.evolveum.midpoint.prism.path.ItemName;
-import com.evolveum.midpoint.util.Producer;
 import com.evolveum.prism.xml.ns._public.query_3.SearchFilterType;
 
 import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
-import java.util.List;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -36,7 +37,7 @@ import java.util.List;
         LinkedObjectSelectorType.class
 })
 public class ObjectSelectorType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ObjectSelectorType");
     public static final ItemName F_NAME = new ItemName(ObjectType.NS_FOO, "name");
     public static final ItemName F_DESCRIPTION = new ItemName(ObjectType.NS_FOO, "description");

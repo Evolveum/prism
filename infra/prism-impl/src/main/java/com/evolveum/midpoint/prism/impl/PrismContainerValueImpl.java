@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -146,8 +147,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     public Set<PrismProperty<?>> getProperties() {
         Set<PrismProperty<?>> properties = new HashSet<>();
         for (Item<?, ?> item : items.values()) {
-            if (item instanceof PrismProperty) {
-                properties.add((PrismProperty<?>) item);
+            if (item instanceof PrismProperty<?> property) {
+                properties.add(property);
             }
         }
         return properties;
@@ -622,8 +623,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 return acceptEmptyItem || !item.isEmpty();
             } else {
                 // Go deeper
-                if (item instanceof PrismContainer) {
-                    return ((PrismContainer<?>) item).containsItem(rest, acceptEmptyItem);
+                if (item instanceof PrismContainer<?> container) {
+                    return container.containsItem(rest, acceptEmptyItem);
                 } else {
                     return acceptEmptyItem || !item.isEmpty();
                 }
@@ -657,8 +658,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 }
             } else {
                 // Go deeper
-                if (item instanceof PrismContainer) {
-                    return ((PrismContainer<?>) item).findCreateItem(rest, type, itemDefinition, create);
+                if (item instanceof PrismContainer<?> container) {
+                    return container.findCreateItem(rest, type, itemDefinition, create);
                 } else {
                     if (create) {
                         throw new SchemaException("The " + type.getSimpleName() + " cannot be created because "
@@ -668,8 +669,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                         // FIXME: This is not the best solution but it is needed to be able to look inside properties
                         // such as PolyString
 
-                        if (item instanceof PrismReference && rest.startsWithObjectReference()) {
-                            var ref = ((PrismReference) item);
+                        if (item instanceof PrismReference reference && rest.startsWithObjectReference()) {
+                            var ref = reference;
                             return ref.findReferencedItem(rest, type);
                         }
                         if (type.isAssignableFrom(item.getClass())) {
@@ -905,8 +906,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
             Item<?, ?> item = itemsIterator.next();
             ItemName itemName = item.getElementName();
             if (subName.equals(itemName)) {
-                if (!rest.isEmpty() && item instanceof PrismContainer) {
-                    ((PrismContainer) item).removeItem(rest, itemType);
+                if (!rest.isEmpty() && item instanceof PrismContainer container) {
+                    container.removeItem(rest, itemType);
                     return;
                 } else {
                     if (itemType.isAssignableFrom(item.getClass())) {
@@ -1085,8 +1086,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public boolean diffMatchingRepresentation(PrismValue otherValue,
             Collection<? extends ItemDelta> deltas, ParameterizedEquivalenceStrategy strategy, boolean exitOnDiff) {
-        if (otherValue instanceof PrismContainerValue) {
-            return diffItems(this, (PrismContainerValue) otherValue, deltas, strategy, exitOnDiff);
+        if (otherValue instanceof PrismContainerValue value) {
+            return diffItems(this, value, deltas, strategy, exitOnDiff);
         } else {
             throw new IllegalStateException("Comparing incompatible values " + this + " - " + otherValue);
         }
@@ -1300,10 +1301,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                 if (itemDefinition == null && item.getDefinition() != null && item.getDefinition().isDynamic()) {
                     // We will not apply the null definition here. The item has a dynamic definition that we don't
                     // want to destroy as it cannot be reconstructed later.
-                } else if (item instanceof PrismProperty && itemDefinition instanceof PrismContainerDefinition) {
+                } else if (item instanceof PrismProperty<?> property && itemDefinition instanceof PrismContainerDefinition<?> definition) {
                     // Special case: we parsed something as (raw) property but later we found out it's in fact a container!
                     // (It could be also a reference but this will be implemented later.)
-                    parseRawPropertyAsContainer((PrismProperty<?>) item, (PrismContainerDefinition<?>) itemDefinition);
+                    parseRawPropertyAsContainer(property, definition);
                 } else if (itemDefinition instanceof RemovedItemDefinition) {
                     // See MID-7939, this seems logical step - if definition was removed (e.g. for
                     // security reasons), let's remove the item too, so it's not available at all.
@@ -1515,7 +1516,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     @Override
     public boolean equals(PrismValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        return other instanceof PrismContainerValue<?> && equals((PrismContainerValue<?>) other, strategy);
+        return other instanceof PrismContainerValue<?> pcv && equals(pcv, strategy);
     }
 
     private boolean equals(@NotNull PrismContainerValue<?> other, ParameterizedEquivalenceStrategy strategy) {
@@ -1804,8 +1805,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public void setOriginTypeRecursive(final OriginType originType) {
         accept((visitable) -> {
-            if (visitable instanceof PrismValue) {
-                ((PrismValue) visitable).setOriginType(originType);
+            if (visitable instanceof PrismValue value) {
+                value.setOriginType(originType);
             }
         });
     }
@@ -1821,8 +1822,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
                     && !ItemPathCollectionsUtil.containsSubpathOrEquivalent(keep, itemPath)) {
                 removeItem(ItemName.fromQName(itemName), Item.class);
             } else {
-                if (item instanceof PrismContainer) {
-                    for (PrismContainerValue<?> v : ((PrismContainer<?>) item).getValues()) {
+                if (item instanceof PrismContainer<?> container) {
+                    for (PrismContainerValue<?> v : container.getValues()) {
                         v.keepPaths(keep);
                     }
                 } else {
@@ -1881,10 +1882,10 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     void trimItemsDefinitionsTrees(Collection<? extends ItemPath> alwaysKeep) {
         // to play safe, we won't touch PCV-specific complexTypeDefinition
         for (Item<?, ?> item : items.values()) {
-            if (item instanceof PrismContainer) {
+            if (item instanceof PrismContainer<?> container) {
                 Collection<ItemPath> alwaysKeepInSub = ItemPathCollectionsUtil.remainder(CollectionUtils.emptyIfNull(alwaysKeep),
                         item.getElementName(), false);
-                ((PrismContainer<?>) item).trimDefinitionTree(alwaysKeepInSub);
+                container.trimDefinitionTree(alwaysKeepInSub);
             }
         }
     }
@@ -1948,8 +1949,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     @Override
     public void removeOperationalItems() {
         accept(visitable -> {
-            if (visitable instanceof Item) {
-                Item<?, ?> item = ((Item<?, ?>) visitable);
+            if (visitable instanceof Item<?, ?> item) {
                 if (item.getDefinition() != null && item.getDefinition().isOperational()) {
                     PrismContainerValue<?> parent = item.getParent();
                     if (parent != null) { // should be the case
@@ -1970,8 +1970,8 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
         }
 
         for (Item<?, ?> item : items.values()) {
-            if (item instanceof TransformableItem) {
-                ((TransformableItem) item).transformDefinition(complexTypeDefinition, transformation);
+            if (item instanceof TransformableItem transformableItem) {
+                transformableItem.transformDefinition(complexTypeDefinition, transformation);
             }
         }
     }
@@ -1998,7 +1998,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     private static class ItemDifferentException extends RuntimeException {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
     }
 

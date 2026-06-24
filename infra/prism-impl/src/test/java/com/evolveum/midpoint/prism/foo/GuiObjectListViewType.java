@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
+
 import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
@@ -33,7 +35,7 @@ import jakarta.xml.bind.annotation.XmlType;
 public class GuiObjectListViewType
         extends GuiObjectListPanelConfigurationType
 {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "GuiObjectListViewType");
     public static final ItemName F_TYPE = new ItemName(ObjectType.NS_FOO, "type");
 

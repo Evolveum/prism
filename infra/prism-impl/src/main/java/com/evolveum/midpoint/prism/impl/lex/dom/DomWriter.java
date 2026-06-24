@@ -103,15 +103,15 @@ class DomWriter {
         Element rootElement = createAndAppendChild(rootElementName, parentElement);
 
         XNodeImpl subnode = root.getSubnode();
-        if (subnode instanceof PrimitiveXNodeImpl) {
-            writePrimitive((PrimitiveXNodeImpl) subnode, rootElement, rootElementName, false);
+        if (subnode instanceof PrimitiveXNodeImpl node) {
+            writePrimitive(node, rootElement, rootElementName, false);
             return DOMUtil.getFirstChildElement(rootElement);
         } else {
             // At this point we can put frequently used namespaces (e.g. c, t, q, ri) into the document to eliminate their use
             // on many places inside the doc (MID-2198)
             DOMUtil.setNamespaceDeclarations(rootElement, getNamespacePrefixMapper().getNamespacesDeclaredByDefault());
-            if (subnode instanceof MapXNodeImpl) {
-                writeMap((MapXNodeImpl) subnode, rootElement);
+            if (subnode instanceof MapXNodeImpl impl) {
+                writeMap(impl, rootElement);
             } else if (subnode.isHeterogeneousList()) {
                 writeHeterogeneousList((ListXNodeImpl) subnode, rootElement);
             } else {
@@ -164,15 +164,13 @@ class DomWriter {
             DOMUtil.setAttributeValue(child, DOMUtil.IS_INCOMPLETE_ATTRIBUTE_NAME, "true");
         } else if (node instanceof RootXNodeImpl) {
             throw new IllegalStateException("Shouldn't be here!");
-        } else if (node instanceof MapXNodeImpl) {
+        } else if (node instanceof MapXNodeImpl mapXNode) {
             Element child = createAndAppendChild(elementName, parentElement);
             appendCommentIfPresent(child, node);
-            writeMap((MapXNodeImpl) node, child);
-        } else if (node instanceof PrimitiveXNodeImpl<?>) {
-            PrimitiveXNodeImpl<?> xprim = (PrimitiveXNodeImpl<?>) node;
-            writePrimitive(xprim, parentElement, elementName, xprim.isAttribute());
-        } else if (node instanceof ListXNodeImpl) {
-            ListXNodeImpl list = (ListXNodeImpl) node;
+            writeMap(mapXNode, child);
+        } else if (node instanceof PrimitiveXNodeImpl<?> primitiveXNode) {
+            writePrimitive(primitiveXNode, parentElement, elementName, primitiveXNode.isAttribute());
+        } else if (node instanceof ListXNodeImpl list) {
             if (list.isHeterogeneousList()) {
                 Element child = createAndAppendChild(elementName, parentElement);
                 writeHeterogeneousList(list, child);
@@ -181,8 +179,8 @@ class DomWriter {
                     writeNode(listItem, parentElement, elementName);
                 }
             }
-        } else if (node instanceof SchemaXNodeImpl) {
-            writeSchema((SchemaXNodeImpl) node, parentElement);
+        } else if (node instanceof SchemaXNodeImpl impl) {
+            writeSchema(impl, parentElement);
         } else {
             throw new IllegalArgumentException("Unknown subnode " + node);
         }

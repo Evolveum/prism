@@ -10,7 +10,6 @@ package com.evolveum.prism.xml.ns._public.types_3;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
-import com.evolveum.midpoint.prism.Raw;
 import org.jetbrains.annotations.NotNull;
 
 import jakarta.xml.bind.annotation.XmlAccessType;

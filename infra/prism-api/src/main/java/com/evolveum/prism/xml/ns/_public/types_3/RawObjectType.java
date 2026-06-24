@@ -11,6 +11,8 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 import com.evolveum.midpoint.prism.PrismContainerValue;
+
+import java.io.Serial;
 import com.evolveum.midpoint.prism.PrismObject;
 
 
@@ -19,7 +21,7 @@ import com.evolveum.midpoint.prism.PrismObject;
 })
 public class RawObjectType extends ObjectType {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private RawType value;
 

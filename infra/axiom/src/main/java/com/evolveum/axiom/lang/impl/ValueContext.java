@@ -15,7 +15,6 @@ import com.evolveum.axiom.api.stream.AxiomBuilderStreamTarget.ValueBuilder;
 import com.evolveum.axiom.reactor.Dependency;
 import com.evolveum.concepts.SourceLocation;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,7 +30,6 @@ import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition;
 import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition.Scope;
-import com.evolveum.axiom.lang.spi.AxiomNameResolver;
 import com.evolveum.axiom.lang.spi.AxiomSemanticException;
 
 public class ValueContext<V> extends AbstractContext<ItemContext<V>> implements AxiomValueContext<V>, ValueBuilder, Dependency<AxiomValue<V>> {
@@ -156,8 +154,9 @@ public class ValueContext<V> extends AbstractContext<ItemContext<V>> implements 
             if(maybeItem == null) {
                 return null;
             }
-            if(maybeItem instanceof Dependency<?>) {
-                return (Dependency) maybeItem;
+            if(maybeItem instanceof Dependency<?> dependency) {
+                //noinspection unchecked
+                return (Dependency<AxiomItem<T>>) dependency;
             }
             return Dependency.immediate((AxiomItem<T>) maybeItem.get());
         }
@@ -203,8 +202,8 @@ public class ValueContext<V> extends AbstractContext<ItemContext<V>> implements 
 
     @Override
     public V currentValue() {
-        if(result instanceof ValueContext.Result) {
-            return ((ValueContext<V>.Result) result).value;
+        if(result instanceof ValueContext<V>.Result result1) {
+            return result1.value;
         }
         return get().value();
     }
@@ -243,8 +242,8 @@ public class ValueContext<V> extends AbstractContext<ItemContext<V>> implements 
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     <T> Dependency<AxiomItem<T>> createItemDependency(AxiomName item) {
-        if(result instanceof ValueContext.Result) {
-            return ((ValueContext.Result) result).getItem(item);
+        if(result instanceof ValueContext.Result nestedResult) {
+            return nestedResult.getItem(item);
         }
         return Dependency.fromNullable((AxiomItem<T>) result.get().asComplex().get().item(item).orElse(null));
     }
@@ -310,13 +309,13 @@ public class ValueContext<V> extends AbstractContext<ItemContext<V>> implements 
         public <T> Dependency<AxiomValue<T>> onlyItemValue(AxiomItemDefinition definition, Class<T> valueType) {
             return (Dependency) Dependency.retriableDelegate(() -> {
                 Dependency<AxiomItem<?>> item;
-                if(result instanceof ValueContext.Result) {
-                    item = ((ValueContext.Result) result).getItem(definition.name());
+                if(result instanceof ValueContext.Result result1) {
+                    item = result1.getItem(definition.name());
                 } else {
                     item = result.flatMap(v -> Dependency.from(v.asComplex().get().item(definition)));
                 }
-                if(item instanceof ItemContext) {
-                    return ((ItemContext) item).onlyValue0();
+                if(item instanceof ItemContext context) {
+                    return context.onlyValue0();
                 } else if (item == null) {
                     return null;
                 }

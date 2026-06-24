@@ -12,9 +12,7 @@ import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomPrefixedName;
 import com.evolveum.axiom.api.stream.AxiomItemStream.Target;
 import com.evolveum.axiom.lang.spi.AxiomNameResolver;
-import com.evolveum.axiom.lang.spi.AxiomSemanticException;
 import com.evolveum.concepts.SourceLocation;
-import com.google.common.base.Preconditions;
 
 public class StringToQNameTarget implements AxiomStreamTarget<String, Object> {
 

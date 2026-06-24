@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.query;
 import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.ItemDefinition;
 
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 import com.evolveum.midpoint.prism.PrismPropertyValue;
 import com.evolveum.midpoint.prism.path.ItemPath;

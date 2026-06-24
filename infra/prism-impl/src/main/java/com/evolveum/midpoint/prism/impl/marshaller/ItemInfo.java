@@ -148,8 +148,8 @@ public class ItemInfo<ID extends ItemDefinition> {
 
         // complex type definition
         if (info.itemDefinition != null) {
-            if (info.itemDefinition instanceof PrismContainerDefinition) {
-                info.complexTypeDefinition = ((PrismContainerDefinition) info.itemDefinition).getComplexTypeDefinition();
+            if (info.itemDefinition instanceof PrismContainerDefinition<?> containerDefinition) {
+                info.complexTypeDefinition = containerDefinition.getComplexTypeDefinition();
             } else {
                 info.complexTypeDefinition = null;
             }
@@ -216,7 +216,7 @@ public class ItemInfo<ID extends ItemDefinition> {
         if (clazz == null) {
             return definition;
         }
-        if (definition instanceof PrismContainerDefinition && clazz.equals(((PrismContainerDefinition) definition).getCompileTimeClass())) {
+        if (definition instanceof PrismContainerDefinition<?> containerDefinition && clazz.equals(containerDefinition.getCompileTimeClass())) {
             return definition;
         }
         QName typeNameFromClass = schemaRegistry.determineTypeForClass(clazz);

@@ -38,12 +38,13 @@ public class NoOpNormalizer<T> implements Normalizer<T> {
         if (a == null || b == null) {
             return false;
         }
-        if (a instanceof Matchable && b instanceof Matchable) {
-            //noinspection unchecked,rawtypes
-            return ((Matchable) a).match((Matchable) b);
+        //noinspection rawtypes
+        if (a instanceof Matchable first && b instanceof Matchable second) {
+            //noinspection unchecked
+            return first.match(second);
         }
-        if (a instanceof byte[] && b instanceof byte[]) {
-            return Arrays.equals((byte[]) a, (byte[]) b);
+        if (a instanceof byte[] left && b instanceof byte[] right) {
+            return Arrays.equals(left, right);
         }
         // Just use plain java equals() method
         return a.equals(b);

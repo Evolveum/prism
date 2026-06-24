@@ -19,6 +19,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.SingleLocalizableMessage;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ import javax.xml.namespace.QName;
     "argument"
 })
 public class PolyStringTranslationType implements Serializable, Cloneable {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "PolyStringTranslationType");
 
@@ -165,16 +166,16 @@ public class PolyStringTranslationType implements Serializable, Cloneable {
         rv.setFallback(message.getFallbackMessage());
         LocalizableMessage fallbackLocalizableMessage = message.getFallbackLocalizableMessage();
         if (fallbackLocalizableMessage != null) {
-            if (fallbackLocalizableMessage instanceof SingleLocalizableMessage) {
-                rv.setFallbackTranslation(fromLocalizableMessage((SingleLocalizableMessage) fallbackLocalizableMessage));
+            if (fallbackLocalizableMessage instanceof SingleLocalizableMessage localizableMessage) {
+                rv.setFallbackTranslation(fromLocalizableMessage(localizableMessage));
             } else {
                 throw new UnsupportedOperationException("Fallback messages other than SingleLocalizableMessage are not supported in PolyString: " + fallbackLocalizableMessage);
             }
         }
         if (message.getArgs() != null) {
             for (Object arg : message.getArgs()) {
-                if (arg instanceof SingleLocalizableMessage) {
-                    rv.getArgument().add(new PolyStringTranslationArgumentType(fromLocalizableMessage((SingleLocalizableMessage) arg)));
+                if (arg instanceof SingleLocalizableMessage localizableMessage1) {
+                    rv.getArgument().add(new PolyStringTranslationArgumentType(fromLocalizableMessage(localizableMessage1)));
                 } else if (arg instanceof LocalizableMessage) {
                     throw new UnsupportedOperationException("LocalizableMessages arguments other than SingleLocalizableMessage are not supported in PolyString: " + arg);
                 } else {

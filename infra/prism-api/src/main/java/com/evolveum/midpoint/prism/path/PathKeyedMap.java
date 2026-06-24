@@ -45,8 +45,8 @@ public class PathKeyedMap<T> implements Map<ItemPath, T>, Serializable {
 
     @Override
     public boolean containsKey(Object key) {
-        return key instanceof ItemPath &&
-                ItemPathCollectionsUtil.containsEquivalent(internalMap.keySet(), (ItemPath) key);
+        return key instanceof ItemPath ip &&
+                ItemPathCollectionsUtil.containsEquivalent(internalMap.keySet(), ip);
     }
 
     @Override
@@ -56,9 +56,9 @@ public class PathKeyedMap<T> implements Map<ItemPath, T>, Serializable {
 
     @Override
     public T get(Object key) {
-        if (key instanceof ItemPath) {
+        if (key instanceof ItemPath path) {
             for (Map.Entry<ItemPath, T> entry : internalMap.entrySet()) {
-                if (entry.getKey().equivalent((ItemPath) key)) {
+                if (entry.getKey().equivalent(path)) {
                     return entry.getValue();
                 }
             }
@@ -80,9 +80,9 @@ public class PathKeyedMap<T> implements Map<ItemPath, T>, Serializable {
 
     @Override
     public T remove(Object key) {
-        if (key instanceof ItemPath) {
+        if (key instanceof ItemPath path) {
             for (ItemPath existingKey : internalMap.keySet()) {
-                if (existingKey.equivalent((ItemPath) key)) {
+                if (existingKey.equivalent(path)) {
                     return internalMap.remove(existingKey);
                 }
             }
