@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.polystring;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +48,7 @@ import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
  * @author Radovan Semancik
  */
 public class PolyString implements Matchable<PolyString>, Recomputable, Structured, DebugDumpable, ShortDumpable, Serializable, Comparable<Object> {
-    private static final long serialVersionUID = -5070443143609226661L;
+    @Serial private static final long serialVersionUID = -5070443143609226661L;
 
     public static final ItemName F_ORIG = ItemName.from(PrismConstants.NS_TYPES, "orig");
     public static final ItemName F_NORM = ItemName.from(PrismConstants.NS_TYPES, "norm");

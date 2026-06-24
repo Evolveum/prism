@@ -15,6 +15,8 @@ import com.evolveum.midpoint.prism.path.ItemName;
 import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -40,7 +42,7 @@ import java.util.List;
 })
 public abstract class AbstractRoleType extends FocusType
         implements Objectable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "AbstractRoleType");
     public static final ItemName F_AUTHORIZATION = new ItemName(ObjectType.NS_FOO, "authorization");
 

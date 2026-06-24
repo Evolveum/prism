@@ -15,6 +15,8 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -47,7 +49,7 @@ public abstract class FocusType
         extends AssignmentHolderType
         implements Objectable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName("FocusType");
     public static final ItemName F_LINK_REF = ItemName.interned(NS_FOO,"linkRef");
     public static final ItemName F_LOCALITY = ItemName.interned(NS_FOO, "locality");

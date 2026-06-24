@@ -18,6 +18,8 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -30,11 +32,11 @@ import java.util.List;
 public class ExtensionType extends AbstractMutableContainerable
 {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ExtensionType");
     public static final Producer<ExtensionType> FACTORY = new Producer<ExtensionType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ExtensionType run() {
             return new ExtensionType();

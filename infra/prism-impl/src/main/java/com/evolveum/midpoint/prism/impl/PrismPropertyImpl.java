@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.util.*;
 import javax.xml.namespace.QName;
 
@@ -56,7 +57,7 @@ import com.evolveum.midpoint.util.logging.TraceManager;
 public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismPropertyDefinition<T>>
         implements PrismProperty<T> {
 
-    private static final long serialVersionUID = 6843901365945935660L;
+    @Serial private static final long serialVersionUID = 6843901365945935660L;
 
     private static final Trace LOGGER = TraceManager.getTrace(PrismPropertyImpl.class);
 

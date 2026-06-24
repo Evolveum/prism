@@ -16,8 +16,9 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -30,11 +31,11 @@ public class GenericObjectType
     extends FocusType
     implements Objectable
 {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "GenericObjectType");
     public static final Producer<GenericObjectType> FACTORY = new Producer<GenericObjectType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public GenericObjectType run() {
             return new GenericObjectType();

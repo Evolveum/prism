@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.prism.PrismContainer;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.PrismContext;
@@ -28,11 +30,11 @@ import jakarta.xml.bind.annotation.XmlType;
 })
 public class ObjectParentSelectorType extends OwnedObjectSelectorType {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final ItemName F_PATH = new ItemName(ObjectType.NS_FOO, "path");
     public static final Producer<ObjectParentSelectorType> FACTORY = new Producer<ObjectParentSelectorType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ObjectParentSelectorType run() {
             return new ObjectParentSelectorType();

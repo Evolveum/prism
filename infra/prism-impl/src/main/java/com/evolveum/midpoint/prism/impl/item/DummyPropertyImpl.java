@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.item;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,7 +24,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  *
  */
 public class DummyPropertyImpl<T> extends DummyItem<PrismPropertyValue<T>, PrismPropertyDefinition<T>, PrismProperty<T>> implements PrismProperty<T> {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public DummyPropertyImpl(PrismProperty<T> realProperty, @NotNull ItemPath path) {
         super(realProperty, path);

@@ -8,6 +8,7 @@
 package com.evolveum.midpoint.prism.impl.binding;
 
 
+import java.io.Serial;
 import java.util.List;
 
 import jakarta.xml.bind.annotation.XmlAnyElement;
@@ -25,7 +26,7 @@ public abstract class AbstractMutableContainerable implements ContainerablePrism
     /**
      *
      */
-    private static final long serialVersionUID = 7082764147545316106L;
+    @Serial private static final long serialVersionUID = 7082764147545316106L;
 
     private PrismContainerValue value;
 

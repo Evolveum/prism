@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.item;
 
+import java.io.Serial;
 import java.util.Collection;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
@@ -23,7 +24,7 @@ import com.evolveum.midpoint.prism.polystring.PolyString;
  */
 public class DummyReferenceImpl extends DummyItem<PrismReferenceValue,PrismReferenceDefinition, PrismReference> implements PrismReference {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public DummyReferenceImpl(PrismReference realReference, @NotNull ItemPath path) {
         super(realReference, path);

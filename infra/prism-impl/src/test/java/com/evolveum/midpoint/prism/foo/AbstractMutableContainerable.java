@@ -15,13 +15,14 @@ import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import jakarta.xml.bind.annotation.XmlAnyElement;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
  * Created by Dominik.
  */
 public class AbstractMutableContainerable  implements ContainerablePrismBinding, Cloneable, Containerable {
-    private static final long serialVersionUID = 7082764147545316106L;
+    @Serial private static final long serialVersionUID = 7082764147545316106L;
     private PrismContainerValue value;
 
     public AbstractMutableContainerable() {

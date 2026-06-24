@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -1997,7 +1998,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     private static class ItemDifferentException extends RuntimeException {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
     }
 

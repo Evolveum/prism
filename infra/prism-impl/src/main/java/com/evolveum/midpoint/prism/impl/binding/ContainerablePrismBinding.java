@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.binding;
 
+import java.io.Serial;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -112,7 +113,7 @@ public interface ContainerablePrismBinding extends Containerable {
 
     static class ContainerableList<T extends Containerable> extends PrismContainerArrayList<T> {
 
-        private static final long serialVersionUID = -8244451828909384509L;
+        @Serial private static final long serialVersionUID = -8244451828909384509L;
 
         private final Producer<T> producer;
 
@@ -142,7 +143,7 @@ public interface ContainerablePrismBinding extends Containerable {
 
     static class ReferencableList<T extends Referencable> extends PrismReferenceArrayList<T> {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final Producer<T> factory;
 
         public ReferencableList(PrismReference reference, PrismContainerValue parent, Producer<T> producer) {

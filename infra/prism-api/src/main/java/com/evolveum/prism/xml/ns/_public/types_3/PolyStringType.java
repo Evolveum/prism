@@ -16,6 +16,7 @@
 package com.evolveum.prism.xml.ns._public.types_3;
 
 import java.io.File;
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -85,7 +86,7 @@ import org.w3c.dom.Element;
     "any"
 })
 public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStrategy, JaxbVisitable {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "PolyStringType");
 

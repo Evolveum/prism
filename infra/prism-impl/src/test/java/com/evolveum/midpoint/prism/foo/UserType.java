@@ -22,6 +22,7 @@ import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedStringType;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +103,7 @@ public class UserType
     public static final ItemName F_PASSWORD = ItemName.from(NS_FOO, "password");
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "UserType");
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
     @XmlElement(required = true)
     protected String fullName;
     @XmlElement(required = true)

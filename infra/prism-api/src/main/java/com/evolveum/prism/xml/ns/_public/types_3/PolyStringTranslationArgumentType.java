@@ -15,6 +15,7 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ import javax.xml.namespace.QName;
     "translation"
 })
 public class PolyStringTranslationArgumentType implements Serializable, Cloneable {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "PolyStringTranslationArgumentType");
 

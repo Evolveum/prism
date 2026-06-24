@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 /**
  * Exception used for tunneling checked exceptions through places where checked exceptipons are not allowed (e.g. callbacks).
  *
@@ -15,7 +17,7 @@ package com.evolveum.midpoint.util.exception;
  *
  */
 public class TunnelException extends RuntimeException {
-    private static final long serialVersionUID = -3745473492409029661L;
+    @Serial private static final long serialVersionUID = -3745473492409029661L;
 
     public TunnelException() {
         super();

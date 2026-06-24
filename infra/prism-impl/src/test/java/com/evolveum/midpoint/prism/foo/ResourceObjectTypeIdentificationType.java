@@ -17,8 +17,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -29,13 +30,13 @@ import javax.xml.namespace.QName;
         "intent"
 })
 public class ResourceObjectTypeIdentificationType  extends AbstractMutableContainerable  {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ResourceObjectTypeIdentificationType");
     public static final ItemName F_KIND = ItemName.interned(ObjectType.NS_FOO, "kind");
     public static final ItemName F_INTENT = ItemName.interned(ObjectType.NS_FOO, "intent");
     public static final Producer<ResourceObjectTypeIdentificationType> FACTORY = new Producer<ResourceObjectTypeIdentificationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ResourceObjectTypeIdentificationType run() {
             return new ResourceObjectTypeIdentificationType();

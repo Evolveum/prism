@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.util.LocalizableMessage;
 
 /**
@@ -13,7 +15,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
  *
  */
 public class PolicyViolationException extends CommonException {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public PolicyViolationException() {
     }

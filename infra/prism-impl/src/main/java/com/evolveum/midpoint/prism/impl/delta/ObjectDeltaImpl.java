@@ -12,6 +12,7 @@ import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     private static final Trace LOGGER = TraceManager.getTrace(ObjectDeltaImpl.class);
 
-    private static final long serialVersionUID = -528560467958335366L;
+    @Serial private static final long serialVersionUID = -528560467958335366L;
 
     private ChangeType changeType;
 
@@ -1544,8 +1545,8 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     private void removeOperationalItems(PrismValue value) {
-        if (value instanceof PrismContainerValue) {
-            ((PrismContainerValue<?>) value).removeOperationalItems();
+        if (value instanceof PrismContainerValue<?> containerValue) {
+            containerValue.removeOperationalItems();
         }
     }
 

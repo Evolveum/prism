@@ -18,6 +18,7 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import jakarta.xml.bind.annotation.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,7 @@ public abstract class ObjectType
     public static final ItemName F_PARENT_ORG_REF = ItemName.from(NS_FOO, "parentOrgRef");
     public static final ItemName F_METADATA = ItemName.interned(NS_FOO, "metadata");
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
     protected PolyStringType name;
     protected String description;
     protected Extension extension;

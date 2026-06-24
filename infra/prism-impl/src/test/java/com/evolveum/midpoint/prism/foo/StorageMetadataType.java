@@ -20,8 +20,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.io.Serial;
 import javax.xml.namespace.QName;
 
 /**
@@ -40,7 +41,7 @@ import javax.xml.namespace.QName;
 })
 public class StorageMetadataType extends AbstractMutableContainerable
 {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "StorageMetadataType");
     public static final ItemName F_CREATE_TIMESTAMP = ItemName.interned(ObjectType.NS_FOO, "createTimestamp");
     public static final ItemName F_CREATOR_REF = ItemName.interned(ObjectType.NS_FOO, "creatorRef");
@@ -52,7 +53,7 @@ public class StorageMetadataType extends AbstractMutableContainerable
     public static final ItemName F_MODIFY_TASK_REF = ItemName.interned(ObjectType.NS_FOO, "modifyTaskRef");
     public static final Producer<StorageMetadataType> FACTORY = new Producer<StorageMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public StorageMetadataType run() {
             return new StorageMetadataType();

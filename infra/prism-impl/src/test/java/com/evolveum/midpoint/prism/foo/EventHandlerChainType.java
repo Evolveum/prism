@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class EventHandlerChainType
 
     public static final QName COMPLEX_TYPE = new QName("http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", "EventHandlerChainType");
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     @XmlElementRef(name = "handler", namespace = "http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd", type = JAXBElement.class, required = false)
     protected List<JAXBElement<? extends EventHandlerType>> handler;
@@ -119,31 +120,31 @@ public class EventHandlerChainType
         // CC-XJC Version 2.0 Build 2011-09-16T18:27:24+0000
         if ((source != null) && (!source.isEmpty())) {
             for (final Object next : source) {
-                if (next instanceof JAXBElement) {
+                if (next instanceof JAXBElement element) {
                     // Referenced elements without classes.
-                    if (((JAXBElement) next).getValue() instanceof EventOperationFilterType) {
+                    if (element.getValue() instanceof EventOperationFilterType) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventOperationFilterType>
-                        target.add(copyOfEventOperationFilterTypeElement(((JAXBElement) next)));
+                        target.add(copyOfEventOperationFilterTypeElement(element));
                         continue;
                     }
-                    if (((JAXBElement) next).getValue() instanceof EventStatusFilterType) {
+                    if (element.getValue() instanceof EventStatusFilterType) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventStatusFilterType>
-                        target.add(copyOfEventStatusFilterTypeElement(((JAXBElement) next)));
+                        target.add(copyOfEventStatusFilterTypeElement(element));
                         continue;
                     }
-                    if (((JAXBElement) next).getValue() instanceof EventCategoryFilterType) {
+                    if (element.getValue() instanceof EventCategoryFilterType) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventCategoryFilterType>
-                        target.add(copyOfEventCategoryFilterTypeElement(((JAXBElement) next)));
+                        target.add(copyOfEventCategoryFilterTypeElement(element));
                         continue;
                     }
-                    if (((JAXBElement) next).getValue() instanceof EventHandlerChainType) {
+                    if (element.getValue() instanceof EventHandlerChainType) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerChainType>
-                        target.add(copyOfEventHandlerChainTypeElement(((JAXBElement) next)));
+                        target.add(copyOfEventHandlerChainTypeElement(element));
                         continue;
                     }
-                    if (((JAXBElement) next).getValue() instanceof EventHandlerType) {
+                    if (element.getValue() instanceof EventHandlerType) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<com.evolveum.midpoint.xml.ns._public.common.common_3.EventHandlerType>
-                        target.add(copyOfEventHandlerTypeElement(((JAXBElement) next)));
+                        target.add(copyOfEventHandlerTypeElement(element));
                         continue;
                     }
                 }

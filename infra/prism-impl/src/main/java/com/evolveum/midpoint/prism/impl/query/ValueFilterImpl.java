@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +35,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 public abstract class ValueFilterImpl<V extends PrismValue, D extends ItemDefinition<?>>
         extends AbstractItemFilter implements ValueFilter<V, D> {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     /**
      * This is a definition of the item pointed to by "fullPath".

@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.*;
 
@@ -43,7 +44,7 @@ import jakarta.xml.bind.annotation.*;
 })
 public class EventHandlerType implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     @XmlAttribute(name = "name")
     protected String name;
 

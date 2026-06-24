@@ -18,8 +18,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -31,13 +32,13 @@ import javax.xml.namespace.QName;
 })
 public class MappingSourceType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "MappingSourceType");
     public static final ItemName F_NAME = ItemName.interned(ObjectType.NS_FOO, "name");
     public static final ItemName F_VALUE = ItemName.interned(ObjectType.NS_FOO, "value");
     public static final Producer<MappingSourceType> FACTORY = new Producer<MappingSourceType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public MappingSourceType run() {
             return new MappingSourceType();

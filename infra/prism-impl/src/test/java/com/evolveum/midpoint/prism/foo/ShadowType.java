@@ -21,6 +21,8 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -62,7 +64,7 @@ import java.util.List;
 public class ShadowType extends ObjectType
         implements Objectable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "ShadowType");
     public static final ItemName F_RESOURCE_REF = ItemName.interned(NS_FOO, "resourceRef");
     public static final ItemName F_SHADOW_LIFECYCLE_STATE = ItemName.interned(NS_FOO, "shadowLifecycleState");
@@ -96,7 +98,7 @@ public class ShadowType extends ObjectType
     public static final ItemName F_CACHING_METADATA = ItemName.interned(NS_FOO, "cachingMetadata");
     public static final Producer<ShadowType> FACTORY = new Producer<ShadowType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ShadowType run() {
             return new ShadowType();

@@ -13,6 +13,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -46,7 +47,7 @@ import jakarta.xml.bind.annotation.XmlType;
 public class DummyProtectedStringType
         implements Serializable {
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
 
     @XmlElement(required = true)
     protected String value;

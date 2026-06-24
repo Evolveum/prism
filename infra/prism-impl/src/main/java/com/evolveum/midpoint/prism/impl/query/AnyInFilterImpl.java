@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
@@ -26,7 +27,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 
 public class AnyInFilterImpl<T> extends PropertyValueFilterImpl<T> implements AnyInFilter<T> {
-    private static final long serialVersionUID = 3284478412180258355L;
+    @Serial private static final long serialVersionUID = 3284478412180258355L;
 
     /*
      *  The pattern for factory methods and constructors signatures is:

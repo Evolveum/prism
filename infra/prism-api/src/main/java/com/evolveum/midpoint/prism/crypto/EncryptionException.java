@@ -6,12 +6,14 @@
 
 package com.evolveum.midpoint.prism.crypto;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.util.LocalizableMessage;
 import com.evolveum.midpoint.util.exception.CommonException;
 
 public class EncryptionException extends CommonException {
 
-    private static final long serialVersionUID = 8289563205061329615L;
+    @Serial private static final long serialVersionUID = 8289563205061329615L;
 
     public EncryptionException(String message) {
         super(message);

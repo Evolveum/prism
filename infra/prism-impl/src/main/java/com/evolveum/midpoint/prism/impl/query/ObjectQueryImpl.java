@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.query.AllFilter;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
@@ -15,7 +17,7 @@ import com.evolveum.midpoint.util.DebugUtil;
 
 public class ObjectQueryImpl implements ObjectQuery, Cloneable {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private ObjectFilter filter;
     private ObjectPaging paging;

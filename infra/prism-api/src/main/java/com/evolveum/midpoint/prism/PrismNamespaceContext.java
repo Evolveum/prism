@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -145,7 +146,7 @@ public abstract class PrismNamespaceContext implements Serializable {
 
     private static class Impl extends PrismNamespaceContext {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final Impl parent;
         private final Map<String, String> prefixToNs;
         private transient Multimap<String, String> nsToPrefix;
@@ -338,7 +339,7 @@ public abstract class PrismNamespaceContext implements Serializable {
         /**
          *
          */
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final Impl parent;
 
         public Inherited(Impl parent) {
@@ -421,7 +422,7 @@ public abstract class PrismNamespaceContext implements Serializable {
         /**
          *
          */
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         @Override
         public Optional<PrismNamespaceContext> parent() {

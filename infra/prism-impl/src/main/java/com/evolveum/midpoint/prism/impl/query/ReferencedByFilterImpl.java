@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -34,7 +35,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class ReferencedByFilterImpl extends ObjectFilterImpl implements ReferencedByFilter {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private final @NotNull ComplexTypeDefinition type;
     private final @NotNull ItemPath path;

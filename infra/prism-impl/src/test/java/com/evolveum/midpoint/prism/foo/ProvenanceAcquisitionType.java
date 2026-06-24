@@ -21,8 +21,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.io.Serial;
 import javax.xml.namespace.QName;
 
 /**
@@ -38,7 +39,7 @@ import javax.xml.namespace.QName;
 })
 public class ProvenanceAcquisitionType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ProvenanceAcquisitionType");
     public static final ItemName F_ORIGIN_REF = ItemName.interned(ObjectType.NS_FOO, "originRef");
     public static final ItemName F_RESOURCE_REF = ItemName.interned(ObjectType.NS_FOO, "resourceRef");
@@ -47,7 +48,7 @@ public class ProvenanceAcquisitionType extends AbstractMutableContainerable {
     public static final ItemName F_TIMESTAMP = ItemName.interned(ObjectType.NS_FOO, "timestamp");
     public static final Producer<ProvenanceAcquisitionType> FACTORY = new Producer<ProvenanceAcquisitionType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ProvenanceAcquisitionType run() {
             return new ProvenanceAcquisitionType();

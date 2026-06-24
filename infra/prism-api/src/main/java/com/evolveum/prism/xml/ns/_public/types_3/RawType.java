@@ -357,7 +357,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
     private static abstract class State implements Serializable {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         protected abstract RawType performClone();
 
@@ -426,7 +426,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
     private static class Parsed<V extends PrismValue> extends State {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final V value;
         private final QName explicitTypeName;
 
@@ -590,7 +590,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
     private static class Raw extends State {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         private final XNode node;
 
@@ -653,7 +653,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         @Override
         <IV extends PrismValue> Parsed<IV> parse(@Nullable ItemDefinition<?> itemDefinition, @Nullable QName itemName) throws SchemaException {
             IV value;
-            if (itemDefinition != null && !(itemDefinition instanceof PrismPropertyDefinition && ((PrismPropertyDefinition<?>) itemDefinition).isAnyType())) {
+            if (itemDefinition != null && !(itemDefinition instanceof PrismPropertyDefinition<?> definition && definition.isAnyType())) {
                 if (itemName == null) {
                     itemName = itemDefinition.getItemName();
                 }

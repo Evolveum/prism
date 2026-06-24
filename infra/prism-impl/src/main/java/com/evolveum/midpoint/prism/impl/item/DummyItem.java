@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.item;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
  *
  */
 public abstract class DummyItem<V extends PrismValue, D extends ItemDefinition<?>, R extends Item<V,D>> implements Item<V, D> {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @NotNull private final ItemPath path;
     private final R delegate;
