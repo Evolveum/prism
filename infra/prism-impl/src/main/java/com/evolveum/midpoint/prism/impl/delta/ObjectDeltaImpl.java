@@ -10,6 +10,8 @@ import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult.*;
 
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
+import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
+
 import java.io.Serial;
 import java.util.*;
 import java.util.function.Supplier;
