@@ -92,27 +92,18 @@ public class JaxbDomHackImpl implements JaxbDomHack {
         // QName elementName = null;
         // Set it to multi-value to be on the safe side
         int maxOccurs = -1;
-//        for (Object element : valueElements) {
-            // if (elementName == null) {
-            // elementName = JAXBUtil.getElementQName(element);
-            // }
-            // TODO: try JAXB types
-            if (element instanceof Element domElement) {
-                if (DOMUtil.hasXsiType(domElement)) {
-                    typeName = DOMUtil.resolveXsiType(domElement);
-                    if (typeName != null) {
-                        String maxOccursString = domElement.getAttributeNS(
-                                PrismConstants.A_MAX_OCCURS.getNamespaceURI(),
-                                PrismConstants.A_MAX_OCCURS.getLocalPart());
-                        if (!StringUtils.isBlank(maxOccursString)) {
-                            // TODO
-//                            maxOccurs = parseMultiplicity(maxOccursString, elementName);
-                        }
-//                        break;
-                    }
+        if (DOMUtil.hasXsiType(element)) {
+            typeName = DOMUtil.resolveXsiType(element);
+            if (typeName != null) {
+                String maxOccursString = element.getAttributeNS(
+                        PrismConstants.A_MAX_OCCURS.getNamespaceURI(),
+                        PrismConstants.A_MAX_OCCURS.getLocalPart());
+                if (!StringUtils.isBlank(maxOccursString)) {
+                    // TODO
+                    // maxOccurs = parseMultiplicity(maxOccursString, elementName);
                 }
             }
-//        }
+        }
         // FIXME: now the definition assumes property, may also be property
         // container?
         if (typeName == null) {
