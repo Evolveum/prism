@@ -34,16 +34,16 @@ public class AxiomAntlrLiterals {
     }
 
     public static Object convert(LiteralValueContext value) {
-        if (value instanceof StringValueContext) {
-            return convertString((StringValueContext) value);
-        } else if(value instanceof IntValueContext) {
-            return convertInteger((IntValueContext) value);
-        } else if (value instanceof BooleanValueContext) {
-            return convertBoolean((BooleanValueContext) value);
-        } else if (value instanceof NullValueContext) {
-            return convertNull((NullValueContext) value);
-        } else if (value instanceof FloatValueContext) {
-            return convertFloat((FloatValueContext) value);
+        if (value instanceof StringValueContext stringContext) {
+            return convertString(stringContext);
+        } else if(value instanceof IntValueContext intContext) {
+            return convertInteger(intContext);
+        } else if (value instanceof BooleanValueContext booleanContext) {
+            return convertBoolean(booleanContext);
+        } else if (value instanceof NullValueContext nullContext) {
+            return convertNull(nullContext);
+        } else if (value instanceof FloatValueContext floatContext) {
+            return convertFloat(floatContext);
         }
         throw new UnsupportedOperationException("Unknown type of literal" + value.getClass());
     }

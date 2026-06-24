@@ -55,8 +55,8 @@ public abstract class AbstractUnitTest implements MidpointTestMixin {
     // see the comment in PerformanceTestMethodMixin for explanation
     @AfterMethod
     public void dumpMethodReport(Method method) {
-        if (this instanceof PerformanceTestMethodMixin) {
-            ((PerformanceTestMethodMixin) this).dumpReport(
+        if (this instanceof PerformanceTestMethodMixin mixin) {
+            mixin.dumpReport(
                     getClass().getSimpleName() + "#" + method.getName());
         }
     }
@@ -72,8 +72,8 @@ public abstract class AbstractUnitTest implements MidpointTestMixin {
     // see the comment in PerformanceTestClassMixin for explanation
     @AfterClass
     public void dumpClassReport() {
-        if (this instanceof PerformanceTestClassMixin) {
-            ((PerformanceTestClassMixin) this).dumpReport(getClass().getSimpleName());
+        if (this instanceof PerformanceTestClassMixin mixin) {
+            mixin.dumpReport(getClass().getSimpleName());
         }
     }
     // endregion

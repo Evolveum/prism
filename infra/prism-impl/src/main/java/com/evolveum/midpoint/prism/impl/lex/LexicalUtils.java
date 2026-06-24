@@ -17,8 +17,8 @@ public class LexicalUtils {
 
     @NotNull
     public static RootXNodeImpl createRootXNode(XNodeImpl xnode, QName rootElementName) {
-        if (xnode instanceof RootXNodeImpl) {
-            return (RootXNodeImpl) xnode;
+        if (xnode instanceof RootXNodeImpl impl) {
+            return impl;
         } else {
             RootXNodeImpl xroot = new RootXNodeImpl(rootElementName);
             xroot.setSubnode(xnode);

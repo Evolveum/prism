@@ -34,8 +34,8 @@ class AxiomPathImpl implements AxiomPath {
         if(other == this) {
             return true;
         }
-        if(other instanceof AxiomPath) {
-            return Objects.equals(this.components(), ((AxiomPath) other).components());
+        if(other instanceof AxiomPath path) {
+            return Objects.equals(this.components(), path.components());
         }
         return false;
     }

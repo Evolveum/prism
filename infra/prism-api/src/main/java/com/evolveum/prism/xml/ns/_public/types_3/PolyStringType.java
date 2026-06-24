@@ -320,11 +320,11 @@ public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStr
         if ((source!= null)&&(!source.isEmpty())) {
             for (final Iterator<?> it = source.iterator(); it.hasNext(); ) {
                 final Object next = it.next();
-                if (next instanceof JAXBElement) {
+                if (next instanceof JAXBElement element) {
                     // Referenced elements without classes.
-                    if (((JAXBElement) next).getValue() instanceof String) {
+                    if (element.getValue() instanceof String) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<java.lang.String>
-                        target.add(copyOfStringElement(((JAXBElement) next)));
+                        target.add(copyOfStringElement(element));
                         continue;
                     }
                 }
@@ -418,23 +418,23 @@ public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStr
                     return new MimeType(o.toString());
                 }
                 // Cloneable types.
-                if (o instanceof XMLGregorianCalendar) {
-                    return ((XMLGregorianCalendar) o).clone();
+                if (o instanceof XMLGregorianCalendar calendar) {
+                    return calendar.clone();
                 }
-                if (o instanceof Date) {
-                    return ((Date) o).clone();
+                if (o instanceof Date date) {
+                    return date.clone();
                 }
-                if (o instanceof Calendar) {
-                    return ((Calendar) o).clone();
+                if (o instanceof Calendar calendar1) {
+                    return calendar1.clone();
                 }
-                if (o instanceof TimeZone) {
-                    return ((TimeZone) o).clone();
+                if (o instanceof TimeZone zone) {
+                    return zone.clone();
                 }
-                if (o instanceof Locale) {
-                    return ((Locale) o).clone();
+                if (o instanceof Locale locale) {
+                    return locale.clone();
                 }
-                if (o instanceof Element) {
-                    return (((Element) o).cloneNode(true));
+                if (o instanceof Element element) {
+                    return (element.cloneNode(true));
                 }
                 if (o instanceof JAXBElement) {
                     return copyOf((o));

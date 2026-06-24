@@ -945,8 +945,8 @@ public class PrismContainerImpl<C extends Containerable>
     private Set<ItemPath> getAllItemPaths(Collection<? extends ItemPath> alwaysKeep) {
         Set<ItemPath> paths = new HashSet<>(CollectionUtils.emptyIfNull(alwaysKeep));
         this.accept(v -> {
-            if (v instanceof PrismValue) {
-                paths.add(((PrismValue) v).getPath());
+            if (v instanceof PrismValue value) {
+                paths.add(value.getPath());
             }
         });
         return paths;

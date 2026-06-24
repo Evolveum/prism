@@ -373,8 +373,8 @@ public class PrismSchemaImpl
     private @NotNull List<ItemDefinition<?>> findItemDefinitionsByCompileTimeClassInternal(@NotNull Class<?> compileTimeClass) {
         List<ItemDefinition<?>> found = new ArrayList<>();
         for (Definition def : definitions) {
-            if (def instanceof PrismContainerDefinition) {
-                if (compileTimeClass.equals(((PrismContainerDefinition<?>) def).getCompileTimeClass())) {
+            if (def instanceof PrismContainerDefinition<?> definition) {
+                if (compileTimeClass.equals(definition.getCompileTimeClass())) {
                     found.add((ItemDefinition<?>) def);
                 }
             } else if (def instanceof PrismPropertyDefinition) {

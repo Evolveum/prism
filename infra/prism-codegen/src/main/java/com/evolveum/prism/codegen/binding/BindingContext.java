@@ -220,10 +220,10 @@ public class BindingContext {
             packageName = resolvePackageName(typeDef.getTypeName().getNamespaceURI());
 
         }
-        if (typeDef instanceof ComplexTypeDefinition) {
-            return createFromComplexType(binding, (ComplexTypeDefinition) typeDef, packageName);
-        } else if (typeDef instanceof EnumerationTypeDefinition) {
-            binding.defaultContract(new EnumerationContract((EnumerationTypeDefinition) typeDef, packageName));
+        if (typeDef instanceof ComplexTypeDefinition complexDef) {
+            return createFromComplexType(binding, complexDef, packageName);
+        } else if (typeDef instanceof EnumerationTypeDefinition enumerationDef) {
+            binding.defaultContract(new EnumerationContract(enumerationDef, packageName));
         }
         return binding;
     }

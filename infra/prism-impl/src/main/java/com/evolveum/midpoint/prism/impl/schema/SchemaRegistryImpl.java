@@ -969,8 +969,8 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, Schema
 
     @Override
     public Class<?> determineClassForItemDefinition(ItemDefinition<?> itemDefinition) {
-        if (itemDefinition instanceof PrismContainerDefinition) {
-            Class<?> cls = ((PrismContainerDefinition) itemDefinition).getCompileTimeClass();
+        if (itemDefinition instanceof PrismContainerDefinition definition) {
+            Class<?> cls = definition.getCompileTimeClass();
             if (cls != null) {
                 return cls;
             }

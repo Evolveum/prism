@@ -48,8 +48,8 @@ class KnownImmutables {
         if (object instanceof Immutable) {
             return true;
         }
-        if (object instanceof MutationBehaviourAware<?>) {
-            return ((MutationBehaviourAware<?>) object).mutable();
+        if (object instanceof MutationBehaviourAware<?> aware) {
+            return aware.mutable();
         }
         if (object instanceof String) {
             return true;

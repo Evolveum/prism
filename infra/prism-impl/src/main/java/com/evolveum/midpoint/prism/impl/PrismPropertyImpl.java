@@ -476,18 +476,18 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
                         } else {
                             T realValue = value.getValue();
 
-                            if (DebugUtil.isDetailedDebugDump() && realValue instanceof DebugDumpable) {
+                            if (DebugUtil.isDetailedDebugDump() && realValue instanceof DebugDumpable dumpable) {
                                 // Override in case that the value is both DebugDumpable and ShortDumpable
                                 // In that case we want to force debugDump as we are in detailedDebugMode here.
                                 // This is important e.g. for PolyString, in detailedDebugMode we want to see
                                 // all the PolyString details.
-                                sb.append(((DebugDumpable) realValue).debugDump(indent + 1));
+                                sb.append(dumpable.debugDump(indent + 1));
                             } else {
-                                if (realValue instanceof ShortDumpable) {
+                                if (realValue instanceof ShortDumpable dumpable) {
                                     DebugUtil.indentDebugDump(sb, indent + 1);
-                                    ((ShortDumpable) realValue).shortDump(sb);
-                                } else if (realValue instanceof DebugDumpable) {
-                                    sb.append(((DebugDumpable) realValue).debugDump(indent + 1));
+                                    dumpable.shortDump(sb);
+                                } else if (realValue instanceof DebugDumpable dumpable) {
+                                    sb.append(dumpable.debugDump(indent + 1));
                                 } else {
                                     if (DebugUtil.isDetailedDebugDump()) {
                                         PrismPrettyPrinter.debugDumpValue(sb, indent + 1, realValue, getElementName(), null);
@@ -559,8 +559,8 @@ public class PrismPropertyImpl<T> extends ItemImpl<PrismPropertyValue<T>, PrismP
         if (rawElement == null) {
             return null;
         }
-        if (rawElement instanceof PrimitiveXNodeImpl<?>) {
-            return ((PrimitiveXNodeImpl<?>) rawElement).getStringValue();
+        if (rawElement instanceof PrimitiveXNodeImpl<?> impl) {
+            return impl.getStringValue();
         } else {
             return "<class " + rawElement.getClass().getSimpleName() + ">";
         }

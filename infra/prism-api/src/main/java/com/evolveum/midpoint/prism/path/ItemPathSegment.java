@@ -31,8 +31,8 @@ public abstract class ItemPathSegment implements Serializable, Cloneable {
             return segment.toString();
         } else if (segment instanceof InfraItemName) {
             return segment.toString();
-        } else if (segment instanceof QName) {
-            return DebugUtil.formatElementName((QName) segment);
+        } else if (segment instanceof QName name) {
+            return DebugUtil.formatElementName(name);
         } else {
             return String.valueOf(segment);
         }

@@ -111,23 +111,23 @@ public abstract class StructuredEqualsStrategy {
         if (left == null || right == null) {
             return false;
         }
-        if (left instanceof PlainStructured && right instanceof PlainStructured) {
-            return ((PlainStructured) left).equals(right, this);
+        if (left instanceof PlainStructured structured && right instanceof PlainStructured) {
+            return structured.equals(right, this);
         }
-        if (left instanceof String && right instanceof String) {
-            return equalsNonNull((String) left, (String) right);
+        if (left instanceof String string && right instanceof String other) {
+            return equalsNonNull(string, other);
         }
-        if (left instanceof byte[] && right instanceof byte[]) {
-            return equals((byte[]) left, (byte[]) right);
+        if (left instanceof byte[] bytes && right instanceof byte[] otherBytes) {
+            return equals(bytes, otherBytes);
         }
-        if (left instanceof JAXBElement<?> && right instanceof JAXBElement<?>) {
-            return equalsNonNull((JAXBElement<?>) left, (JAXBElement<?>) right);
+        if (left instanceof JAXBElement<?> element && right instanceof JAXBElement<?> otherElement) {
+            return equalsNonNull(element, otherElement);
         }
-        if (left instanceof Element && right instanceof Element) {
-            return equalsNonNull((Element) left, (Element) right);
+        if (left instanceof Element element && right instanceof Element otherElement) {
+            return equalsNonNull(element, otherElement);
         }
-        if (left instanceof QName && right instanceof QName) {
-            return equalsNonNull((QName) left, (QName) right);
+        if (left instanceof QName leftName  && right instanceof QName rightName) {
+            return equalsNonNull(leftName, rightName);
         }
         return equalsNonNull(left, right);
     }

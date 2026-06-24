@@ -77,8 +77,8 @@ public class YamlReader extends AbstractReader {
             } else {
                 return DOMUtil.XSD_FLOAT;            // suspicious
             }
-        } else if (tag instanceof String) {
-            return QNameUtil.uriToQName((String) tag, true);
+        } else if (tag instanceof String string) {
+            return QNameUtil.uriToQName(string, true);
         } else {
             // TODO issue a warning?
             return null;

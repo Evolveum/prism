@@ -101,7 +101,7 @@ public class NameSet<N extends QName> implements Set<N> {
 
     @Override
     public boolean remove(Object o) {
-        return content.removeIf(name -> o instanceof QName && QNameUtil.match(name, (QName) o));
+        return content.removeIf(name -> o instanceof QName qname && QNameUtil.match(name, qname));
     }
 
     @Override

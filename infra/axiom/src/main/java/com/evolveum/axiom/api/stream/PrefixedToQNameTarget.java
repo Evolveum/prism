@@ -48,8 +48,8 @@ public class PrefixedToQNameTarget implements AxiomStreamTarget<AxiomPrefixedNam
     }
     public void startValue(Object value, SourceLocation loc) {
         // FIXME: Do we want to do this?
-        if(value instanceof AxiomPrefixedName) {
-            value = Preconditions.checkNotNull(argumentResolver.get().resolve((AxiomPrefixedName) value));
+        if(value instanceof AxiomPrefixedName name) {
+            value = Preconditions.checkNotNull(argumentResolver.get().resolve(name));
         }
         target.startValue(value, loc);
     }

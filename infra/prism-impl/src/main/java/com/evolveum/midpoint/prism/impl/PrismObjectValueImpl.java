@@ -118,8 +118,8 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
 
     @Override
     public boolean equals(PrismValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        return other instanceof PrismObjectValue &&
-                Objects.equals(oid, ((PrismObjectValue<?>) other).getOid()) &&
+        return other instanceof PrismObjectValue<?> pov &&
+                Objects.equals(oid, pov.getOid()) &&
                 super.equals(other, strategy);
     }
 

@@ -1043,8 +1043,8 @@ public class SchemaRegistryStateImpl extends AbstractFreezable implements DebugD
                 return;
             }
             TypeDefinition superTypeDef = schemaRegistryState.findTypeDefinitionByType(typeDefinition.getSuperType(), TypeDefinition.class);
-            if (superTypeDef instanceof TypeDefinitionImpl) {
-                ((TypeDefinitionImpl) superTypeDef).addStaticSubType(typeDefinition);
+            if (superTypeDef instanceof TypeDefinitionImpl impl) {
+                impl.addStaticSubType(typeDefinition);
             }
         }
 

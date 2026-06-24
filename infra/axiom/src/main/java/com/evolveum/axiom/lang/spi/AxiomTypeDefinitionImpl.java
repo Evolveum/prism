@@ -50,15 +50,15 @@ public class AxiomTypeDefinitionImpl extends AbstractBaseDefinition implements A
     }
 
     public static AxiomTypeDefinition from(AxiomValue<?> value) {
-        if(value instanceof AxiomTypeDefinition) {
-            return (AxiomTypeDefinition) value;
+        if(value instanceof AxiomTypeDefinition definition) {
+            return definition;
         }
         return from(value.asComplex().get());
     }
 
     public static AxiomTypeDefinition from(AxiomStructuredValue value) {
-        if(value instanceof AxiomTypeDefinition) {
-            return (AxiomTypeDefinition) value;
+        if(value instanceof AxiomTypeDefinition definition) {
+            return definition;
         }
         return new AxiomTypeDefinitionImpl(value.type().get(), null, value.itemMap());
     }

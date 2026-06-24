@@ -42,12 +42,12 @@ public class R_AtomicFilter implements S_ConditionEntry, S_MatchingRuleEntry, S_
         Validate.notNull(itemDefinition);
         Validate.notNull(owner);
         this.itemPath = itemPath;
-        if (itemDefinition instanceof PrismPropertyDefinition) {
-            propertyDefinition = (PrismPropertyDefinition<?>) itemDefinition;
+        if (itemDefinition instanceof PrismPropertyDefinition<?> definition) {
+            propertyDefinition = definition;
             referenceDefinition = null;
-        } else if (itemDefinition instanceof PrismReferenceDefinition) {
+        } else if (itemDefinition instanceof PrismReferenceDefinition definition) {
             propertyDefinition = null;
-            referenceDefinition = (PrismReferenceDefinition) itemDefinition;
+            referenceDefinition = definition;
         } else {
             throw new IllegalStateException("Unsupported item definition: " + itemDefinition);
         }

@@ -106,8 +106,8 @@ public class AxiomItemDefinitionImpl extends AbstractBaseDefinition implements A
     }
 
     public static AxiomItemDefinition from(AxiomValue<?> value) {
-        if(value instanceof AxiomItemDefinition) {
-            return (AxiomItemDefinition) value;
+        if(value instanceof AxiomItemDefinition definition) {
+            return definition;
         }
         return new AxiomItemDefinitionImpl(value.type().get(), value.asComplex().get().itemMap(), value.asComplex().get().infraItems());
     }

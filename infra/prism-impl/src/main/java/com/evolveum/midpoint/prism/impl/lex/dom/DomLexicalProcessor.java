@@ -49,7 +49,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     @NotNull
     @Override
     public RootXNodeImpl read(@NotNull ParserSource source, @NotNull ParsingContext parsingContext, ItemDefinition<?> definition) throws SchemaException, IOException {
-        if (source instanceof ParserElementSource) {
+        if (source instanceof ParserElementSource elementSource) {
             Element root;
 
             if (parsingContext.isValidation()) {
@@ -77,7 +77,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
                     throw new RuntimeException(e);
                 }
             } else {
-                root = ((ParserElementSource) source).getElement();
+                root = elementSource.getElement();
             }
 
             return new DomReader(root, schemaRegistry, PrismNamespaceContext.EMPTY, parsingContext).read();

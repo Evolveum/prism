@@ -158,8 +158,8 @@ class DomReader {
         for (Element metadataChild : metadataChildren) {
             XNodeImpl metadata = readElementContent(metadataChild, schema.metadataDef(), schema, parentNsContext, false);
             if (metadata instanceof MapXNode) {
-                if (node instanceof MetadataAware) {
-                    ((MetadataAware) node).addMetadataNode((MapXNode) metadata);
+                if (node instanceof MetadataAware aware) {
+                    aware.addMetadataNode((MapXNode) metadata);
                 } else {
                     parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                             ValidationLogType.ERROR,

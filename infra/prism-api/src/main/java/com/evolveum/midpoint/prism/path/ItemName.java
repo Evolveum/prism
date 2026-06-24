@@ -49,8 +49,8 @@ public class ItemName extends QName implements ItemPath {
         if (name == null) {
             return null;
         }
-        if (name instanceof ItemName) {
-            return (ItemName) name;
+        if (name instanceof ItemName itemName) {
+            return itemName;
         }
         if (Strings.isNullOrEmpty(name.getPrefix())) {
             // FIXME: Should we use interned? would not this slow-down this construction?

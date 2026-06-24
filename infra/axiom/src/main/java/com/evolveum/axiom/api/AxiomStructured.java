@@ -11,8 +11,8 @@ import java.util.Optional;
 public interface AxiomStructured {
 
     default Optional<? extends AxiomStructuredValue> asComplex() {
-        if(this instanceof AxiomStructuredValue)  {
-            return Optional.of((AxiomStructuredValue) this);
+        if(this instanceof AxiomStructuredValue value)  {
+            return Optional.of(value);
         }
         return Optional.empty();
     }

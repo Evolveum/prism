@@ -156,9 +156,9 @@ public class NAryLogicalOperatorFilterType
         // CC-XJC Version 2.0 Build 2011-09-16T18:27:24+0000
         if ((source != null) && (!source.isEmpty())) {
             for (final Object next : source) {
-                if (next instanceof Element) {
+                if (next instanceof Element element) {
                     // CWildcardTypeInfo: org.w3c.dom.Element
-                    target.add(((Element) ((Element) next).cloneNode(true)));
+                    target.add(((Element) element.cloneNode(true)));
                     continue;
                 }
                 // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/

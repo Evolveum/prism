@@ -341,8 +341,8 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private ObjectFilter parseTextFilter(XNodeImpl clauseContent, ItemDefinition<?> pcd, boolean preliminaryParsingOnly) throws SchemaException {
-        if (clauseContent instanceof PrimitiveXNode<?>) {
-            String filter = ((PrimitiveXNode<?>) clauseContent).getParsedValue(DOMUtil.XSD_STRING, String.class);
+        if (clauseContent instanceof PrimitiveXNode<?> node) {
+            String filter = node.getParsedValue(DOMUtil.XSD_STRING, String.class);
             if (filter != null) {
                 if (preliminaryParsingOnly) {
                     // FIXME: Run syntax validation
@@ -559,8 +559,8 @@ public class QueryConverterImpl implements QueryConverter {
     private List<String> getStringValues(
             XNodeImpl valueXnode) throws SchemaException {
         List<String> values = new ArrayList<>();
-        if (valueXnode instanceof ListXNodeImpl) {
-            for (XNodeImpl subnode : (ListXNodeImpl) valueXnode) {
+        if (valueXnode instanceof ListXNodeImpl impl) {
+            for (XNodeImpl subnode : impl) {
                 if (subnode instanceof PrimitiveXNodeImpl) {
                     //noinspection unchecked
                     values.add(((PrimitiveXNodeImpl<String>) subnode).getParsedValue(DOMUtil.XSD_STRING, String.class));
@@ -583,8 +583,8 @@ public class QueryConverterImpl implements QueryConverter {
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
         PrismObjectDefinition<?> def = prismContext.getSchemaRegistry().findObjectDefinitionByType(type);
         ObjectFilter subFilter;
-        if (subXFilter instanceof MapXNodeImpl) {
-            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, def, preliminaryParsingOnly, pc);
+        if (subXFilter instanceof MapXNodeImpl impl) {
+            subFilter = parseFilterInternal(impl, def, preliminaryParsingOnly, pc);
         } else {
             subFilter = null;
         }
@@ -610,8 +610,8 @@ public class QueryConverterImpl implements QueryConverter {
         ObjectFilter subFilter;
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
 
-        if (subXFilter instanceof MapXNodeImpl) {
-            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, def, preliminaryParsingOnly, pc);
+        if (subXFilter instanceof MapXNodeImpl impl) {
+            subFilter = parseFilterInternal(impl, def, preliminaryParsingOnly, pc);
         } else {
             subFilter = null;
         }
@@ -635,8 +635,8 @@ public class QueryConverterImpl implements QueryConverter {
         ObjectFilter subFilter;
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
 
-        if (subXFilter instanceof MapXNodeImpl) {
-            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, def, preliminaryParsingOnly, pc);
+        if (subXFilter instanceof MapXNodeImpl impl) {
+            subFilter = parseFilterInternal(impl, def, preliminaryParsingOnly, pc);
         } else {
             subFilter = null;
         }
@@ -657,8 +657,8 @@ public class QueryConverterImpl implements QueryConverter {
         XNodeImpl subXFilter = clauseXMap.get(ELEMENT_FILTER);
         ObjectFilter subFilter;
         PrismContainerDefinition<?> subPcd = pcd != null ? pcd.findContainerDefinition(path) : null;
-        if (subXFilter instanceof MapXNodeImpl) {
-            subFilter = parseFilterInternal((MapXNodeImpl) subXFilter, subPcd, preliminaryParsingOnly, pc);
+        if (subXFilter instanceof MapXNodeImpl impl) {
+            subFilter = parseFilterInternal(impl, subPcd, preliminaryParsingOnly, pc);
         } else {
             subFilter = null;
         }
@@ -713,12 +713,12 @@ public class QueryConverterImpl implements QueryConverter {
 
         XNodeImpl filterXnode = clauseXMap.get(ELEMENT_FILTER);
         ObjectFilter targetFilter = null;
-        if (filterXnode instanceof MapXNodeImpl) {
+        if (filterXnode instanceof MapXNodeImpl impl) {
             PrismContainerDefinition<?> targetSchema = null;
             if (refDef != null && refDef.getTargetTypeName() != null) {
                 targetSchema = prismContext.getSchemaRegistry().findContainerDefinitionByType(refDef.getTargetTypeName());
             }
-            targetFilter = parseFilterInternal((MapXNodeImpl) filterXnode, targetSchema, preliminaryParsingOnly, pc);
+            targetFilter = parseFilterInternal(impl, targetSchema, preliminaryParsingOnly, pc);
         } else if (filterXnode != null) {
             throw new SchemaException("Unsupported type for element filter.");
         }
@@ -917,36 +917,36 @@ public class QueryConverterImpl implements QueryConverter {
                 || filter instanceof SubstringFilter
                 || filter instanceof AnyInFilter) {
             return serializeComparisonFilter((PropertyValueFilter<?>) filter, xnodeSerializer);
-        } else if (filter instanceof RefFilter) {
-            return serializeRefFilter((RefFilter) filter, xnodeSerializer);
-        } else if (filter instanceof OrgFilter) {
-            return serializeOrgFilter((OrgFilter) filter);
-        } else if (filter instanceof InOidFilter) {
-            return serializeInOidFilter((InOidFilter) filter);
-        } else if (filter instanceof FullTextFilter) {
-            return serializeFullTextFilter((FullTextFilter) filter);
+        } else if (filter instanceof RefFilter refFilter) {
+            return serializeRefFilter(refFilter, xnodeSerializer);
+        } else if (filter instanceof OrgFilter orgFilter) {
+            return serializeOrgFilter(orgFilter);
+        } else if (filter instanceof InOidFilter oidFilter) {
+            return serializeInOidFilter(oidFilter);
+        } else if (filter instanceof FullTextFilter textFilter) {
+            return serializeFullTextFilter(textFilter);
         }
 
         // complex filters
-        if (filter instanceof AndFilter) {
-            return serializeAndFilter((AndFilter) filter, xnodeSerializer);
-        } else if (filter instanceof OrFilter) {
-            return serializeOrFilter((OrFilter) filter, xnodeSerializer);
-        } else if (filter instanceof NotFilter) {
-            return serializeNotFilter((NotFilter) filter, xnodeSerializer);
+        if (filter instanceof AndFilter andFilter) {
+            return serializeAndFilter(andFilter, xnodeSerializer);
+        } else if (filter instanceof OrFilter orFilter) {
+            return serializeOrFilter(orFilter, xnodeSerializer);
+        } else if (filter instanceof NotFilter notFilter) {
+            return serializeNotFilter(notFilter, xnodeSerializer);
         }
 
-        if (filter instanceof TypeFilter) {
-            return serializeTypeFilter((TypeFilter) filter, xnodeSerializer);
-        } else if (filter instanceof ExistsFilter) {
-            return serializeExistsFilter((ExistsFilter) filter, xnodeSerializer);
+        if (filter instanceof TypeFilter typeFilter) {
+            return serializeTypeFilter(typeFilter, xnodeSerializer);
+        } else if (filter instanceof ExistsFilter existsFilter) {
+            return serializeExistsFilter(existsFilter, xnodeSerializer);
         }
-        if (filter instanceof ReferencedByFilter) {
-            return serializeReferencedByFilter((ReferencedByFilter) filter, xnodeSerializer);
-        } else if (filter instanceof OwnedByFilter) {
-            return serializeOwnedByFilter((OwnedByFilter) filter, xnodeSerializer);
-        } else if (filter instanceof FuzzyStringMatchFilter<?>) {
-            return serializeFuzzyStringMatchFilter((FuzzyStringMatchFilter<?>) filter, xnodeSerializer);
+        if (filter instanceof ReferencedByFilter byFilter1) {
+            return serializeReferencedByFilter(byFilter1, xnodeSerializer);
+        } else if (filter instanceof OwnedByFilter byFilter) {
+            return serializeOwnedByFilter(byFilter, xnodeSerializer);
+        } else if (filter instanceof FuzzyStringMatchFilter<?> matchFilter) {
+            return serializeFuzzyStringMatchFilter(matchFilter, xnodeSerializer);
         }
 
         throw new UnsupportedOperationException("Unsupported filter type: " + filter);
@@ -1045,10 +1045,10 @@ public class QueryConverterImpl implements QueryConverter {
         QName clause;
         if (filter instanceof EqualFilter) {
             clause = CLAUSE_EQUAL;
-        } else if (filter instanceof GreaterFilter) {
-            clause = ((GreaterFilter<?>) filter).isEquals() ? CLAUSE_GREATER_OR_EQUAL : CLAUSE_GREATER;
-        } else if (filter instanceof LessFilter) {
-            clause = ((LessFilter<?>) filter).isEquals() ? CLAUSE_LESS_OR_EQUAL : CLAUSE_LESS;
+        } else if (filter instanceof GreaterFilter<?> greaterFilter) {
+            clause = greaterFilter.isEquals() ? CLAUSE_GREATER_OR_EQUAL : CLAUSE_GREATER;
+        } else if (filter instanceof LessFilter<?> lessFilter) {
+            clause = lessFilter.isEquals() ? CLAUSE_LESS_OR_EQUAL : CLAUSE_LESS;
         } else if (filter instanceof SubstringFilter) {
             clause = CLAUSE_SUBSTRING;
         } else if (filter instanceof AnyInFilter) {
@@ -1101,11 +1101,11 @@ public class QueryConverterImpl implements QueryConverter {
     }
 
     private <T> void postProcessValueFilter(PropertyValueFilter<T> filter, MapXNodeImpl mapXNode) {
-        if (filter instanceof SubstringFilter) {
-            if (((SubstringFilter<?>) filter).isAnchorStart()) {
+        if (filter instanceof SubstringFilter<?> substringFilter) {
+            if (substringFilter.isAnchorStart()) {
                 mapXNode.put(ELEMENT_ANCHOR_START, new PrimitiveXNodeImpl<>(true));
             }
-            if (((SubstringFilter<?>) filter).isAnchorEnd()) {
+            if (substringFilter.isAnchorEnd()) {
                 mapXNode.put(ELEMENT_ANCHOR_END, new PrimitiveXNodeImpl<>(true));
             }
         }

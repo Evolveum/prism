@@ -101,10 +101,10 @@ public class LexicalProcessorRegistry {
             return nullLexicalProcessor;
         } else if (source instanceof ParserElementSource) {
             return processorFor(LANG_XML);
-        } else if (source instanceof ParserFileSource) {
-            return findProcessor(((ParserFileSource) source).getFile());
-        } else if (source instanceof ParserStringSource) {
-            return findProcessor(((ParserStringSource) source).getData());
+        } else if (source instanceof ParserFileSource fileSource) {
+            return findProcessor(fileSource.getFile());
+        } else if (source instanceof ParserStringSource stringSource) {
+            return findProcessor(stringSource.getData());
         } else {
             throw new IllegalArgumentException("Cannot determine lexical processor from " + source.getClass());
         }

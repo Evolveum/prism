@@ -206,9 +206,9 @@ class JsonObjectTokenReader {
     }
 
     private void processContextDeclaration(QName name, XNodeImpl value) throws SchemaException {
-        if (value instanceof MapXNode) {
+        if (value instanceof MapXNode node) {
             Builder<String, String> nsCtx = ImmutableMap.<String, String>builder();
-            for (Entry<QName, ? extends XNode> entry : ((MapXNode) value).toMap().entrySet()) {
+            for (Entry<QName, ? extends XNode> entry : node.toMap().entrySet()) {
                 String key = entry.getKey().getLocalPart();
                 String ns = getCurrentFieldStringValue(entry.getKey(), (XNodeImpl) entry.getValue());
                 nsCtx.put(key, ns);
@@ -265,12 +265,12 @@ class JsonObjectTokenReader {
     }
 
     private void processMetadataValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-        if (currentFieldValue instanceof MapXNode) {
-            metadata.add((MapXNode) currentFieldValue);
-        } else if (currentFieldValue instanceof ListXNodeImpl) {
-            for (XNodeImpl metadataValue : (ListXNodeImpl) currentFieldValue) {
-                if (metadataValue instanceof MapXNode) {
-                    metadata.add((MapXNode) metadataValue);
+        if (currentFieldValue instanceof MapXNode node1) {
+            metadata.add(node1);
+        } else if (currentFieldValue instanceof ListXNodeImpl impl) {
+            for (XNodeImpl metadataValue : impl) {
+                if (metadataValue instanceof MapXNode node) {
+                    metadata.add(node);
                 } else {
                     ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                             ValidationLogType.ERROR,
@@ -309,8 +309,8 @@ class JsonObjectTokenReader {
     }
 
     private void processId(QName name, XNodeImpl value) {
-        if (value instanceof PrimitiveXNodeImpl<?>) {
-            ((PrimitiveXNodeImpl) value).setAttribute(true);
+        if (value instanceof PrimitiveXNodeImpl<?> impl) {
+            impl.setAttribute(true);
         }
         containerId = value;
     }
@@ -389,23 +389,23 @@ class JsonObjectTokenReader {
         addTypeNameTo(ret);
         addElementNameTo(ret);
         addMetadataTo(ret);
-        if (ret instanceof PrimitiveXNodeImpl<?>) {
-            ((PrimitiveXNodeImpl) ret).setAttribute(definition.isXmlAttribute());
+        if (ret instanceof PrimitiveXNodeImpl<?> impl) {
+            impl.setAttribute(definition.isXmlAttribute());
         }
 
         return ret;
     }
 
     private void addIdTo(XNodeImpl ret) {
-        if (containerId != null && ret instanceof MapXNodeImpl) {
-            ((MapXNodeImpl) ret).put(XNodeImpl.KEY_CONTAINER_ID, containerId);
+        if (containerId != null && ret instanceof MapXNodeImpl impl) {
+            impl.put(XNodeImpl.KEY_CONTAINER_ID, containerId);
         }
     }
 
     private void addMetadataTo(XNodeImpl rv) throws SchemaException {
         if (!metadata.isEmpty()) {
-            if (rv instanceof MetadataAware) {
-                ((MetadataAware) rv).setMetadataNodes(metadata);
+            if (rv instanceof MetadataAware aware) {
+                aware.setMetadataNodes(metadata);
             } else {
                 ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
@@ -456,8 +456,8 @@ class JsonObjectTokenReader {
     }
 
     private String getCurrentFieldStringValue(QName name, XNodeImpl currentFieldValue) throws SchemaException {
-        if (currentFieldValue instanceof PrimitiveXNodeImpl) {
-            return ((PrimitiveXNodeImpl<?>) currentFieldValue).getStringValue();
+        if (currentFieldValue instanceof PrimitiveXNodeImpl<?> impl) {
+            return impl.getStringValue();
         } else {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,

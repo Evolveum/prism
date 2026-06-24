@@ -156,12 +156,12 @@ public class DeltaBuilder<C extends Containerable>
     @Override
     public S_ValuesEntry item(ItemPath path, ItemDefinition definition) {
         ItemDelta newDelta;
-        if (definition instanceof PrismPropertyDefinition) {
-            newDelta = new PropertyDeltaImpl<>(path, (PrismPropertyDefinition<?>) definition);
-        } else if (definition instanceof PrismContainerDefinition) {
-            newDelta = new ContainerDeltaImpl<>(path, (PrismContainerDefinition<?>) definition);
-        } else if (definition instanceof PrismReferenceDefinition) {
-            newDelta = new ReferenceDeltaImpl(path, (PrismReferenceDefinition) definition);
+        if (definition instanceof PrismPropertyDefinition<?> propertyDefinition) {
+            newDelta = new PropertyDeltaImpl<>(path, propertyDefinition);
+        } else if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
+            newDelta = new ContainerDeltaImpl<>(path, containerDefinition);
+        } else if (definition instanceof PrismReferenceDefinition referenceDefinition) {
+            newDelta = new ReferenceDeltaImpl(path, referenceDefinition);
         } else {
             throw new IllegalStateException("Unsupported definition type: " + definition);
         }
@@ -516,8 +516,8 @@ public class DeltaBuilder<C extends Containerable>
         } else if (currentDelta instanceof ContainerDelta<?>) {
             return ((Containerable) v).asPrismContainerValue();
         } else if (currentDelta instanceof ReferenceDelta) {
-            if (v instanceof Referencable) {
-                return ((Referencable) v).asReferenceValue();
+            if (v instanceof Referencable referencable) {
+                return referencable.asReferenceValue();
             } else {
                 throw new IllegalStateException("Expected Referencable, got: " + v);
             }

@@ -293,8 +293,8 @@ abstract class PrismParserImpl implements PrismParser {
         } else if (clazz != null && Objectable.class.isAssignableFrom(clazz)) {
             // we need to NOT strip off OID
             Item<PrismValue, ItemDefinition<?>> parsed = doParseItem(root, clazz);
-            if (parsed instanceof PrismObject) {
-                return (T) ((PrismObject) parsed).asObjectable();
+            if (parsed instanceof PrismObject object) {
+                return (T) object.asObjectable();
             } else if (context.isCompat() && parsed instanceof PrismProperty) {
                 // This case also only happens if requested class is of types3.ObjectType
                 // In some cases (eg. parsing type which was removed, but was derived from object type

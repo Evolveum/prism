@@ -248,8 +248,8 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
 
     @Override
     public boolean equals(PrismValue otherValue, @NotNull EquivalenceStrategy equivalenceStrategy) {
-        if (equivalenceStrategy instanceof ParameterizedEquivalenceStrategy) {   // todo or skip this check?
-            return equals(otherValue, (ParameterizedEquivalenceStrategy) equivalenceStrategy);
+        if (equivalenceStrategy instanceof ParameterizedEquivalenceStrategy strategy) {   // todo or skip this check?
+            return equals(otherValue, strategy);
         } else {
             return equivalenceStrategy.equals(this, otherValue);
         }

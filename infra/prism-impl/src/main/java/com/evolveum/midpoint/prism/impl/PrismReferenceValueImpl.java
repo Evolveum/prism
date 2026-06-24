@@ -479,7 +479,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
 
     @Override
     public boolean equals(PrismValue other, @NotNull ParameterizedEquivalenceStrategy strategy) {
-        return other instanceof PrismReferenceValue && equals((PrismReferenceValue) other, strategy);
+        return other instanceof PrismReferenceValue prv && equals(prv, strategy);
     }
 
     @SuppressWarnings({ "RedundantIfStatement" })

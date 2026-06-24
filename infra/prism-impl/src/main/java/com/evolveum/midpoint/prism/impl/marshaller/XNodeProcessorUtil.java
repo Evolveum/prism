@@ -107,8 +107,7 @@ public class XNodeProcessorUtil {
         try {
             protector.decrypt(protectedType);
             Object clearValue = protectedType.getClearValue();
-            if (clearValue instanceof String){
-                String clear = (String) clearValue;
+            if (clearValue instanceof String clear){
                 if (clear.startsWith("<value>") && clear.endsWith("</value>")){
                     clear = clear.replace("<value>","").replace("</value>", "");
                     clearValue = (String) clear;

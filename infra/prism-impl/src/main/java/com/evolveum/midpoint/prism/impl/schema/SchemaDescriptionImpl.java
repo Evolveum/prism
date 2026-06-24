@@ -163,8 +163,8 @@ public final class SchemaDescriptionImpl extends AbstractFreezable implements Sc
 
     @Override
     public Element getDomElement() {
-        if (node instanceof Element) {
-            return (Element)node;
+        if (node instanceof Element element) {
+            return element;
         } else {
             return DOMUtil.getFirstChildElement(node);
         }

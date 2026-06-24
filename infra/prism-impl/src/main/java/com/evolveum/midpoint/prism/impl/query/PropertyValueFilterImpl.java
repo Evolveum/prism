@@ -56,8 +56,8 @@ public abstract class PropertyValueFilterImpl<T>
         if (value == null) {
             return;
         }
-        if (value instanceof Collection) {
-            for (Object o : (Collection<?>) value) {
+        if (value instanceof Collection<?> collection) {
+            for (Object o : collection) {
                 addToPrismValues(pVals, o);
             }
             return;
@@ -67,8 +67,8 @@ public abstract class PropertyValueFilterImpl<T>
         }
 
         PrismPropertyValue<?> pVal;
-        if (value instanceof PrismPropertyValue) {
-            pVal = (PrismPropertyValue<?>) value;
+        if (value instanceof PrismPropertyValue<?> propertyValue) {
+            pVal = propertyValue;
             if (pVal.getParent() != null) {
                 pVal = pVal.clone();
             }

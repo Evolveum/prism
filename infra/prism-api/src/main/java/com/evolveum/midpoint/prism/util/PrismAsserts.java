@@ -177,8 +177,8 @@ public class PrismAsserts {
         Visitor visitor = new Visitor() {
             @Override
             public void visit(Visitable visitable) {
-                if (visitable != null && visitable instanceof Item) {
-                    assertNotEmpty((Item<?,?>)visitable);
+                if (visitable != null && visitable instanceof Item<?,?> item) {
+                    assertNotEmpty(item);
                 }
             }
         };
@@ -315,8 +315,8 @@ public class PrismAsserts {
     public static void assertParentConsistency(Item<?,?> item) {
         for (PrismValue pval: item.getValues()) {
             assert pval.getParent() == item : "Wrong parent of "+pval+" in "+PrettyPrinter.prettyPrint(item.getElementName());
-            if (pval instanceof PrismContainerValue) {
-                assertParentConsistency((PrismContainerValue)pval);
+            if (pval instanceof PrismContainerValue<?> value) {
+                assertParentConsistency(value);
             }
         }
     }
@@ -514,9 +514,8 @@ public class PrismAsserts {
 
     private static <T> Visitor createOriginVisitor(final Visitable visitableItem, final Objectable expectedOriginObject, final OriginType... expectedOriginTypes) {
         return (visitable) -> {
-                if (visitable instanceof PrismValue) {
+                if (visitable instanceof PrismValue pval) {
                     var valueMetadataType = PrismContext.get().getValueMetadataFactory().getDefinition().getTypeName();
-                    PrismValue pval = (PrismValue)visitable;
 
                     PrismValue maybeMetadata = pval;
                     while (maybeMetadata != null) {
@@ -717,8 +716,7 @@ public class PrismAsserts {
     // Calendar asserts
 
     public static void assertEquals(String message, XMLGregorianCalendar expected, Object actual) {
-        if (actual instanceof XMLGregorianCalendar) {
-            XMLGregorianCalendar actualXmlCal = (XMLGregorianCalendar)actual;
+        if (actual instanceof XMLGregorianCalendar actualXmlCal) {
             assertEquals(message, XmlTypeConverter.toMillis(expected), XmlTypeConverter.toMillis(actualXmlCal));
         } else {
             assert false : message+": expected instance of XMLGregorianCalendar but got "+actual.getClass().getName();
@@ -969,13 +967,12 @@ public class PrismAsserts {
     }
 
     private static <O extends Objectable> PrismObject<O> elementToPrism(Object element) throws SchemaException {
-        if (element instanceof Element) {
-            return toPrism((Element)element);
-        } else if (element instanceof JAXBElement<?>) {
-            JAXBElement<?> jaxbElement = (JAXBElement)element;
+        if (element instanceof Element domElement) {
+            return toPrism(domElement);
+        } else if (element instanceof JAXBElement<?> jaxbElement) {
             Object value = jaxbElement.getValue();
-            if (value instanceof Objectable) {
-                return ((Objectable)value).asPrismObject();
+            if (value instanceof Objectable objectable) {
+                return objectable.asPrismObject();
             } else {
                 throw new IllegalArgumentException("Unknown JAXB element value "+value);
             }
@@ -1026,8 +1023,8 @@ public class PrismAsserts {
 
     public static void assertAllParsedNodes(XNode xnode) {
         Visitor visitor = visitable -> {
-            if ((visitable instanceof PrimitiveXNode<?>)) {
-                assert ((PrimitiveXNode<?>)visitable).isParsed() : "Xnode "+visitable+" is not parsed";
+            if ((visitable instanceof PrimitiveXNode<?> node)) {
+                assert node.isParsed() : "Xnode "+visitable+" is not parsed";
             }
         };
         xnode.accept(visitor);

@@ -120,12 +120,12 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
         assert filterRealValue != null;
         assert objectRealValue != null;
 
-        if (filterRealValue instanceof Number && objectRealValue instanceof Number) {
-            return matchNumbers((Number) objectRealValue, (Number) filterRealValue);
+        if (filterRealValue instanceof Number filterNumber && objectRealValue instanceof Number objectNumber) {
+            return matchNumbers(objectNumber, filterNumber);
         } else if (isStringLike(filterRealValue) && isStringLike(objectRealValue)) {
             return matchStringLike(objectRealValue, filterRealValue, matchingRule);
-        } else if (filterRealValue instanceof XMLGregorianCalendar && objectRealValue instanceof XMLGregorianCalendar) {
-            return matchForDateTime((XMLGregorianCalendar) objectRealValue, (XMLGregorianCalendar) filterRealValue);
+        } else if (filterRealValue instanceof XMLGregorianCalendar filterCalendar && objectRealValue instanceof XMLGregorianCalendar objectCalendar) {
+            return matchForDateTime(objectCalendar, filterCalendar);
         } else {
             throw new SchemaException("Couldn't compare incompatible/unsupported types: filter: " + filterRealValue.getClass() +
                     ", object: " + objectRealValue.getClass());
@@ -141,44 +141,44 @@ public abstract class ComparativeFilterImpl<T> extends PropertyValueFilterImpl<T
     }
 
     private boolean matchStringLike(Object object, Object filter, MatchingRule<?> matchingRule) throws SchemaException {
-        if (object instanceof String) {
-            return matchForString((String) object, toString(filter), matchingRule);
-        } else if (object instanceof PolyString) {
-            return matchForPolyString((PolyString) object, toPolyString(filter), matchingRule);
-        } else if (object instanceof PolyStringType) {
-            return matchForPolyString(PolyString.toPolyString((PolyStringType) object), toPolyString(filter), matchingRule);
+        if (object instanceof String string) {
+            return matchForString(string, toString(filter), matchingRule);
+        } else if (object instanceof PolyString polyString) {
+            return matchForPolyString(polyString, toPolyString(filter), matchingRule);
+        } else if (object instanceof PolyStringType type) {
+            return matchForPolyString(PolyString.toPolyString(type), toPolyString(filter), matchingRule);
         } else {
             throw new AssertionError(object);
         }
     }
 
     private String toString(Object value) {
-        if (value instanceof String) {
-            return (String) value;
-        } else if (value instanceof PolyString) {
-            return ((PolyString) value).getOrig();
-        } else if (value instanceof PolyStringType) {
-            return ((PolyStringType) value).getOrig();
+        if (value instanceof String string) {
+            return string;
+        } else if (value instanceof PolyString poly) {
+            return poly.getOrig();
+        } else if (value instanceof PolyStringType poly) {
+            return poly.getOrig();
         } else {
             return String.valueOf(value);
         }
     }
 
     private PolyString toPolyString(Object value) {
-        if (value instanceof PolyString) {
-            return (PolyString) value;
-        } else if (value instanceof PolyStringType) {
-            return PolyString.toPolyString((PolyStringType) value);
+        if (value instanceof PolyString string) {
+            return string;
+        } else if (value instanceof PolyStringType type) {
+            return PolyString.toPolyString(type);
         } else {
             return PolyString.fromOrig(toString(value));
         }
     }
 
     private static BigDecimal toBigDecimal(Number number) {
-        if (number instanceof BigDecimal) {
-            return (BigDecimal) number;
-        } else if (number instanceof BigInteger) {
-            return new BigDecimal((BigInteger) number);
+        if (number instanceof BigDecimal decimal) {
+            return decimal;
+        } else if (number instanceof BigInteger integer) {
+            return new BigDecimal(integer);
         } else if (number instanceof Byte || number instanceof Short || number instanceof Integer || number instanceof Long) {
             return BigDecimal.valueOf(number.longValue());
         } else if (number instanceof Float || number instanceof Double) {

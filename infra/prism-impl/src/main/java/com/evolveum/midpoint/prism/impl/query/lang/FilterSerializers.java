@@ -426,9 +426,9 @@ public class FilterSerializers {
 
         var args = new ArrayList<>();
         args.add(source.getValues().get(0).getValue());
-        if (method instanceof ThresholdMatchingMethod) {
-            args.add(((ThresholdMatchingMethod<?>) method).getThreshold());
-            args.add(((ThresholdMatchingMethod<?>) method).isInclusive());
+        if (method instanceof ThresholdMatchingMethod<?> matchingMethod) {
+            args.add(matchingMethod.getThreshold());
+            args.add(matchingMethod.isInclusive());
         }
         target.writeRawValues(args);
     }

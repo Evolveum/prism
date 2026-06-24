@@ -33,9 +33,9 @@ public class ItemDeltaCollectionsUtil {
                 return (DD) delta;
             }
             // e.g. when deleting credentials we match also deletion of credentials/password (is that correct?)
-            if (!strict && delta instanceof ContainerDelta<?> && delta.getPath().isSubPath(propertyPath)) {
+            if (!strict && delta instanceof ContainerDelta containerDelta && delta.getPath().isSubPath(propertyPath)) {
                 //noinspection unchecked
-                return (DD) ((ContainerDelta)delta).getSubDelta(propertyPath.remainder(delta.getPath()));
+                return (DD) containerDelta.getSubDelta(propertyPath.remainder(delta.getPath()));
             }
         }
         return null;

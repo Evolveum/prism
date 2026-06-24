@@ -262,10 +262,10 @@ public class PrismUnmarshaller {
         Item result;
         if (itemDefinition == null || itemDefinition instanceof PrismPropertyDefinition) {
             result = parseProperty(node, itemName, (PrismPropertyDefinition<?>) itemDefinition, pc);
-        } else if (itemDefinition instanceof PrismContainerDefinition) {    // also objects go here
-            result = parseContainer(node, itemName, (PrismContainerDefinition<?>) itemDefinition, pc);
-        } else if (itemDefinition instanceof PrismReferenceDefinition) {
-            result = parseReference(node, itemName, (PrismReferenceDefinition) itemDefinition, pc);
+        } else if (itemDefinition instanceof PrismContainerDefinition<?> definition) {    // also objects go here
+            result = parseContainer(node, itemName, definition, pc);
+        } else if (itemDefinition instanceof PrismReferenceDefinition definition) {
+            result = parseReference(node, itemName, definition, pc);
         } else {
             if (pc.isCompat()) {
                 pc.warnOrThrow(LOGGER, () -> new ValidationLog(
@@ -349,8 +349,8 @@ public class PrismUnmarshaller {
     }
 
     private static boolean isContainerId(QName itemName, XNodeImpl node, PrismContainerDefinition<?> parentDef) {
-        if (node instanceof PrimitiveXNodeImpl<?> && QNameUtil.match(itemName, XNodeImpl.KEY_CONTAINER_ID)) {
-            if (((PrimitiveXNodeImpl<?>) node).isAttribute()) {
+        if (node instanceof PrimitiveXNodeImpl<?> impl && QNameUtil.match(itemName, XNodeImpl.KEY_CONTAINER_ID)) {
+            if (impl.isAttribute()) {
                 return true;
             }
             if (parentDef.isRuntimeSchema() && itemName.getNamespaceURI() != null) {
@@ -443,7 +443,7 @@ public class PrismUnmarshaller {
                     ((PrismContainerValue<C>) prismObjectDefinition.createValue()),
                     defaultCtd);
         } else {
-            Long id = xnode instanceof MapXNodeImpl ? getContainerId(((MapXNodeImpl) xnode), containerDef) : null;
+            Long id = xnode instanceof MapXNodeImpl map ? getContainerId(map, containerDef) : null;
             // override (refine) container definition, if explicit type is specified and is more specific
             var refinedCtd = refineContainerCtdFromXsiType(defaultCtd, xnode, pc);
             return new ValueWithDefinition<>(
@@ -573,7 +573,7 @@ public class PrismUnmarshaller {
                         "Unsupported migration operation '%s' for item '%s' (in '%s') while parsing node".formatted(migration.getOperation(), itemName.getLocalPart(), containerDef.getItemName().getLocalPart())));
             }
         }
-        boolean anyXsd = typeDefinition instanceof ComplexTypeDefinition && ((ComplexTypeDefinition) typeDefinition).isXsdAnyMarker();
+        boolean anyXsd = typeDefinition instanceof ComplexTypeDefinition ctd && ctd.isXsdAnyMarker();
         if (typeDefinition == null || typeDefinition.isRuntimeSchema() || anyXsd) {
             PrismSchema itemSchema = schemaRegistry.findSchemaByNamespace(itemName.getNamespaceURI());
             if (itemSchema != null) {
@@ -682,8 +682,8 @@ public class PrismUnmarshaller {
                     }
                 }
             }
-        } else if (node instanceof SchemaXNodeImpl) {
-            SchemaDefinitionType schemaDefType = beanUnmarshaller.unmarshalSchemaDefinitionType((SchemaXNodeImpl) node, pc);
+        } else if (node instanceof SchemaXNodeImpl impl) {
+            SchemaDefinitionType schemaDefType = beanUnmarshaller.unmarshalSchemaDefinitionType(impl, pc);
             @SuppressWarnings("unchecked")
             PrismPropertyValue<T> val = (PrismPropertyValue<T>) new PrismPropertyValueImpl<>(schemaDefType);
             addItemValueIfPossible(property, val, pc, node.getSourceLocation());
@@ -776,8 +776,8 @@ public class PrismUnmarshaller {
     }
 
     private void addMetadataIfPresent(PrismValue prismValue, XNode node, @NotNull ParsingContext pc) throws SchemaException {
-        if (prismValue != null && node instanceof MetadataAware) {
-            parseMetadataNodes(prismValue, ((MetadataAware) node).getMetadataNodes(), pc);
+        if (prismValue != null && node instanceof MetadataAware aware) {
+            parseMetadataNodes(prismValue, aware.getMetadataNodes(), pc);
         }
     }
 
@@ -818,8 +818,8 @@ public class PrismUnmarshaller {
     // Postprocessing after returning from unmarshaller. It speaks bean language (e.g. PolyStringType, not PolyString).
     private <T> T treatPolyStringAndRecompute(Object bean) {
         Object rv;
-        if (bean instanceof PolyStringType) {
-            rv = ((PolyStringType) bean).toPolyString();
+        if (bean instanceof PolyStringType type) {
+            rv = type.toPolyString();
         } else {
             rv = bean;
         }
@@ -853,8 +853,8 @@ public class PrismUnmarshaller {
     private PrismReference parseReference(@NotNull XNodeImpl node, @NotNull QName itemName,
             @NotNull PrismReferenceDefinition definition, @NotNull ParsingContext pc) throws SchemaException {
         PrismReference ref = definition.instantiate();
-        if (node instanceof ListXNodeImpl) {
-            for (XNodeImpl subNode : (ListXNodeImpl) node) {
+        if (node instanceof ListXNodeImpl impl) {
+            for (XNodeImpl subNode : impl) {
                 if (subNode instanceof IncompleteMarkerXNodeImpl) {
                     ref.setIncomplete(true);
                 } else {
@@ -1055,8 +1055,8 @@ public class PrismUnmarshaller {
     }
 
     private MapXNodeImpl toObjectMapNode(XNodeImpl xNode, @NotNull ParsingContext pc) throws SchemaException {
-        if (xNode instanceof MapXNodeImpl) {
-            return (MapXNodeImpl) xNode;
+        if (xNode instanceof MapXNodeImpl impl) {
+            return impl;
         } else if (xNode instanceof PrimitiveXNode && xNode.isEmpty()) {
             return new MapXNodeImpl();
         } else {
@@ -1190,9 +1190,9 @@ public class PrismUnmarshaller {
         }
         QName typeName = node.getTypeQName();
         if (typeName == null) {
-            if (node instanceof ListXNodeImpl) {
+            if (node instanceof ListXNodeImpl impl) {
                 // there may be type definitions in individual list members
-                for (XNodeImpl subNode : ((ListXNodeImpl) node)) {
+                for (XNodeImpl subNode : impl) {
                     ItemDefinition<?> subdef = createDynamicItemDefinition(itemName, subNode);
                     // TODO: make this smarter, e.g. detect conflicting type definitions
                     if (subdef != null) {
@@ -1227,9 +1227,9 @@ public class PrismUnmarshaller {
     //TODO
     public ItemDefinition<?> locateItemDefinition(
             @NotNull ItemDefinition<?> containerDefinition, @NotNull QName itemName, @Nullable XNode xnode) {
-        if (containerDefinition instanceof PrismContainerDefinition) {
+        if (containerDefinition instanceof PrismContainerDefinition<?> definition) {
             return locateItemDefinition(itemName,
-                    ((PrismContainerDefinition<?>) containerDefinition).getComplexTypeDefinition(), xnode);
+                    definition.getComplexTypeDefinition(), xnode);
         }
         throw new UnsupportedOperationException("Now what?"); // TODO finish this case... if needed
     }

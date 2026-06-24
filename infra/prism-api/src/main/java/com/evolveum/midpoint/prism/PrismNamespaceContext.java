@@ -306,8 +306,8 @@ public abstract class PrismNamespaceContext implements Serializable {
             if (parent == current) {
                 return true;
             }
-            if (current instanceof Inherited) {
-                return parent == ((Inherited) current).parent;
+            if (current instanceof Inherited casted) {
+                return parent == casted.parent;
             }
             return false;
         }

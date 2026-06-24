@@ -397,10 +397,10 @@ public class ObjectDeltaObject<O extends Objectable>
                         && pcv.isIdOnly()
                         && object.oldObject != null /* should always be */) {
                     Object oldItem = object.oldObject.find(itemDelta.getPath());
-                    if (oldItem instanceof PrismContainer) {
+                    if (oldItem instanceof PrismContainer<?> container) {
                         PrismContainerValue<?> oldValue =
-                                ((PrismContainer<?>) oldItem)
-                                        .getValue(((PrismContainerValue<?>) valueToDelete).getId());
+                                container
+                                        .getValue(pcv.getId());
                         if (oldValue != null) {
                             newValuesToDelete.add(oldValue.clone());
                             itemDeltaChanged = true;

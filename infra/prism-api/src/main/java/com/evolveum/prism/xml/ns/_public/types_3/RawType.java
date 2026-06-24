@@ -99,8 +99,8 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
      * (Useful e.g. for determining value of xsd:anyType XML property.)
      */
     public static Object getValue(Object value) throws SchemaException {
-        if (value instanceof RawType) {
-            return ((RawType) value).getValue();
+        if (value instanceof RawType type) {
+            return type.getValue();
         } else {
             return value;
         }
@@ -309,13 +309,13 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
     // avoid if possible
     public synchronized String guessFormattedValue() throws SchemaException {
         var current = current();
-        if (current instanceof Parsed) {
-            return ((Parsed<?>) current).realValue().toString();
+        if (current instanceof Parsed<?> parsed) {
+            return parsed.realValue().toString();
         }
         if (current instanceof Raw) {
             var node = current.toXNode();
-            if (node instanceof PrimitiveXNode) {
-                return ((PrimitiveXNode<?>) node).getGuessedFormattedValue();
+            if (node instanceof PrimitiveXNode<?> xNode) {
+                return xNode.getGuessedFormattedValue();
             }
         }
         return null;
@@ -337,11 +337,11 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         }
         visitor.visit(this);
 
-        if (value instanceof JaxbVisitable && !(value instanceof RawType)) {
+        if (value instanceof JaxbVisitable visitable && !(value instanceof RawType)) {
             // The value can be RawType if the "real value" couldn't be obtained during parsing the value.
             // Fortunately, the value is most probably already parsed, so the visitor already had the chance to act upon it
             // during the above "visitor.visit" call (even if it has no "real value" to act on).
-            ((JaxbVisitable) value).accept(visitor);
+            visitable.accept(visitor);
         }
     }
 
@@ -505,14 +505,14 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         @Override
         protected void shortDump(StringBuilder sb) {
-            if (value instanceof ShortDumpable) {
-                ((ShortDumpable) value).shortDump(sb);
+            if (value instanceof ShortDumpable dumpable) {
+                dumpable.shortDump(sb);
             } else {
                 Object realValue = value.getRealValue();
                 if (realValue == null) {
                     sb.append("null");
-                } else if (realValue instanceof ShortDumpable) {
-                    ((ShortDumpable) realValue).shortDump(sb);
+                } else if (realValue instanceof ShortDumpable dumpable) {
+                    dumpable.shortDump(sb);
                 } else {
                     sb.append(realValue);
                 }
@@ -546,11 +546,11 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
             if (other == this) {
                 return true;
             }
-            if (other instanceof Parsed) {
-                return Objects.equals(value, ((Parsed<?>) other).value());
+            if (other instanceof Parsed<?> parsed) {
+                return Objects.equals(value, parsed.value());
             }
-            if (other instanceof State) {
-                return equalsXNode((State) other);
+            if (other instanceof State otherState) {
+                return equalsXNode(otherState);
             }
             return false;
         }
@@ -606,8 +606,8 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
         @Override
         protected String extractString(Supplier<String> defaultValue) {
-            if (node instanceof PrimitiveXNode) {
-                return ((PrimitiveXNode<?>) node).getStringValue();
+            if (node instanceof PrimitiveXNode<?> xNode) {
+                return xNode.getStringValue();
             }
             return defaultValue.get();
         }
@@ -744,8 +744,8 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
             if (other == this) {
                 return true;
             }
-            if (other instanceof State) {
-                return equalsXNode((State) other);
+            if (other instanceof State otherState) {
+                return equalsXNode(otherState);
             }
             return false;
         }
@@ -756,14 +756,14 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         }
 
         private PrismValue valueFor(Object parsedValue) {
-            if (parsedValue instanceof Containerable) {
-                return ((Containerable) parsedValue).asPrismContainerValue();
+            if (parsedValue instanceof Containerable containerable) {
+                return containerable.asPrismContainerValue();
             }
-            if (parsedValue instanceof Referencable) {
-                return ((Referencable) parsedValue).asReferenceValue();
+            if (parsedValue instanceof Referencable referencable) {
+                return referencable.asReferenceValue();
             }
-            if (parsedValue instanceof PolyStringType) {
-                return PrismContext.get().itemFactory().createPropertyValue(PolyString.toPolyString((PolyStringType) parsedValue));   // hack
+            if (parsedValue instanceof PolyStringType type) {
+                return PrismContext.get().itemFactory().createPropertyValue(PolyString.toPolyString(type));   // hack
             }
             return PrismContext.get().itemFactory().createPropertyValue(parsedValue);
         }

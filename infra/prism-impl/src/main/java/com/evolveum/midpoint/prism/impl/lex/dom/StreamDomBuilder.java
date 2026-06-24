@@ -106,8 +106,8 @@ public class StreamDomBuilder {
                 case XMLStreamConstants.END_ELEMENT -> {
                     if (current != null) {
                         Node parent = current.getParentNode();
-                        if (parent instanceof Element) {
-                            current = (Element) parent;
+                        if (parent instanceof Element element) {
+                            current = element;
                         } else {
                             current = null;
                         }

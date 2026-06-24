@@ -201,7 +201,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
         if (exact) {
             return equals(other);
         } else {
-            return other instanceof ItemPath && equivalent((ItemPath) other);
+            return other instanceof ItemPath otherPath && equivalent(otherPath);
         }
     }
 
