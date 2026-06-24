@@ -9,10 +9,7 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 import java.util.Map;
 
 import com.evolveum.axiom.concepts.Builder;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismNamespaceContext;
-import com.evolveum.midpoint.prism.impl.marshaller.QueryConverterImpl;
 import com.evolveum.midpoint.prism.query.ObjectFilter;
 import com.evolveum.midpoint.prism.query.PrismQueryExpressionFactory;
 import com.evolveum.midpoint.prism.query.PrismQuerySerialization;

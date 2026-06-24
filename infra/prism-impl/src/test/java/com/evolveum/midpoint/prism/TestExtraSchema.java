@@ -13,7 +13,6 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMResult;

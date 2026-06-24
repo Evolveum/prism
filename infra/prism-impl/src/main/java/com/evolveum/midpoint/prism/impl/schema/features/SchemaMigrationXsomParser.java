@@ -26,7 +26,7 @@ import java.util.List;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.getAnnotationElements;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.trim;
 
 public class SchemaMigrationXsomParser implements DefinitionFeatureParser<SchemaMigrationXsomParser.SchemaMigrations, Object> {
 

@@ -10,7 +10,6 @@ import com.evolveum.midpoint.prism.Objectable;
 
 import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.PrismObject;
-import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.Producer;
 

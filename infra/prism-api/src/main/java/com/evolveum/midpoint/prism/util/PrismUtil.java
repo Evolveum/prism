@@ -16,8 +16,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.equivalence.EquivalenceStrategy;
 
-import com.evolveum.midpoint.prism.lazy.FlyweightClonedValue;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.evolveum.midpoint.prism.*;

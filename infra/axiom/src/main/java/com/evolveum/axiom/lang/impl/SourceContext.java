@@ -18,7 +18,6 @@ import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition.Scope;
 import com.evolveum.axiom.lang.antlr.AxiomModelStatementSource;
 import com.evolveum.axiom.api.AxiomValueIdentifier;
-import com.evolveum.axiom.lang.spi.AxiomNameResolver;
 import com.evolveum.axiom.api.stream.AxiomBuilderStreamTarget.ValueBuilder;
 import com.evolveum.axiom.api.stream.VirtualRootType;
 import com.evolveum.axiom.reactor.Dependency;

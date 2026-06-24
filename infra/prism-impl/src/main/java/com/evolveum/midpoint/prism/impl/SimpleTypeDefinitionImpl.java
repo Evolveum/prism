@@ -7,7 +7,10 @@
 
 package com.evolveum.midpoint.prism.impl;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismPresentationDefinition;
+import com.evolveum.midpoint.prism.SimpleTypeDefinition;
+import com.evolveum.midpoint.prism.TypeDefinition;
 
 import org.jetbrains.annotations.NotNull;
 

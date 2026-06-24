@@ -8,9 +8,7 @@ package com.evolveum.axiom.api.schema;
 
 import java.util.Optional;
 
-import com.evolveum.axiom.api.AxiomStructuredValue;
 import com.evolveum.axiom.api.AxiomValue;
-import com.evolveum.axiom.api.AxiomInfraName;
 import com.evolveum.axiom.api.AxiomItemName;
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomPath;

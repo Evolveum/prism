@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.foo;
 import com.evolveum.midpoint.prism.*;
 
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
-import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;

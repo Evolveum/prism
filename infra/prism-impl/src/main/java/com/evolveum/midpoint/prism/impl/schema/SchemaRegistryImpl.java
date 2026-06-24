@@ -41,7 +41,10 @@ import org.xml.sax.SAXParseException;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.delta.ObjectDelta;
-import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.impl.PrismPropertyDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.PrismReferenceDefinitionImpl;
+import com.evolveum.midpoint.prism.impl.XmlEntityResolver;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schema.*;
 import com.evolveum.midpoint.prism.xml.DynamicNamespacePrefixMapper;

@@ -15,15 +15,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
-import com.evolveum.concepts.*;
-import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
+import com.evolveum.concepts.Argument;
+import com.evolveum.concepts.TechnicalMessage;
+import com.evolveum.concepts.ValidationLog;
+import com.evolveum.concepts.ValidationLogType;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.midpoint.prism.PrismNamespaceContext;

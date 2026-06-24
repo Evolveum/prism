@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.lex;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.ArrayList;

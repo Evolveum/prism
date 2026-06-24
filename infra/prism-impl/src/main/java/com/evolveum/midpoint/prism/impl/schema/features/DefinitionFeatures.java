@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.schema.features;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.*;
-import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.getAnnotationElement;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +24,6 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLi
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionMutator;
 import com.evolveum.midpoint.prism.TypeDefinition.TypeDefinitionLikeBuilder;
-import com.evolveum.midpoint.prism.impl.ItemPathParserImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.schema.features.ItemDiagramSpecificationXsomParser.ItemDiagramSpecifications;
 
@@ -40,7 +38,9 @@ import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.MiscUtil;
 
-import com.sun.xml.xsom.*;
+import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSComplexType;
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;

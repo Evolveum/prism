@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import com.evolveum.axiom.api.AxiomItem;
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomValue;
 import com.evolveum.axiom.api.schema.AxiomIdentifierDefinition;

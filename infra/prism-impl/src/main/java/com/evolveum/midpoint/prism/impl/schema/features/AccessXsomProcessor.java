@@ -23,7 +23,6 @@ import org.w3c.dom.Element;
 import java.util.List;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
-import static com.evolveum.midpoint.prism.PrismConstants.A_ACCESS_READ;
 
 /**
  * XSOM parser and serializer for (canAdd, canModify, canRead) access control triples.

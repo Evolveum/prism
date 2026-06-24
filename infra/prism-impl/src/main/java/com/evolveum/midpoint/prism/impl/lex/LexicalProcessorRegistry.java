@@ -14,7 +14,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.evolveum.midpoint.prism.impl.lex.json.*;
+import com.evolveum.midpoint.prism.impl.lex.json.DelegatingLexicalProcessor;
+import com.evolveum.midpoint.prism.impl.lex.json.NullLexicalProcessor;
 
 import com.evolveum.midpoint.prism.impl.lex.json.reader.JsonReader;
 import com.evolveum.midpoint.prism.impl.lex.json.reader.YamlReader;

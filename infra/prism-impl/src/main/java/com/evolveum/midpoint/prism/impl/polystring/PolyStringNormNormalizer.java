@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.impl.polystring;
 
-import com.evolveum.midpoint.prism.Matchable;
 import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.prism.match.MatchingRule;
 import com.evolveum.midpoint.prism.normalization.Normalizer;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 

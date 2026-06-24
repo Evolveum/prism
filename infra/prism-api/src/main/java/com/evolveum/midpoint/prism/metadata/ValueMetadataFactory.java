@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.metadata;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.PrismContainerDefinition;
 import com.evolveum.midpoint.prism.ValueMetadata;
 import com.evolveum.midpoint.util.annotation.Experimental;

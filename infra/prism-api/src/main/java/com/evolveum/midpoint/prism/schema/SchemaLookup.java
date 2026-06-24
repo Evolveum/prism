@@ -6,14 +6,14 @@
 
 package com.evolveum.midpoint.prism.schema;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.DefinitionFactory;
+import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 import com.evolveum.midpoint.prism.schemaContext.resolver.SchemaContextResolver;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.namespace.QName;
 import java.util.function.Function;
 
 public interface SchemaLookup extends SchemaRegistryState {

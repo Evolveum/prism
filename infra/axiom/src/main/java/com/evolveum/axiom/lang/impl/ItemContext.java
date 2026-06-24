@@ -9,7 +9,6 @@ package com.evolveum.axiom.lang.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -21,7 +20,6 @@ import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.axiom.api.stream.AxiomBuilderStreamTarget.ItemBuilder;
 import com.evolveum.axiom.lang.api.AxiomBuiltIn;
-import com.evolveum.axiom.lang.spi.AxiomNameResolver;
 import com.evolveum.axiom.reactor.Dependency;
 import com.evolveum.concepts.SourceLocation;
 import com.google.common.base.Preconditions;

@@ -8,7 +8,6 @@ package com.evolveum.midpoint.prism.path;
 
 import java.util.Collections;
 import java.util.List;
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 import com.google.common.base.Strings;

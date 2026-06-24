@@ -8,7 +8,10 @@ package com.evolveum.midpoint.prism.match;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.AbstractPrismTest;
+import com.evolveum.midpoint.prism.PrismContainerValue;
+import com.evolveum.midpoint.prism.PrismContext;
+import com.evolveum.midpoint.prism.PrismPropertyDefinition;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;

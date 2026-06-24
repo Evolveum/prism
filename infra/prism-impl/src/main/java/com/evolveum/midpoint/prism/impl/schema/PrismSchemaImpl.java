@@ -29,7 +29,8 @@ import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.PrismContextImpl;
+import com.evolveum.midpoint.prism.impl.TypeDefinitionImpl;
 import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.Trace;

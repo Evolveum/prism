@@ -9,12 +9,15 @@ package com.evolveum.midpoint.prism.impl.lex.dom;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
-import com.evolveum.concepts.*;
+import com.evolveum.concepts.SourceLocation;
+import com.evolveum.concepts.TechnicalMessage;
+import com.evolveum.concepts.ValidationLog;
+import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 
 import org.apache.commons.io.IOUtils;
@@ -27,7 +30,9 @@ import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.ParserElementSource;
 import com.evolveum.midpoint.prism.impl.lex.LexicalProcessor;
 import com.evolveum.midpoint.prism.impl.lex.LexicalUtils;
-import com.evolveum.midpoint.prism.impl.xnode.*;
+import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xnode.RootXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;

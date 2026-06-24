@@ -15,7 +15,10 @@ import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.normalization.Normalizer;
-import com.evolveum.midpoint.util.*;
+import com.evolveum.midpoint.util.DebugDumpable;
+import com.evolveum.midpoint.util.DebugUtil;
+import com.evolveum.midpoint.util.QNameUtil;
+import com.evolveum.midpoint.util.ShortDumpable;
 
 import com.evolveum.midpoint.util.exception.SchemaException;
 

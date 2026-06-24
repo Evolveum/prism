@@ -15,13 +15,11 @@
 package com.evolveum.midpoint.prism.foo;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 import com.evolveum.midpoint.prism.impl.binding.AbstractMutableContainerable;
 
 import jakarta.xml.bind.annotation.*;
 
-import com.evolveum.midpoint.prism.Containerable;
 import com.evolveum.midpoint.prism.PrismContainerValue;
 import com.evolveum.midpoint.prism.path.ItemName;
 

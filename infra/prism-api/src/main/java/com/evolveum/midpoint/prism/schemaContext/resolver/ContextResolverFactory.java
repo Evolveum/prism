@@ -6,8 +6,6 @@
 
 package com.evolveum.midpoint.prism.schemaContext.resolver;
 
-import javax.xml.namespace.QName;
-
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 /***

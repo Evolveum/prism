@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.delta.builder;
 import java.util.*;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 
 import org.apache.commons.collections4.CollectionUtils;

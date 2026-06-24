@@ -16,7 +16,9 @@ import java.util.List;
 
 import com.evolveum.midpoint.prism.PrismConstants;
 
-import com.sun.xml.xsom.*;
+import com.sun.xml.xsom.XSFacet;
+import com.sun.xml.xsom.XSSimpleType;
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 

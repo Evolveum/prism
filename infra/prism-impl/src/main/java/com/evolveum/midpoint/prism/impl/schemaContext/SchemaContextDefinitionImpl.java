@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.schemaContext;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
-import com.evolveum.midpoint.prism.schema.SchemaLookup;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
 /**
