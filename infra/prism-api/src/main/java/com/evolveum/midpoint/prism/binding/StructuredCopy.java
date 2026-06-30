@@ -19,6 +19,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.Containerable;
+import com.evolveum.midpoint.prism.PrismValue;
 import com.evolveum.midpoint.prism.Referencable;
 import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.util.CloneUtil;
@@ -60,6 +61,8 @@ public class StructuredCopy {
             ret = of(referencable);
         } else if (value instanceof Containerable containerable) {
             ret = of(containerable);
+        } else if (value instanceof PrismValue prismValue) {
+            ret = of(prismValue);
         } else if (value instanceof String string) {
             ret = of(string);
         } else if (value instanceof Integer integer) {
@@ -131,6 +134,14 @@ public class StructuredCopy {
 
     @SuppressWarnings("unchecked")
     public static <T extends Referencable> T of(T value) {
+        if (value == null) {
+            return null;
+        }
+        return (T) value.clone();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends PrismValue> T of(T value) {
         if (value == null) {
             return null;
         }
