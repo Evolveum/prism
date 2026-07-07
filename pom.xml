@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.5.13</version>
+        <version>4.0.7</version>
         <!-- This parent also declares dependencies listed here:
         https://docs.spring.io/spring-boot/docs/2.7.3/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
@@ -93,7 +93,7 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
         <!-- END of Spring Boot dependencies overrides -->
 
         <!-- Dependencies global versions -->
@@ -272,6 +272,10 @@
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
