@@ -19,32 +19,19 @@
         <property name="advice" ref="midpointAdvice"/>
     </bean>
 
-    <bean id="instrumentableBeans" class="java.util.ArrayList">
-        <constructor-arg>
-            <list>
-                <value>repositoryService</value>
-                <value>cacheRepositoryService</value>
-                <value>taskManager</value>
-                <value>caseManager</value>
-                <value>provisioningService</value>
-                <value>synchronizationService</value>
-                <value>modelController</value>
-                <value>modelInteractionService</value>
-                <value>auditService</value>
-            </list>
-        </constructor-arg>
-    </bean>
-
-    <bean id="noBeans" class="java.util.ArrayList">
-        <constructor-arg>
-            <list>
-                <value>dummyBeanNameBecauseThisListCannotBeEmpty</value>
-            </list>
-        </constructor-arg>
-    </bean>
-
     <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="beanNames" value="#{midpointConfiguration.profilingEnabled ? instrumentableBeans : noBeans}"/>
+        <property name="beanNames"
+                value="#{midpointConfiguration.profilingEnabled
+                    ? {'repositoryService',
+                       'cacheRepositoryService',
+                       'taskManager',
+                       'caseManager',
+                       'provisioningService',
+                       'synchronizationService',
+                       'modelController',
+                       'modelInteractionService',
+                       'auditService'}
+                    : {'dummyBeanNameBecauseThisListCannotBeEmpty'}}"/>
         <!-- Needed because of direct class injects (SqlRepositoryServiceImpl), see MID-6502. -->
         <property name="proxyTargetClass" value="true"/>
         <property name="interceptorNames">
