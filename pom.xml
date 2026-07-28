@@ -93,7 +93,11 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
+
         <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
+        <!-- remove whole dependency tools.jackson.core:jackson-databind dependency
+            definition when its above 3.1.4 (around L128) -->
+        <jackson-databind.version>3.1.5</jackson-databind.version>
         <logback.version>1.5.38</logback.version>
         <!-- END of Spring Boot dependencies overrides -->
 
@@ -121,6 +125,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson-databind.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
             <dependency>
                 <groupId>io.github.classgraph</groupId>
                 <artifactId>classgraph</artifactId>
