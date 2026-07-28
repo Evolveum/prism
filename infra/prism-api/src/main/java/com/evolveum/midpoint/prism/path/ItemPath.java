@@ -769,13 +769,15 @@ public interface ItemPath extends ShortDumpable, Serializable {
     @Override
     default void shortDump(StringBuilder sb) {
         Iterator<?> iterator = getSegments().iterator();
+        boolean isFirst = true;
         while (iterator.hasNext()) {
-            sb.append(
-                    ItemPathSegment.toString(
-                            iterator.next()));
-            if (iterator.hasNext()) {
+            Object segment = iterator.next();
+            if (!isFirst && !ItemPath.isId(segment)) {
                 sb.append("/");
             }
+            isFirst = false;
+            sb.append(
+                    ItemPathSegment.toString(segment));
         }
     }
     //endregion

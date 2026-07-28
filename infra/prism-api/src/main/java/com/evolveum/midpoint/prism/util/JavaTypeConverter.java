@@ -10,6 +10,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.Date;
+
+import com.evolveum.midpoint.prism.path.ItemPath;
+
 import jakarta.xml.bind.annotation.XmlEnum;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -256,12 +259,23 @@ public class JavaTypeConverter {
             return rawValue.toString();
         }
 
-        //QName
+        // QName
+        if (expectedType == String.class && rawValue instanceof QName qname) {
+            return QNameUtil.qNameToUri(qname);
+        }
         if (expectedType == QName.class && rawValue instanceof QName) {
             return rawValue;
         }
-        if (expectedType == QName.class && rawValue instanceof String) {
-            return QNameUtil.uriToQName(((String) rawValue).trim(), true);
+        if (expectedType == QName.class && rawValue instanceof String s) {
+            return QNameUtil.uriToQName(s.trim(), true);
+        }
+
+        // ItemPath
+        if (expectedType == String.class && rawValue instanceof ItemPath path) {
+            return path.toString();
+        }
+        if (expectedType.isAssignableFrom(ItemPath.class) && rawValue instanceof String s) {
+            return ItemPath.fromString(s);
         }
 
         if (failIfImpossible) {
