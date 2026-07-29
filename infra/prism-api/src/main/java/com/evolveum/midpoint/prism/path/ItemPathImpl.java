@@ -80,10 +80,6 @@ public final class ItemPathImpl implements ItemPath {
             addAll(objects);
         } else if (component instanceof String string) {
             segments.add(new ItemName(string));
-        } else if (component instanceof Long l) {
-            segments.add(new IdItemPathSegment(l));
-        } else if (component instanceof Integer i) {
-            segments.add(new IdItemPathSegment(i.longValue()));
         } else if (component != null) {
             segments.add(component);
         } else {
