@@ -13,6 +13,8 @@ import java.util.Date;
 
 import com.evolveum.midpoint.prism.path.ItemPath;
 
+import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
+
 import jakarta.xml.bind.annotation.XmlEnum;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -276,6 +278,9 @@ public class JavaTypeConverter {
         }
         if (expectedType.isAssignableFrom(ItemPath.class) && rawValue instanceof String s) {
             return ItemPath.fromString(s);
+        }
+        if (expectedType == ItemPathType.class && rawValue instanceof ItemPath p) {
+            return p.toBean();
         }
 
         if (failIfImpossible) {
