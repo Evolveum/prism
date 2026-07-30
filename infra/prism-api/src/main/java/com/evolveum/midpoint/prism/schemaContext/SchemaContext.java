@@ -12,6 +12,8 @@ import com.evolveum.midpoint.prism.ItemDefinition;
 
 /**
  * The interface represents the schema context annotation, which provides semantic information about object.
+ *
+ * See also https://docs.evolveum.com/midpoint/devel/schema-context-annotations/.
  */
 public interface SchemaContext extends Serializable {
 

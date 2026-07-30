@@ -1000,6 +1000,11 @@
     </xsd:element>
 
     <xsd:complexType name="SchemaContextType">
+        <xsd:annotation>
+            <xsd:documentation>
+                See https://docs.evolveum.com/midpoint/devel/schema-context-annotations/
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="type" type="xsd:QName" minOccurs="0">
                 <xsd:annotation>
@@ -1036,6 +1041,8 @@
         <xsd:annotation>
             <xsd:documentation>
                 Schema context defines semantics information about annotated element.
+
+                See https://docs.evolveum.com/midpoint/devel/schema-context-annotations/
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>
