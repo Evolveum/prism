@@ -8,11 +8,13 @@ package com.evolveum.midpoint.prism.schemaContext.resolver;
 
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
-/***
- * The interface provides methods for create resolvers.
- */
+import org.jetbrains.annotations.NotNull;
+
 public interface ContextResolverFactory {
 
-    SchemaContextResolver createResolver(SchemaContextDefinition definition);
+    /**
+     * Creates {@link SchemaContextResolver} instance, given a static definition ({@link SchemaContextDefinition}).
+     */
+    @NotNull SchemaContextResolver createResolver(SchemaContextDefinition definition);
 
 }

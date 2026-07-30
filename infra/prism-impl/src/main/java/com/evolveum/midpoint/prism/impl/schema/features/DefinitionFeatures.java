@@ -18,6 +18,7 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.DisplayableValueImpl;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
 import com.evolveum.midpoint.util.DisplayableValue;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLikeBuilder;
@@ -587,22 +588,27 @@ public class DefinitionFeatures {
                             schemaContextDefinition.setType(DOMUtil.getQNameValue(typeElement));
                         }
 
+                        if (pathElement != null) {
+                            schemaContextDefinition.setPath(parsePath(pathElement));
+                        }
+
                         if (typePathElement != null) {
-                            schemaContextDefinition.setTypePath(new QName(typePathElement.getTextContent()));
+                            schemaContextDefinition.setTypePath(parsePath(typePathElement));
                         }
 
                         if (algorithmElement != null) {
                             schemaContextDefinition.setAlgorithm(new QName(algorithmElement.getTextContent()));
                         }
 
-                        if (pathElement != null) {
-                            var itemPath = ItemPathHolder.parseFromString(pathElement.getTextContent(), DOMUtil.getNamespaceDeclarations(pathElement));
-                                schemaContextDefinition.setPath(itemPath);
-                        }
                         return schemaContextDefinition;
                     }
 
                     return null;
+                }
+
+                private static UniformItemPath parsePath(Element pathElement) {
+                    return ItemPathHolder.parseFromString(
+                            pathElement.getTextContent(), DOMUtil.getNamespaceDeclarations(pathElement));
                 }
             };
         }
