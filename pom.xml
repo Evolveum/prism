@@ -117,6 +117,8 @@
         <failsafe.version>3.0.0-M5</failsafe.version>
 
         <asciidoclet.version>1.5.6</asciidoclet.version>
+
+        <antlr.version>4.13.2</antlr.version>
     </properties>
 
     <dependencyManagement>
@@ -422,7 +424,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>4.10.1</version>
+                <version>${antlr.version}</version>
             </dependency>
 
             <dependency>
