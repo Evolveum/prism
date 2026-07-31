@@ -11,10 +11,13 @@ import java.io.Serial;
 import com.evolveum.midpoint.util.LocalizableMessage;
 
 /**
- * Generic restricted object exception.
- *
- * This may happen in various situations when an object is restricted due to an inactive subscription.
- *
+ * Subscription compliance exception.
+ * <p>
+ * Exception thrown when a subscription-restricted object or operation is
+ * accessed in the production environment without an active subscription.
+ * <p>
+ * This exception is used to enforce subscription compliance for production
+ * deployments.
  */
 public class RestrictedObjectException extends CommonException {
     @Serial private static final long serialVersionUID = 1L;
