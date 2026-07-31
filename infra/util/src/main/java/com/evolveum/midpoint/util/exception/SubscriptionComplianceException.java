@@ -19,29 +19,29 @@ import com.evolveum.midpoint.util.LocalizableMessage;
  * This exception is used to enforce subscription compliance for production
  * deployments.
  */
-public class RestrictedObjectException extends CommonException {
+public class SubscriptionComplianceException extends CommonException {
     @Serial private static final long serialVersionUID = 1L;
 
-    public RestrictedObjectException() {
+    public SubscriptionComplianceException() {
     }
 
-    public RestrictedObjectException(String message) {
+    public SubscriptionComplianceException(String message) {
         super(message);
     }
 
-    public RestrictedObjectException(LocalizableMessage userFriendlyMessage) {
+    public SubscriptionComplianceException(LocalizableMessage userFriendlyMessage) {
         super(userFriendlyMessage);
     }
 
-    public RestrictedObjectException(Throwable cause) {
+    public SubscriptionComplianceException(Throwable cause) {
         super(cause);
     }
 
-    public RestrictedObjectException(String message, Throwable cause) {
+    public SubscriptionComplianceException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public RestrictedObjectException(LocalizableMessage userFriendlyMessage, Throwable cause) {
+    public SubscriptionComplianceException(LocalizableMessage userFriendlyMessage, Throwable cause) {
         super(userFriendlyMessage, cause);
     }
 
