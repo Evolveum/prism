@@ -10,8 +10,6 @@ import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult.*;
 
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
-import static com.evolveum.midpoint.prism.path.ItemPath.CompareResult;
-
 import java.io.Serial;
 import java.util.*;
 import java.util.function.Supplier;
@@ -306,12 +304,12 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         } else if (changeType == ChangeType.MODIFY) {
             Collection<PartiallyResolvedDelta<IV, ID>> deltas = new ArrayList<>();
             for (ItemDelta<?, ?> modification : modifications) {
-                CompareResult compareComplex = modification.getPath().compareComplex(propertyPath);
+                var compareComplex = modification.getPath().compareComplex(propertyPath);
                 if (compareComplex == EQUIVALENT) {
                     deltas.add(new PartiallyResolvedDelta<>((ItemDelta<IV, ID>) modification, null));
-                } else if (compareComplex == CompareResult.SUBPATH) {   // path in modification is shorter than propertyPath
+                } else if (compareComplex == SUBPATH) {   // path in modification is shorter than propertyPath
                     deltas.add(new PartiallyResolvedDelta<>((ItemDelta<IV, ID>) modification, null));
-                } else if (compareComplex == CompareResult.SUPERPATH) { // path in modification is longer than propertyPath
+                } else if (compareComplex == SUPERPATH) { // path in modification is longer than propertyPath
                     deltas.add(new PartiallyResolvedDelta<>((ItemDelta<IV, ID>) modification,
                             modification.getPath().remainder(propertyPath)));
                 }
@@ -343,8 +341,8 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             return objectToAdd.findItem(itemPath, Item.class) != null;
         } else if (changeType == ChangeType.MODIFY) {
             for (ItemDelta<?, ?> modification : getModifications()) {
-                CompareResult compare = modification.getPath().compareComplex(itemPath);
-                if (compare == EQUIVALENT || compare == CompareResult.SUBPATH) {
+                var compare = modification.getPath().compareComplex(itemPath);
+                if (compare == EQUIVALENT || compare == SUBPATH) {
                     return true;
                 }
             }
@@ -359,8 +357,8 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             return objectToAdd.findItem(itemPath, Item.class) != null;
         } else if (changeType == ChangeType.MODIFY) {
             for (ItemDelta<?, ?> modification : getModifications()) {
-                CompareResult compare = modification.getPath().compareComplex(itemPath);
-                if (compare != CompareResult.NO_RELATION) {
+                ItemPath.CompareResult compare = modification.getPath().compareComplex(itemPath);
+                if (compare != ItemPath.CompareResult.NO_RELATION) {
                     return true;
                 }
             }
