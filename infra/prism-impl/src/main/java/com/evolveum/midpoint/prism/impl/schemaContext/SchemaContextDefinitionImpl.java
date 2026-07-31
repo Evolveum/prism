@@ -11,14 +11,11 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
-/**
- * Created by Dominik.
- */
 public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
 
     private QName type;
 
-    private QName typePath;
+    private ItemPath typePath;
 
     private ItemPath path;
 
@@ -35,12 +32,12 @@ public class SchemaContextDefinitionImpl implements SchemaContextDefinition {
     }
 
     @Override
-    public QName getTypePath() {
+    public ItemPath getTypePath() {
         return typePath;
     }
 
     @Override
-    public void setTypePath(QName typePath) {
+    public void setTypePath(ItemPath typePath) {
         this.typePath = typePath;
     }
 

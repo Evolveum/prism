@@ -9,18 +9,17 @@ package com.evolveum.midpoint.prism.impl.schemaContext;
 import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 
-/**
- * Created by Dominik.
- */
+import org.jetbrains.annotations.Nullable;
+
 public class SchemaContextImpl implements SchemaContext {
 
-    private ItemDefinition<?> itemDefinition;
+    @Nullable private final ItemDefinition<?> itemDefinition;
 
-    public SchemaContextImpl(ItemDefinition<?> itemDefinition) {
+    public SchemaContextImpl(@Nullable ItemDefinition<?> itemDefinition) {
         this.itemDefinition = itemDefinition;
     }
 
-    public ItemDefinition<?> getItemDefinition() {
+    public @Nullable ItemDefinition<?> getItemDefinition() {
         return itemDefinition;
     }
 }

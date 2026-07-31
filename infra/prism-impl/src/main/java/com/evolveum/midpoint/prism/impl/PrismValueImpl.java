@@ -449,8 +449,9 @@ public abstract class PrismValueImpl extends AbstractFreezable implements PrismV
             contextDefinition = getParent().getDefinition().getSchemaContextDefinition();
         }
         if (contextDefinition != null) {
-            var schemaContextResolver = schemaLookup().resolverFor(contextDefinition);
-            return schemaContextResolver.computeContext(this);
+            return schemaLookup()
+                    .resolverFor(contextDefinition)
+                    .computeContext(this);
         }
 
         if (getParent() instanceof Item<?, ?> parentItem) {

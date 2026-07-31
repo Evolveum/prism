@@ -33,10 +33,16 @@ public abstract class ItemPathSegment implements Serializable, Cloneable {
             return segment.toString();
         } else if (segment instanceof QName name) {
             return DebugUtil.formatElementName(name);
+        } else if (segment instanceof Long l) {
+            return idToString(l);
+        } else if (segment instanceof Integer i) {
+            return idToString(i.longValue());
         } else {
             return String.valueOf(segment);
         }
     }
+
+    private static String idToString(long id) { return "[" + id + "]"; }
 
     public boolean isWildcard() {
         return wildcard;
