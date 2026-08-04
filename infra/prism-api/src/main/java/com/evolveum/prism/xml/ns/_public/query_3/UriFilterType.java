@@ -6,6 +6,7 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
@@ -36,7 +37,7 @@ public class UriFilterType
         extends FilterClauseType
         implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "UriFilterType");
     public static final QName F_URI = new QName(PrismConstants.NS_QUERY, "uri");

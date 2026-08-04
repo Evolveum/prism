@@ -20,8 +20,8 @@ public class JaxbTypeConverter {
 
     public static <T> T mapPropertyRealValueToJaxb(Object propertyRealValue) {
         // TODO: check for type compatibility
-        if (propertyRealValue instanceof PolyString) {
-            return (T)toPolyStringType((PolyString)propertyRealValue);
+        if (propertyRealValue instanceof PolyString string) {
+            return (T)toPolyStringType(string);
         }
         return (T)propertyRealValue;
     }
@@ -44,8 +44,8 @@ public class JaxbTypeConverter {
     }
 
     public static Object mapJaxbToPropertyRealValue(Object jaxbObject) {
-        if (jaxbObject instanceof PolyStringType) {
-            return fromPolyStringType((PolyStringType)jaxbObject);
+        if (jaxbObject instanceof PolyStringType type) {
+            return fromPolyStringType(type);
         }
         return jaxbObject;
     }

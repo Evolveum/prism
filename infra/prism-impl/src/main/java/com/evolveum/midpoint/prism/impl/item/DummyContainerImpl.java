@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.item;
 
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class DummyContainerImpl<C extends Containerable>
         extends DummyItem<PrismContainerValue<C>, PrismContainerDefinition<C>, PrismContainer<C>>
         implements PrismContainer<C> {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public DummyContainerImpl(PrismContainer<C> realContainer, @NotNull ItemPath path) {
         super(realContainer, path);

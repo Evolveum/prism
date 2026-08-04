@@ -79,10 +79,10 @@ public final class JAXBUtil {
         if (element == null) {
             return null;
         }
-        if (element instanceof Element) {
-            return DOMUtil.getQName((Element) element);
-        } else if (element instanceof JAXBElement) {
-            return ((JAXBElement<?>) element).getName();
+        if (element instanceof Element domElement) {
+            return DOMUtil.getQName(domElement);
+        } else if (element instanceof JAXBElement<?> jaxbElement) {
+            return jaxbElement.getName();
         } else {
             throw new IllegalArgumentException("Not an element: " + element);
         }
@@ -92,10 +92,10 @@ public final class JAXBUtil {
         if (element == null) {
             return null;
         }
-        if (element instanceof Element) {
-            return ((Element) element).getLocalName();
-        } else if (element instanceof JAXBElement) {
-            return ((JAXBElement<?>) element).getName().getLocalPart();
+        if (element instanceof Element domElement) {
+            return domElement.getLocalName();
+        } else if (element instanceof JAXBElement<?> jaxbElement) {
+            return jaxbElement.getName().getLocalPart();
         } else {
             throw new IllegalArgumentException("Not an element: " + element);
         }
@@ -115,8 +115,8 @@ public final class JAXBUtil {
         if (element == null) {
             return null;
         }
-        if (element instanceof Element) {
-            return ((Element) element).getTextContent();
+        if (element instanceof Element domElement) {
+            return domElement.getTextContent();
         } else {
             return element.toString();
         }
@@ -127,8 +127,8 @@ public final class JAXBUtil {
      * @return
      */
     public static Document getDocument(Object element) {
-        if (element instanceof Element) {
-            return ((Element) element).getOwnerDocument();
+        if (element instanceof Element domElement) {
+            return domElement.getOwnerDocument();
         } else {
             return DOMUtil.getDocument();
         }
@@ -163,8 +163,7 @@ public final class JAXBUtil {
             return null;
         }
         List<Object> childElements = new ArrayList<>();
-        if (parentElement instanceof Element) {
-            Element parentEl = (Element) parentElement;
+        if (parentElement instanceof Element parentEl) {
             NodeList childNodes = parentEl.getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 Node item = childNodes.item(i);
@@ -172,8 +171,7 @@ public final class JAXBUtil {
                     childElements.add(item);
                 }
             }
-        } else if (parentElement instanceof JAXBElement) {
-            JAXBElement<?> jaxbElement = (JAXBElement<?>)parentElement;
+        } else if (parentElement instanceof JAXBElement<?> jaxbElement) {
             Object jaxbObject = jaxbElement.getValue();
             Method xsdAnyMethod = lookForXsdAnyElementMethod(jaxbObject);
             if (xsdAnyMethod == null) {
@@ -264,11 +262,11 @@ public final class JAXBUtil {
         Iterator<Object> bIterator = bList.iterator();
         for (Object a: aList) {
             Object b = bIterator.next();
-            if (a instanceof Element) {
+            if (a instanceof Element element) {
                 if (!(b instanceof Element)) {
                     return false;
                 }
-                if (!DOMUtil.compareElement((Element)a, (Element)b, considerNamespacePrefixes)) {
+                if (!DOMUtil.compareElement(element, (Element)b, considerNamespacePrefixes)) {
                     return false;
                 }
             } else {

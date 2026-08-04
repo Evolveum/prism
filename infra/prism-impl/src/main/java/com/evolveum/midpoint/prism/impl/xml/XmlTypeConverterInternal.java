@@ -61,11 +61,10 @@ public class XmlTypeConverterInternal {
     private static void toXsdElement(Object val, Element element, boolean recordType) throws SchemaException {
         if (val instanceof Element) {
             return;
-        } else if (val instanceof QName) {
-            QName qname = (QName) val;
+        } else if (val instanceof QName qname) {
             DOMUtil.setQNameValue(element, qname);
-        } else if (val instanceof PolyString) {
-            polyStringToElement(element, (PolyString)val);
+        } else if (val instanceof PolyString string) {
+            polyStringToElement(element, string);
         } else {
             element.setTextContent(toXmlTextContent(val, DOMUtil.getQName(element)));
         }

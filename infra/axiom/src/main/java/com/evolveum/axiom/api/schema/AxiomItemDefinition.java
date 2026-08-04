@@ -8,9 +8,7 @@ package com.evolveum.axiom.api.schema;
 
 import java.util.Optional;
 
-import com.evolveum.axiom.api.AxiomStructuredValue;
 import com.evolveum.axiom.api.AxiomValue;
-import com.evolveum.axiom.api.AxiomInfraName;
 import com.evolveum.axiom.api.AxiomItemName;
 import com.evolveum.axiom.api.AxiomName;
 import com.evolveum.axiom.api.AxiomPath;
@@ -130,8 +128,8 @@ public interface AxiomItemDefinition extends AxiomNamedDefinition, Navigable<Axi
         if(key instanceof AxiomValueIdentifier) {
             return Optional.of(this);
         }
-        if(key instanceof AxiomItemName) {
-            return typeDefinition().itemDefinition((AxiomItemName) key);
+        if(key instanceof AxiomItemName name) {
+            return typeDefinition().itemDefinition(name);
         }
         return Optional.empty();
     }

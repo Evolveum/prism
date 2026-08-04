@@ -25,8 +25,8 @@ public interface ConfigurableVisitor<T extends Visitable<T>> extends Visitor<T> 
      */
     static boolean shouldVisitEmbeddedObjects(Visitor<?> visitor) {
         //noinspection SimplifiableIfStatement
-        if (visitor instanceof ConfigurableVisitor) {
-            return ((ConfigurableVisitor<?>) visitor).shouldVisitEmbeddedObjects();
+        if (visitor instanceof ConfigurableVisitor<?> configurableVisitor) {
+            return configurableVisitor.shouldVisitEmbeddedObjects();
         } else {
             return false; // This is the behavior before 60328c40b2b99c6cf41ab6ce90145fae941d07bd (March 24th, 2020)
         }

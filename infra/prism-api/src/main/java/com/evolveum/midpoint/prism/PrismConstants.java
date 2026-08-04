@@ -114,6 +114,11 @@ public class PrismConstants {
     public static final QName A_PLANNED_REMOVAL = new QName(NS_ANNOTATION, "plannedRemoval");
     public static final QName A_ELABORATE = new QName(NS_ANNOTATION, "elaborate");
     public static final QName A_LABEL = new QName(NS_ANNOTATION, "label");
+    public static final QName A_ALLOWED_VALUES = new QName(NS_ANNOTATION, "allowedValues");
+    public static final QName A_SUGGESTED_VALUES = new QName(NS_ANNOTATION, "suggestedValues");
+    public static final QName A_VALUE = new QName(NS_ANNOTATION, "value");
+    public static final QName A_KEY = new QName(NS_ANNOTATION, "key");
+    public static final QName A_DESCRIPTION = new QName(NS_ANNOTATION, "description");
     public static final QName A_MATCHING_RULE = new QName(NS_ANNOTATION, "matchingRule");
     public static final QName A_EMPHASIZED = new QName(NS_ANNOTATION, "emphasized");
     public static final QName A_DISPLAY_HINT = new QName(NS_ANNOTATION, "displayHint");

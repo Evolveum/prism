@@ -20,6 +20,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -32,13 +34,13 @@ import java.util.List;
 })
 public class MappingTransformationType  extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "MappingTransformationType");
     public static final ItemName F_MAPPING_SPECIFICATION = ItemName.interned(ObjectType.NS_FOO, "mappingSpecification");
     public static final ItemName F_SOURCE = ItemName.interned(ObjectType.NS_FOO, "source");
     public static final Producer<MappingTransformationType> FACTORY = new Producer<MappingTransformationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public MappingTransformationType run() {
             return new MappingTransformationType();

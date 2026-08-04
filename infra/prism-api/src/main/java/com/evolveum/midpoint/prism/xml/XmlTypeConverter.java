@@ -255,8 +255,8 @@ public class XmlTypeConverter {
 
     // to be used from within createDuration only (for general use it should be rewritten!!)
     private static BigDecimal toBigDecimal(Number number) {
-        if (number instanceof BigDecimal) {
-            return (BigDecimal) number;                     // this is the most probable case as seconds are stored as BigDecimal
+        if (number instanceof BigDecimal decimal) {
+            return decimal;                     // this is the most probable case as seconds are stored as BigDecimal
         } else if (number instanceof BigInteger) {
             return BigDecimal.valueOf(number.longValue());
         } else if (number != null) {
@@ -268,8 +268,8 @@ public class XmlTypeConverter {
 
     // to be used from within createDuration only (for general use it should be rewritten!!)
     private static BigInteger toBigInteger(Number number) {
-        if (number instanceof BigInteger) {
-            return (BigInteger) number;                     // this is the most probable case as fields are stored as BigIntegers
+        if (number instanceof BigInteger integer) {
+            return integer;                     // this is the most probable case as fields are stored as BigIntegers
         } else if (number != null) {
             return BigInteger.valueOf(number.longValue());
         } else {

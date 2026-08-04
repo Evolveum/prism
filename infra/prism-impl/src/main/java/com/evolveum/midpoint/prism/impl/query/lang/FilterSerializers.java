@@ -39,7 +39,8 @@ import com.google.common.collect.ImmutableMap;
 
 import static com.evolveum.midpoint.prism.query.PrismQuerySerialization.NotSupportedException;
 import static com.evolveum.midpoint.prism.impl.query.lang.Filter.Name.*;
-import static com.evolveum.midpoint.prism.impl.query.lang.Filter.LogicalFilter.*;
+import static com.evolveum.midpoint.prism.impl.query.lang.Filter.LogicalFilter.AND;
+import static com.evolveum.midpoint.prism.impl.query.lang.Filter.LogicalFilter.OR;
 
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
@@ -426,9 +427,9 @@ public class FilterSerializers {
 
         var args = new ArrayList<>();
         args.add(source.getValues().get(0).getValue());
-        if (method instanceof ThresholdMatchingMethod) {
-            args.add(((ThresholdMatchingMethod<?>) method).getThreshold());
-            args.add(((ThresholdMatchingMethod<?>) method).isInclusive());
+        if (method instanceof ThresholdMatchingMethod<?> matchingMethod) {
+            args.add(matchingMethod.getThreshold());
+            args.add(matchingMethod.isInclusive());
         }
         target.writeRawValues(args);
     }

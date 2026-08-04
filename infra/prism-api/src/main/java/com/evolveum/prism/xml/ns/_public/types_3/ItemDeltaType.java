@@ -11,7 +11,6 @@ package com.evolveum.prism.xml.ns._public.types_3;
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
 import com.evolveum.midpoint.prism.Raw;
-import com.evolveum.midpoint.util.JAXBUtil;
 import com.evolveum.midpoint.util.MiscUtil;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
@@ -19,7 +18,10 @@ import org.w3c.dom.Element;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -191,22 +193,23 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
         if ((source!= null)&&(!source.isEmpty())) {
             for (final Iterator<?> it = source.iterator(); it.hasNext(); ) {
                 final Object next = it.next();
-                if (next instanceof JAXBElement) {
+                if (next instanceof JAXBElement element) {
                     // Referenced elements without classes.
-                    if (((JAXBElement) next).getValue() instanceof String) {
+                    if (element.getValue() instanceof String) {
                         // CElementInfo: jakarta.xml.bind.JAXBElement<java.lang.String>
-                        target.add(copyOfStringElement(((JAXBElement) next)));
+                        target.add(copyOfStringElement(element));
                         continue;
                     }
                 }
-                if (next instanceof String) {
+                if (next instanceof String string) {
                     // CBuiltinLeafInfo: java.lang.String
-                    target.add(((String) next));
+                    target.add(string);
                     continue;
                 }
-                if (next instanceof Object) {
+                if (next != null) {
+                    // originaly was instanceof Object which semantically is null check
                     // CBuiltinLeafInfo: java.lang.Object
-                    target.add(copyOf(((Object) next)));
+                    target.add(copyOf(next));
                     continue;
                 }
                 // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
@@ -289,32 +292,32 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
                     return new MimeType(o.toString());
                 }
                 // Cloneable types.
-                if (o instanceof XMLGregorianCalendar) {
-                    return ((XMLGregorianCalendar) o).clone();
+                if (o instanceof XMLGregorianCalendar calendar) {
+                    return calendar.clone();
                 }
-                if (o instanceof Date) {
-                    return ((Date) o).clone();
+                if (o instanceof Date date) {
+                    return date.clone();
                 }
-                if (o instanceof Calendar) {
-                    return ((Calendar) o).clone();
+                if (o instanceof Calendar calendar1) {
+                    return calendar1.clone();
                 }
-                if (o instanceof TimeZone) {
-                    return ((TimeZone) o).clone();
+                if (o instanceof TimeZone zone) {
+                    return zone.clone();
                 }
-                if (o instanceof Locale) {
-                    return ((Locale) o).clone();
+                if (o instanceof Locale locale) {
+                    return locale.clone();
                 }
-                if (o instanceof Element) {
-                    return ((Element)((Element) o).cloneNode(true));
+                if (o instanceof Element element) {
+                    return ((Element)element.cloneNode(true));
                 }
-                if (o instanceof JAXBElement) {
-                    return copyOf(((JAXBElement) o));
+                if (o instanceof JAXBElement element1) {
+                    return copyOf(element1);
                 }
                 try {
                     return o.getClass().getMethod("clone", ((Class[]) null)).invoke(o, ((Object[]) null));
                 } catch (NoSuchMethodException e) {
-                    if (o instanceof Serializable) {
-                        return copyOf(((Serializable) o));
+                    if (o instanceof Serializable serializable) {
+                        return copyOf(serializable);
                     }
                     // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
                     throw((AssertionError) new AssertionError((("Unexpected instance during copying object '"+ o)+"'.")).initCause(e));
@@ -459,13 +462,13 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
             path.accept(visitor);
         }
         for (Object o : value) {
-            if (o instanceof JaxbVisitable) {
-                ((JaxbVisitable) o).accept(visitor);
+            if (o instanceof JaxbVisitable visitable) {
+                visitable.accept(visitor);
             }
         }
         for (Object o : estimatedOldValue) {
-            if (o instanceof JaxbVisitable) {
-                ((JaxbVisitable) o).accept(visitor);
+            if (o instanceof JaxbVisitable visitable1) {
+                visitable1.accept(visitor);
             }
         }
     }

@@ -22,8 +22,8 @@ public class PrismValueUtil {
     @Nullable
     public static PrismContainerValue<?> getParentContainerValue(PrismValue value) {
         Itemable parent = value.getParent();
-        if (parent instanceof Item) {
-            return ((Item<?, ?>) parent).getParent();
+        if (parent instanceof Item<?, ?> item) {
+            return item.getParent();
         } else {
             return null;
         }
@@ -35,8 +35,8 @@ public class PrismValueUtil {
     @Nullable
     public static PrismObject<?> getParentObject(@Nullable PrismValue value) {
         while (value != null) {
-            if (value instanceof PrismObjectValue) {
-                return ((PrismObjectValue<?>) value).asPrismObject();
+            if (value instanceof PrismObjectValue<?> objectValue) {
+                return objectValue.asPrismObject();
             }
             value = getParentContainerValue(value);
         }
@@ -71,8 +71,8 @@ public class PrismValueUtil {
             throws SchemaException {
         Validate.isTrue(!(node instanceof RootXNode));
         PrismProperty<T> property = PrismContext.get().itemFactory().createProperty(itemName);
-        if (node instanceof ListXNode) {
-            for (XNode subnode : ((ListXNode) node).asList()) {
+        if (node instanceof ListXNode list) {
+            for (XNode subnode : list.asList()) {
                 property.add(createRaw(subnode));
             }
         } else {
@@ -86,8 +86,8 @@ public class PrismValueUtil {
     }
 
     public static boolean differentIds(PrismValue v1, PrismValue v2) {
-        Long id1 = v1 instanceof PrismContainerValue ? ((PrismContainerValue<?>) v1).getId() : null;
-        Long id2 = v2 instanceof PrismContainerValue ? ((PrismContainerValue<?>) v2).getId() : null;
+        Long id1 = v1 instanceof PrismContainerValue<?> pcv ? pcv.getId() : null;
+        Long id2 = v2 instanceof PrismContainerValue<?> pcv ? pcv.getId() : null;
         return id1 != null && id2 != null && id1.longValue() != id2.longValue();
     }
 }

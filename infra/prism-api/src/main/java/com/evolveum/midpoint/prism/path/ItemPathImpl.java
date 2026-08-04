@@ -74,12 +74,12 @@ public final class ItemPathImpl implements ItemPath {
     }
 
     private void add(Object component) {
-        if (component instanceof ItemPath && !(component instanceof ItemName)) {
-            addAll(((ItemPath) component).getSegments());
-        } else if (component instanceof Object[]) {
-            addAll((Object[]) component);
-        } else if (component instanceof String) {
-            segments.add(new ItemName((String) component));
+        if (component instanceof ItemPath path && !(component instanceof ItemName)) {
+            addAll(path.getSegments());
+        } else if (component instanceof Object[] objects) {
+            addAll(objects);
+        } else if (component instanceof String string) {
+            segments.add(new ItemName(string));
         } else if (component != null) {
             segments.add(component);
         } else {

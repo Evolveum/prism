@@ -90,8 +90,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             }
             // Special hack (MID-5803) -- we should NEVER get PrismValue here; but not enough time to fix this right now
             Object bean;
-            if (inputBean instanceof PrismValue) {
-                bean = getRealValue((PrismValue) inputBean);
+            if (inputBean instanceof PrismValue value) {
+                bean = getRealValue(value);
                 if (bean == null) {
                     return null;
                 }
@@ -107,11 +107,11 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             if (bean instanceof Containerable) {
                 return (XNodeImpl) prismContext.xnodeSerializer().context(ctx).serializeRealValue(bean, new QName("dummy"))
                         .getSubnode();
-            } else if (bean instanceof Enum) {
-                return marshalEnum((Enum<?>) bean, ctx);
-            } else if (bean instanceof Referencable) {
+            } else if (bean instanceof Enum<?> value) {
+                return marshalEnum(value, ctx);
+            } else if (bean instanceof Referencable referencable) {
                 // Starting from 4.5, here we go also for regular ObjectReferenceType instances.
-                PrismReferenceValue referenceValue = ((Referencable) bean).asReferenceValue();
+                PrismReferenceValue referenceValue = referencable.asReferenceValue();
                 QName typeName = ObjectUtils.defaultIfNull(prismContext.getDefaultReferenceTypeName(), ObjectReferenceType.COMPLEX_TYPE);
                 XNodeImpl xnode = (XNodeImpl) prismContext.xnodeSerializer()
                         .context(createNameSerializationContext(ctx, referenceValue))
@@ -124,8 +124,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 return xnode;
             } else if (bean.getClass().getAnnotation(XmlType.class) != null) {
                 return marshalXmlType(bean, ctx);
-            } else if (bean instanceof RawType && ((RawType) bean).getXnode() != null) {
-                return (XNodeImpl) ((RawType) bean).getXnode();
+            } else if (bean instanceof RawType type && type.getXnode() != null) {
+                return (XNodeImpl) type.getXnode();
             } else {
                 return marshalToPrimitive(bean, ctx);
             }
@@ -162,8 +162,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
     @Nullable
     private Object getRealValue(@NotNull PrismValue prismValue) {
-        if (prismValue instanceof PrismContainerValue<?>) {
-            PrismContainerValue<?> pcv = (PrismContainerValue<?>) prismValue;
+        if (prismValue instanceof PrismContainerValue<?> pcv) {
             if (pcv.getCompileTimeClass() != null) {
                 return prismValue.getRealValue();
             } else {
@@ -252,9 +251,9 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
         Class<?> beanClass = bean.getClass();
         MapXNodeImpl xmap;
-        if (bean instanceof SearchFilterType) {
+        if (bean instanceof SearchFilterType type) {
             // this hack is here because of c:ConditionalSearchFilterType - it is analogous to situation when unmarshalling this type (TODO: rework this in a nicer way)
-            xmap = marshalSearchFilterType((SearchFilterType) bean);
+            xmap = marshalSearchFilterType(type);
             if (SearchFilterType.class.equals(bean.getClass())) {
                 return xmap;        // nothing more to serialize; otherwise we continue, because in that case we deal with a subclass of SearchFilterType
             }
@@ -295,8 +294,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
         QName elementName = inspector.findFieldElementQName(fieldName, beanClass, namespace);
         ItemDefinition<?> propDef = ctd != null ? ctd.findLocalItemDefinition(elementName) : null;
 
-        if (getterResult instanceof Collection<?>) {
-            Collection<?> collection = (Collection<?>) getterResult;
+        if (getterResult instanceof Collection<?> collection) {
             if (collection.isEmpty()) {
                 return null;
             }
@@ -307,8 +305,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
             // elementName will be determined from the first item on the list
             // TODO make sure it will be correct with respect to other items as well!
-            if (getterResultValue instanceof JAXBElement && ((JAXBElement<?>) getterResultValue).getName() != null) {
-                elementName = ((JAXBElement<?>) getterResultValue).getName();
+            if (getterResultValue instanceof JAXBElement<?> element && element.getName() != null) {
+                elementName = element.getName();
                 // propDef is replaced with substitution if found (this prevents emiting superfluous type
                 if (ctd != null) {
                     propDef = ctd.substitution(elementName).orElse(propDef);
@@ -326,8 +324,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             return new AbstractMap.SimpleEntry<>(elementName, xlist);
         }
         // Value is not collection
-        if (getterResult instanceof JAXBElement) {
-            elementName = ((JAXBElement<?>) getterResult).getName();
+        if (getterResult instanceof JAXBElement<?> element) {
+            elementName = element.getName();
         }
         XNodeImpl marshaled = marshalSingleValue(getterResult, field, fieldName, isAttribute, ctx, getter, propDef);
         if (marshaled != null) {
@@ -338,8 +336,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
     private XNodeImpl marshalSingleValue(Object value, Field field, String namespace, boolean isAttribute, SerializationContext ctx, Method getter, ItemDefinition<?> propDef) throws SchemaException {
         Object valueToMarshal = value;
-        if (value instanceof JAXBElement) {
-            valueToMarshal = ((JAXBElement<?>) value).getValue();
+        if (value instanceof JAXBElement<?> element) {
+            valueToMarshal = element.getValue();
         }
         QName typeName = inspector.findTypeName(field, valueToMarshal.getClass(), namespace);
         // note: fieldTypeName is used only for attribute values here (when constructing PrimitiveXNode)
@@ -377,8 +375,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
     public void revive(Object bean, final PrismContext prismContext) {
         Handler<Object> visitor = o -> {
-            if (o instanceof Revivable) {
-                ((Revivable) o).revive(prismContext);
+            if (o instanceof Revivable revivable) {
+                revivable.revive(prismContext);
             }
             return true;
         };
@@ -419,8 +417,7 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
                 continue;
             }
 
-            if (getterResult instanceof Collection<?>) {
-                Collection<?> col = (Collection<?>) getterResult;
+            if (getterResult instanceof Collection<?> col) {
                 if (col.isEmpty()) {
                     continue;
                 }
@@ -437,8 +434,8 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
 
     private void visitValue(Object element, Handler<Object> handler) {
         Object elementToMarshall = element;
-        if (element instanceof JAXBElement) {
-            elementToMarshall = ((JAXBElement<?>) element).getValue();
+        if (element instanceof JAXBElement<?> jaxbElement) {
+            elementToMarshall = jaxbElement.getValue();
         }
         visit(elementToMarshall, handler);
     }
@@ -511,10 +508,9 @@ public class BeanMarshaller implements SchemaRegistry.InvalidationListener {
             Type genericReturnType = getter.getGenericReturnType();
             if (genericReturnType instanceof ParameterizedType) {
                 Type actualType = inspector.getTypeArgument(genericReturnType, "explicit type declaration");
-                if (actualType instanceof Class) {
-                    getterType = (Class<?>) actualType;
-                } else if (actualType instanceof ParameterizedType) {
-                    ParameterizedType parameterizedType = (ParameterizedType) actualType;
+                if (actualType instanceof Class<?> clazz) {
+                    getterType = clazz;
+                } else if (actualType instanceof ParameterizedType parameterizedType) {
                     Type typeArgument = inspector.getTypeArgument(parameterizedType, "JAXBElement return type");
                     getterType = inspector.getUpperBound(typeArgument, "JAXBElement return type");
                 }

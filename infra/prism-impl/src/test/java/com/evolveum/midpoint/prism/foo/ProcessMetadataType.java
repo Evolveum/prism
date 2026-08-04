@@ -20,6 +20,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -27,7 +29,7 @@ import java.util.List;
  */
 public class ProcessMetadataType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ProcessMetadataType");
     public static final ItemName F_REQUEST_TIMESTAMP = ItemName.interned(ObjectType.NS_FOO, "requestTimestamp");
     public static final ItemName F_REQUESTOR_REF = ItemName.interned(ObjectType.NS_FOO, "requestorRef");
@@ -44,7 +46,7 @@ public class ProcessMetadataType extends AbstractMutableContainerable {
     public static final ItemName F_CERTIFIER_COMMENT = ItemName.interned(ObjectType.NS_FOO, "certifierComment");
     public static final Producer<ProcessMetadataType> FACTORY = new Producer<ProcessMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ProcessMetadataType run() {
             return new ProcessMetadataType();

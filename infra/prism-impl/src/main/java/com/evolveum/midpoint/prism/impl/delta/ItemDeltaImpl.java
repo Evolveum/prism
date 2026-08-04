@@ -254,8 +254,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             return;
         }
         for (V pval : set) {
-            if (pval instanceof PrismContainerValue<?>) {
-                PrismContainerValue<?> cval = (PrismContainerValue<?>) pval;
+            if (pval instanceof PrismContainerValue<?> cval) {
                 if (id == null || id.equals(cval.getId())) {
                     pval.accept(visitor, rest, recursive);
                 }
@@ -1273,8 +1272,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
                 if (itemParent.isEmpty()) {
                     Itemable itemGrandparent = itemParent.getParent();
                     if (itemGrandparent != null) {
-                        if (itemGrandparent instanceof Item<?, ?>) {
-                            cleanupAllTheWayUp((Item<?, ?>) itemGrandparent);
+                        if (itemGrandparent instanceof Item<?, ?> item1) {
+                            cleanupAllTheWayUp(item1);
                         }
                     }
                 }
@@ -1842,8 +1841,7 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
             return;
         }
         for (V val : values) {
-            if (val instanceof PrismContainerValue<?>) {
-                PrismContainerValue<?> cval = (PrismContainerValue<?>) val;
+            if (val instanceof PrismContainerValue<?> cval) {
                 Supplier<String> definitionSupplier = () -> cval + " in " + sourceDescriptionSupplier.get();
                 for (Item<?, ?> item : cval.getItems()) {
                     item.assertDefinitions(tolerateRawValues, definitionSupplier);
@@ -2213,8 +2211,8 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     public void setOriginTypeRecursive(final OriginType originType) {
         checkMutable();
         accept((visitable) -> {
-            if (visitable instanceof PrismValue) {
-                ((PrismValue) visitable).setOriginType(originType);
+            if (visitable instanceof PrismValue value) {
+                value.setOriginType(originType);
             }
         });
     }

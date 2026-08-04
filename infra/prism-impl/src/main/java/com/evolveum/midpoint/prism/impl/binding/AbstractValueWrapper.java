@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl.binding;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -18,7 +19,7 @@ import com.google.common.base.Objects;
 
 public abstract class AbstractValueWrapper<T> implements Serializable, Cloneable, JaxbVisitable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     public abstract T getValue();
     public abstract void setValue(T value);

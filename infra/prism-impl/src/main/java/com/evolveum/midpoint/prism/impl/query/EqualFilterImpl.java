@@ -20,13 +20,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.Collection;
 import java.util.List;
 
 import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
 public class EqualFilterImpl<T> extends PropertyValueFilterImpl<T> implements EqualFilter<T> {
-    private static final long serialVersionUID = 3284478412180258355L;
+    @Serial private static final long serialVersionUID = 3284478412180258355L;
 
     /*
      *  The pattern for factory methods and constructors signatures is:

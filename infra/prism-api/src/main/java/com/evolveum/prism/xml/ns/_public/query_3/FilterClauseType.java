@@ -6,6 +6,7 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -49,7 +50,7 @@ import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 })
 public class FilterClauseType implements Serializable, Cloneable, PlainStructured {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "FilterType");
     public static final QName F_MATCHING = new QName(PrismConstants.NS_QUERY, "matching");
 

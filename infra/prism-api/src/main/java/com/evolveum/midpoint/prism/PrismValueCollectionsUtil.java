@@ -265,10 +265,10 @@ public class PrismValueCollectionsUtil {
     public static Collection<PrismValue> toPrismValues(Object... realValues) {
         Collection<PrismValue> pValues = new ArrayList<>(realValues.length);
         for (Object realValue : realValues) {
-            if (realValue instanceof Containerable) {
-                pValues.add(((Containerable) realValue).asPrismContainerValue());
-            } else if (realValue instanceof Referencable) {
-                pValues.add(((Referencable) realValue).asReferenceValue());
+            if (realValue instanceof Containerable containerable) {
+                pValues.add(containerable.asPrismContainerValue());
+            } else if (realValue instanceof Referencable referencable) {
+                pValues.add(referencable.asReferenceValue());
             } else if (realValue != null) {
                 pValues.add(PrismContext.get().itemFactory().createPropertyValue(realValue));
             }
@@ -342,6 +342,6 @@ public class PrismValueCollectionsUtil {
     }
 
     private static Long getId(PrismValue value) {
-        return value instanceof PrismContainerValue<?> ? ((PrismContainerValue<?>) value).getId() : null;
+        return value instanceof PrismContainerValue<?> pcv ? pcv.getId() : null;
     }
 }

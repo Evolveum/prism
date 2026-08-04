@@ -10,7 +10,6 @@ import java.util.Optional;
 
 import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
 
 public abstract class AbstractAxiomItem<V> implements AxiomItem<V> {
 

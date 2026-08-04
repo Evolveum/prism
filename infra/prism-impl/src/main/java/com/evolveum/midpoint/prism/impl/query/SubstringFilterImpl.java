@@ -92,8 +92,8 @@ public final class SubstringFilterImpl<T> extends PropertyValueFilterImpl<T>
         MatchingRule<Object> matching = getMatchingRuleFromRegistry(matchingRuleRegistry);
 
         for (Object val : objectItemValues) {
-            if (val instanceof PrismPropertyValue) {
-                Object value = ((PrismPropertyValue<?>) val).getValue();
+            if (val instanceof PrismPropertyValue<?> propertyValue) {
+                Object value = propertyValue.getValue();
                 for (Object o : toRealValues()) {
                     if (o == null) {
                         continue;            // shouldn't occur

@@ -33,6 +33,7 @@
     <test name="Profiling">
         <classes>
             <class name="com.evolveum.midpoint.util.ProfilingTest" />
+            <class name="com.evolveum.midpoint.util.CtxInterceptorTest" />
         </classes>
     </test>
 </suite>

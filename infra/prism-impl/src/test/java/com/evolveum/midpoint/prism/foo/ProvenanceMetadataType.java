@@ -20,6 +20,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -36,7 +38,7 @@ import java.util.List;
 })
 public class ProvenanceMetadataType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ProvenanceMetadataType");
     public static final ItemName F_ACQUISITION = ItemName.interned(ObjectType.NS_FOO, "acquisition");
     public static final ItemName F_MAPPING_SPECIFICATION = ItemName.interned(ObjectType.NS_FOO, "mappingSpecification");
@@ -46,7 +48,7 @@ public class ProvenanceMetadataType extends AbstractMutableContainerable {
     public static final ItemName F_ASSIGNMENT_PATH = ItemName.interned(ObjectType.NS_FOO, "assignmentPath");
     public static final Producer<ProvenanceMetadataType> FACTORY = new Producer<ProvenanceMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ProvenanceMetadataType run() {
             return new ProvenanceMetadataType();

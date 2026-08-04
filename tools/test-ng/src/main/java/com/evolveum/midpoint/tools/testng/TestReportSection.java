@@ -106,12 +106,12 @@ public class TestReportSection {
             return "";
         }
 
-        if (value instanceof String) {
-            if (((String) value).indexOf(SEPARATOR) == -1) {
+        if (value instanceof String string) {
+            if (string.indexOf(SEPARATOR) == -1) {
                 return value.toString();
             }
 
-            StringBuilder sb = new StringBuilder((String) value);
+            StringBuilder sb = new StringBuilder(string);
             int i = 0;
             while (i < sb.length()) {
                 if (sb.charAt(i) == SEPARATOR || sb.charAt(i) == ESCAPE_CHAR) {

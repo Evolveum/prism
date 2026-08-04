@@ -8,14 +8,15 @@
 package com.evolveum.midpoint.prism.delta;
 
 import com.evolveum.midpoint.prism.*;
-import com.evolveum.midpoint.prism.equivalence.ParameterizedEquivalenceStrategy;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  *
@@ -33,9 +34,9 @@ public class ItemDeltaCollectionsUtil {
                 return (DD) delta;
             }
             // e.g. when deleting credentials we match also deletion of credentials/password (is that correct?)
-            if (!strict && delta instanceof ContainerDelta<?> && delta.getPath().isSubPath(propertyPath)) {
+            if (!strict && delta instanceof ContainerDelta containerDelta && delta.getPath().isSubPath(propertyPath)) {
                 //noinspection unchecked
-                return (DD) ((ContainerDelta)delta).getSubDelta(propertyPath.remainder(delta.getPath()));
+                return (DD) containerDelta.getSubDelta(propertyPath.remainder(delta.getPath()));
             }
         }
         return null;

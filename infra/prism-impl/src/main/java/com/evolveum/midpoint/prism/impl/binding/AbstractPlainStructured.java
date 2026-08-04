@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.binding;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -18,7 +19,7 @@ import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 public abstract class AbstractPlainStructured implements PlainStructured, Serializable, JaxbVisitable {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
 
     public AbstractPlainStructured() {

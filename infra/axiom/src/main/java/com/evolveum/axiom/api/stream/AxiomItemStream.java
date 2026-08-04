@@ -7,9 +7,6 @@
 package com.evolveum.axiom.api.stream;
 
 import com.evolveum.axiom.api.AxiomName;
-import com.evolveum.axiom.api.AxiomPrefixedName;
-import com.evolveum.axiom.lang.spi.AxiomNameResolver;
-import com.evolveum.concepts.SourceLocation;
 
 public interface AxiomItemStream {
 

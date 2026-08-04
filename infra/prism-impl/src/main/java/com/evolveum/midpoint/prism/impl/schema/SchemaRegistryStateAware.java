@@ -8,10 +8,7 @@ package com.evolveum.midpoint.prism.impl.schema;
 
 import com.evolveum.midpoint.prism.AbstractFreezable;
 
-import com.evolveum.midpoint.prism.ItemDefinition;
 import com.evolveum.midpoint.prism.schema.SchemaLookup;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Class allow before freeze setting of SchemaRegistryStateImpl

@@ -9,20 +9,22 @@ package com.evolveum.midpoint.prism.impl.schema.features;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
 import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.*;
-import static com.evolveum.midpoint.prism.impl.schema.SchemaProcessorUtil.getAnnotationElement;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.DisplayableValueImpl;
+import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.util.DisplayableValue;
 
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLikeBuilder;
 
 import com.evolveum.midpoint.prism.PrismReferenceDefinition.PrismReferenceDefinitionMutator;
 import com.evolveum.midpoint.prism.TypeDefinition.TypeDefinitionLikeBuilder;
-import com.evolveum.midpoint.prism.impl.ItemPathParserImpl;
 import com.evolveum.midpoint.prism.impl.marshaller.ItemPathHolder;
 import com.evolveum.midpoint.prism.impl.schema.features.ItemDiagramSpecificationXsomParser.ItemDiagramSpecifications;
 
@@ -37,7 +39,9 @@ import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 
 import com.evolveum.midpoint.util.MiscUtil;
 
-import com.sun.xml.xsom.*;
+import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSComplexType;
+import com.sun.xml.xsom.XSType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
@@ -264,6 +268,28 @@ public class DefinitionFeatures {
                         return new PrismReferenceValueImpl(oid, targetType);
                     });
 
+    @SuppressWarnings("rawtypes") // same as DF_VALUE_ENUMERATION_REF above
+    public static final DefinitionFeature<Collection, PrismItemValuesDefinition.Mutator, XSAnnotation, ?> DF_ALLOWED_VALUES =
+            DefinitionFeature.of(
+                    Collection.class,
+                    PrismItemValuesDefinition.Mutator.class,
+                    PrismItemValuesDefinition.Mutator::setAllowedValues,
+                    XsomParsers.displayableValues(A_ALLOWED_VALUES),
+                    SerializablePropertyDefinition.class,
+                    SerializablePropertyDefinition::getAllowedValues,
+                    XsdSerializers.displayableValues(A_ALLOWED_VALUES));
+
+    @SuppressWarnings("rawtypes") // same as DF_VALUE_ENUMERATION_REF above
+    public static final DefinitionFeature<Collection, PrismItemValuesDefinition.Mutator, XSAnnotation, ?> DF_SUGGESTED_VALUES =
+            DefinitionFeature.of(
+                    Collection.class,
+                    PrismItemValuesDefinition.Mutator.class,
+                    PrismItemValuesDefinition.Mutator::setSuggestedValues,
+                    XsomParsers.displayableValues(A_SUGGESTED_VALUES),
+                    SerializablePropertyDefinition.class,
+                    SerializablePropertyDefinition::getSuggestedValues,
+                    XsdSerializers.displayableValues(A_SUGGESTED_VALUES));
+
     public static class XsomParsers {
 
         public static final IsAnyXsomParser DF_IS_ANY_XSD_PARSER = IsAnyXsomParser.instance();
@@ -418,6 +444,39 @@ public class DefinitionFeatures {
             };
         }
 
+        /**
+         * Parses a wrapper annotation element (e.g. {@code <a:allowedValues>}) holding structured
+         * {@code <a:value>} children into a collection of {@link DisplayableValue}s. Returns {@code null}
+         * when the wrapper is absent, so that values from other sources (e.g. {@code xsd:enumeration})
+         * are not overwritten. See {@link #DF_ALLOWED_VALUES} / {@link #DF_SUGGESTED_VALUES}.
+         */
+        @SuppressWarnings("rawtypes")
+        public static DefinitionFeatureParser<Collection, XSAnnotation> displayableValues(@NotNull QName wrapperQName) {
+            return new DefinitionFeatureParser<>() {
+                @Override
+                public @Nullable Collection getValue(@Nullable XSAnnotation annotation) {
+                    Element wrapper = getAnnotationElement(annotation, wrapperQName);
+                    if (wrapper == null) {
+                        return null;
+                    }
+                    List<DisplayableValue<?>> result = new ArrayList<>();
+                    for (Element valueElement : DOMUtil.listChildElements(wrapper)) {
+                        List<Element> keyElements = DOMUtil.getChildElements(valueElement, A_KEY);
+                        if (keyElements.isEmpty()) {
+                            continue;
+                        }
+                        String key = keyElements.get(0).getTextContent();
+                        String label = DOMUtil.getChildElements(valueElement, A_LABEL).stream()
+                                .findFirst().map(Element::getTextContent).orElse(null);
+                        String description = DOMUtil.getChildElements(valueElement, A_DESCRIPTION).stream()
+                                .findFirst().map(Element::getTextContent).orElse(null);
+                        result.add(new DisplayableValueImpl<>(key, label, description));
+                    }
+                    return result.isEmpty() ? null : List.copyOf(result);
+                }
+            };
+        }
+
         @SuppressWarnings("SameParameterValue")
         public static <T> DefinitionFeatureParser<T, XSType> singleValueInherited(@NotNull Class<T> valueClass, @NotNull QName name) {
             return new DefinitionFeatureParser<>() {
@@ -529,22 +588,27 @@ public class DefinitionFeatures {
                             schemaContextDefinition.setType(DOMUtil.getQNameValue(typeElement));
                         }
 
+                        if (pathElement != null) {
+                            schemaContextDefinition.setPath(parsePath(pathElement));
+                        }
+
                         if (typePathElement != null) {
-                            schemaContextDefinition.setTypePath(new QName(typePathElement.getTextContent()));
+                            schemaContextDefinition.setTypePath(parsePath(typePathElement));
                         }
 
                         if (algorithmElement != null) {
                             schemaContextDefinition.setAlgorithm(new QName(algorithmElement.getTextContent()));
                         }
 
-                        if (pathElement != null) {
-                            var itemPath = ItemPathHolder.parseFromString(pathElement.getTextContent(), DOMUtil.getNamespaceDeclarations(pathElement));
-                                schemaContextDefinition.setPath(itemPath);
-                        }
                         return schemaContextDefinition;
                     }
 
                     return null;
+                }
+
+                private static UniformItemPath parsePath(Element pathElement) {
+                    return ItemPathHolder.parseFromString(
+                            pathElement.getTextContent(), DOMUtil.getNamespaceDeclarations(pathElement));
                 }
             };
         }
@@ -580,6 +644,11 @@ public class DefinitionFeatures {
         public static <E extends Enum<E>> @NotNull DefinitionFeatureSerializer<E> enumBased(
                 Class<E> valueClass, @NotNull QName annotationName, @NotNull Function<E, String> valueExtractor) {
             return (value, target) -> target.addAnnotation(annotationName, valueExtractor.apply(value));
+        }
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        public static @NotNull DefinitionFeatureSerializer<Collection> displayableValues(@NotNull QName wrapperName) {
+            return (value, target) -> target.addDisplayableValues(wrapperName, value);
         }
     }
 }

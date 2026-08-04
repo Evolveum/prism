@@ -21,15 +21,14 @@ public interface JaxbVisitable {
     void accept(JaxbVisitor visitor);
 
     static void visitPrismStructure(JaxbVisitable visitable, Visitor prismVisitor) {
-        if (visitable instanceof Containerable) {
-            ((Containerable) visitable).asPrismContainerValue().accept(prismVisitor);
-        } else if (visitable instanceof Referencable) {
-            PrismObject<?> object = ((Referencable) visitable).asReferenceValue().getObject();
+        if (visitable instanceof Containerable containerable) {
+            containerable.asPrismContainerValue().accept(prismVisitor);
+        } else if (visitable instanceof Referencable referencable) {
+            PrismObject<?> object = referencable.asReferenceValue().getObject();
             if (object != null) {
                 object.accept(prismVisitor);
             }
-        } else if (visitable instanceof RawType) {
-            RawType raw = (RawType) visitable;
+        } else if (visitable instanceof RawType raw) {
             if (raw.isParsed()) {
                 raw.getAlreadyParsedValue().accept(prismVisitor);
             } else {

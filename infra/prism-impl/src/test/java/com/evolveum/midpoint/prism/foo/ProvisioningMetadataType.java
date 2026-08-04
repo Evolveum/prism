@@ -18,8 +18,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.io.Serial;
 import javax.xml.namespace.QName;
 
 /**
@@ -32,12 +33,12 @@ import javax.xml.namespace.QName;
 public class ProvisioningMetadataType
         extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ProvisioningMetadataType");
     public static final ItemName F_LAST_PROVISIONING_TIMESTAMP = ItemName.interned(ObjectType.NS_FOO, "lastProvisioningTimestamp");
     public static final Producer<ProvisioningMetadataType> FACTORY = new Producer<ProvisioningMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ProvisioningMetadataType run() {
             return new ProvisioningMetadataType();

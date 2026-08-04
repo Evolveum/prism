@@ -10,6 +10,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.Objects;
 
 /**
@@ -19,7 +20,7 @@ import java.util.Objects;
  * @author Radovan Semancik
  */
 public class ObjectNotFoundException extends CommonException {
-    private static final long serialVersionUID = -9003686713018111855L;
+    @Serial private static final long serialVersionUID = -9003686713018111855L;
 
     private final Class<?> type;
 

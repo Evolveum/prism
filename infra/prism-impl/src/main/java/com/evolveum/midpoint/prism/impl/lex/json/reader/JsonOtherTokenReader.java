@@ -15,7 +15,6 @@ import com.evolveum.concepts.SourceLocation;
 import com.evolveum.concepts.TechnicalMessage;
 import com.evolveum.concepts.ValidationLog;
 import com.evolveum.concepts.ValidationLogType;
-import com.evolveum.midpoint.prism.ParsingContext;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
 import com.fasterxml.jackson.core.JsonParser;

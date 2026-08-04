@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.util.backoff;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class LinearBackoffComputer extends RetryLimitedBackoffComputer {
 
     private long delayInterval;
@@ -18,6 +20,6 @@ public class LinearBackoffComputer extends RetryLimitedBackoffComputer {
 
     @Override
     public long computeDelayWithinLimits(int retryNumber) {
-        return Math.round(Math.random() * delayInterval);
+        return Math.round(ThreadLocalRandom.current().nextDouble() * delayInterval);
     }
 }

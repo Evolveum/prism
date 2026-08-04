@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.query;
 
+import java.io.Serial;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.xml.namespace.QName;
@@ -33,7 +34,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class OwnedByFilterImpl extends ObjectFilterImpl implements OwnedByFilter {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private final @NotNull ComplexTypeDefinition type;
     private final @Nullable ItemPath path;

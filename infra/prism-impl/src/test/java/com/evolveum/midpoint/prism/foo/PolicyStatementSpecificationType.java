@@ -18,8 +18,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -29,12 +30,12 @@ import javax.xml.namespace.QName;
         "statementId"
 })
 public class PolicyStatementSpecificationType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "PolicyStatementSpecificationType");
     public static final ItemName F_STATEMENT_ID = ItemName.interned(ObjectType.NS_FOO, "statementId");
     public static final Producer<PolicyStatementSpecificationType> FACTORY = new Producer<PolicyStatementSpecificationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public PolicyStatementSpecificationType run() {
             return new PolicyStatementSpecificationType();

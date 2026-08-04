@@ -14,6 +14,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,7 +109,7 @@ public class ObjectReferenceType extends AbstractReferencable<ObjectReferenceTyp
     public static final ItemName F_TARGET_NAME = ItemName.interned(NS_FOO, "targetName");
     public static final Producer<ObjectReferenceType> FACTORY = new Producer<ObjectReferenceType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ObjectReferenceType run() {
             return new ObjectReferenceType();
@@ -257,7 +258,7 @@ public class ObjectReferenceType extends AbstractReferencable<ObjectReferenceTyp
         implements Serializable
     {
 
-        private static final long serialVersionUID = 201202081233L;
+        @Serial private static final long serialVersionUID = 201202081233L;
         @XmlAnyElement(lax = true)
         protected List<java.lang.Object> any;
 
@@ -322,7 +323,7 @@ public class ObjectReferenceType extends AbstractReferencable<ObjectReferenceTyp
         implements Serializable
     {
 
-        private static final long serialVersionUID = 201202081233L;
+        @Serial private static final long serialVersionUID = 201202081233L;
         @XmlAnyElement(lax = true)
         protected List<java.lang.Object> any;
         @XmlAnyAttribute

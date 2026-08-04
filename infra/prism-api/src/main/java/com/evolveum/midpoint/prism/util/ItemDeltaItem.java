@@ -335,8 +335,8 @@ public class ItemDeltaItem<V extends PrismValue, D extends ItemDefinition<?>> im
         }
 
         ID subDefinition;
-        if (definition instanceof PrismContainerDefinition<?>) {
-            subDefinition = ((PrismContainerDefinition<?>) definition).findItemDefinition(path);
+        if (definition instanceof PrismContainerDefinition<?> containerDefinition) {
+            subDefinition = containerDefinition.findItemDefinition(path);
         } else {
             throw new IllegalArgumentException("Attempt to resolve definition on non-container " + definition + " in " +this);
         }

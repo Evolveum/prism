@@ -37,7 +37,7 @@ public interface XNode extends DebugDumpable, Visitable<XNode>, Cloneable, Copya
     Integer getMaxOccurs();
 
     default boolean hasMetadata() {
-        return this instanceof MetadataAware && !((MetadataAware) this).getMetadataNodes().isEmpty();
+        return this instanceof MetadataAware aware && !aware.getMetadataNodes().isEmpty();
     }
 
     default PrismNamespaceContext namespaceContext() {

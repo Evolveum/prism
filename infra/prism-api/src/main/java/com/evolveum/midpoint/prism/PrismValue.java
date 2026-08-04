@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_ANY;
 import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;

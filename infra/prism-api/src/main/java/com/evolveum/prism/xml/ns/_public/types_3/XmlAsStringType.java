@@ -7,6 +7,7 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import com.evolveum.midpoint.util.DOMUtil;
 })
 public class XmlAsStringType implements PlainStructured, Serializable, Cloneable, JaxbVisitable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     @XmlMixed
     @XmlAnyElement // JAXB should not try to unmarshal inner elements
@@ -59,8 +60,8 @@ public class XmlAsStringType implements PlainStructured, Serializable, Cloneable
         for (Object object : getContent()) {
             if (object instanceof String) {
                 sb.append(object);
-            } else if (object instanceof Node) {
-                sb.append(DOMUtil.serializeDOMToString((Node) object));
+            } else if (object instanceof Node node) {
+                sb.append(DOMUtil.serializeDOMToString(node));
             } else {
                 throw new IllegalStateException("Unexpected content in XmlAsStringType: " + (object != null ? object.getClass() : "(null)"));
             }
@@ -122,8 +123,8 @@ public class XmlAsStringType implements PlainStructured, Serializable, Cloneable
             for (Object o : this.getContent()) {
                 if (o instanceof String) {
                     clone.content.add(o);
-                } else if (o instanceof Node) {
-                    clone.content.add(((Node) o).cloneNode(true));
+                } else if (o instanceof Node node) {
+                    clone.content.add(node.cloneNode(true));
                 } else {
                     throw new IllegalStateException("XmlAsStringType.clone: unexpected item in content: " + (o != null ? o.getClass() : "(null)"));
                 }

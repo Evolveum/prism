@@ -174,8 +174,8 @@ public class PrettyPrinter {
     }
 
     public static String prettyPrint(Node node) {
-        if (node instanceof Element) {
-            return prettyPrint((Element) node);
+        if (node instanceof Element element) {
+            return prettyPrint(element);
         }
         // TODO: Better print
         return "Node:" + node.getNodeName();
@@ -278,11 +278,11 @@ public class PrettyPrinter {
         if (value == null) {
             return "null";
         }
-        if (value instanceof JAXBElement) {
-            Object elementValue = ((JAXBElement<?>) value).getValue();
+        if (value instanceof JAXBElement<?> element) {
+            Object elementValue = element.getValue();
             String attempt = tryPrettyPrint(elementValue);
             if (attempt != null) {
-                return ("JAXBElement(" + ((JAXBElement<?>) value).getName() + "," + attempt + ")");
+                return ("JAXBElement(" + element.getName() + "," + attempt + ")");
             }
         }
         String attempt = tryPrettyPrint(value);
@@ -304,8 +304,8 @@ public class PrettyPrinter {
             }
             return c.getName();
         }
-        if (value instanceof Collection) {
-            return PrettyPrinter.prettyPrint((Collection<?>) value);
+        if (value instanceof Collection<?> collection) {
+            return PrettyPrinter.prettyPrint(collection);
         }
         if (value.getClass().isArray()) {
             Class<?> cclass = value.getClass().getComponentType();
@@ -319,9 +319,9 @@ public class PrettyPrinter {
                 return PrettyPrinter.prettyPrint((Object[]) value);
             }
         }
-        if (value instanceof Node) {
+        if (value instanceof Node node) {
             // This is interface, won't catch it using reflection
-            return PrettyPrinter.prettyPrint((Node) value);
+            return PrettyPrinter.prettyPrint(node);
         }
         for (Class<?> prettyPrinterClass : PRETTY_PRINTERS) {
             String printerValue = tryPrettyPrint(value, prettyPrinterClass);
@@ -359,11 +359,11 @@ public class PrettyPrinter {
         if (value == null) {
             return "null";
         }
-        if (value instanceof DebugDumpable) {
-            return ((DebugDumpable) value).debugDump(indent);
+        if (value instanceof DebugDumpable dumpable) {
+            return dumpable.debugDump(indent);
         }
-        if (value instanceof Collection) {
-            return DebugUtil.debugDump((Collection<?>) value, indent);
+        if (value instanceof Collection<?> collection) {
+            return DebugUtil.debugDump(collection, indent);
         }
         String out = tryDebugDumpMethod(value, indent);
         if (out != null) {
@@ -412,8 +412,8 @@ public class PrettyPrinter {
             sb.append("null");
             return;
         }
-        if (value instanceof ShortDumpable) {
-            ((ShortDumpable) value).shortDump(sb);
+        if (value instanceof ShortDumpable dumpable) {
+            dumpable.shortDump(sb);
             return;
         }
         if (value instanceof Collection) {

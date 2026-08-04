@@ -7,6 +7,8 @@
 
 package com.evolveum.midpoint.util.backoff;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class ExponentialBackoffComputer extends RetryLimitedBackoffComputer {
 
     private final long baseDelayInterval;
@@ -28,6 +30,6 @@ public class ExponentialBackoffComputer extends RetryLimitedBackoffComputer {
         if (delayIntervalLimit != null && delayInterval > delayIntervalLimit) {
             delayInterval = delayIntervalLimit;
         }
-        return Math.round(Math.random() * delayInterval);
+        return Math.round(ThreadLocalRandom.current().nextDouble() * delayInterval);
     }
 }

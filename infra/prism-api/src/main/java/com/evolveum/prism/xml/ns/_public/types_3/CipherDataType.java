@@ -18,6 +18,7 @@ import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 
+import java.io.Serial;
 import java.util.Arrays;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -58,7 +59,7 @@ import jakarta.xml.bind.annotation.XmlType;
 public class CipherDataType implements PlainStructured.WithoutStrategy, JaxbVisitable {
 
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     @XmlElement(required = true)
     protected byte[] cipherValue;

@@ -600,10 +600,10 @@ public class PrismBeanInspector {
 
     @NotNull
     public Class getUpperBound(Type type, String desc) {
-        if (type instanceof Class) {
-            return (Class) type;
-        } else if (type instanceof WildcardType) {
-            WildcardType wildcard = ((WildcardType) type);
+        if (type instanceof Class clazz) {
+            return clazz;
+        } else if (type instanceof WildcardType wildcardType) {
+            WildcardType wildcard = wildcardType;
             if (wildcard.getUpperBounds().length != 1) {
                 ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
                         new TechnicalMessage("Wrong number of upper bounds for %s (%s): %s",
@@ -615,8 +615,8 @@ public class PrismBeanInspector {
                 throw new IllegalArgumentException(validationLog.message());
             }
             Type upper = wildcard.getUpperBounds()[0];
-            if (upper instanceof Class) {
-                return (Class) upper;
+            if (upper instanceof Class clazz) {
+                return clazz;
             } else {
                 ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
                         new TechnicalMessage("Upper bound for %s is not a class, it is %s: %s",

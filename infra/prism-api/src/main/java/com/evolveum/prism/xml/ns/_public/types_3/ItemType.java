@@ -68,8 +68,8 @@ public class ItemType implements Cloneable, Serializable, JaxbVisitable {
     public void accept(JaxbVisitor visitor) {
         visitor.visit(this);
         for (Object o : getValue()) {
-            if (o instanceof JaxbVisitable) {
-                visitor.visit((JaxbVisitable) o);
+            if (o instanceof JaxbVisitable visitable) {
+                visitor.visit(visitable);
             }
         }
     }

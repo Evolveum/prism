@@ -7,6 +7,7 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class SearchFilterType extends AbstractFreezable implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable { // FIXME: Still we need also old Equals, HashCode until switch is made in midpoint
 
-    private static final long serialVersionUID = 201303040000L;
+    @Serial private static final long serialVersionUID = 201303040000L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "SearchFilterType");
     public static final QName F_DESCRIPTION = new QName(PrismConstants.NS_QUERY, "description");
@@ -173,8 +174,8 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
     private static String parseString(MapXNode xmap, QName name, String displayName) throws SchemaException {
         XNode xdesc = xmap.get(name);
         if (xdesc != null) {
-            if (xdesc instanceof PrimitiveXNode<?>) {
-                return ((PrimitiveXNode<?>) xdesc).getParsedValue(DOMUtil.XSD_STRING, String.class);
+            if (xdesc instanceof PrimitiveXNode<?> node) {
+                return node.getParsedValue(DOMUtil.XSD_STRING, String.class);
             } else {
                 throw new SchemaException(displayName + " must have a primitive value");
             }

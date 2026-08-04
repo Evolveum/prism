@@ -12,35 +12,41 @@ import java.io.Serializable;
 import javax.xml.namespace.QName;
 
 /**
- * The interface provides Getter and Setter methods of possible attributes for definition the schema context annotation in xsd.
+ * Provides the content of `schemaContext` annotation.
  *
+ * Just simple getters and setters, with some rudimentary parsing.
+ *
+ * See https://docs.evolveum.com/midpoint/devel/schema-context-annotations/.
  */
 public interface SchemaContextDefinition extends Serializable {
 
     /**
-     * Type object if directly defined.
+     * Fixed name of the target object type. Must be qualified.
      */
     QName getType();
 
+    /**
+     * Fixed path of the target item within [fixed] target object type. {@link #getType()} must be non-null.
+     */
     ItemPath getPath();
 
     /**
-     * Path of type object.
+     * Path to a child element that will contain the target object type.
      */
-    QName getTypePath();
+    ItemPath getTypePath();
 
     /**
-     * Name of resolver for find attributes which the object depends.
+     * Name of the algorithm for determining the target item type.
      *
-     * For example {@link ResourceObjectContextResolver}
+     * For example {@code ResourceObjectContextResolver}.
      */
     QName getAlgorithm();
 
     void setType(QName type);
 
-    void setTypePath(QName typePath);
-
     void setPath(ItemPath path);
+
+    void setTypePath(ItemPath typePath);
 
     void setAlgorithm(QName algorithmName);
 }

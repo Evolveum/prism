@@ -23,12 +23,12 @@ class ItemPathSegmentUtil {
 
     @Contract("_, true -> !null")
     static ItemName toName(Object segment, boolean failOnError) {
-        if (segment instanceof NameItemPathSegment) {
-            return ((NameItemPathSegment) segment).getName();
-        } else if (segment instanceof ItemName) {
-            return (ItemName) segment;
-        } else if (segment instanceof QName) {
-            return ItemName.fromQName((QName) segment);
+        if (segment instanceof NameItemPathSegment pathSegment) {
+            return pathSegment.getName();
+        } else if (segment instanceof ItemName name) {
+            return name;
+        } else if (segment instanceof QName name) {
+            return ItemName.fromQName(name);
         } else {
             if (failOnError) {
                 throw new IllegalArgumentException("Not a name: " + getStringInformation(segment));
@@ -65,16 +65,16 @@ class ItemPathSegmentUtil {
     }
 
     public static boolean isNullId(Object o) {
-        return o == null || o instanceof IdItemPathSegment && ((IdItemPathSegment) o).getId() == null;
+        return o == null || o instanceof IdItemPathSegment iips && iips.getId() == null;
     }
 
     public static Long toId(Object o, boolean failOnError) {
-        if (o instanceof IdItemPathSegment) {
-            return ((IdItemPathSegment) o).getId();
+        if (o instanceof IdItemPathSegment segment) {
+            return segment.getId();
         } else if (o == null || o instanceof Long) {
             return (Long) o;
-        } else if (o instanceof Integer) {
-            return ((Integer) o).longValue();
+        } else if (o instanceof Integer integer) {
+            return integer.longValue();
         } else {
             if (failOnError) {
                 throw new IllegalArgumentException("Not an ID: " + o);
@@ -89,16 +89,16 @@ class ItemPathSegmentUtil {
     }
 
     public static QName toVariableName(Object segment) {
-        if (segment instanceof VariableItemPathSegment) {
-            return ((VariableItemPathSegment) segment).getName();
+        if (segment instanceof VariableItemPathSegment pathSegment) {
+            return pathSegment.getName();
         } else {
             throw new IllegalArgumentException("Not a variable: " + getStringInformation(segment));
         }
     }
 
     public static QName getSpecialSymbol(Object o) {
-        if (o instanceof QName) {
-            return (QName) o;
+        if (o instanceof QName name) {
+            return name;
         } else if (o instanceof IdentifierPathSegment) {
             return IdentifierPathSegment.QNAME;
         } else if (o instanceof ParentPathSegment) {

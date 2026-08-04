@@ -20,6 +20,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -56,7 +58,7 @@ public class AuthorizationType extends AbstractMutableContainerable {
     public static final ItemName F_OBJECT = new ItemName(ObjectType.NS_FOO, "object");
     public static final Producer<AuthorizationType> FACTORY = new Producer<AuthorizationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public AuthorizationType run() {
             return new AuthorizationType();

@@ -6,6 +6,7 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 })
 public class ValueType implements PlainStructured, Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "ValueType");
 
@@ -161,9 +162,9 @@ public class ValueType implements PlainStructured, Serializable, Cloneable {
         // CC-XJC Version 2.0 Build 2011-09-16T18:27:24+0000
         if (source != null && !source.isEmpty()) {
             for (final Object next : source) {
-                if (next instanceof Element) {
+                if (next instanceof Element element) {
                     // CWildcardTypeInfo: org.w3c.dom.Element
-                    target.add(((Element) next).cloneNode(true));
+                    target.add(element.cloneNode(true));
                     continue;
                 }
                 if (next instanceof String) {

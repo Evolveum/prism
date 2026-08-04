@@ -66,7 +66,7 @@ public class PropertySimpleValueFilterType
         extends FilterClauseType
         implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_QUERY, "PropertySimpleValueFilterType");
     public static final QName F_VALUE = new QName(PrismConstants.NS_QUERY, "value");
@@ -295,32 +295,32 @@ public class PropertySimpleValueFilterType
                     return new MimeType(o.toString());
                 }
                 // Cloneable types.
-                if (o instanceof XMLGregorianCalendar) {
-                    return ((XMLGregorianCalendar) o).clone();
+                if (o instanceof XMLGregorianCalendar calendar) {
+                    return calendar.clone();
                 }
-                if (o instanceof Date) {
-                    return ((Date) o).clone();
+                if (o instanceof Date date) {
+                    return date.clone();
                 }
-                if (o instanceof Calendar) {
-                    return ((Calendar) o).clone();
+                if (o instanceof Calendar calendar1) {
+                    return calendar1.clone();
                 }
-                if (o instanceof TimeZone) {
-                    return ((TimeZone) o).clone();
+                if (o instanceof TimeZone zone) {
+                    return zone.clone();
                 }
-                if (o instanceof Locale) {
-                    return ((Locale) o).clone();
+                if (o instanceof Locale locale) {
+                    return locale.clone();
                 }
-                if (o instanceof Element) {
-                    return ((Element) o).cloneNode(true);
+                if (o instanceof Element element) {
+                    return element.cloneNode(true);
                 }
-                if (o instanceof JAXBElement) {
-                    return copyOf((JAXBElement) o);
+                if (o instanceof JAXBElement element1) {
+                    return copyOf(element1);
                 }
                 try {
                     return o.getClass().getMethod("clone", (Class[]) null).invoke(o, (Object[]) null);
                 } catch (NoSuchMethodException e) {
-                    if (o instanceof Serializable) {
-                        return copyOf((Serializable) o);
+                    if (o instanceof Serializable serializable) {
+                        return copyOf(serializable);
                     }
                     // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/
                     throw new AssertionError("Unexpected instance during copying object '" + o + "'.", e);

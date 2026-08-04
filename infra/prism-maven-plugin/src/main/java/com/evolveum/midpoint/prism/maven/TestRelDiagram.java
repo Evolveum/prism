@@ -122,9 +122,8 @@ public class TestRelDiagram {
 
         for (Definition definition : definitions) {
 
-            if (definition instanceof PrismContainerDefinition) {
-                PrismContainerDefinition definition2 = (PrismContainerDefinition) definition;
-                String name = definition2.getItemName().getLocalPart();
+            if (definition instanceof PrismContainerDefinition<?> containerDef) {
+                String name = containerDef.getItemName().getLocalPart();
                 if (!path.contains(definition) && (localHasBeenNull == null || !localHasBeenNull.contains(definition))) {
                     hasBeen.add(name);
 
@@ -138,7 +137,7 @@ public class TestRelDiagram {
                         nextId = defsAndIds.get(definition);
                     }
 
-                    nextComplexDefinition = (PrismContainerDefinition<?>) definition;
+                    nextComplexDefinition = containerDef;
                 }
             }
         }
@@ -301,8 +300,8 @@ public class TestRelDiagram {
         ArrayList<PrismContainerDefinition<?>> targetDefinitionArray = new ArrayList<>();
         HashMap<String, PrismContainerDefinition<?>> mapOfTargetDefs = new HashMap<>();
         for (ItemDefinition<?> itemDef : definition.getDefinitions()) {
-            if (itemDef instanceof PrismReferenceDefinition) {
-                QName targetTypeName = ((PrismReferenceDefinition) itemDef).getTargetTypeName();
+            if (itemDef instanceof PrismReferenceDefinition referenceDefinition) {
+                QName targetTypeName = referenceDefinition.getTargetTypeName();
                 String name = itemDef.getItemName().getLocalPart();
 
                 List<ItemDiagramSpecification> diagrams = itemDef.getDiagrams();
@@ -386,8 +385,8 @@ public class TestRelDiagram {
         if (isPresent) {
             List<? extends Definition> list = definition.getDefinitions();
             for (Definition def : list) {
-                if (def instanceof PrismContainerDefinition) {
-                    listOfUserSubdefinitions.add((PrismContainerDefinition<?>) def);
+                if (def instanceof PrismContainerDefinition<?> containerDefinition) {
+                    listOfUserSubdefinitions.add(containerDefinition);
                     //myWriter.write("\n" + def);
                 }
             }
@@ -594,8 +593,7 @@ public class TestRelDiagram {
                 List<? extends Definition> parentDefinitions = parentDefinition.getDefinitions();
                 if (parentDefinitions != null) {
                     for (Definition definition2 : parentDefinitions) {
-                        if (definition2 instanceof PrismPropertyDefinition) {
-                            PrismPropertyDefinition<?> definitionUsed = (PrismPropertyDefinition<?>) definition2;
+                        if (definition2 instanceof PrismPropertyDefinition<?> definitionUsed) {
                             usedDefinitions.add(definitionUsed.getItemName().getLocalPart());
                         }
                     }
@@ -612,8 +610,7 @@ public class TestRelDiagram {
             }
 
             for (Definition definition2: definitions) {
-                if (definition2 instanceof PrismPropertyDefinition && definition2.getDiagrams() != null) {
-                    PrismPropertyDefinition<?> definitionUsed = (PrismPropertyDefinition<?>) definition2;
+                if (definition2 instanceof PrismPropertyDefinition<?> definitionUsed && definition2.getDiagrams() != null) {
                     if (!usedDefinitions.contains(definitionUsed.getItemName().getLocalPart())) {
                         description += "<li><a href=\"" + BASE_URL + definition.getTypeName().getLocalPart() + ".html#item-" + definitionUsed.getItemName().getLocalPart() + "\">" + definitionUsed.getItemName().getLocalPart() + "\\n" + "</a></li>"; // deleted " + definitionUsed.getItemName().getLocalPart() + "<br/>Type: " +
                     } else {

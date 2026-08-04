@@ -7,6 +7,7 @@
 package com.evolveum.midpoint.prism.impl.lex.json;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ import org.w3c.dom.Element;
 public class JsonValueParser<T> implements ValueParser<T> , Serializable {
 
 
-    private static final long serialVersionUID = -5646889977104413611L;
+    @Serial private static final long serialVersionUID = -5646889977104413611L;
 
     private final ValueNode node;
     private final PrismNamespaceContext context;

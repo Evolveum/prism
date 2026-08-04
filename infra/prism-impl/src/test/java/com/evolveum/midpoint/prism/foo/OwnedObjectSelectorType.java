@@ -16,6 +16,8 @@ import com.evolveum.midpoint.util.Producer;
 import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.io.Serializable;
 
 /**
@@ -35,12 +37,12 @@ import java.io.Serializable;
 })
 public class OwnedObjectSelectorType extends SubjectedObjectSelectorType implements Serializable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "OwnedObjectSelectorType");
     public static final ItemName F_OWNER = new ItemName(ObjectType.NS_FOO, "owner");
     public static final ItemName F_DELEGATOR = new ItemName(ObjectType.NS_FOO, "delegator");
     public static final Producer<OwnedObjectSelectorType> FACTORY = new Producer<OwnedObjectSelectorType>() {
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public OwnedObjectSelectorType run() {
             return new OwnedObjectSelectorType();

@@ -8,8 +8,6 @@ package com.evolveum.midpoint.prism;
 
 import static org.testng.AssertJUnit.assertNotNull;
 
-import static com.evolveum.midpoint.prism.PrismInternalTestUtil.constructInitializedPrismContext;
-
 import java.io.File;
 
 import org.testng.annotations.Test;

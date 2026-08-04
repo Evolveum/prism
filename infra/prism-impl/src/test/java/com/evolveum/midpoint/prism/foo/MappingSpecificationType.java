@@ -19,8 +19,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -36,7 +37,7 @@ import javax.xml.namespace.QName;
 })
 public class MappingSpecificationType extends AbstractMutableContainerable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "MappingSpecificationType");
     public static final ItemName F_ASSIGNMENT_ID = ItemName.interned(ObjectType.NS_FOO, "assignmentId");
     public static final ItemName F_DEFINITION_OBJECT_REF = ItemName.interned(ObjectType.NS_FOO, "definitionObjectRef");
@@ -46,7 +47,7 @@ public class MappingSpecificationType extends AbstractMutableContainerable {
     public static final ItemName F_MAPPING_NAME = ItemName.interned(ObjectType.NS_FOO, "mappingName");
     public static final Producer<MappingSpecificationType> FACTORY = new Producer<MappingSpecificationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public MappingSpecificationType run() {
             return new MappingSpecificationType();

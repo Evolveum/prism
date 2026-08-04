@@ -77,7 +77,7 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
      */
     @Override
     public boolean contains(Object o) {
-        return o instanceof ItemPath && ItemPathCollectionsUtil.containsEquivalent(content, (ItemPath) o);
+        return o instanceof ItemPath path && ItemPathCollectionsUtil.containsEquivalent(content, path);
     }
 
     public boolean containsSubpathOrEquivalent(@NotNull ItemPath path) {
@@ -116,7 +116,7 @@ public class PathSet extends AbstractFreezable implements Set<ItemPath>, Seriali
 
     @Override
     public boolean remove(Object o) {
-        return content.removeIf(path -> o instanceof ItemPath && path.equivalent((ItemPath) o));
+        return content.removeIf(path -> o instanceof ItemPath itemPath && path.equivalent(itemPath));
     }
 
     @Override

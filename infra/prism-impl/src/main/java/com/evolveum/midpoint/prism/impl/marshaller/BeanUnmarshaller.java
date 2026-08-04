@@ -158,8 +158,8 @@ public class BeanUnmarshaller {
             pc.warn(LOGGER, validationLog);
             throw new IllegalStateException(validationLog.message());
         }
-        if (xnode instanceof RootXNodeImpl) {
-            XNodeImpl subnode = ((RootXNodeImpl) xnode).getSubnode();
+        if (xnode instanceof RootXNodeImpl impl) {
+            XNodeImpl subnode = impl.getSubnode();
             if (subnode == null) {
                 ValidationLog validationLog = new ValidationLog(
                         ValidationLogType.ERROR,
@@ -190,8 +190,8 @@ public class BeanUnmarshaller {
         // only maps and primitives and heterogeneous lists after this point
 
         if (xnode instanceof PrimitiveXNodeImpl) {
-            //noinspection unchecked
-            PrimitiveXNodeImpl<T> prim = (PrimitiveXNodeImpl) xnode;
+            @SuppressWarnings("unchecked")
+            PrimitiveXNodeImpl<T> prim = (PrimitiveXNodeImpl<T>) xnode;
             QName xsdType = XsdTypeMapper.getJavaToXsdMapping(beanClass);
             if (xsdType != null) {
                 return prim.getParsedValue(xsdType, beanClass);
@@ -229,8 +229,8 @@ public class BeanUnmarshaller {
 
             @SuppressWarnings("unchecked")
             MapUnmarshaller<T> unmarshaller = specialMapUnmarshallers.get(beanClass);
-            if (xnode instanceof MapXNodeImpl && unmarshaller != null) {        // TODO: what about special unmarshaller + hetero list?
-                return unmarshaller.unmarshal((MapXNodeImpl) xnode, beanClass, pc);
+            if (xnode instanceof MapXNodeImpl impl && unmarshaller != null) {        // TODO: what about special unmarshaller + hetero list?
+                return unmarshaller.unmarshal(impl, beanClass, pc);
             }
             return unmarshalFromMapOrHeteroList(xnode, beanClass, pc);
         }
@@ -254,6 +254,7 @@ public class BeanUnmarshaller {
                     return bean;
                 }
             }
+            // FIXME: This should be probably throw pc.throw(...), otherwise static analysis will mark other code as potential NPE
             pc.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
                     ValidationLogType.Specification.UNKNOW,
@@ -319,6 +320,7 @@ public class BeanUnmarshaller {
                     .parseRealValue();
         } else if (SearchFilterType.class.isAssignableFrom(beanClass)) {
             if (mapOrList instanceof MapXNodeImpl) {
+                @SuppressWarnings("unchecked")
                 T bean = (T) unmarshalSearchFilterType((MapXNodeImpl) mapOrList, (Class<? extends SearchFilterType>) beanClass, pc);
                 // TODO fix this BRUTAL HACK - it is here because of c:ConditionalSearchFilterType
                 return unmarshalFromMapOrHeteroListToBean(bean, mapOrList, Collections.singleton("condition"), pc);
@@ -376,8 +378,7 @@ public class BeanUnmarshaller {
     private <T> T unmarshalFromMapOrHeteroListToBean(@NotNull T bean, @NotNull XNodeImpl mapOrList, @Nullable Collection<String> keysToParse, @NotNull ParsingContext pc) throws SchemaException {
         @SuppressWarnings("unchecked")
         Class<T> beanClass = (Class<T>) bean.getClass();
-        if (mapOrList instanceof MapXNodeImpl) {
-            MapXNodeImpl map = (MapXNodeImpl) mapOrList;
+        if (mapOrList instanceof MapXNodeImpl map) {
             for (Entry<QName, XNodeImpl> entry : map.entrySet()) {
                 QName key = entry.getKey();
                 if (keysToParse != null && !keysToParse.contains(key.getLocalPart())) {
@@ -589,8 +590,7 @@ public class BeanUnmarshaller {
         Collection<Object> propValues = null;
         // For heterogeneous lists we have to create multi-valued fictitious property first. So we have to treat node as a map
         // (instead of list) and process it as a single value. Only when
-        if (node instanceof ListXNodeImpl && (!node.isHeterogeneousList() || isHeteroListProperty)) {
-            ListXNodeImpl xlist = (ListXNodeImpl) node;
+        if (node instanceof ListXNodeImpl xlist && (!node.isHeterogeneousList() || isHeteroListProperty)) {
             if (setter != null) {
                 try {
                     Object value = unmarshalSinglePropValue(node, actualPropertyName, paramType, storeAsRawType, beanClass, pc);
@@ -966,9 +966,9 @@ public class BeanUnmarshaller {
                         Type factoryMethodTypeArgument = inspector.getTypeArgument(factoryMethodGenericReturnType,
                                 "in factory method " + elementFactoryMethod + " return type for field " + actualPropertyName
                                         + " in " + beanClass + ", cannot determine collection type");
-                        if (factoryMethodTypeArgument instanceof Class) {
+                        if (factoryMethodTypeArgument instanceof Class<?> clazz) {
                             // This is the case of JAXBElement<Whatever>
-                            paramType = (Class<?>) factoryMethodTypeArgument;
+                            paramType = clazz;
                             if (Object.class.equals(paramType) && !storeAsRawType) {
                                 ValidationLog validationLog = new ValidationLog(
                                         ValidationLogType.ERROR,
@@ -1023,10 +1023,9 @@ public class BeanUnmarshaller {
             // getter.genericReturnType = Collection<...>
             Type typeArgument = inspector.getTypeArgument(getter.getGenericReturnType(),
                     "for field " + actualPropertyName + " in " + beanClass + ", cannot determine collection type");
-            if (typeArgument instanceof Class) {
-                paramType = (Class<?>) typeArgument;    // ok, like Collection<AssignmentType>
-            } else if (typeArgument instanceof ParameterizedType) {        // something more complex
-                ParameterizedType paramTypeArgument = (ParameterizedType) typeArgument;
+            if (typeArgument instanceof Class<?> clazz) {
+                paramType = clazz;    // ok, like Collection<AssignmentType>
+            } else if (typeArgument instanceof ParameterizedType paramTypeArgument) {
                 Type rawTypeArgument = paramTypeArgument.getRawType();
                 if (rawTypeArgument.equals(JAXBElement.class)) {
                     // This is the case of Collection<JAXBElement<....>>
@@ -1034,9 +1033,9 @@ public class BeanUnmarshaller {
                     Type innerTypeArgument = inspector.getTypeArgument(typeArgument,
                             "for field " + actualPropertyName + " in " + beanClass
                                     + ", cannot determine collection type (inner type argument)");
-                    if (innerTypeArgument instanceof Class) {
+                    if (innerTypeArgument instanceof Class<?> clazz) {
                         // This is the case of Collection<JAXBElement<Whatever>> (note that wrapInJaxbElement is now true)
-                        paramType = (Class<?>) innerTypeArgument;
+                        paramType = clazz;
                     } else if (innerTypeArgument instanceof WildcardType) {
                         // This is the case of Collection<JAXBElement<?>>
                         // we need to extract the specific type from the factory method
@@ -1060,9 +1059,9 @@ public class BeanUnmarshaller {
                         Type factoryMethodTypeArgument = inspector.getTypeArgument(factoryMethodGenericReturnType,
                                 "in factory method " + elementFactoryMethod + " return type for field " + actualPropertyName
                                         + " in " + beanClass + ", cannot determine collection type");
-                        if (factoryMethodTypeArgument instanceof Class) {
+                        if (factoryMethodTypeArgument instanceof Class<?> clazz) {
                             // This is the case of JAXBElement<Whatever>
-                            paramType = (Class<?>) factoryMethodTypeArgument;
+                            paramType = clazz;
                             if (Object.class.equals(paramType) && !storeAsRawType) {
                                 ValidationLog validationLog = new ValidationLog(
                                         ValidationLogType.ERROR,
@@ -1108,8 +1107,8 @@ public class BeanUnmarshaller {
                     }
                 } else {
                     // The case of Collection<Whatever<Something>>
-                    if (rawTypeArgument instanceof Class) {        // ??? rawTypeArgument is the 'Whatever' part
-                        paramType = (Class<?>) rawTypeArgument;
+                    if (rawTypeArgument instanceof Class<?> clazz) {        // ??? rawTypeArgument is the 'Whatever' part
+                        paramType = clazz;
                     } else {
                         ValidationLog validationLog = new ValidationLog(
                                 ValidationLogType.ERROR,
@@ -1263,8 +1262,8 @@ public class BeanUnmarshaller {
         Method elementFactoryMethod = inspector.findElementMethodInObjectFactory(objectFactoryClass, elementName.getLocalPart());
         Class<S> subBeanClass = (Class<S>) elementFactoryMethod.getParameterTypes()[0];
 
-        if (xsubnode instanceof ListXNodeImpl){
-            for (XNodeImpl xsubSubNode : ((ListXNodeImpl) xsubnode)){
+        if (xsubnode instanceof ListXNodeImpl impl){
+            for (XNodeImpl xsubSubNode : impl){
                 S subBean = unmarshal(xsubSubNode, subBeanClass, pc);
                 unmarshallToAnyValue(bean, beanClass, subBean, objectFactoryClass, objectFactory, elementFactoryMethod, getter, pc);
             }
@@ -1365,12 +1364,12 @@ public class BeanUnmarshaller {
                         .parseItemValue();// TODO what about objects? oid/version will be lost here
                 if (value != null && !value.isRaw()) {
                     raw = new RawType(value, xsubnode.getTypeQName());
-                } else if (pc.isConvertUnknownTypes() && value.isRaw() && value instanceof PrismPropertyValue<?>) {
+                } else if (pc.isConvertUnknownTypes() && value.isRaw() && value instanceof PrismPropertyValue<?> propertyValue) {
                     // This is in case that value is raw & we support convert unknown types
                     // We can not use original rawType created, since it contains type name
                     // of type not supported, but we should use raw element, returned from parse
                     // which did migration
-                    XNode rawElem = ((PrismPropertyValue<?>)value).getRawElement();
+                    XNode rawElem = propertyValue.getRawElement();
                     raw = new RawType(rawElem.frozen());
                 }
             }
@@ -1386,8 +1385,7 @@ public class BeanUnmarshaller {
             }
             if (xsubnode instanceof PrimitiveXNodeImpl<?> || xsubnode instanceof MapXNodeImpl || xsubnode.isHeterogeneousList()) {
                 propValue = unmarshal(xsubnode, paramType, pc);
-            } else if (xsubnode instanceof ListXNodeImpl) {
-                ListXNodeImpl xlist = (ListXNodeImpl)xsubnode;
+            } else if (xsubnode instanceof ListXNodeImpl xlist) {
                 if (xlist.size() > 1) {
                     ValidationLog validationLog = new ValidationLog(
                             ValidationLogType.ERROR,
@@ -1419,8 +1417,8 @@ public class BeanUnmarshaller {
                 throw new IllegalArgumentException(validationLog.message());
             }
         }
-        if (propValue instanceof PolyString) {
-            propValue = new PolyStringType((PolyString) propValue);
+        if (propValue instanceof PolyString string) {
+            propValue = new PolyStringType(string);
         }
         return propValue;
     }
@@ -1429,8 +1427,8 @@ public class BeanUnmarshaller {
         if (parsedPrimValue == null) {
             return null;
         }
-        if (parsedPrimValue instanceof ItemPath) {
-            return (T) new ItemPathType((ItemPath)parsedPrimValue);
+        if (parsedPrimValue instanceof ItemPath path) {
+            return (T) new ItemPathType(path);
         } else {
             return (T) parsedPrimValue;
         }
@@ -1593,12 +1591,12 @@ public class BeanUnmarshaller {
 
     private Object toCorrectPolyStringClass(Object value, Class<?> beanClass, XNodeImpl node, ParsingContext pc) {
         PolyString polyString;
-        if (value instanceof String) {
-            polyString = new PolyString((String) value);
-        } else if (value instanceof PolyStringType) {
-            polyString = ((PolyStringType) value).toPolyString();
-        } else if (value instanceof PolyString) {
-            polyString = (PolyString) value;        // TODO clone?
+        if (value instanceof String string) {
+            polyString = new PolyString(string);
+        } else if (value instanceof PolyStringType type) {
+            polyString = type.toPolyString();
+        } else if (value instanceof PolyString string) {
+            polyString = string;        // TODO clone?
         } else if (value == null) {
             polyString = null;
         } else {

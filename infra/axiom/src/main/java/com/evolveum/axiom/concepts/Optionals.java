@@ -7,7 +7,6 @@
 package com.evolveum.axiom.concepts;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 
 public class Optionals {

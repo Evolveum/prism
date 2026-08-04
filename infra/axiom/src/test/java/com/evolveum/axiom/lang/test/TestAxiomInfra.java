@@ -11,7 +11,6 @@ import static org.testng.Assert.assertEquals;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import com.evolveum.axiom.api.AxiomStructuredValue;

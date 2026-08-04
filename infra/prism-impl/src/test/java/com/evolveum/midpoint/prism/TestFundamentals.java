@@ -16,7 +16,6 @@ import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
-import com.evolveum.midpoint.prism.util.PrismTestUtil;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
 
 /**

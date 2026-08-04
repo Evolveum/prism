@@ -7,24 +7,25 @@
 
 package com.evolveum.midpoint.util.aspect;
 
+import java.util.Date;
+
+import com.evolveum.midpoint.util.MiscUtil;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
 import com.evolveum.midpoint.util.statistics.OperationInvocationRecord;
 
-import java.util.Date;
-
 /**
- *     This is a blueprint for single method call, or ProfilingEvent as we call it. In here, we capture some
- *     attributes for each method call, specifically:
- *     className with package name
- *     method name
- *     objectType with which method works (or deltaType for some model methods)
- *     executionTimestamp - when method call was performed
- *     estimatedTime - method call duration
+ * This is a blueprint for single method call, or ProfilingEvent as we call it. In here, we capture some
+ * attributes for each method call, specifically:
+ * className with package name
+ * method name
+ * objectType with which method works (or deltaType for some model methods)
+ * executionTimestamp - when method call was performed
+ * estimatedTime - method call duration
  *
+ * @author shood
  *
- *  @author shood
- * */
+ */
 //@Deprecated
 public class ProfilingDataLog {
 
@@ -39,7 +40,7 @@ public class ProfilingDataLog {
     //this is here for profiling events captured from servlet requests
     private String sessionID = null;
 
-    public ProfilingDataLog(String className, String method, long est, long exeTimestamp, Object[] args){
+    public ProfilingDataLog(String className, String method, long est, long exeTimestamp, Object[] args) {
         this.className = className;
         this.methodName = method;
         this.estimatedTime = est;
@@ -47,7 +48,7 @@ public class ProfilingDataLog {
         this.args = args;
     }
 
-    public ProfilingDataLog(String method, String uri, String sessionID, long est, long exec){
+    public ProfilingDataLog(String method, String uri, String sessionID, long est, long exec) {
         this.methodName = method;
         this.className = uri;
         this.sessionID = sessionID;
@@ -107,22 +108,24 @@ public class ProfilingDataLog {
 //        return pjp.getArgs();
 //    }
 
-    public void logProfilingEvent(Trace LOGGER){
+    public void logProfilingEvent(Trace LOGGER) {
         LOGGER.info(className + "->" + methodName + " est: " + formatExecutionTime(estimatedTime));
     }
 
-    public void appendToLogger(boolean afterTest){
+    public void appendToLogger(boolean afterTest) {
         Date date = new Date(executionTimestamp);
 
         //If we are printing request filter event, there are no arguments, but sessionID instead
-        if(sessionID != null){
-            if(afterTest){
-                LOGGER.info("    EST: {} EXECUTED: {} SESSION: {}", formatExecutionTime(estimatedTime), date, sessionID);
+        if (sessionID != null) {
+            if (afterTest) {
+                LOGGER.info("    EST: {} EXECUTED: {} SESSION: {}",
+                        formatExecutionTime(estimatedTime), date, MiscUtil.sanitizeSessionId(sessionID));
             } else {
-                LOGGER.debug("    EST: {} EXECUTED: {} SESSION: {}", formatExecutionTime(estimatedTime), date, sessionID);
+                LOGGER.debug("    EST: {} EXECUTED: {} SESSION: {}",
+                        formatExecutionTime(estimatedTime), date, MiscUtil.sanitizeSessionId(sessionID));
             }
-        } else{
-            if(afterTest){
+        } else {
+            if (afterTest) {
                 LOGGER.info("    EST: {} EXECUTED: {} ARGS: {}", formatExecutionTime(estimatedTime), date, args);
             } else {
                 LOGGER.debug("    EST: {} EXECUTED: {} ARGS: {}", formatExecutionTime(estimatedTime), date, args);

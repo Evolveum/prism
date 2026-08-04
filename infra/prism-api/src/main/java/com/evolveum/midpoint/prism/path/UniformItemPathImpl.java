@@ -35,8 +35,8 @@ class UniformItemPathImpl implements UniformItemPath {
     public static UniformItemPathImpl fromItemPath(ItemPath itemPath) {
         if (itemPath == null) {
             return EMPTY_PATH;
-        } else if (itemPath instanceof UniformItemPathImpl) {
-            return (UniformItemPathImpl) itemPath;
+        } else if (itemPath instanceof UniformItemPathImpl impl) {
+            return impl;
         } else {
             return new UniformItemPathImpl(itemPath);
         }
@@ -70,8 +70,7 @@ class UniformItemPathImpl implements UniformItemPath {
     }
 
     public UniformItemPathImpl(@NotNull ItemPath itemPath) {
-        if (itemPath instanceof UniformItemPathImpl) {
-            UniformItemPathImpl itemPathImpl = (UniformItemPathImpl) itemPath;
+        if (itemPath instanceof UniformItemPathImpl itemPathImpl) {
             this.segments = new ArrayList<>(itemPathImpl.size());
             this.segments.addAll(itemPathImpl.segments);
         } else {
@@ -178,24 +177,24 @@ class UniformItemPathImpl implements UniformItemPath {
     }
 
     private void add(Object object) {
-        if (object instanceof UniformItemPathImpl) {
-            segments.addAll(((UniformItemPathImpl) object).segments);
-        } else if (object instanceof QName) {
-            add((QName) object);
-        } else if (object instanceof ItemPath) {
-            addAll(((ItemPath) object).getSegments());
-        } else if (object instanceof ItemPathSegment) {
-            add((ItemPathSegment) object);
-        } else if (object instanceof String) {
-            add(stringToQName((String) object));
+        if (object instanceof UniformItemPathImpl impl) {
+            segments.addAll(impl.segments);
+        } else if (object instanceof QName name) {
+            add(name);
+        } else if (object instanceof ItemPath path) {
+            addAll(path.getSegments());
+        } else if (object instanceof ItemPathSegment segment) {
+            add(segment);
+        } else if (object instanceof String string) {
+            add(stringToQName(string));
         } else if (object == null || object instanceof Long) {
             this.segments.add(new IdItemPathSegment((Long) object));
-        } else if (object instanceof Integer) {
-            this.segments.add(new IdItemPathSegment(((Integer) object).longValue()));
-        } else if (object instanceof Collection) {
-            addAll((Collection<?>) object);
-        } else if (object instanceof Object[]) {            // todo what about other kinds of array ?
-            addAll((Object[]) object);
+        } else if (object instanceof Integer integer) {
+            this.segments.add(new IdItemPathSegment(integer.longValue()));
+        } else if (object instanceof Collection<?> collection) {
+            addAll(collection);
+        } else if (object instanceof Object[] objArray) {            // todo what about other kinds of array ?
+            addAll(objArray);
         } else {
             throw new IllegalArgumentException("Invalid item path segment value: " + object);
         }
@@ -325,8 +324,8 @@ class UniformItemPathImpl implements UniformItemPath {
     public UniformItemPath namedSegmentsOnly() {
         UniformItemPathImpl rv = new UniformItemPathImpl();
         for (ItemPathSegment segment : segments) {
-            if (segment instanceof NameItemPathSegment) {
-                rv.add(((NameItemPathSegment) segment).getName());
+            if (segment instanceof NameItemPathSegment pathSegment) {
+                rv.add(pathSegment.getName());
             }
         }
         return rv;

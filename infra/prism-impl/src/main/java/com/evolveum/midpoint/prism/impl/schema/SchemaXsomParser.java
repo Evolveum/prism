@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.*;
+import com.evolveum.midpoint.prism.impl.DisplayableValueImpl;
 import com.evolveum.midpoint.prism.impl.schema.features.EnumerationValuesInfoXsomParser.EnumValueInfo;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
@@ -781,6 +782,10 @@ class SchemaXsomParser {
         DF_INDEX_ONLY.parse(ppdBuilder, annotation);
         DF_MATCHING_RULE.parse(ppdBuilder, annotation);
         DF_VALUE_ENUMERATION_REF.parse(ppdBuilder, annotation);
+        // These are non-destructive by construction: the feature is applied only when its annotation
+        // is actually present, so enum-derived allowed values set above (parseEnumAllowedValues) are kept.
+        DF_ALLOWED_VALUES.parse(ppdBuilder, annotation);
+        DF_SUGGESTED_VALUES.parse(ppdBuilder, annotation);
 
         return ppdBuilder;
     }

@@ -18,8 +18,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -31,14 +32,14 @@ import javax.xml.namespace.QName;
         "transitional"
 })
 public class PolicyRuleSpecificationType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "PolicyRuleSpecificationType");
     public static final ItemName F_RULE_NAME = ItemName.interned(ObjectType.NS_FOO, "ruleName");
     public static final ItemName F_ASSIGNMENT_PATH = ItemName.interned(ObjectType.NS_FOO, "assignmentPath");
     public static final ItemName F_TRANSITIONAL = ItemName.interned(ObjectType.NS_FOO, "transitional");
     public static final Producer<PolicyRuleSpecificationType> FACTORY = new Producer<PolicyRuleSpecificationType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public PolicyRuleSpecificationType run() {
             return new PolicyRuleSpecificationType();

@@ -18,8 +18,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -34,7 +35,7 @@ import javax.xml.namespace.QName;
 public class ArchetypeType
         extends AbstractRoleType
         implements Objectable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "ArchetypeType");
     public static final ItemName F_ARCHETYPE_POLICY = ItemName.interned(NS_FOO, "archetypePolicy");
     public static final ItemName F_SUPER_ARCHETYPE_REF = ItemName.interned(NS_FOO, "superArchetypeRef");
@@ -42,7 +43,7 @@ public class ArchetypeType
     public static final ItemName F_SECURITY_POLICY_REF = ItemName.interned(NS_FOO, "securityPolicyRef");
     public static final Producer<ArchetypeType> FACTORY = new Producer<ArchetypeType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public ArchetypeType run() {
             return new ArchetypeType();

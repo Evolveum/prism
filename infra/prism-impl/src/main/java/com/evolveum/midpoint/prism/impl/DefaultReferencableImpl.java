@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.io.Serializable;
 import javax.xml.namespace.QName;
 
@@ -26,7 +27,7 @@ import com.evolveum.prism.xml.ns._public.types_3.ReferentialIntegrityType;
  */
 public class DefaultReferencableImpl implements Referencable, Cloneable, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private PrismReferenceValue referenceValue;
 

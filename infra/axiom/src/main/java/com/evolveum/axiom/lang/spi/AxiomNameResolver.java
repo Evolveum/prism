@@ -9,8 +9,6 @@ package com.evolveum.axiom.lang.spi;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.swing.plaf.basic.BasicOptionPaneUI;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.evolveum.axiom.api.AxiomName;
@@ -20,7 +18,6 @@ import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.axiom.lang.antlr.Bootstrap;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 import org.jetbrains.annotations.Nullable;
 

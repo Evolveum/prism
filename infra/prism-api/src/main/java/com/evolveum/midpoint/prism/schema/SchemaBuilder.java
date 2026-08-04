@@ -9,7 +9,10 @@ package com.evolveum.midpoint.prism.schema;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.AbstractTypeDefinition;
+import com.evolveum.midpoint.prism.ComplexTypeDefinition;
+import com.evolveum.midpoint.prism.Definition;
+import com.evolveum.midpoint.prism.DefinitionFactory;
 
 import org.jetbrains.annotations.NotNull;
 

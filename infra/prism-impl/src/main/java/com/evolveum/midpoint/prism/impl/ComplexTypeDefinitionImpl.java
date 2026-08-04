@@ -12,7 +12,10 @@ import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionLi
 import com.evolveum.midpoint.prism.ComplexTypeDefinition.ComplexTypeDefinitionMutator;
 import com.evolveum.midpoint.prism.ItemDefinition.ItemDefinitionLikeBuilder;
 import com.evolveum.midpoint.prism.PrismPropertyDefinition.PrismPropertyLikeDefinitionBuilder;
-import com.evolveum.midpoint.prism.path.*;
+import com.evolveum.midpoint.prism.path.InfraItemName;
+import com.evolveum.midpoint.prism.path.ItemName;
+import com.evolveum.midpoint.prism.path.ItemPath;
+import com.evolveum.midpoint.prism.path.ItemPathCollectionsUtil;
 import com.evolveum.midpoint.prism.schema.SerializableComplexTypeDefinition;
 import com.evolveum.midpoint.prism.schema.SerializableItemDefinition;
 import com.evolveum.midpoint.util.*;

@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import javax.xml.namespace.QName;
 
@@ -33,7 +34,7 @@ public class TestPath extends AbstractPrismTest {
         creators.put('C', seq -> getPrismContext().path(seq));
         creators.put('S', ItemPath::create);
         creators.put('N', seq -> seq.length == 1 ? ItemName.fromQName((QName) seq[0]) : ItemPath.create(seq));
-        creators.put('R', seq -> creators.get("CSN".charAt((int) (Math.random() * 3))).apply(seq));
+        creators.put('R', seq -> creators.get("CSN".charAt((int) (ThreadLocalRandom.current().nextDouble() * 3))).apply(seq));
     }
 
     @Test

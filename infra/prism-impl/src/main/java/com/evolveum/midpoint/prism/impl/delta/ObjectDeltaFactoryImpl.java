@@ -18,7 +18,8 @@ import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.*;
+import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.toPrismContainerValues;
+import static com.evolveum.midpoint.prism.PrismValueCollectionsUtil.toPrismPropertyValues;
 
 /**
  *

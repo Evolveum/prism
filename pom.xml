@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.5.13</version>
+        <version>4.1.0</version>
         <!-- This parent also declares dependencies listed here:
         https://docs.spring.io/spring-boot/docs/2.7.3/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
@@ -93,7 +93,8 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
+        <logback.version>1.5.38</logback.version>
         <!-- END of Spring Boot dependencies overrides -->
 
         <!-- Dependencies global versions -->
@@ -116,6 +117,8 @@
         <failsafe.version>3.0.0-M5</failsafe.version>
 
         <asciidoclet.version>1.5.6</asciidoclet.version>
+
+        <antlr.version>4.13.2</antlr.version>
     </properties>
 
     <dependencyManagement>
@@ -273,6 +276,10 @@
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-jcl</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -284,7 +291,7 @@
             <dependency>
                 <groupId>org.apache.velocity</groupId>
                 <artifactId>velocity-engine-core</artifactId>
-                <version>2.3</version>
+                <version>2.4.1</version>
             </dependency>
 
             <dependency>
@@ -417,7 +424,7 @@
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
-                <version>4.10.1</version>
+                <version>${antlr.version}</version>
             </dependency>
 
             <dependency>
@@ -799,6 +806,32 @@
                         <xmlOutput>true</xmlOutput>
                         <onlyAnalyze>com.evolveum.midpoint.*</onlyAnalyze>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <!-- Static analysis rewrite tool ideal for upgrades and mass-cleanup, conversion to our code style -->
+                    <groupId>org.openrewrite.maven</groupId>
+                    <artifactId>rewrite-maven-plugin</artifactId>
+                    <version>6.42.0</version>
+                    <configuration>
+                        <exportDatatables>true</exportDatatables>
+                        <activeRecipes>
+                            <!-- <recipe>org.openrewrite.java.OrderImports</recipe> -->
+                            <recipe>org.openrewrite.java.RemoveUnusedImports</recipe>
+                            <!-- automatically upgrades coding patterns to use Java 21, first run should not be automated -->
+                            <!-- 
+                               <recipe>org.openrewrite.java.migrate.UpgradeToJava21</recipe>
+                            -->
+                            <recipe>com.evolveum.rewrite.AddLicenseHeaderEUPL</recipe>
+                            <recipe>org.openrewrite.xml.RemoveTrailingWhitespace</recipe>
+                        </activeRecipes>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.openrewrite.recipe</groupId>
+                            <artifactId>rewrite-migrate-java</artifactId>
+                            <version>3.38.0</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
             </plugins>
         </pluginManagement>

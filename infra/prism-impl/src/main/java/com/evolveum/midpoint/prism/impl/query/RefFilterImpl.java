@@ -8,6 +8,7 @@ package com.evolveum.midpoint.prism.impl.query;
 
 import static com.evolveum.midpoint.util.MiscUtil.emptyIfNull;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +30,7 @@ import com.evolveum.midpoint.util.QNameUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismReferenceDefinition> implements RefFilter {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     /**
      * By default, null OID means to match any value (no additional condition).
@@ -164,8 +165,8 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
 
     @Override
     public boolean equals(Object obj, boolean exact) {
-        if (obj instanceof RefFilter && super.equals(obj, exact)) {
-            return ObjectFilter.equals(filter, ((RefFilter) obj).getFilter(), exact);
+        if (obj instanceof RefFilter refFilter && super.equals(obj, exact)) {
+            return ObjectFilter.equals(filter, refFilter.getFilter(), exact);
         }
         return false;
     }

@@ -87,8 +87,8 @@ public class CanonicalItemPathImpl implements CanonicalItemPath {
             Object first = path.first();
             if (ItemPath.isName(first)) {
                 ItemName name = ItemPath.toName(first);
-                if (itemDefinition instanceof PrismContainerDefinition) {
-                    itemDefinition = ((PrismContainerDefinition<?>) itemDefinition)
+                if (itemDefinition instanceof PrismContainerDefinition<?> containerDef) {
+                    itemDefinition = containerDef
                             .findItemDefinition(name);
                     if (itemDefinition != null && !QNameUtil.hasNamespace(name)) {
                         name = itemDefinition.getItemName();

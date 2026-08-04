@@ -53,20 +53,20 @@ public abstract class StructuredHashCodeStrategy {
         if (val == null) {
             return 0;
         }
-        if (val instanceof PlainStructured) {
-            return ((PlainStructured) val).hashCode(this);
+        if (val instanceof PlainStructured structured) {
+            return structured.hashCode(this);
         }
-        if (val instanceof String) {
-            return hashCodeNonNull((String) val);
+        if (val instanceof String string) {
+            return hashCodeNonNull(string);
         }
-        if (val instanceof byte[]) {
-            return hashCodeNonNull((byte[]) val);
+        if (val instanceof byte[] bytes) {
+            return hashCodeNonNull(bytes);
         }
-        if (val instanceof JAXBElement<?>) {
-            return hashCodeNonNull((JAXBElement<?>) val);
+        if (val instanceof JAXBElement<?> element) {
+            return hashCodeNonNull(element);
         }
-        if (val instanceof Element) {
-            return hashCodeNonNull((Element) val);
+        if (val instanceof Element element1) {
+            return hashCodeNonNull(element1);
         }
         if (val instanceof QName) {
             return hashCodeNonNull(val);

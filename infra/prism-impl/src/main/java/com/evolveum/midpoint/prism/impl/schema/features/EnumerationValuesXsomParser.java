@@ -13,7 +13,9 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import com.google.common.collect.ImmutableList;
-import com.sun.xml.xsom.*;
+import com.sun.xml.xsom.XSAnnotation;
+import com.sun.xml.xsom.XSFacet;
+import com.sun.xml.xsom.XSSimpleType;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 

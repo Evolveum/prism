@@ -226,8 +226,8 @@ public class DOMUtil {
     }
 
     public static Document getDocument(Node node) {
-        if (node instanceof Document) {
-            return (Document) node;
+        if (node instanceof Document document) {
+            return document;
         }
         return node.getOwnerDocument();
     }
@@ -822,8 +822,8 @@ public class DOMUtil {
         } else {
             retval = new HashMap<>();
         }
-        if (node instanceof Element) {
-            retval.putAll(getNamespaceDeclarations((Element) node));
+        if (node instanceof Element element) {
+            retval.putAll(getNamespaceDeclarations(element));
         }
         return retval;
     }
@@ -846,8 +846,7 @@ public class DOMUtil {
 
     // returns owner node - works also for attributes
     private static Node getParentNode(Node node) {
-        if (node instanceof Attr) {
-            Attr attr = (Attr) node;
+        if (node instanceof Attr attr) {
             return attr.getOwnerElement();
         } else {
             return node.getParentNode();
@@ -881,8 +880,8 @@ public class DOMUtil {
             }
         }
         Node parentNode = currentElement.getParentNode();
-        if (parentNode instanceof Element) {
-            fixNamespaceDeclarations(targetElement, (Element) parentNode);
+        if (parentNode instanceof Element element) {
+            fixNamespaceDeclarations(targetElement, element);
         }
     }
 
@@ -900,8 +899,7 @@ public class DOMUtil {
         NodeList childNodes = targetElement.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
-            if (node instanceof Element) {
-                Element element = (Element) node;
+            if (node instanceof Element element) {
                 if (isPrefixUsed(element, prefix)) {
                     return true;
                 }
@@ -1632,8 +1630,7 @@ public class DOMUtil {
         NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node childNode = childNodes.item(i);
-            if (childNode instanceof Element) {
-                Element childElement = (Element) childNode;
+            if (childNode instanceof Element childElement) {
                 if (hasNoPrefix(childElement)) {
                     result.add(childElement);
                 } else {

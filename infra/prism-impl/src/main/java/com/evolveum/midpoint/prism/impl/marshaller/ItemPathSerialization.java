@@ -101,14 +101,14 @@ public final class ItemPathSerialization {
 
         for (ItemPathSegment segment : itemPath.getSegments()) {
             PathHolderSegment xsegment;
-            if (segment instanceof NameItemPathSegment) {
-                QName name = ((NameItemPathSegment) segment).getName();
+            if (segment instanceof NameItemPathSegment pathSegment) {
+                QName name = pathSegment.getName();
                 xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs, useDefaultPrefix));
-            } else if (segment instanceof VariableItemPathSegment) {
-                QName name = ((VariableItemPathSegment) segment).getName();
+            } else if (segment instanceof VariableItemPathSegment pathSegment1) {
+                QName name = pathSegment1.getName();
                 xsegment = new PathHolderSegment(assignPrefix(name, context, undeclaredNsToPrefix, usedPrefixToNs, overriddeNs, useDefaultPrefix), true);
-            } else if (segment instanceof IdItemPathSegment) {
-                xsegment = new PathHolderSegment(idToString(((IdItemPathSegment) segment).getId()));
+            } else if (segment instanceof IdItemPathSegment pathSegment) {
+                xsegment = new PathHolderSegment(idToString(pathSegment.getId()));
             } else if (segment instanceof ObjectReferencePathSegment) {
                 xsegment = new PathHolderSegment(PrismConstants.T_OBJECT_REFERENCE, false);
             } else if (segment instanceof ParentPathSegment) {

@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import javax.xml.namespace.QName;
@@ -23,7 +24,7 @@ public abstract class SerializationProxy implements Serializable {
     /**
      *
      */
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     protected Object readResolve() {
         return resolve(PrismContext.get().getSchemaRegistry());
@@ -36,7 +37,7 @@ public abstract class SerializationProxy implements Serializable {
         /**
          *
          */
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final QName typeName;
 
 
@@ -58,7 +59,7 @@ public abstract class SerializationProxy implements Serializable {
         /**
          *
          */
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final QName complexType;
         private final QName itemName;
 

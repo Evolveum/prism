@@ -39,8 +39,8 @@ public class AxiomIdentifierDefinitionImpl extends StructuredValueImpl implement
     }
 
     public static AxiomIdentifierDefinition from(AxiomValue<?> value) {
-        if (value instanceof AxiomIdentifierDefinition) {
-            return (AxiomIdentifierDefinition) value;
+        if (value instanceof AxiomIdentifierDefinition definition) {
+            return definition;
         }
         return new AxiomIdentifierDefinitionImpl(value.type().get(), null, value.asComplex().get().itemMap());
     }

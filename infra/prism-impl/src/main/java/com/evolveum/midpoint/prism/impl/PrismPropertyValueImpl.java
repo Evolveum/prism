@@ -237,8 +237,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
     public void revive(PrismContext prismContext) {
         super.revive(prismContext);
         if (value != null) {
-            if (value instanceof Revivable) {
-                ((Revivable) value).revive(prismContext);
+            if (value instanceof Revivable revivable) {
+                revivable.revive(prismContext);
             } else {
                 BeanMarshaller marshaller = ((PrismContextImpl) prismContext).getBeanMarshaller();
                 if (marshaller.canProcess(value.getClass())) {
@@ -267,8 +267,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
             return this;
         }
         T value = getValue();
-        if (value instanceof Structured) {
-            return ((Structured) value).resolve(path);
+        if (value instanceof Structured structured) {
+            return structured.resolve(path);
         } else {
             throw new IllegalArgumentException("Attempt to resolve sub-path '" + path + "' on non-structured property value " + value);
         }
@@ -339,8 +339,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 throw new IllegalStateException(
                         "PolyStringType found in property value %s (%s in %s)".formatted(this, myPath, rootItem));
             }
-            if (value instanceof ProtectedStringType) {
-                if (((ProtectedStringType) value).isEmpty()) {
+            if (value instanceof ProtectedStringType stringType) {
+                if (stringType.isEmpty()) {
                     throw new IllegalStateException(
                             "Empty ProtectedStringType found in property value %s (%s in %s)".formatted(
                                     this, myPath, rootItem));
@@ -543,7 +543,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 return thisSchema.equals(otherRealValue, strategy.isLiteralDomComparison());
             }
 
-            if (thisRealValue instanceof ProtectedStringType && otherRealValue instanceof ProtectedStringType) {
+            if (thisRealValue instanceof ProtectedStringType stringType && otherRealValue instanceof ProtectedStringType stringType1) {
                 PrismContext prismContext = PrismContext.get();
                 if (prismContext == null || prismContext.getDefaultProtector() == null) {
                     // Slightly dangerous, may get wrong results. See javadoc of ProtectedDataType.equals()
@@ -551,7 +551,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                     return thisRealValue.equals(otherRealValue);
                 } else {
                     try {
-                        return prismContext.getDefaultProtector().areEquivalent((ProtectedStringType) thisRealValue, (ProtectedStringType) otherRealValue);
+                        return prismContext.getDefaultProtector().areEquivalent(stringType, stringType1);
                     } catch (SchemaException | EncryptionException e) {
                         // Not absolutely correct. But adding those throws clauses to all equals(...) signature will wreak havoc.
                         throw new SystemException("Error comparing protected string values: " + e.getMessage(), e);
@@ -748,12 +748,12 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     @Override
     public void performFreeze() {
-        if (value instanceof Freezable) {
-            ((Freezable) value).freeze();
-        } else if (value instanceof JaxbVisitable) {
-            ((JaxbVisitable) value).accept(v -> {
-                if (v instanceof Freezable) {
-                    ((Freezable) v).freeze();
+        if (value instanceof Freezable freezable) {
+            freezable.freeze();
+        } else if (value instanceof JaxbVisitable visitable) {
+            visitable.accept(v -> {
+                if (v instanceof Freezable freezable) {
+                    freezable.freeze();
                 }
             });
         }

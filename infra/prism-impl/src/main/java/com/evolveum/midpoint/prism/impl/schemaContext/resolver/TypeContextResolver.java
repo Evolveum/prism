@@ -18,6 +18,7 @@ import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContext;
 import com.evolveum.midpoint.prism.schemaContext.SchemaContextDefinition;
 
+/** Provides (static/fixed) context based on `type` and optionally `path` values in a definition. */
 public class TypeContextResolver implements SchemaContextResolver {
 
     private final SchemaContextDefinition definition;
@@ -27,7 +28,7 @@ public class TypeContextResolver implements SchemaContextResolver {
     }
 
     @Override
-    public SchemaContext computeContext(PrismValue prismValue) {
+    public SchemaContext computeContext(@NotNull PrismValue prismValue) {
         SchemaRegistry registry = PrismContext.get().getSchemaRegistry();
         PrismObjectDefinition<?> objDef = registry.findObjectDefinitionByType(definition.getType());
         if (definition.getPath() == null) {

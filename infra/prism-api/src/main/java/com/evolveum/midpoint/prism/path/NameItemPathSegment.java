@@ -8,7 +8,6 @@ package com.evolveum.midpoint.prism.path;
 
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.util.DebugUtil;
 import com.evolveum.midpoint.util.QNameUtil;
 import org.jetbrains.annotations.NotNull;
 

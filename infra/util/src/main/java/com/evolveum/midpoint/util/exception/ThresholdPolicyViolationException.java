@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 import com.evolveum.midpoint.util.LocalizableMessage;
 
 /**
@@ -14,7 +16,7 @@ import com.evolveum.midpoint.util.LocalizableMessage;
  */
 public class ThresholdPolicyViolationException extends PolicyViolationException {
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public ThresholdPolicyViolationException() {
     }

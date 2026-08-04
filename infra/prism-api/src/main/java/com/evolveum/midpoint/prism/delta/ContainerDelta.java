@@ -7,7 +7,7 @@
 
 package com.evolveum.midpoint.prism.delta;
 
-import java.util.*;
+import java.util.Collection;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.path.ItemPath;

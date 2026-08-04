@@ -8,12 +8,16 @@
 package com.evolveum.midpoint.prism.schema;
 
 import com.evolveum.midpoint.prism.PrismReferenceValue;
+import com.evolveum.midpoint.util.DisplayableValue;
 
 import javax.xml.namespace.QName;
+import java.util.Collection;
 
 /** Any property definition that can be serialized. */
-public interface SerializablePropertyDefinition extends SerializableItemDefinition {
+public interface SerializablePropertyDefinition<T> extends SerializableItemDefinition {
 
     QName getMatchingRuleQName();
     PrismReferenceValue getValueEnumerationRef();
+    Collection<? extends DisplayableValue<T>> getAllowedValues();
+    Collection<? extends DisplayableValue<T>> getSuggestedValues();
 }

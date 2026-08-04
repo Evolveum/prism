@@ -188,7 +188,7 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
     @Override
     public boolean isEmpty() {
         if (isParsed()) {
-            return value == null || value instanceof String && StringUtils.isBlank((String) value);
+            return value == null || value instanceof String string && StringUtils.isBlank(string);
         } else {
             return valueParser.isEmpty();
         }
@@ -252,14 +252,14 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
     }
 
     private String formatValue(T value) {
-        if (value instanceof PolyString) {
-            return ((PolyString) value).getOrig();
+        if (value instanceof PolyString string) {
+            return string.getOrig();
         }
-        if (value instanceof QName) {
-            return QNameUtil.qNameToUri((QName) value);
+        if (value instanceof QName name) {
+            return QNameUtil.qNameToUri(name);
         }
-        if (value instanceof DisplayableValue) {
-            return ((DisplayableValue) value).getValue().toString();
+        if (value instanceof DisplayableValue<?> displayableValue) {
+            return displayableValue.getValue().toString();
         }
 
         if (value != null && value.getClass().isEnum()){
@@ -440,8 +440,8 @@ public class PrimitiveXNodeImpl<T> extends XNodeImpl implements Serializable, Pr
 
     @Override
     public void performFreeze() {
-        if (value instanceof Freezable) {
-            ((Freezable) value).freeze();
+        if (value instanceof Freezable freezable) {
+            freezable.freeze();
         }
         if (valueParser != null) {
             valueParser = valueParser.freeze();

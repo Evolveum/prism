@@ -6,7 +6,6 @@
 
 package com.evolveum.axiom.api.stream;
 
-import com.evolveum.axiom.api.schema.AxiomItemDefinition;
 import com.evolveum.axiom.api.schema.AxiomTypeDefinition;
 import com.evolveum.concepts.SourceLocation;
 

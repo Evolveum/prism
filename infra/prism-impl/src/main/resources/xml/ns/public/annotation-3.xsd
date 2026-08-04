@@ -1000,32 +1000,44 @@
     </xsd:element>
 
     <xsd:complexType name="SchemaContextType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Defines semantics information about annotated element.
+
+                The primary aim is to provide definition of objects (or items in general)
+                that are to be matched by filters present within a specific prism value.
+
+                See https://docs.evolveum.com/midpoint/devel/schema-context-annotations/
+            </xsd:documentation>
+        </xsd:annotation>
         <xsd:sequence>
             <xsd:element name="type" type="xsd:QName" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Name object type.
+                        Fixed name of the target object type. Must be qualified.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
             <xsd:element name="path" type="xsd:string" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Name object type.
+                        Fixed path of the target item within [fixed] target object type. The "type" must be specified.
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
-            <xsd:element name="typePath" type="xsd:QName" minOccurs="0">
+            <xsd:element name="typePath" type="xsd:string" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Name of element which have path to object type.
+                        Path to a child element that will contain the target object type.
+                        (Mutually exclusive with "type", "path", "algorithm".)
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
             <xsd:element name="algorithm" type="xsd:QName" minOccurs="0">
                 <xsd:annotation>
                     <xsd:documentation>
-                        Algorithm for handling schema context definition.
+                        Algorithm for determining the target item type.
+                        (Mutually exclusive with "type", "path", "typePath".)
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
@@ -1035,7 +1047,42 @@
     <xsd:element name="schemaContext" type="tns:SchemaContextType">
         <xsd:annotation>
             <xsd:documentation>
-                Schema context defines semantics information about annotated element.
+                Defines semantics information about annotated element.
+
+                The primary aim is to provide definition of objects (or items in general)
+                that are to be matched by filters present within a specific prism value.
+
+                See https://docs.evolveum.com/midpoint/devel/schema-context-annotations/
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="DisplayableValueType">
+        <xsd:sequence>
+            <xsd:element name="key" type="xsd:string"/>
+            <xsd:element name="label" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="DisplayableValuesType">
+        <xsd:sequence>
+            <xsd:element name="value" type="tns:DisplayableValueType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="allowedValues" type="tns:DisplayableValuesType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Property annotation: closed list of allowed values. The user can only select from this list (dropdown).
+            </xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="suggestedValues" type="tns:DisplayableValuesType">
+        <xsd:annotation>
+            <xsd:documentation>
+                Property annotation: open list of suggested values. The user can select from this list or enter a custom value (combobox).
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

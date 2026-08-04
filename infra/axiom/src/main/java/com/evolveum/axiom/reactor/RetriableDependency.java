@@ -21,8 +21,8 @@ public final class RetriableDependency<T> extends DelegatedDependency<T> impleme
 
     @Override
     Dependency<T> delegate() {
-        if(maybeDelegate instanceof Dependency<?>) {
-            return (Dependency) maybeDelegate;
+        if(maybeDelegate instanceof Dependency dependency) {
+            return dependency;
         }
         if(maybeDelegate instanceof Supplier<?>) {
             Dependency<?> result = ((Supplier<Dependency<?>>) maybeDelegate).get();
@@ -46,8 +46,8 @@ public final class RetriableDependency<T> extends DelegatedDependency<T> impleme
             return notFound.get();
         }
         Exception maybeFound = super.errorMessage();
-        if(maybeFound == null && maybeDelegate instanceof Dependency<?>) {
-            maybeFound = ((Dependency<?>)maybeDelegate).errorMessage();
+        if(maybeFound == null && maybeDelegate instanceof Dependency<?> dependency) {
+            maybeFound = dependency.errorMessage();
         }
         return maybeFound;
     }

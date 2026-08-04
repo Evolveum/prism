@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -220,10 +219,10 @@ public class BindingContext {
             packageName = resolvePackageName(typeDef.getTypeName().getNamespaceURI());
 
         }
-        if (typeDef instanceof ComplexTypeDefinition) {
-            return createFromComplexType(binding, (ComplexTypeDefinition) typeDef, packageName);
-        } else if (typeDef instanceof EnumerationTypeDefinition) {
-            binding.defaultContract(new EnumerationContract((EnumerationTypeDefinition) typeDef, packageName));
+        if (typeDef instanceof ComplexTypeDefinition complexDef) {
+            return createFromComplexType(binding, complexDef, packageName);
+        } else if (typeDef instanceof EnumerationTypeDefinition enumerationDef) {
+            binding.defaultContract(new EnumerationContract(enumerationDef, packageName));
         }
         return binding;
     }

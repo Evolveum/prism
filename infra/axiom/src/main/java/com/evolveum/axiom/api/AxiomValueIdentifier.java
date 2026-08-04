@@ -35,8 +35,8 @@ public class AxiomValueIdentifier implements AxiomPath.Value {
         if(obj == this) {
             return true;
         }
-        if(obj instanceof AxiomValueIdentifier) {
-            return components().equals(((AxiomValueIdentifier) obj).components());
+        if(obj instanceof AxiomValueIdentifier identifier) {
+            return components().equals(identifier.components());
         }
         return false;
     }

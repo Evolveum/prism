@@ -12,7 +12,10 @@ import com.evolveum.midpoint.prism.PrismContext;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Methods that operate on path collections.

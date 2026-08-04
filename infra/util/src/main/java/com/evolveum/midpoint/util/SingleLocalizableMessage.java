@@ -10,6 +10,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -19,7 +20,7 @@ import java.util.Objects;
  * @author semancik
  */
 public class SingleLocalizableMessage implements LocalizableMessage {
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     private final String key;
     private final Object[] args;

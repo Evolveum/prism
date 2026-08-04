@@ -13,7 +13,7 @@ import com.evolveum.midpoint.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 

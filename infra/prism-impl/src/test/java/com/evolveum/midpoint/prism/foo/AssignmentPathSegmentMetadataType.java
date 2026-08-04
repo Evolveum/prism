@@ -20,8 +20,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -35,7 +36,7 @@ import javax.xml.namespace.QName;
         "matchingOrder"
 })
 public class AssignmentPathSegmentMetadataType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "AssignmentPathSegmentMetadataType");
     public static final ItemName F_SEGMENT_ORDER = ItemName.interned(ObjectType.NS_FOO, "segmentOrder");
     public static final ItemName F_ASSIGNMENT_ID = ItemName.interned(ObjectType.NS_FOO, "assignmentId");
@@ -44,7 +45,7 @@ public class AssignmentPathSegmentMetadataType extends AbstractMutableContainera
     public static final ItemName F_MATCHING_ORDER = ItemName.interned(ObjectType.NS_FOO, "matchingOrder");
     public static final Producer<AssignmentPathSegmentMetadataType> FACTORY = new Producer<AssignmentPathSegmentMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public AssignmentPathSegmentMetadataType run() {
             return new AssignmentPathSegmentMetadataType();

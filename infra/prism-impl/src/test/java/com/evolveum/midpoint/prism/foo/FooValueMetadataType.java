@@ -17,8 +17,9 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 
 /**
  * Created by Dominik.
@@ -33,7 +34,7 @@ import javax.xml.namespace.QName;
         "provenance"
 })
 public class FooValueMetadataType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "ValueMetadataType");
     public static final ItemName F_EXTENSION = ItemName.interned(ObjectType.NS_FOO, "extension");
     public static final ItemName F_STORAGE = ItemName.interned(ObjectType.NS_FOO, "storage");
@@ -43,7 +44,7 @@ public class FooValueMetadataType extends AbstractMutableContainerable {
     public static final ItemName F_PROVENANCE = ItemName.interned(ObjectType.NS_FOO, "provenance");
     public static final Producer<FooValueMetadataType> FACTORY = new Producer<FooValueMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public FooValueMetadataType run() {
             return new FooValueMetadataType();

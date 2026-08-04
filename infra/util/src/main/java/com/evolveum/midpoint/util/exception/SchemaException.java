@@ -6,6 +6,8 @@
 
 package com.evolveum.midpoint.util.exception;
 
+import java.io.Serial;
+
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.util.LocalizableMessage;
@@ -20,7 +22,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
  *
  */
 public class SchemaException extends CommonException {
-    private static final long serialVersionUID = -6016220825724355014L;
+    @Serial private static final long serialVersionUID = -6016220825724355014L;
 
     private QName propertyName;
 

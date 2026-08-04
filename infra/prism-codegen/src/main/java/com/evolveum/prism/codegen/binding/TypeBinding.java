@@ -79,8 +79,8 @@ public abstract class TypeBinding extends Binding {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TypeBinding) {
-            return this.name.equals(((TypeBinding) obj).getName());
+        if (obj instanceof TypeBinding binding) {
+            return this.name.equals(binding.getName());
         }
         return false;
     }

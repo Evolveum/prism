@@ -23,6 +23,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -34,13 +36,13 @@ import java.util.List;
         "segment"
 })
 public class AssignmentPathMetadataType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(ObjectType.NS_FOO, "AssignmentPathMetadataType");
     public static final ItemName F_SOURCE_REF = ItemName.interned(ObjectType.NS_FOO, "sourceRef");
     public static final ItemName F_SEGMENT = ItemName.interned(ObjectType.NS_FOO, "segment");
     public static final Producer<AssignmentPathMetadataType> FACTORY = new Producer<AssignmentPathMetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public AssignmentPathMetadataType run() {
             return new AssignmentPathMetadataType();

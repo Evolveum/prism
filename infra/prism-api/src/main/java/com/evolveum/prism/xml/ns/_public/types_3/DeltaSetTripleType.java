@@ -70,8 +70,8 @@ public class DeltaSetTripleType implements PlainStructured.WithoutStrategy, Jaxb
 
     public void visit(List<Object> set, JaxbVisitor visitor) {
         for (Object o : set) {
-            if (o instanceof JaxbVisitable) {
-                visitor.visit((JaxbVisitable) o);
+            if (o instanceof JaxbVisitable visitable) {
+                visitor.visit(visitable);
             }
         }
     }

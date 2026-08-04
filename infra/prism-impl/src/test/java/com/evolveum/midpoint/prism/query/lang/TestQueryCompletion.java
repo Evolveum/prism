@@ -7,13 +7,15 @@
 package com.evolveum.midpoint.prism.query.lang;
 
 import java.io.IOException;
-import java.util.*;
-import static org.assertj.core.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.evolveum.midpoint.prism.foo.*;
+import com.evolveum.midpoint.prism.foo.UserType;
 import com.evolveum.midpoint.prism.impl.query.lang.Filter;
 import com.evolveum.midpoint.prism.impl.query.lang.FilterProvider;
-import com.evolveum.midpoint.prism.impl.xnode.XNodeImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.query.AxiomQueryContentAssist;

@@ -17,7 +17,6 @@ import com.evolveum.midpoint.util.annotation.OneUseOnly;
 import com.evolveum.midpoint.util.annotation.Unused;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

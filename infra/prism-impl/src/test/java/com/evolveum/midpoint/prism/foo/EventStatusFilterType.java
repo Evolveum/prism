@@ -7,6 +7,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class EventStatusFilterType
         extends EventHandlerType
         implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     protected List<String> status;
 
     /**
@@ -122,9 +123,9 @@ public class EventStatusFilterType
         // CC-XJC Version 2.0 Build 2011-09-16T18:27:24+0000
         if ((source != null) && (!source.isEmpty())) {
             for (final Object next : source) {
-                if (next instanceof String) {
+                if (next instanceof String string) {
                     // CEnumLeafInfo: com.evolveum.midpoint.xml.ns._public.common.common_3.String
-                    target.add(((String) next));
+                    target.add(string);
                     continue;
                 }
                 // Please report this at https://apps.sourceforge.net/mantisbt/ccxjc/

@@ -34,7 +34,7 @@ public interface AxiomStructuredValue extends AxiomValue<Collection<AxiomItem<?>
         Optional<AxiomValue<?>> current = Optional.of(this);
         for(AxiomItemDefinition name : components) {
             current = current.get().asComplex().flatMap(c -> c.item(name)).map(i -> i.onlyValue());
-            if(!current.isPresent()) {
+            if(current.isEmpty()) {
                 return Optional.empty();
             }
         }

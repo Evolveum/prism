@@ -10,7 +10,8 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 
 import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertSame;
 
 import java.io.IOException;
 import java.util.stream.Collectors;

@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.query;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +43,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
     abstract class ThresholdMatchingMethod<T extends Number> implements FuzzyMatchingMethod {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
         private final T threshold;
         private final boolean inclusive;
 
@@ -88,7 +89,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
 
     class Levenshtein extends ThresholdMatchingMethod<Integer> {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         public Levenshtein(Integer threshold, boolean inclusive) {
             super(threshold, inclusive);
@@ -126,7 +127,7 @@ public interface FuzzyStringMatchFilter<T> extends PropertyValueFilter<T> {
      */
     class Similarity extends ThresholdMatchingMethod<Float> {
 
-        private static final long serialVersionUID = 1L;
+        @Serial private static final long serialVersionUID = 1L;
 
         public Similarity(Float threshold, boolean inclusive) {
             super(threshold, inclusive);

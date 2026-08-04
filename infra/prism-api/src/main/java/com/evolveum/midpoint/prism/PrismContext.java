@@ -9,7 +9,9 @@ package com.evolveum.midpoint.prism;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.match.MatchingRuleRegistry;

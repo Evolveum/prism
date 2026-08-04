@@ -23,6 +23,8 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import java.io.Serial;
 import java.util.List;
 
 import static com.evolveum.midpoint.prism.foo.ObjectType.NS_FOO;
@@ -57,7 +59,7 @@ import static com.evolveum.midpoint.prism.foo.ObjectType.NS_FOO;
         "originMappingName"
 })
 public class MetadataType extends AbstractMutableContainerable {
-    private static final long serialVersionUID = 201105211233L;
+    @Serial private static final long serialVersionUID = 201105211233L;
     public static final QName COMPLEX_TYPE = new QName(NS_FOO, "MetadataType");
     public static final ItemName F_REQUEST_TIMESTAMP = ItemName.interned(NS_FOO, "requestTimestamp");
     public static final ItemName F_REQUESTOR_REF = ItemName.interned(NS_FOO, "requestorRef");
@@ -84,7 +86,7 @@ public class MetadataType extends AbstractMutableContainerable {
     public static final ItemName F_ORIGIN_MAPPING_NAME = ItemName.interned(NS_FOO, "originMappingName");
     public static final Producer<MetadataType> FACTORY = new Producer<MetadataType>() {
 
-        private static final long serialVersionUID = 201105211233L;
+        @Serial private static final long serialVersionUID = 201105211233L;
 
         public MetadataType run() {
             return new MetadataType();

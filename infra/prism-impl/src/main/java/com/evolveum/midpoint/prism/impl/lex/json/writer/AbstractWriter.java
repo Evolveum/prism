@@ -64,10 +64,10 @@ abstract public class AbstractWriter {
     private String writeInternal(@NotNull XNodeImpl root, SerializationContext prismSerializationContext, boolean useMultiDocument) throws SchemaException {
         try (WritingContext<?> ctx = createWritingContext(prismSerializationContext)) {
             DocumentWriter documentWriter = new DocumentWriter(ctx, schema);
-            if (root instanceof ListXNodeImpl && !root.isEmpty() && useMultiDocument && ctx.supportsMultipleDocuments()) {
+            if (root instanceof ListXNodeImpl impl && !root.isEmpty() && useMultiDocument && ctx.supportsMultipleDocuments()) {
                 // Note we cannot serialize empty lists in multi-document mode.
                 // It would result in empty content and an exception during serialization.
-                documentWriter.writeListAsSeparateDocuments((ListXNodeImpl) root);
+                documentWriter.writeListAsSeparateDocuments(impl);
             } else {
                 documentWriter.write(root);
             }

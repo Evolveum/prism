@@ -12,8 +12,6 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 
-import com.evolveum.midpoint.prism.polystring.PolyString;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 

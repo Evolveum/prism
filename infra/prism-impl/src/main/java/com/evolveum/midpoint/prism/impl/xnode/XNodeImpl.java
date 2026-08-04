@@ -199,10 +199,9 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         XNodeImpl xclone;
         if (xnode == null) {
             return null;
-        } else if (xnode instanceof PrimitiveXNodeImpl<?>) {
-            return (X) ((PrimitiveXNodeImpl) xnode).cloneInternal();
-        } else if (xnode instanceof MapXNodeImpl) {
-            MapXNodeImpl xmap = (MapXNodeImpl)xnode;
+        } else if (xnode instanceof PrimitiveXNodeImpl<?> impl) {
+            return (X) impl.cloneInternal();
+        } else if (xnode instanceof MapXNodeImpl xmap) {
             xclone = new MapXNodeImpl(xnode.namespaceContext());
             for (Entry<QName, XNodeImpl> entry: xmap.entrySet()) {
                 QName key = entry.getKey();
@@ -213,17 +212,17 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
                     ((MapXNodeImpl) xclone).put(newKey, newValue);
                 }
             }
-        } else if (xnode instanceof ListXNodeImpl) {
+        } else if (xnode instanceof ListXNodeImpl list) {
             xclone = new ListXNodeImpl(xnode.namespaceContext());
-            for (XNodeImpl xsubnode: ((ListXNodeImpl)xnode)) {
+            for (XNodeImpl xsubnode: list) {
                 ((ListXNodeImpl) xclone).add(cloneTransformKeys(keyTransformer, xsubnode));
             }
-        } else if (xnode instanceof RootXNodeImpl) {
-            xclone = new RootXNodeImpl(((RootXNodeImpl) xnode).getRootElementName(),
-                    cloneTransformKeys(keyTransformer, ((RootXNodeImpl) xnode).getSubnode()), xnode.namespaceContext());
-        } else if (xnode instanceof SchemaXNodeImpl) {
+        } else if (xnode instanceof RootXNodeImpl root) {
+            xclone = new RootXNodeImpl(root.getRootElementName(),
+                    cloneTransformKeys(keyTransformer, root.getSubnode()), xnode.namespaceContext());
+        } else if (xnode instanceof SchemaXNodeImpl schema) {
             xclone = new SchemaXNodeImpl(xnode.namespaceContext());
-            ((SchemaXNodeImpl) xclone).setSchemaElement(((SchemaXNodeImpl) xnode).getSchemaElement());
+            ((SchemaXNodeImpl) xclone).setSchemaElement(schema.getSchemaElement());
         } else {
             throw new IllegalArgumentException("Unknown xnode "+xnode);
         }
@@ -274,7 +273,7 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
     }
 
     public final boolean isSingleEntryMap() {
-        return this instanceof MapXNodeImpl && ((MapXNodeImpl) this).size() == 1;
+        return this instanceof MapXNodeImpl map && map.size() == 1;
     }
 
     public Object getParserData() {

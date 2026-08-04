@@ -6,8 +6,6 @@
 
 package com.evolveum.axiom.reactor;
 
-import java.util.Optional;
-
 import com.google.common.base.Preconditions;
 
 class Deffered<T> extends DelegatedDependency<T> {

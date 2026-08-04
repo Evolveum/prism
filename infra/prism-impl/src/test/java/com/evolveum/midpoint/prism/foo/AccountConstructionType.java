@@ -14,6 +14,7 @@
 
 package com.evolveum.midpoint.prism.foo;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ import com.evolveum.prism.xml.ns._public.types_3.RawType;
 })
 public class AccountConstructionType implements Serializable, Cloneable {
 
-    private static final long serialVersionUID = 201202081233L;
+    @Serial private static final long serialVersionUID = 201202081233L;
 
     @XmlElement(required = true)
     protected String howto;

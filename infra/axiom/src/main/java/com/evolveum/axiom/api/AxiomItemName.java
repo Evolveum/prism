@@ -27,8 +27,8 @@ public class AxiomItemName extends AxiomName implements AxiomPath.Item {
     }
 
     public static AxiomItemName of(AxiomName name) {
-        if(name instanceof AxiomItemName) {
-            return (AxiomItemName) name;
+        if(name instanceof AxiomItemName itemName) {
+            return itemName;
         }
         return INTERNER.intern(new AxiomItemName(name));
     }

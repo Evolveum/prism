@@ -18,7 +18,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.xml.namespace.QName;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * <p>

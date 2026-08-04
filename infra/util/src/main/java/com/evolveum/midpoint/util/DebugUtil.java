@@ -85,16 +85,16 @@ public class DebugUtil {
         if (object == null) {
             return "null";
         }
-        if (object instanceof DebugDumpable) {
-            return ((DebugDumpable)object).debugDump();
+        if (object instanceof DebugDumpable dumpable) {
+            return dumpable.debugDump();
         }
-        if (object instanceof Map) {
+        if (object instanceof Map<?,?> map) {
             StringBuilder sb = new StringBuilder();
-            debugDumpMapMultiLine(sb, (Map)object, 0);
+            debugDumpMapMultiLine(sb, map, 0);
             return sb.toString();
         }
-        if (object instanceof Collection) {
-            return debugDump((Collection)object);
+        if (object instanceof Collection<?> collection) {
+            return debugDump(collection);
         }
         return object.toString();
     }
@@ -142,8 +142,8 @@ public class DebugUtil {
             if (item == null) {
                 indentDebugDump(sb, indent + 1);
                 sb.append("null");
-            } else if (item instanceof DebugDumpable) {
-                sb.append(((DebugDumpable)item).debugDump(indent + 1));
+            } else if (item instanceof DebugDumpable dumpable) {
+                sb.append(dumpable.debugDump(indent + 1));
             } else {
                 indentDebugDump(sb, indent + 1);
                 sb.append(item.toString());
@@ -183,12 +183,12 @@ public class DebugUtil {
             sb.append("null");
             return sb.toString();
         }
-        if (object instanceof DebugDumpable) {
-            return ((DebugDumpable)object).debugDump(indent);
-        } else if (object instanceof Map) {
-            return debugDump((Map)object, indent);
-        } else if (object instanceof Collection) {
-            return debugDump((Collection<?>)object, indent);
+        if (object instanceof DebugDumpable dumpable) {
+            return dumpable.debugDump(indent);
+        } else if (object instanceof Map map) {
+            return debugDump(map, indent);
+        } else if (object instanceof Collection<?> collection) {
+            return debugDump(collection, indent);
         } else {
             StringBuilder sb = new StringBuilder();
             indentDebugDump(sb, indent);
@@ -458,9 +458,9 @@ public class DebugUtil {
             V value = entry.getValue();
             if (value == null) {
                 sb.append("null");
-            } else if (value instanceof DebugDumpable) {
+            } else if (value instanceof DebugDumpable dumpable) {
                 sb.append("\n");
-                sb.append(((DebugDumpable)value).debugDump(inindent+1));
+                sb.append(dumpable.debugDump(inindent+1));
             } else {
                 sb.append(PrettyPrinter.prettyPrint(value));
             }
@@ -599,8 +599,8 @@ public class DebugUtil {
                 Object value = field.get(o);
                 if (value == null) {
                     sb.append("null");
-                } else if (value instanceof Serializable) {
-                    sb.append(estimateObjectSize((Serializable)value));
+                } else if (value instanceof Serializable serializable) {
+                    sb.append(estimateObjectSize(serializable));
                 } else {
                     sb.append("non-serializable ("+value.getClass()+")");
                 }

@@ -14,6 +14,7 @@
 
 package com.evolveum.prism.xml.ns._public.types_3;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -78,7 +79,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
 public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVisitable {
 
 
-    private static final long serialVersionUID = 1L;
+    @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_TYPES, "ObjectDeltaType");
     public static final QName F_CHANGE_TYPE = new QName(PrismConstants.NS_TYPES, "changeType");

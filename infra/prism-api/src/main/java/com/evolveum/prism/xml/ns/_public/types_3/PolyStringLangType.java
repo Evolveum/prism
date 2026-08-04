@@ -154,8 +154,8 @@ public class PolyStringLangType implements Serializable {
 
         @Override
         public boolean remove(Object o) {
-            if (o instanceof Element) {
-                String key = ((Element)o).getLocalName();
+            if (o instanceof Element element) {
+                String key = element.getLocalName();
                 String previous = lang.remove(key);
                 return previous != null;
             }

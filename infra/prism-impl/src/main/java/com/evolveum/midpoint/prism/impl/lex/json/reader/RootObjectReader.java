@@ -65,8 +65,7 @@ class RootObjectReader {
     // Schema nodes can be detected only after namespaces are resolved.
     // We simply convert primitive nodes to schema ones.
     private void processSchemaNodes(XNodeImpl xnode) throws SchemaException, IOException {
-        if (xnode instanceof MapXNodeImpl) {
-            MapXNodeImpl map = (MapXNodeImpl) xnode;
+        if (xnode instanceof MapXNodeImpl map) {
             XNodeImpl schemaNode = null;
             for (Map.Entry<QName, XNodeImpl> entry : map.entrySet()) {
                 QName fieldName = entry.getKey();
@@ -78,8 +77,7 @@ class RootObjectReader {
                 }
             }
             if (schemaNode != null) {
-                if (schemaNode instanceof PrimitiveXNodeImpl) {
-                    PrimitiveXNodeImpl<?> primitiveXNode = (PrimitiveXNodeImpl<?>) schemaNode ;
+                if (schemaNode instanceof PrimitiveXNodeImpl<?> primitiveXNode) {
                     if (primitiveXNode.isParsed()) {
                         throw new SchemaException("Cannot convert from PrimitiveXNode to SchemaXNode: node is already parsed: " + primitiveXNode);
                     }
@@ -90,8 +88,8 @@ class RootObjectReader {
                     throw new SchemaException("Cannot convert 'schema' field to SchemaXNode: not a PrimitiveNode but " + schemaNode);
                 }
             }
-        } else if (xnode instanceof ListXNodeImpl) {
-            for (XNodeImpl item : (ListXNodeImpl) xnode) {
+        } else if (xnode instanceof ListXNodeImpl impl) {
+            for (XNodeImpl item : impl) {
                 processSchemaNodes(item);
             }
         }

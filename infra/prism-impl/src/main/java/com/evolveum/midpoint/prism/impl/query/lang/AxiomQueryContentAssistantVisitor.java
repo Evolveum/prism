@@ -9,7 +9,9 @@ package com.evolveum.midpoint.prism.impl.query.lang;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.evolveum.axiom.lang.antlr.*;
+import com.evolveum.axiom.lang.antlr.AxiomQueryError;
+import com.evolveum.axiom.lang.antlr.AxiomStrings;
+import com.evolveum.axiom.lang.antlr.TokenCustom;
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.axiom.lang.antlr.query.AxiomQueryParser;
 import com.evolveum.midpoint.prism.query.Suggestion;
@@ -18,8 +20,9 @@ import com.evolveum.midpoint.prism.path.ItemPath;
 
 import com.evolveum.midpoint.util.SingleLocalizableMessage;
 
-import com.google.common.base.Strings;
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNode;

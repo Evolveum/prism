@@ -18,11 +18,11 @@ public interface Copyable<T extends Copyable<T>> {
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Nullable default <T> T copy(T object) {
-            if (object instanceof StrategyAware) {
-                return (T) ((StrategyAware<?>) object).copy(this);
+            if (object instanceof StrategyAware<?> aware) {
+                return (T) aware.copy(this);
             }
-            if (object instanceof Copyable<?>) {
-                return (T) copyCopyable((Copyable) object);
+            if (object instanceof Copyable copyable) {
+                return (T) copyCopyable(copyable);
             }
 
             return copyUnaware(object);

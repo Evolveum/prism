@@ -43,8 +43,8 @@ public class NameKeyedMap<K extends QName, T> implements Map<K, T>, Serializable
 
     @Override
     public boolean containsKey(Object key) {
-        return key instanceof QName &&
-                QNameUtil.contains(internalMap.keySet(), (QName) key);
+        return key instanceof QName name &&
+                QNameUtil.contains(internalMap.keySet(), name);
     }
 
     @Override
@@ -55,9 +55,9 @@ public class NameKeyedMap<K extends QName, T> implements Map<K, T>, Serializable
     @Override
     public T get(Object key) {
         // TODO optimize if all is fully qualified
-        if (key instanceof QName) {
+        if (key instanceof QName name) {
             for (Entry<K, T> entry : internalMap.entrySet()) {
-                if (QNameUtil.match(entry.getKey(), (QName) key)) {
+                if (QNameUtil.match(entry.getKey(), name)) {
                     return entry.getValue();
                 }
             }
@@ -79,9 +79,9 @@ public class NameKeyedMap<K extends QName, T> implements Map<K, T>, Serializable
 
     @Override
     public T remove(Object key) {
-        if (key instanceof QName) {
+        if (key instanceof QName name) {
             for (K existingKey : internalMap.keySet()) {
-                if (QNameUtil.match(existingKey, (QName) key)) {
+                if (QNameUtil.match(existingKey, name)) {
                     return internalMap.remove(existingKey);
                 }
             }
