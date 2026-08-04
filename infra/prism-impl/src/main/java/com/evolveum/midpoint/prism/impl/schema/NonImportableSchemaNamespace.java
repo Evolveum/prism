@@ -1,18 +1,20 @@
 /*
- * Copyright (C) 2026 Evolveum and contributors
+ * Copyright (C) 2010-2026 Evolveum and contributors
  *
  * Licensed under the EUPL-1.2 or later.
  */
 
 package com.evolveum.midpoint.prism.impl.schema;
 
+import com.evolveum.midpoint.prism.impl.xjc.JaxbCustomizationConstants;
+
 /**
  * Namespaces that can appear in generated schema annotations/customizations, but should NOT be emitted as XSD imports.
  */
 enum NonImportableSchemaNamespace {
 
-    JAKARTA_JAXB("https://jakarta.ee/xml/ns/jaxb"),
-    LEGACY_JAXB("http://java.sun.com/xml/ns/jaxb");
+    JAKARTA_JAXB(JaxbCustomizationConstants.JAKARTA_NAMESPACE),
+    LEGACY_JAXB(JaxbCustomizationConstants.LEGACY_NAMESPACE);
 
     private final String namespace;
 
@@ -24,7 +26,11 @@ enum NonImportableSchemaNamespace {
      * Returns true if the namespace should be emitted as an XSD import.
      */
     static boolean isImportable(String namespace) {
-        return !JAKARTA_JAXB.namespace.equals(namespace)
-                && !LEGACY_JAXB.namespace.equals(namespace);
+        for (NonImportableSchemaNamespace nonImportable : values()) {
+            if (nonImportable.namespace.equals(namespace)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

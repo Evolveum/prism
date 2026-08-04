@@ -12,6 +12,8 @@ import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeature
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI;
 
 import static com.evolveum.midpoint.prism.PrismConstants.*;
+import static com.evolveum.midpoint.prism.impl.xjc.JaxbCustomizationConstants.TYPESAFE_ENUM_CLASS;
+import static com.evolveum.midpoint.prism.impl.xjc.JaxbCustomizationConstants.TYPESAFE_ENUM_MEMBER;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_ACCESS;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_ALLOWED_VALUES;
 import static com.evolveum.midpoint.prism.impl.schema.features.DefinitionFeatures.DF_SUGGESTED_VALUES;
@@ -394,7 +396,7 @@ public class SchemaDomSerializer {
 
         var appInfo = createAppInfoAnnotationsTarget(simpleType);
         addCommonDefinitionAnnotations(definition, appInfo);
-        appInfo.appInfoElement.appendChild(createElement(EnumerationValuesXsomParser.TYPESAFE_ENUM_CLASS));
+        appInfo.appInfoElement.appendChild(createElement(TYPESAFE_ENUM_CLASS));
         appInfo.removeIfNotNeeded();
 
         Element restriction = createElement(new QName(W3C_XML_SCHEMA_NS_URI, "restriction"));
@@ -418,7 +420,7 @@ public class SchemaDomSerializer {
         }
 
         if (valueDefinition.getConstantName().isPresent()) {
-            Element typeSafeEnum = createElement(EnumerationValuesXsomParser.TYPESAFE_ENUM_MEMBER);
+            Element typeSafeEnum = createElement(TYPESAFE_ENUM_MEMBER);
             setAttribute(typeSafeEnum, "name", valueDefinition.getConstantName().get());
             aia.appInfoElement.appendChild(typeSafeEnum);
         }
