@@ -12,10 +12,10 @@ import com.evolveum.midpoint.util.LocalizableMessage;
 
 /**
  * Subscription compliance exception.
- * <p>
+ *
  * Exception thrown when a subscription-restricted object or operation is
  * accessed in the production environment without an active subscription.
- * <p>
+ *
  * This exception is used to enforce subscription compliance for production
  * deployments.
  */
