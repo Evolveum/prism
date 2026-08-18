@@ -82,10 +82,11 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
     @Serial private static final long serialVersionUID = 1L;
 
     public static final QName COMPLEX_TYPE = new QName(PrismConstants.NS_TYPES, "ObjectDeltaType");
+    public static final QName F_OID = new QName(PrismConstants.NS_TYPES, "oid");
     public static final QName F_CHANGE_TYPE = new QName(PrismConstants.NS_TYPES, "changeType");
     public static final QName F_OBJECT_TYPE = new QName(PrismConstants.NS_TYPES, "objectType");
     public static final QName F_OBJECT_TO_ADD = new QName(PrismConstants.NS_TYPES, "objectToAdd");
-    public static final QName F_ITEM_DETLA = new QName(PrismConstants.NS_TYPES, "itemDelta");
+    public static final QName F_ITEM_DELTA = new QName(PrismConstants.NS_TYPES, "itemDelta");
 
     @XmlElement(required = true)
     protected ChangeTypeType changeType;
