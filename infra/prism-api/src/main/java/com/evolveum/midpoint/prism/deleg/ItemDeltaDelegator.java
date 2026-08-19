@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.xml.namespace.QName;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -581,4 +582,10 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     default boolean isImmutable() {
         return delegate().isImmutable();
     }
+
+    @Override
+    default boolean isValueChanged(ItemPath itemPath) { return delegate().isValueChanged(itemPath); }
+
+    @Override
+    default Collection<V> estimateNewValues() throws SchemaException { return delegate().estimateNewValues(); }
 }
