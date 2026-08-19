@@ -46,12 +46,12 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
     void setOid(String oid);
 
     /**
-     * Returns object that this reference points to. The object is supposed to be used
-     * for caching and optimizations. Only oid and type of the object really matters for
-     * the reference.
+     * Returns object that this reference points to.
+     * The object is supposed to be used for caching and optimizations.
+     * Only oid and type of the object really matters for the reference.
      *
-     * The object is transient. It will NOT be serialized. Therefore the client must
-     * expect that the object can disappear when serialization boundary is crossed.
+     * The object is transient. It will NOT be serialized.
+     * Therefore, the client must expect that the object can disappear when serialization boundary is crossed.
      * The client must expect that the object is null.
      */
     <O extends Objectable> PrismObject<O> getObject();
@@ -61,7 +61,19 @@ public interface PrismReferenceValue extends PrismValue, ShortDumpable {
         return prismObject != null ? prismObject.asObjectable() : null;
     }
 
+    /**
+     * Sets full object referenced by this reference.
+     * The object is supposed to be used for caching and optimizations.
+     * This is ordinary setter method, it will fail if the item is frozen (immutable).
+     */
     void setObject(PrismObject<?> object);
+
+    /**
+     * Sets full object referenced by this reference.
+     * This method works even if the object is frozen (immutable).
+     * Sanity checks are performed when the object is set.
+     */
+    void cacheObject(PrismObject<?> object) throws SchemaException;
 
     /**
      * Returns XSD type of the object that this reference refers to. It may be

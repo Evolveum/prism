@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -125,8 +126,19 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
     }
 
     @Override
-    public void setObject(PrismObject object) {
+    public void setObject(PrismObject<?> object) {
         checkMutable();
+        this.object = object;
+    }
+
+    @Override
+    public void cacheObject(PrismObject<?> object) throws SchemaException {
+        if (!Objects.equals(this.oid,object.getOid())) {
+            throw new SchemaException("Attempt to cache object in reference with mismatched OID");
+        }
+        // Consideration: should we check type here?
+        // This can be tricky, as the object may be a subtype of declared type, the type may be dynamic, etc.
+        // It is probably not worth the trouble now.
         this.object = object;
     }
 

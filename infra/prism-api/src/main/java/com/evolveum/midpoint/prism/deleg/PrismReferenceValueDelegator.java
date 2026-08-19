@@ -52,6 +52,11 @@ public interface PrismReferenceValueDelegator extends PrismReferenceValue, Prism
     }
 
     @Override
+    default void cacheObject(PrismObject<?> object) throws SchemaException {
+        delegate().cacheObject(object);
+    }
+
+    @Override
     default QName getTargetType() {
         return delegate().getTargetType();
     }
