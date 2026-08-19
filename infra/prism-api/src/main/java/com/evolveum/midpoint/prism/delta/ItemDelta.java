@@ -404,6 +404,8 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
      */
     Item<V, D> getItemNew(Item<V, D> itemOld) throws SchemaException;
 
+    Collection<V> estimateNewValues() throws SchemaException;
+
     Item<V, D> getItemNewMatchingPath(Item<V, D> itemOld) throws SchemaException;
 
     /**
@@ -491,4 +493,6 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
         /** Transforms a given value; returns null if the value should be removed. */
         @Nullable V transformValue(@NotNull V value) throws SchemaException;
     }
+
+    boolean isValueChanged(ItemPath itemPath);
 }

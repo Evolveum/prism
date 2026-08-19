@@ -1483,6 +1483,23 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         return itemNew;
     }
 
+    @Override
+    public Collection<V> estimateNewValues() throws SchemaException {
+        // Quick shortcut.
+        if (valuesToReplace != null) {
+            // All old values will be gone => we know what the new values are going to be.
+            return valuesToReplace;
+        }
+        if (estimatedOldValues == null) {
+            return getItemNew().getValues();
+        }
+        @SuppressWarnings("unchecked")
+        Item<V, D> dummyItem = (Item<V, D>) definition.instantiate();
+        dummyItem.addAll(CloneUtil.cloneCollectionMembers(estimatedOldValues));
+        applyToMatchingPath(dummyItem);
+        return dummyItem.getValues();
+    }
+
     /**
      * Returns the "new" state of the property - the state that would be after
      * the delta is applied.
@@ -2220,5 +2237,31 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
     @Override
     public Collection<ItemModifyResult<V>> applyResults() {
         return applyResults;
+    }
+
+    @Override
+    public boolean isValueChanged(ItemPath itemPath) {
+        return switch (getPath().compareComplex(itemPath)) {
+            case NO_RELATION -> false;
+            case EQUIVALENT, SUBPATH -> checkValueChanged(ItemPath.EMPTY_PATH);
+            case SUPERPATH -> checkValueChanged(itemPath.remainder(itemPath));
+        };
+    }
+
+    private boolean checkValueChanged(ItemPath itemPath) {
+        return checkValueChangedSet(itemPath, valuesToAdd) ||
+                checkValueChangedSet(itemPath, valuesToDelete) ||
+                checkValueChangedSet(itemPath, valuesToReplace);
+    }
+
+    private boolean checkValueChangedSet(ItemPath itemPath, Collection<V> set) {
+        if (set == null) {
+            return false;
+        }
+        return set.stream().anyMatch(v -> checkValueChanged(itemPath, v));
+    }
+
+    private boolean checkValueChanged(ItemPath itemPath, V value) {
+        return value.find(itemPath) != null;
     }
 }

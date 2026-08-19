@@ -1250,7 +1250,53 @@ public class TestDelta extends AbstractPrismTest {
 
         userDelta.addModification(activationDelta);
 
+        PropertyDelta<Object> additionalNamesDelta = userDelta.createPropertyModification(UserType.F_ADDITIONAL_NAMES);
+        additionalNamesDelta.addRealValuesToAdd("Dread Pirate");
+        additionalNamesDelta.addRealValuesToDelete("Pirate Wannabe");
+        additionalNamesDelta.addEstimatedOldValue(new PrismPropertyValueImpl<>("Pirate Wannabe"));
+        additionalNamesDelta.addEstimatedOldValue(new PrismPropertyValueImpl<>("Ulysses"));
+        userDelta.addModification(additionalNamesDelta);
+
         return userDelta;
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesGivenName() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_GIVEN_NAME);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong new values", newValues, "Guybrush");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesAdditionalNames() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong new values", newValues, "Ulysses", "Dread Pirate");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesPassword() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_PASSWORD);
+
+        then();
+        assertNull("Unexpected new values", newValues);
     }
 
     /**

@@ -143,11 +143,16 @@ public class ContainerDeltaImpl<V extends Containerable> extends ItemDeltaImpl<P
         if (itemDefinition == null) {
             throw new IllegalStateException("No definition of " + path + " in " + getDefinition());
         }
+
+        //noinspection unchecked
+        Collection<V1> subEstimatedOldValues = findItemValues(id, path, getEstimatedOldValues());
+
         //noinspection unchecked
         ItemDelta<V1, D1> itemDelta = (ItemDelta<V1, D1>) itemDefinition.createEmptyDelta(getPath().append(path));
         itemDelta.addValuesToAdd(subValuesToAdd);
         itemDelta.addValuesToDelete(subValuesToDelete);
         itemDelta.setValuesToReplace(subValuesToReplace);
+        itemDelta.setEstimatedOldValues(subEstimatedOldValues);
         return itemDelta;
     }
 

@@ -367,6 +367,11 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
     }
 
     @Override
+    public boolean isValueChanged(ItemPath itemPath) {
+        return false; // TODO WIP
+    }
+
+    @Override
     public boolean hasCompleteDefinition() {
         if (isAdd()) {
             return getObjectToAdd().hasCompleteDefinition();
@@ -1447,6 +1452,25 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             } else {
                 return Collections.emptyList();
             }
+        }
+    }
+
+    @Override
+    public Collection<PrismValue> estimateNewValuesFor(ItemPath itemPath) throws SchemaException {
+        if (isAdd()) {
+            // This is simple and reliable.
+            Item<PrismValue, ItemDefinition<?>> item = objectToAdd.findItem(itemPath);
+            return item != null ? item.getValues() : Collections.emptyList();
+        } else if (isDelete()) {
+            // Object is gone, we are certain that there will be no values.
+            return Collections.emptyList();
+        } else {
+            ItemDelta itemDelta = ItemDeltaCollectionsUtil.findItemDelta(modifications, itemPath, ItemDelta.class, false);
+            if (itemDelta == null) {
+                return null;
+            }
+            // No need to specify path here. ItemDeltaCollectionsUtil.findItemDelta() already returns a subdelta if needed.
+            return itemDelta.estimateNewValues();
         }
     }
 

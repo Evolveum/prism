@@ -23,6 +23,8 @@ import com.evolveum.midpoint.util.DebugDumpable;
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
+import org.jetbrains.annotations.Nullable;
+
 import static com.evolveum.midpoint.prism.PrismObject.asObjectable;
 
 /**
@@ -142,8 +144,26 @@ public interface ObjectDelta<O extends Objectable>
     <IV extends PrismValue, ID extends ItemDefinition<?>> Collection<PartiallyResolvedDelta<IV, ID>> findPartial(
             ItemPath propertyPath);
 
+    /**
+     * Returns true if object delta contains delta for specified item.
+     * This method only checks whether the delta is present,
+     * it does not check whether real value of the item changed value in any way.
+     * E.g. in case that there is a REPLACE delta for the same value, it returns true.
+     *
+     * Limitation: For OBJECT DELETE deltas, we do not know the values that were deleted.
+     * In that case the method returns false for any path.
+     */
     boolean hasItemDelta(ItemPath propertyPath);
 
+    /**
+     * Returns true if object delta contains delta for specified item, or any of its subitems.
+     * This method only checks whether the delta is present,
+     * it does not check whether real value of the item changed value in any way.
+     * E.g. in case that there is a REPLACE delta for the same value, it returns true.
+     *
+     * Limitation: For OBJECT DELETE deltas, we do not know the values that were deleted.
+     * In that case the method returns false for any path.
+     */
     boolean hasItemOrSubitemDelta(ItemPath propertyPath);
 
     /**
@@ -158,6 +178,18 @@ public interface ObjectDelta<O extends Objectable>
      * and the delta contains an addition of `assignment` with a different PCV ID, e.g. [2]. The result would be a false positive.
      */
     boolean hasRelatedDelta(ItemPath itemPath);
+
+    /**
+     * Returns true if the value identified by path was changed.
+     * This method checks whether the real value of the item changed value in any way.
+     * E.g. in case that there is a REPLACE delta for the same value, it returns false.
+     *
+     * Limitation: This function relies on estimated old values,
+     * therefore it may not be entirelly reliable in some situations.
+     * For OBJECT DELETE deltas, we do not know the values that were deleted.
+     * In that case the method returns false for any path.
+     */
+    boolean isValueChanged(ItemPath itemPath);
 
     boolean hasCompleteDefinition();
 
@@ -398,7 +430,29 @@ public interface ObjectDelta<O extends Objectable>
     @NotNull
     List<ItemPath> getModifiedItems();
 
+    /**
+     * Returns new values for specified item.
+     * Only values that are explicitly added or replaced are present.
+     * The returned values are taken from replace and add item deltas only.
+     * Estimated old values are not used in this computation.
+     */
+    // Consider whether this method has a good name, as it is not a pure getter. It make computation.
+    // Probably something like determineNewValuesFor() would be better.
     List<PrismValue> getNewValuesFor(ItemPath itemPath);
+
+    /**
+     * Returns estimated new values for specified item.
+     * This method computes the best estimate of what new values of the item could be after delta is applied.
+     * However, this is just an estimate, based on estimated old values stored in the delta (if available).
+     * Even if the estimated old values are present, results of delta application may differ,
+     * e.g. if more than one delta was applied, or if the object have changed in the meantime.
+     *
+     * @return Estimated new values for specified item.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application.
+     *         Null is returned if the estimation method cannot determine the value (value is unknown).
+     */
+    @Nullable
+    Collection<PrismValue> estimateNewValuesFor(ItemPath itemPath) throws SchemaException;
 
     /**
      * Limitations:
