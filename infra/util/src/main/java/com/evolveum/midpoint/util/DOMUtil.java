@@ -30,7 +30,6 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.xerces.util.XMLChar;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -1470,7 +1469,7 @@ public class DOMUtil {
         int i = 0;
         while (i < codepointCount) {
             int codePoint = stringValue.codePointAt(i);
-            if (!XMLChar.isValid(codePoint)) {
+            if (!isValidXml10CodePoint(codePoint)) {
                 throw new IllegalStateException("Invalid character with regards to XML (code " + ((int) stringValue.charAt(i)) + ") in '" + makeSafelyPrintable(stringValue, 200) + "'");
             }
             i += Character.charCount(codePoint);
@@ -1483,7 +1482,7 @@ public class DOMUtil {
         }
         int codepointCount = value.codePointCount(0, value.length());
         for (int i = 0; i < codepointCount; i++) {
-            if (!XMLChar.isValid(value.codePointAt(i))) {
+            if (!isValidXml10CodePoint(value.codePointAt(i))) {
                 return escapeInvalidXmlChars(value, codepointCount);
             }
         }
@@ -1494,7 +1493,7 @@ public class DOMUtil {
         StringBuilder sb = new StringBuilder(value.length());
         for (int i = 0; i < codepointCount; i++) {
             int cp = value.codePointAt(i);
-            if (XMLChar.isValid(cp)) {
+            if (isValidXml10CodePoint(cp)) {
                 sb.appendCodePoint(cp);
             } else {
                 sb.append("[INVALID CODE POINT: ").append(cp).append(']');
@@ -1508,7 +1507,7 @@ public class DOMUtil {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (!XMLChar.isValid(c)) {
+            if (!isValidXml10CodePoint(c)) {
                 sb.append('.');
             } else if (Character.isWhitespace(c)) {
                 sb.append(' ');
@@ -1534,13 +1533,23 @@ public class DOMUtil {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (!XMLChar.isValid(c)) {
+            if (!isValidXml10CodePoint(c)) {
                 sb.append('.');
             } else {
                 sb.append(c);
             }
         }
         return sb.toString();
+    }
+
+    /** This is a replacement for the Xerces's XMLChar.isValid(int) method. */
+    private static boolean isValidXml10CodePoint(int cp) {
+        return cp == 0x9
+                || cp == 0xA
+                || cp == 0xD
+                || (cp >= 0x20 && cp <= 0xD7FF)
+                || (cp >= 0xE000 && cp <= 0xFFFD)
+                || (cp >= 0x10000 && cp <= 0x10FFFF);
     }
 
     public static String getAttribute(Element element, QName attrQname) {
