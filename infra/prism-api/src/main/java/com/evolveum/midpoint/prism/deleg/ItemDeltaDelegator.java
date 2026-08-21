@@ -587,5 +587,14 @@ public interface ItemDeltaDelegator<V extends PrismValue, D extends ItemDefiniti
     default boolean isValueChanged(ItemPath itemPath) { return delegate().isValueChanged(itemPath); }
 
     @Override
+    default Collection<V> estimateAddedValues() throws SchemaException { return delegate().estimateAddedValues(); }
+
+    @Override
+    default Collection<V> estimateDeletedValues() throws SchemaException { return delegate().estimateDeletedValues(); }
+
+    @Override
+    default Collection<V> estimateChangedValues() throws SchemaException { return delegate().estimateChangedValues(); }
+
+    @Override
     default Collection<V> estimateNewValues() throws SchemaException { return delegate().estimateNewValues(); }
 }
