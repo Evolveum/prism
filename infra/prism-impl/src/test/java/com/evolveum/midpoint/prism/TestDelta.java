@@ -18,6 +18,7 @@ import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -1228,7 +1229,13 @@ public class TestDelta extends AbstractPrismTest {
         assertNull("Found delta even if it shouldn't", itemDelta);
     }
 
+    @SuppressWarnings("unchecked")
     private ObjectDelta<UserType> createDeltaForFindItem(boolean containerReplace) throws SchemaException {
+        return createTestDelta(containerReplace, false);
+    }
+
+        @SuppressWarnings("unchecked")
+    private ObjectDelta<UserType> createTestDelta(boolean activationContainerReplace, boolean estimatedOldValues) throws SchemaException {
         ObjectDelta<UserType> userDelta = PrismTestUtil.getPrismContext().deltaFactory().object()
                 .createModificationAddProperty(UserType.class, USER_FOO_OID,
                         UserType.F_LOCALITY, "Caribbean");
@@ -1236,7 +1243,7 @@ public class TestDelta extends AbstractPrismTest {
 
         ContainerDelta<ActivationType> activationDelta = userDelta.createContainerModification(UserType.F_ACTIVATION);
         PrismContainerValue<ActivationType> activationCVal = getPrismContext().itemFactory().createContainerValue();
-        if (containerReplace) {
+        if (activationContainerReplace) {
             activationDelta.addValueToReplace(activationCVal);
         } else {
             activationDelta.addValueToAdd(activationCVal);
@@ -1253,18 +1260,41 @@ public class TestDelta extends AbstractPrismTest {
         PropertyDelta<Object> additionalNamesDelta = userDelta.createPropertyModification(UserType.F_ADDITIONAL_NAMES);
         additionalNamesDelta.addRealValuesToAdd("Dread Pirate");
         additionalNamesDelta.addRealValuesToDelete("Pirate Wannabe");
-        additionalNamesDelta.addEstimatedOldValue(new PrismPropertyValueImpl<>("Pirate Wannabe"));
-        additionalNamesDelta.addEstimatedOldValue(new PrismPropertyValueImpl<>("Ulysses"));
+        if (estimatedOldValues) {
+            additionalNamesDelta.addEstimatedOldValue(createPropertyValue("Pirate Wannabe"));
+            additionalNamesDelta.addEstimatedOldValue(createPropertyValue("Ulysses"));
+        }
         userDelta.addModification(additionalNamesDelta);
 
+        ContainerDelta<AssignmentType> assignmentDelta = userDelta.createContainerModification(UserType.F_ASSIGNMENT);
+        userDelta.addModification(assignmentDelta);
+        assignmentDelta.addValuesToAdd(createAssignmentValue(1L, "First added"));
+        assignmentDelta.addValuesToAdd(createAssignmentValue(2L, "Second added"));
+        assignmentDelta.addValuesToDelete(createAssignmentValue(3L, "Third deleted"));
+        assignmentDelta.addValuesToDelete(createAssignmentValue(6L, "Sixth phantom deleted"));
+
+        if (estimatedOldValues) {
+            assignmentDelta.addEstimatedOldValue(createAssignmentValue(3L, "Third deleted"));
+            assignmentDelta.addEstimatedOldValue(createAssignmentValue(4L, "Fourth original"));
+            assignmentDelta.addEstimatedOldValue(createAssignmentValue(5L, "Fifth unchanged"));
+        }
+
+        PropertyDelta<Object> assignmentDescriptionDelta = userDelta.createPropertyModification(ItemPath.create(UserType.F_ASSIGNMENT, 4L, AssignmentType.F_DESCRIPTION));
+        userDelta.addModification(assignmentDescriptionDelta);
+        assignmentDescriptionDelta.setRealValuesToReplace("Fourth modified");
+
         return userDelta;
+    }
+
+    private PrismPropertyValue<Object> createPropertyValue(Object realVal) {
+        return getPrismContext().itemFactory().createPropertyValue(realVal);
     }
 
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testObjectDeltaEstimateNewValuesGivenName() throws Exception {
         given();
-        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
 
         when();
         Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_GIVEN_NAME);
@@ -1277,7 +1307,20 @@ public class TestDelta extends AbstractPrismTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testObjectDeltaEstimateNewValuesAdditionalNames() throws Exception {
         given();
-        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong new values", newValues, "Dread Pirate");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesAdditionalNamesWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
 
         when();
         Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_ADDITIONAL_NAMES);
@@ -1288,15 +1331,253 @@ public class TestDelta extends AbstractPrismTest {
 
     @Test
     @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateAddedValuesAdditionalNames() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateAddedValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong added values", newValues, "Dread Pirate");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateAddedValuesAdditionalNamesWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateAddedValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong added values", newValues, "Dread Pirate");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateDeletedValuesAdditionalNames() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateDeletedValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong deleted values", newValues, "Pirate Wannabe");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateModifiedValuesAdditionalNames() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateModifiedValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong modified values", newValues /* no values */);
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateChangedValuesAdditionalNames() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateChangedValuesFor(UserType.F_ADDITIONAL_NAMES);
+
+        then();
+        PrismAsserts.assertPropertyValues("Wrong changed values", newValues, "Dread Pirate");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void testObjectDeltaEstimateNewValuesPassword() throws Exception {
         given();
-        ObjectDelta<UserType> userDelta = createDeltaForFindItem(false);
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
 
         when();
         Collection<PrismPropertyValue<String>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_PASSWORD);
 
         then();
         assertNull("Unexpected new values", newValues);
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateAddedValuesAssignment() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateAddedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("added values", newValues,
+                1L, "First added",
+                2L, "Second added");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateAddedValuesAssignmentWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateAddedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("added values", newValues,
+                1L, "First added",
+                2L, "Second added");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateDeletedValuesAssignment() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateDeletedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("deleted values", newValues,
+                3L, "Third deleted",
+                6L, "Sixth phantom deleted");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateDeletedValuesAssignmentWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateDeletedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("deleted values", newValues,
+                3L, "Third deleted");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateModifiedValuesAssignment() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateModifiedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("modified values", newValues,
+                4L, "Fourth modified");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateModifiedValuesAssignmentWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateModifiedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("modified values", newValues,
+                4L, "Fourth modified");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateChangedValuesAssignment() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateChangedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("changed values", newValues,
+                1L, "First added",
+                2L, "Second added",
+                4L, "Fourth modified");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateChangedValuesAssignmentWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateChangedValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("changed values", newValues,
+                1L, "First added",
+                2L, "Second added",
+                4L, "Fourth modified");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesAssignment() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, false);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("new values", newValues,
+                1L, "First added",
+                2L, "Second added",
+                4L, "Fourth modified");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void testObjectDeltaEstimateNewValuesAssignmentWithOldValues() throws Exception {
+        given();
+        ObjectDelta<UserType> userDelta = createTestDelta(false, true);
+
+        when();
+        Collection<PrismContainerValue<AssignmentType>> newValues = (Collection) userDelta.estimateNewValuesFor(UserType.F_ASSIGNMENT);
+
+        then();
+        assertAssignmentValues("new values", newValues,
+                1L, "First added",
+                2L, "Second added",
+                4L, "Fourth modified",
+                5L, "Fifth unchanged");
+    }
+
+    private void assertAssignmentValues(String message, Collection<PrismContainerValue<AssignmentType>> actualPValues, Object... args) {
+        assertNotNull("Null set in " + message, actualPValues);
+        if ((args.length / 2) != actualPValues.size()) {
+            fail("Wrong number of values in " + message + "; expected " + (args.length/2) + " (real values); has " +
+                    actualPValues.size() + " (pvalues) " + actualPValues);
+        }
+        for (int i = 0; i < args.length; i += 2) {
+            long expectedId = (long) args[i];
+            String expectedDescription = (String) args[i+1];
+            if (actualPValues.stream()
+                    .noneMatch(
+                            v ->
+                                    expectedId == v.getId() &&
+                                            Objects.equals(expectedDescription, v.findProperty(AssignmentType.F_DESCRIPTION).getRealValue())
+                    )) {
+                fail("Expected value id="+expectedId+",description="+expectedDescription+" not found in " + message +
+                        "; has (pvalues) "+actualPValues);
+            }
+        }
     }
 
     /**

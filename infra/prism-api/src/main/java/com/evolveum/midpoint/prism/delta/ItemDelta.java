@@ -404,7 +404,17 @@ public interface ItemDelta<V extends PrismValue, D extends ItemDefinition<?>>
      */
     Item<V, D> getItemNew(Item<V, D> itemOld) throws SchemaException;
 
+    @Nullable
     Collection<V> estimateNewValues() throws SchemaException;
+
+    @Nullable
+    Collection<V> estimateAddedValues() throws SchemaException;
+
+    @Nullable
+    Collection<V> estimateDeletedValues() throws SchemaException;
+
+    @Nullable
+    Collection<V> estimateChangedValues() throws SchemaException;
 
     Item<V, D> getItemNewMatchingPath(Item<V, D> itemOld) throws SchemaException;
 

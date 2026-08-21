@@ -180,16 +180,16 @@ public interface ObjectDelta<O extends Objectable>
     boolean hasRelatedDelta(ItemPath itemPath);
 
     /**
-     * Returns true if the value identified by path was changed.
+     * Returns true if the item identified by path was changed.
      * This method checks whether the real value of the item changed value in any way.
-     * E.g. in case that there is a REPLACE delta for the same value, it returns false.
+     * E.g. in case that there is a REPLACE delta for the same value as was the original value, it returns false.
      *
      * Limitation: This function relies on estimated old values,
      * therefore it may not be entirelly reliable in some situations.
      * For OBJECT DELETE deltas, we do not know the values that were deleted.
      * In that case the method returns false for any path.
      */
-    boolean isValueChanged(ItemPath itemPath);
+    boolean isItemChanged(ItemPath itemPath) throws SchemaException;
 
     boolean hasCompleteDefinition();
 
@@ -436,23 +436,129 @@ public interface ObjectDelta<O extends Objectable>
      * The returned values are taken from replace and add item deltas only.
      * Estimated old values are not used in this computation.
      */
-    // Consider whether this method has a good name, as it is not a pure getter. It make computation.
+    // Consider whether this method has a good name, as it is not a pure getter. It makes computation.
     // Probably something like determineNewValuesFor() would be better.
     List<PrismValue> getNewValuesFor(ItemPath itemPath);
 
     /**
      * Returns estimated new values for specified item.
-     * This method computes the best estimate of what new values of the item could be after delta is applied.
-     * However, this is just an estimate, based on estimated old values stored in the delta (if available).
+     * This method computes the best estimate of the new values the item could have after delta is applied.
+     * All (known) new values are returned, both those that were changed by the delta and those that were not.
+     *
+     * NOTE: This method provides just an estimate, based on estimated old values stored in the delta (if available).
      * Even if the estimated old values are present, results of delta application may differ,
      * e.g. if more than one delta was applied, or if the object have changed in the meantime.
      *
      * @return Estimated new values for specified item.
-     *         Empty list is returned when it is estimated that the item will have no values after delta application.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application
+     *         (value is known, it is empty).
      *         Null is returned if the estimation method cannot determine the value (value is unknown).
      */
+    // Designed for use in scripts
     @Nullable
     Collection<PrismValue> estimateNewValuesFor(ItemPath itemPath) throws SchemaException;
+
+    /**
+     * Returns estimated added values for specified item.
+     * This method computes the best estimate of added values of the item.
+     * Final (new) state of the values is presented, a state as it should look like after the delta is applied.
+     * Only the values that were added by the delta are returned,
+     * i.e. the values that were not present before the operation and are present after the operation.
+     *
+     * This method has "relativistic" character, as it present relative change of the values.
+     * It is designed to be used primarily for multi-valued items.
+     * This method may be inefficient and/or provide non-intuitive results when used on single-valued items.
+     *
+     * NOTE: This method provides just an estimate, based on estimated old values stored in the delta (if available).
+     * Even if the estimated old values are present, results of delta application may differ,
+     * e.g. if more than one delta was applied, or if the object have changed in the meantime.
+     *
+     * @return Estimated added values for specified item.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application
+     *         (value is known, it is empty).
+     *         Null is returned if the estimation method cannot determine the value (value is unknown).
+     */
+    // Designed for use in scripts
+    @Nullable
+    Collection<PrismValue> estimateAddedValuesFor(ItemPath itemPath) throws SchemaException;
+
+    /**
+     * Returns estimated modified values for specified item.
+     * This method computes the best estimate of modified values of the item.
+     * Final (new) state of the values is presented, a state as it should look like after the delta is applied.
+     * Only the values that were modified by the delta are returned,
+     * i.e. the values that were present before the operation and are present after the operation,
+     * however their content is different.
+     *
+     * This method has "relativistic" character, as it present relative change of the values.
+     * It is designed to be used primarily for complex multi-valued items (containers).
+     * This method may be inefficient and/or provide non-intuitive results when used on single-valued items.
+     *
+     * NOTE: This method provides just an estimate, based on estimated old values stored in the delta (if available).
+     * Even if the estimated old values are present, results of delta application may differ,
+     * e.g. if more than one delta was applied, or if the object have changed in the meantime.
+     *
+     * @return Estimated modified values for specified item.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application
+     *         (value is known, it is empty).
+     *         Null is returned if the estimation method cannot determine the value (value is unknown).
+     */
+    // Designed for use in scripts
+    @Nullable
+    Collection<PrismValue> estimateModifiedValuesFor(ItemPath itemPath) throws SchemaException;
+
+    /**
+     * Returns estimated deleted values for specified item.
+     * This method computes the best estimate of deleted values of the item.
+     * Original (old) state of the values is presented, a state as they looked like before the delta was applied.
+     * Only the values that were deleted by the delta are returned,
+     * i.e. the values that were present before the operation and are supposed to be not present after the operation.
+     *
+     * This method has "relativistic" character, as it present relative change of the values.
+     * It is designed to be used primarily for multi-valued items.
+     * This method may be inefficient and/or provide non-intuitive results when used on single-valued items.
+     *
+     * NOTE: This method provides just an estimate, based on estimated old values stored in the delta (if available).
+     * Even if the estimated old values are present, results of delta application may differ,
+     * e.g. if more than one delta was applied, or if the object have changed in the meantime.
+     *
+     * LIMITATION: This method does not work reliably for object delete deltas.
+     * In that case the delta does not contain any information regarding the items.
+     *
+     * @return Estimated deleted values for specified item.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application
+     *         (value is known, it is empty).
+     *         Null is returned if the estimation method cannot determine the value (value is unknown).
+     */
+    // Designed for use in scripts
+    @Nullable
+    Collection<PrismValue> estimateDeletedValuesFor(ItemPath itemPath) throws SchemaException;
+
+    /**
+     * Returns estimated changed values for specified item.
+     * This method computes the best estimate of changed values of the item.
+     * Final (new) state of the values is presented, a state as it should look like after the delta is applied.
+     * Only the values that were changed by the delta are returned.
+     *
+     * This method has somehow "absolutists" character, as it present the "absolute" state of the changed values.
+     * It is designed to be used primarily for single-valued items.
+     * This method may be inefficient and/or provide non-intuitive results when used on multi-valued items.
+     *
+     * NOTE: This method provides just an estimate, based on estimated old values stored in the delta (if available).
+     * Even if the estimated old values are present, results of delta application may differ,
+     * e.g. if more than one delta was applied, or if the object have changed in the meantime.
+     *
+     * LIMITATION: This method does not work reliably for object delete deltas.
+     * In that case the delta does not contain any information regarding the deleted items.
+     *
+     * @return Estimated changed values for specified item.
+     *         Empty list is returned when it is estimated that the item will have no values after delta application
+     *         (value is known, it is empty).
+     *         Null is returned if the estimation method cannot determine the value (value is unknown).
+     */
+    // Designed for use in scripts
+    @Nullable
+    Collection<PrismValue> estimateChangedValuesFor(ItemPath itemPath) throws SchemaException;
 
     /**
      * Limitations:

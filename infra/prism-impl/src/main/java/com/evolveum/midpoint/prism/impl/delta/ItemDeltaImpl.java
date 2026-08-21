@@ -1500,6 +1500,109 @@ public abstract class ItemDeltaImpl<V extends PrismValue, D extends ItemDefiniti
         return dummyItem.getValues();
     }
 
+    @Override
+    public Collection<V> estimateAddedValues() throws SchemaException {
+        if (estimatedOldValues == null) {
+            if (valuesToAdd != null) {
+                return valuesToAdd;
+            }
+            if (valuesToReplace != null) {
+                // This is the best we can do.
+                // We do not know the values before the operation.
+                // Therefore, we are going to pretend that all the values are new.
+                return valuesToReplace;
+            }
+            // In this case the values are deleted, or the delta is empty.
+            // One way or another, we are sure no values were added.
+            return Collections.emptyList();
+        } else {
+            if (valuesToAdd != null) {
+                return filterEstimatedOldValues(valuesToAdd);
+            }
+            if (valuesToReplace != null) {
+                return filterEstimatedOldValues(valuesToReplace);
+            }
+            // In this case the values are deleted, or the delta is empty.
+            // One way or another, we are sure no values were added.
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public Collection<V> estimateDeletedValues() throws SchemaException {
+        if (estimatedOldValues == null) {
+            if (valuesToDelete != null) {
+                return valuesToDelete;
+            }
+            if (valuesToReplace != null) {
+                // We are in the dark here. No idea what values could have been deleted.
+                return null;
+            }
+            // In this case the values are added, or the delta is empty.
+            // One way or another, we are sure no values were deleted.
+            return Collections.emptyList();
+        } else {
+            if (valuesToDelete != null) {
+                return filterNotInEstimatedOldValues(valuesToDelete);
+            }
+            if (valuesToReplace != null) {
+                return filterNotInEstimatedOldValues(valuesToReplace);
+            }
+            // In this case the values are added, or the delta is empty.
+            // One way or another, we are sure no values were deleted.
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public Collection<V> estimateChangedValues() throws SchemaException {
+        if (estimatedOldValues == null) {
+            if (valuesToAdd != null) {
+                // We do not know the values before the operation, but they mostly do not really matter anyway.
+                // All the added values are probably new, hence they are changed.
+                return valuesToAdd;
+            }
+            if (valuesToReplace != null) {
+                // We do not know the values before the operation, but they mostly do not really matter anyway.
+                // Just pretend that all the values are changed, which is the most likely case anyway.
+                return valuesToReplace;
+            }
+            // In this case the values are deleted, or the delta is empty.
+            // One way or another, we are sure that none of the values that remain in the item after delta application was changed.
+            return Collections.emptyList();
+        } else {
+            if (valuesToAdd != null) {
+                return filterEstimatedOldValues(valuesToAdd);
+            }
+            if (valuesToReplace != null) {
+                return filterEstimatedOldValues(valuesToReplace);
+            }
+            // In this case the values are deleted, or the delta is empty.
+            // One way or another, we are sure that none of the values that remain in the item after delta application was changed.
+            return Collections.emptyList();
+        }
+    }
+
+    @NotNull
+    private Collection<V> filterEstimatedOldValues(@NotNull Collection<V> deltaValues) {
+        if (estimatedOldValues == null) {
+            return deltaValues;
+        }
+        return deltaValues.stream().filter(v -> !isInEstimatedOldValues(v)).toList();
+    }
+
+    @NotNull
+    private Collection<V> filterNotInEstimatedOldValues(@NotNull Collection<V> deltaValues) {
+        if (estimatedOldValues == null) {
+            return deltaValues;
+        }
+        return deltaValues.stream().filter(v -> isInEstimatedOldValues(v)).toList();
+    }
+
+    private boolean isInEstimatedOldValues(V value) {
+        return PrismValueCollectionsUtil.contains(estimatedOldValues, value, EquivalenceStrategy.REAL_VALUE_CONSIDER_DIFFERENT_IDS);
+    }
+
     /**
      * Returns the "new" state of the property - the state that would be after
      * the delta is applied.

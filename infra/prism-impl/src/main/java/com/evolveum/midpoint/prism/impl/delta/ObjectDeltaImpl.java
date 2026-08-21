@@ -366,10 +366,6 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         return false;
     }
 
-    @Override
-    public boolean isValueChanged(ItemPath itemPath) {
-        return false; // TODO WIP
-    }
 
     @Override
     public boolean hasCompleteDefinition() {
@@ -761,6 +757,11 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
         }
     }
 
+    private PrismObjectDefinition<O> getObjectDefinition() {
+        // Maybe we can cache the definition?
+        return PrismContext.get().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
+    }
+
     private Collection<? extends ItemDelta<?, ?>> createEmptyModifications() {
         // Lists are easier to debug
         return new ArrayList<>();
@@ -768,8 +769,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public <X> PropertyDelta<X> createPropertyModification(ItemPath path) {
-        PrismObjectDefinition<O> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
-        PrismPropertyDefinition<X> propDef = objDef.findPropertyDefinition(path);
+        PrismPropertyDefinition<X> propDef = getObjectDefinition().findPropertyDefinition(path);
         return createPropertyModification(path, propDef);
     }
 
@@ -794,8 +794,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public <C extends Containerable> ContainerDelta<C> createContainerModification(ItemPath path) {
-        PrismObjectDefinition<O> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
-        PrismContainerDefinition<C> propDef = objDef.findContainerDefinition(path);
+        PrismContainerDefinition<C> propDef = getObjectDefinition().findContainerDefinition(path);
         return createContainerModification(path, propDef);
     }
 
@@ -864,8 +863,7 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
 
     @Override
     public ReferenceDelta createReferenceModification(ItemPath refPath) {
-        PrismObjectDefinition<O> objDef = PrismContext.get().getSchemaRegistry().findObjectDefinitionByCompileTimeClass(getObjectTypeClass());
-        PrismReferenceDefinition refDef = objDef.findReferenceDefinition(refPath);
+        PrismReferenceDefinition refDef = getObjectDefinition().findReferenceDefinition(refPath);
         return createReferenceModification(refPath, refDef);
     }
 
@@ -1465,13 +1463,188 @@ public class ObjectDeltaImpl<O extends Objectable> extends AbstractFreezable imp
             // Object is gone, we are certain that there will be no values.
             return Collections.emptyList();
         } else {
+            @SuppressWarnings("rawtypes")
             ItemDelta itemDelta = ItemDeltaCollectionsUtil.findItemDelta(modifications, itemPath, ItemDelta.class, false);
             if (itemDelta == null) {
                 return null;
             }
             // No need to specify path here. ItemDeltaCollectionsUtil.findItemDelta() already returns a subdelta if needed.
-            return itemDelta.estimateNewValues();
+            //noinspection unchecked
+            Collection<PrismValue> fullNewItems = itemDelta.estimateNewValues();
+            Collection<PrismValue> allNewItems;
+            if (fullNewItems == null) {
+                allNewItems = new ArrayList<>();
+            } else {
+                allNewItems = new ArrayList<>(fullNewItems);
+            }
+            collectSubitemModifications(allNewItems, itemPath);
+            return allNewItems;
         }
+    }
+
+    @Override
+    public Collection<PrismValue> estimateAddedValuesFor(ItemPath itemPath) throws SchemaException {
+        if (isAdd()) {
+            // This is simple and reliable.
+            Item<PrismValue, ItemDefinition<?>> item = objectToAdd.findItem(itemPath);
+            return item != null ? item.getValues() : Collections.emptyList();
+        } else if (isDelete()) {
+            // Object is gone, we are certain that no values were added by this operation.
+            return Collections.emptyList();
+        } else {
+            @SuppressWarnings("rawtypes")
+            ItemDelta itemDelta = ItemDeltaCollectionsUtil.findItemDelta(modifications, itemPath, ItemDelta.class, false);
+            if (itemDelta == null) {
+                // We are certain that no values were changed in this operation, hence no values were added.
+                return Collections.emptyList();
+            }
+            // No need to specify path here. ItemDeltaCollectionsUtil.findItemDelta() already returns a subdelta if needed.
+            //noinspection unchecked
+            return itemDelta.estimateAddedValues();
+        }
+    }
+
+    @Override
+    public Collection<PrismValue> estimateModifiedValuesFor(ItemPath itemPath) throws SchemaException {
+        if (isAdd()) {
+            // Object is new. No values were modified, as no values were present before the operations.
+            // All the values are added, not modified.
+            return Collections.emptyList();
+        } else if (isDelete()) {
+            // Object is gone.
+            // We are centain that none of the values that remain were modified, as nothing remains at all.
+            return Collections.emptyList();
+        } else {
+            // We cannot rely on ItemDeltaCollectionsUtil.findItemDelta() here, as it only looks for item deltas that are larger,
+            // creating a subdelta.
+            // Here we need to look for item deltas that are smaller, as we need to look for items that have internal changes.
+            Collection<PrismValue> modifiedValues = new ArrayList<>();
+            collectSubitemModifications(modifiedValues, itemPath);
+            return modifiedValues;
+        }
+    }
+
+    /**
+     * Collects modifications of subitems, i.e. items that are lower (deeper path) than the specified path.
+     * We may have only a limited data about modified items at this level.
+     */
+    private void collectSubitemModifications(Collection<PrismValue> modifiedValues, ItemPath itemPath) throws SchemaException {
+        for (ItemDelta<?, ?> itemDelta : modifications) {
+            if (itemDelta.getPath().isSuperPath(itemPath)) {
+                // We have found item delta for a modification that qualifies.
+                // However, what should we do with it? It is just a partial delta, a subitem delta.
+                // We want the entire new (modified) value of the entire container.
+
+                Long containerId = null;
+                ItemPath pathRemainder = itemDelta.getPath().remainder(itemPath);
+                if (ItemPath.isId(pathRemainder.first())) {
+                    containerId = ItemPath.toId(pathRemainder.first());
+                    pathRemainder = pathRemainder.rest();
+                }
+
+                // We may look at values that are already present in the set.
+                // These are values that were brough by another delta, possibly containing value from estimatedOldValues.
+                // We have to extract (remove from list) this value anyway, as we need to replace it with a version
+                // which has subitem modification applied.
+                PrismContainerValue<?> matchingValue = extractEquivalentContainerValue(modifiedValues, containerId);
+                if (matchingValue == null) {
+                    // No information about the item.
+                    // This cannot really be done in current situation. We just do not have enough information.
+                    // The best we can do is to create an empty container, and apply the partial item delta to it.
+                    // It is at least something.
+                    ItemDefinition<?> itemDefinition = getObjectDefinition().findItemDefinition(itemPath);
+                    if (itemDefinition instanceof PrismContainerDefinition<?> containerDefinition) {
+                        PrismContainer<?> dummyItem = containerDefinition.instantiate();
+                        matchingValue = PrismContext.get().itemFactory().createContainerValue();
+                        matchingValue.setId(containerId);
+                        dummyItem.add((PrismContainerValue) matchingValue);
+                    } else {
+                        // This should not really happen. If the path does not correspond to container then no item
+                        // should match as superpath.
+                        throw new SchemaException("Provided path " + itemPath + " does not reference a container");
+                    }
+                } else {
+                    // We are going to apply delta to matchingValue.
+                    // As the value may be present in itemdeltas, we do not want to modify it.
+                    // Clone the value to be sure.
+                    matchingValue = matchingValue.clone();
+                }
+
+                itemDelta.applyTo(matchingValue, pathRemainder);
+                modifiedValues.add(matchingValue);
+
+            }
+        }
+    }
+
+    private PrismContainerValue<?> extractEquivalentContainerValue(Collection<PrismValue> modifiedValues, Long containerId) {
+        Iterator<PrismValue> iterator = modifiedValues.iterator();
+        while (iterator.hasNext()) {
+            PrismValue prismValue = iterator.next();
+            if (prismValue instanceof PrismContainerValue<?> cval && Objects.equals(cval.getId(), containerId)) {
+                iterator.remove();
+                return cval;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<PrismValue> estimateDeletedValuesFor(ItemPath itemPath) throws SchemaException {
+        if (isAdd()) {
+            // This is object add, therefore we are sure no values were deleted.
+            return Collections.emptyList();
+        } else if (isDelete()) {
+            // Object is gone. We have no idea what values were deleted.
+            return null;
+        } else {
+            @SuppressWarnings("rawtypes")
+            ItemDelta itemDelta = ItemDeltaCollectionsUtil.findItemDelta(modifications, itemPath, ItemDelta.class, false);
+            if (itemDelta == null) {
+                // We are certain that no values were changed in this operation, hence no values were deleted.
+                return Collections.emptyList();
+            }
+            // No need to specify path here. ItemDeltaCollectionsUtil.findItemDelta() already returns a subdelta if needed.
+            //noinspection unchecked
+            return itemDelta.estimateDeletedValues();
+        }
+    }
+
+    @Override
+    public Collection<PrismValue> estimateChangedValuesFor(ItemPath itemPath) throws SchemaException {
+        if (isAdd()) {
+            // This is simple and reliable. Object is new, all values are new, hence changed.
+            Item<PrismValue, ItemDefinition<?>> item = objectToAdd.findItem(itemPath);
+            return item != null ? item.getValues() : Collections.emptyList();
+        } else if (isDelete()) {
+            // Object is gone.
+            // We are centain that none of the values that remain were changed, as nothing remains at all.
+            return Collections.emptyList();
+        } else {
+            @SuppressWarnings("rawtypes")
+            ItemDelta itemDelta = ItemDeltaCollectionsUtil.findItemDelta(modifications, itemPath, ItemDelta.class, false);
+            if (itemDelta == null) {
+                // We are certain that no values were changed in this operation.
+                return Collections.emptyList();
+            }
+            // No need to specify path here. ItemDeltaCollectionsUtil.findItemDelta() already returns a subdelta if needed.
+            //noinspection unchecked
+            Collection<PrismValue> fullItemChangedValues = itemDelta.estimateChangedValues();
+            Collection<PrismValue> allChangedItems;
+            if (fullItemChangedValues == null) {
+                allChangedItems = new ArrayList<>();
+            } else {
+                allChangedItems = new ArrayList<>(fullItemChangedValues);
+            }
+            collectSubitemModifications(allChangedItems, itemPath);
+            return allChangedItems;
+        }
+    }
+
+    @Override
+    public boolean isItemChanged(ItemPath itemPath) throws SchemaException {
+        Collection<PrismValue> changedValues = estimateChangedValuesFor(itemPath);
+        return changedValues != null && !changedValues.isEmpty();
     }
 
     /**
