@@ -24,11 +24,6 @@
     <name>midPoint Infrastructure - java utils</name>
 
     <dependencies>
-        <!-- Xerces only used for XMLChar.isValid(). -->
-        <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
