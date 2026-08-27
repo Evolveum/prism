@@ -294,7 +294,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
 
     @Override
     public synchronized String toString() {
-        return "RawType: " + current().toString() + ")";
+        return "RawType: " + current().toString();
     }
 
     @Override

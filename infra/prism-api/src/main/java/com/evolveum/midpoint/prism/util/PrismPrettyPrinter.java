@@ -15,7 +15,9 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.midpoint.util.logging.LoggingUtils;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import com.evolveum.prism.xml.ns._public.types_3.DeltaSetTripleType;
 import com.evolveum.prism.xml.ns._public.types_3.ItemDeltaType;
+import com.evolveum.prism.xml.ns._public.types_3.ItemType;
 import com.evolveum.prism.xml.ns._public.types_3.ModificationTypeType;
 import com.evolveum.prism.xml.ns._public.types_3.ObjectDeltaType;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
@@ -23,6 +25,7 @@ import com.evolveum.prism.xml.ns._public.types_3.RawType;
 import jakarta.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -117,14 +120,112 @@ public class PrismPrettyPrinter {
         return sb.toString();
     }
 
+    /**
+     * Formats a single item delta, e.g. {@code organizationalUnit: - guild (old: workshop, guild)}.
+     */
     public static String prettyPrint(ItemDeltaType deltaType) {
         if (deltaType == null) {
             return "null";
         }
-        StringBuilder sb = new StringBuilder("ItemDeltaType(");
-        shortPrettyPrint(sb, deltaType);
-        sb.append(")");
+        StringBuilder sb = new StringBuilder();
+        if (deltaType.getPath() != null && !deltaType.getPath().getItemPath().isEmpty()) {
+            sb.append(deltaType.getPath()).append(": ");
+        }
+        appendModificationSymbol(sb, deltaType.getModificationType());
+        if (!deltaType.getValue().isEmpty()) {
+            sb.append(' ');
+            appendValues(sb, deltaType.getValue());
+        }
+        if (!deltaType.getEstimatedOldValue().isEmpty()) {
+            sb.append(" (old: ");
+            Iterator<RawType> iterator = deltaType.getEstimatedOldValue().iterator();
+            while (iterator.hasNext()) {
+                iterator.next().shortDump(sb);
+                if (iterator.hasNext()) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(')');
+        }
         return sb.toString();
+    }
+
+    public static String prettyPrint(ItemType itemType) {
+        if (itemType == null) {
+            return "null";
+        }
+        String values = itemType.getValue().stream()
+                .map(PrismPrettyPrinter::prettyPrintValue)
+                .collect(Collectors.joining(", "));
+        if (itemType.getName() == null) {
+            return values;
+        }
+        return itemType.getName().getLocalPart() + ": " + values;
+    }
+
+    public static String prettyPrint(DeltaSetTripleType triple) {
+        if (triple == null) {
+            return "null";
+        }
+        List<String> components = new ArrayList<>();
+        addSet(components, "Plus", triple.getPlus());
+        addSet(components, "Minus", triple.getMinus());
+        addSet(components, "Zero", triple.getZero());
+        return String.join("; ", components);
+    }
+
+    private static void addSet(List<String> components, String label, List<Object> values) {
+        if (!values.isEmpty()) {
+            components.add(label + ": " + values.stream()
+                    .map(PrismPrettyPrinter::prettyPrintValue)
+                    .collect(Collectors.joining(", ")));
+        }
+    }
+
+    /**
+     * Renders a single value of {@link ItemType} or {@link DeltaSetTripleType}. Such a value
+     * may be a {@link RawType} (in that case the parsed real value is used) or a plain real
+     * value. Note that {@link PrettyPrinter#prettyPrint(Object)} cannot be used directly on
+     * a {@link RawType} holding a parsed value, because the printer registry matches printers
+     * by exact class and the parsed value is wrapped in a {@link com.evolveum.midpoint.prism.PrismPropertyValue}
+     * implementation whose fallback is its "toString".
+     */
+    private static String prettyPrintValue(Object value) {
+        if (value instanceof RawType raw) {
+            PrismValue parsed = raw.getAlreadyParsedValue();
+            if (parsed != null) {
+                return PrettyPrinter.prettyPrint(parsed.getRealValueOrRawType());
+            }
+        }
+        return PrettyPrinter.prettyPrint(value);
+    }
+
+    private static void appendModificationSymbol(StringBuilder sb, ModificationTypeType modificationType) {
+        if (modificationType == ModificationTypeType.ADD) {
+            sb.append('+');
+        } else if (modificationType == ModificationTypeType.DELETE) {
+            sb.append('-');
+        } else if (modificationType == ModificationTypeType.REPLACE) {
+            sb.append('=');
+        }
+    }
+
+    private static void appendValues(StringBuilder sb, List<RawType> values) {
+        if (values.isEmpty()) {
+            sb.append("[]");
+        } else if (values.size() == 1) {
+            values.get(0).shortDump(sb);
+        } else {
+            sb.append("[");
+            Iterator<RawType> iterator = values.iterator();
+            while (iterator.hasNext()) {
+                iterator.next().shortDump(sb);
+                if (iterator.hasNext()) {
+                    sb.append(", ");
+                }
+            }
+            sb.append("]");
+        }
     }
 
     private static void shortPrettyPrint(StringBuilder sb, ItemDeltaType deltaType) {
@@ -138,23 +239,7 @@ public class PrismPrettyPrinter {
         }
         sb.append(deltaType.getPath());
         sb.append(": ");
-        List<RawType> values = deltaType.getValue();
-        if (values.isEmpty()) {
-            sb.append("[]");
-        } else if (values.size() == 1) {
-            values.get(0).shortDump(sb);
-        } else {
-            sb.append("[");
-            Iterator<RawType> iterator = values.iterator();
-            while (iterator.hasNext()) {
-                RawType value = iterator.next();
-                value.shortDump(sb);
-                if (iterator.hasNext()) {
-                    sb.append(", ");
-                }
-            }
-            sb.append("]");
-        }
+        appendValues(sb, deltaType.getValue());
     }
 
     public static String debugDump(ObjectDeltaType deltaType, int indent) {
