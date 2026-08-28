@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
         <!-- This parent also declares dependencies listed here:
         https://docs.spring.io/spring-boot/docs/2.7.3/reference/html/dependency-versions.html#dependency-versions
         Or for current version of Spring Boot:
@@ -92,8 +92,7 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
-        <jackson-2-bom.version>2.21.5</jackson-2-bom.version>
-        <logback.version>1.5.38</logback.version>
+
         <!-- END of Spring Boot dependencies overrides -->
 
         <!-- Dependencies global versions -->
