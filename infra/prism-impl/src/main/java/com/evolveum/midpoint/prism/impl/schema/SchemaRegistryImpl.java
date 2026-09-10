@@ -1232,6 +1232,12 @@ public class SchemaRegistryImpl implements DebugDumpable, SchemaRegistry, Schema
         return !this.dynamicSchemaExtensions.isEmpty();
     }
 
+    @Override
+    public boolean isDynamicSchemaExtensionNamespace(String namespace) {
+        return dynamicSchemaExtensions.stream()
+                .anyMatch(schema -> Objects.equals(schema.getNamespace(), namespace));
+    }
+
     public void registerStaticNamespace(String ns, String prefix, boolean declaredByDefault) {
         staticPrefixes.addPrefix(prefix, ns);
         customizeNamespacePrefixMapper(namespacePrefixMapper -> namespacePrefixMapper.registerPrefix(ns, prefix, declaredByDefault));

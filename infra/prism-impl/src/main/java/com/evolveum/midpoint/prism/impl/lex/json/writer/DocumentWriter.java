@@ -29,6 +29,7 @@ import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerialization;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.MetadataAware;
 import com.evolveum.midpoint.util.DOMUtil;
@@ -48,13 +49,16 @@ class DocumentWriter {
 
     private final XNodeDefinition metadataDef;
 
+    private final SchemaRegistry schemaRegistry;
+
     private final PrismNamespaceContext staticNamespaces;
 
-    DocumentWriter(WritingContext<?> ctx, XNodeDefinition.Root schema) {
+    DocumentWriter(WritingContext<?> ctx, XNodeDefinition.Root schema, SchemaRegistry schemaRegistry) {
         this.ctx = ctx;
         this.generator = ctx.generator;
         this.schema = schema;
         this.metadataDef = schema.metadataDef();
+        this.schemaRegistry = schemaRegistry;
         this.staticNamespaces = schema.staticNamespaceContext().inherited();
     }
 
@@ -222,10 +226,17 @@ class DocumentWriter {
 
     private void writeItemPath(ItemPath value, PrismNamespaceContext context) throws IOException {
         ItemPathSerialization serialization = ItemPathSerialization.serialize(UniformItemPath.from(value), context, true);
-        // FIXME: We could serialize undeclared prefixes as local namespace context
-        PrismNamespaceContext localContext = context.childContext(serialization.undeclaredPrefixes());
-        writeNamespaceSensitive(serialization.getXPathWithoutDeclarations(), localContext);
 
+        // Dynamic schema extension prefixes must be serialized locally, because they may not be available when the value is parsed later.
+        Map<String, String> itemPathLocalPrefixes = new HashMap<>(serialization.undeclaredPrefixes());
+        for (Map.Entry<String, String> usedPrefix : serialization.usedPrefixes().entrySet()) {
+            if (schemaRegistry.isDynamicSchemaExtensionNamespace(usedPrefix.getValue())) {
+                itemPathLocalPrefixes.put(usedPrefix.getKey(), usedPrefix.getValue());
+            }
+        }
+
+        PrismNamespaceContext localContext = context.childContext(itemPathLocalPrefixes);
+        writeNamespaceSensitive(serialization.getXPathWithoutDeclarations(), localContext);
     }
 
     private void writeNamespaceSensitive(String value, PrismNamespaceContext localContext) throws IOException {

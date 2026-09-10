@@ -32,8 +32,10 @@ import com.evolveum.midpoint.util.exception.SystemException;
 abstract public class AbstractWriter {
 
     private final XNodeDefinition.Root schema;
+    private final SchemaRegistry schemaRegistry;
 
     AbstractWriter(@NotNull SchemaRegistry schemaRegistry) {
+        this.schemaRegistry = schemaRegistry;
         schema = XNodeDefinition.root(schemaRegistry);
     }
 
@@ -63,7 +65,7 @@ abstract public class AbstractWriter {
     @NotNull
     private String writeInternal(@NotNull XNodeImpl root, SerializationContext prismSerializationContext, boolean useMultiDocument) throws SchemaException {
         try (WritingContext<?> ctx = createWritingContext(prismSerializationContext)) {
-            DocumentWriter documentWriter = new DocumentWriter(ctx, schema);
+            DocumentWriter documentWriter = new DocumentWriter(ctx, schema, schemaRegistry);
             if (root instanceof ListXNodeImpl impl && !root.isEmpty() && useMultiDocument && ctx.supportsMultipleDocuments()) {
                 // Note we cannot serialize empty lists in multi-document mode.
                 // It would result in empty content and an exception during serialization.
