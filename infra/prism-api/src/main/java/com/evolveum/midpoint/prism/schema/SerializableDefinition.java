@@ -18,6 +18,7 @@ public interface SerializableDefinition {
     String getDisplayName();
     Integer getDisplayOrder();
     String getHelp();
+    String getExternalGroup();
     boolean isEmphasized();
     DisplayHint getDisplayHint();
     String getDocumentation();

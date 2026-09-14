@@ -323,6 +323,11 @@ public class DummyPrismObjectDefinition implements PrismObjectDefinition<Objecta
     }
 
     @Override
+    public String getExternalGroup() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getDocumentation() {
         throw new UnsupportedOperationException();
     }
