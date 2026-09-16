@@ -14,7 +14,6 @@ import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface PrismQueryExpressionFactory {
 
-
     ExpressionWrapper parseScript(Map<String, String> namespaceContext, String language, String script);
 
     default ExpressionWrapper parsePath(ItemPath rightPath) {
@@ -25,7 +24,7 @@ public interface PrismQueryExpressionFactory {
         throw new UnsupportedOperationException("Expression serializer not supported.");
     }
 
-    public interface ExpressionWriter {
+    interface ExpressionWriter {
 
         void writeVariable(ItemPath path);
 

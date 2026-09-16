@@ -38,7 +38,9 @@ import com.evolveum.midpoint.util.exception.SchemaException;
         // BTW, the order is the following: description, filterClause
 })
 
-public class SearchFilterType extends AbstractFreezable implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable { // FIXME: Still we need also old Equals, HashCode until switch is made in midpoint
+public class SearchFilterType extends AbstractFreezable
+        implements PlainStructured, Serializable, Cloneable, DebugDumpable, Freezable, JaxbVisitable, TrustDescriptorAware {
+    // FIXME: Still we need also old Equals, HashCode until switch is made in midpoint
 
     @Serial private static final long serialVersionUID = 201303040000L;
 
@@ -54,6 +56,16 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
 
     // this one is not exposed via JAXB
     protected MapXNode filterClauseXNode; // single-subnode map node (key = filter element qname, value = contents)
+
+    /**
+     * Trust descriptor attached to this filter. Clients can use it to determine trustworthiness of expressions
+     * embedded in the filter.
+     *
+     * See also {@code AbstractPlainStructured#trustedDescriptor}.
+     *
+     * @see TrustDescriptor
+     */
+    private TrustDescriptor trustDescriptor;
 
     /**
      * Creates a new {@code QueryType} instance.
@@ -76,6 +88,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         this.description = o.description;
         this.text = o.text;
         this.filterClauseXNode = o.filterClauseXNode.clone();
+        this.trustDescriptor = o.trustDescriptor; // trust descriptor is immutable, so we can just copy the reference
     }
 
     public SearchFilterType(String text, PrismNamespaceContext namespaceContext) {
@@ -102,6 +115,15 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
     public void setText(String text) {
         checkMutable();
         this.text = text;
+    }
+
+    public TrustDescriptor getTrustDescriptor() {
+        return trustDescriptor;
+    }
+
+    public void setTrustDescriptor(TrustDescriptor trustDescriptor) {
+        checkMutable();
+        this.trustDescriptor = trustDescriptor;
     }
 
     public boolean containsFilterClause() {
@@ -243,6 +265,8 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
             if (that.text != null) { return false; }
         } else if (!text.equals(that.text)) { return false; }
 
+        // intentionally ignoring TrustDescriptor, because it is not part of the logical content of the filter
+
         return true;
     }
 
@@ -271,6 +295,7 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         if (this.filterClauseXNode != null) {
             clone.filterClauseXNode = this.filterClauseXNode.clone();
         }
+        clone.trustDescriptor = this.trustDescriptor; // trust descriptor is immutable, so we can just copy the reference
         return clone;
     }
 
@@ -290,6 +315,10 @@ public class SearchFilterType extends AbstractFreezable implements PlainStructur
         if (filterClauseXNode != null) {
             sb.append("\n");
             DebugUtil.debugDumpWithLabel(sb, "filterClauseXNode", filterClauseXNode, indent + 1);
+        }
+        if (trustDescriptor != null) {
+            sb.append("\n");
+            DebugUtil.debugDumpWithLabel(sb, "trustDescriptor", String.valueOf(trustDescriptor), indent + 1);
         }
         return sb.toString();
     }

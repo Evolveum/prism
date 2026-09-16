@@ -7,7 +7,6 @@
 
 package com.evolveum.midpoint.prism.query;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 import java.util.Collection;
@@ -15,7 +14,7 @@ import java.util.Collection;
 /**
  *  TODO create a better name for this filter
  */
-public interface InOidFilter extends ObjectFilter {
+public interface InOidFilter extends ObjectFilter, ExpressionAware {
 
     Collection<String> getOids();
 
@@ -23,13 +22,8 @@ public interface InOidFilter extends ObjectFilter {
 
     boolean isConsiderOwner();
 
-    ExpressionWrapper getExpression();
-
-    void setExpression(ExpressionWrapper expression);
-
     @Override
     InOidFilter clone();
-
 
     @Override
     default boolean matchesOnly(ItemPath... paths) {

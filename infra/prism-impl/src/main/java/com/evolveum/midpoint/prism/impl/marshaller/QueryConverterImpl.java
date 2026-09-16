@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.query.Visitor;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -302,7 +304,8 @@ public class QueryConverterImpl implements QueryConverter {
                     return null;
                 } else {
                     RootXNodeImpl expressionRoot = clauseXMap.getEntryAsRoot(expressionEntry.getKey());
-                    PrismPropertyValue<?> expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
+                    PrismPropertyValue<? extends TrustDescriptorAware> expressionPropertyValue =
+                            prismContext.parserFor(expressionRoot).parseItemValue();
                     ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
                     // Return expression
                 }
@@ -491,19 +494,24 @@ public class QueryConverterImpl implements QueryConverter {
                     return null;
                 } else {
                     RootXNodeImpl expressionRoot = clauseXMap.getEntryAsRoot(expressionEntry.getKey());
-                    PrismPropertyValue<?> expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
-                    ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
+                    PrismPropertyValue<? extends TrustDescriptorAware> expressionPropertyValue =
+                            prismContext.parserFor(expressionRoot).parseItemValue();
+                    var expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
                     if (isEq) {
                         //noinspection unchecked
-                        return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper);
+                        return EqualFilterImpl.createEqual(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper);
                     } else if (isSubstring) {
-                        return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition, matchingRule, expressionWrapper, getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
+                        return SubstringFilterImpl.createSubstring(
+                                itemPath, (PrismPropertyDefinition<?>) itemDefinition, matchingRule, expressionWrapper, getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
                     } else if (isGt || isGtEq) {
                         //noinspection unchecked
-                        return GreaterFilterImpl.createGreater(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isGtEq);
+                        return GreaterFilterImpl.createGreater(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isGtEq);
                     } else {
                         //noinspection unchecked
-                        return LessFilterImpl.createLess(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isLtEq);
+                        return LessFilterImpl.createLess(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isLtEq);
                     }
                 }
             } else {
@@ -1264,27 +1272,30 @@ public class QueryConverterImpl implements QueryConverter {
 
     @NotNull
     private ObjectQuery createObjectQueryInternal(
-            Class<?> clazz, SearchFilterType filterType, PagingType pagingType)
+            Class<?> clazz, SearchFilterType filterBean, PagingType pagingType)
             throws SchemaException {
         ItemDefinition<?> objDef = getItemDefinitionForTypeClass(clazz);
         if (objDef == null) {
             throw new SchemaException("cannot find obj/container definition for class " + clazz);
         } else {
-            return createObjectQueryInternal(objDef, filterType, pagingType);
+            return createObjectQueryInternal(objDef, filterBean, pagingType);
         }
     }
 
     @NotNull
     private ObjectQuery createObjectQueryInternal(
-            ItemDefinition<?> objDef, SearchFilterType filterType, PagingType pagingType)
+            ItemDefinition<?> objDef, SearchFilterType filterBean, PagingType pagingType)
             throws SchemaException {
 
         try {
             ObjectQuery query = ObjectQueryImpl.createObjectQuery();
 
-            if (filterType != null && filterType.containsFilterClause()) {
-                MapXNodeImpl rootFilter = (MapXNodeImpl) filterType.getFilterClauseXNode();
+            if (filterBean != null && filterBean.containsFilterClause()) {
+                MapXNodeImpl rootFilter = (MapXNodeImpl) filterBean.getFilterClauseXNode();
                 ObjectFilter filter = parseFilter(rootFilter, objDef);
+                if (filter != null) {
+                    setTrustDescriptors(filter, filterBean.getTrustDescriptor());
+                }
                 query.setFilter(filter);
             }
 
@@ -1296,7 +1307,20 @@ public class QueryConverterImpl implements QueryConverter {
         } catch (SchemaException ex) {
             throw new SchemaException("Failed to convert query. Reason: " + ex.getMessage(), ex);
         }
+    }
 
+    private void setTrustDescriptors(ObjectFilter filter, @Nullable TrustDescriptor trustDescriptor) {
+        if (trustDescriptor == null) {
+            return;
+        }
+        filter.accept(innerFilter -> {
+            if (innerFilter instanceof ExpressionAware expressionAware) {
+                var expression = expressionAware.getExpression();
+                if (expression != null) {
+                    expression.getExpression().setTrustDescriptor(trustDescriptor);
+                }
+            }
+        });
     }
 
     @Contract("null -> null; !null -> !null")
@@ -1337,9 +1361,8 @@ public class QueryConverterImpl implements QueryConverter {
         }
 
     private boolean axiomSupportedFilter(ObjectFilter filter) {
-        if (filter instanceof AllFilter || filter instanceof NoneFilter || filter instanceof UndefinedFilter) {
-            return false;
-        }
-        return true;
+        return !(filter instanceof AllFilter)
+                && !(filter instanceof NoneFilter)
+                && !(filter instanceof UndefinedFilter);
     }
 }
