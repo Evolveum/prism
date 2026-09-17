@@ -403,6 +403,11 @@ public final class PrismForJAXBUtil {
         }
     }
 
+    // Temporary: until code generator is adapted to this change
+    public static void accept(Object object, JaxbVisitor visitor) {
+        JaxbVisitable.accept(object, visitor);
+    }
+
     public static SearchFilterType getFilter(PrismReferenceValue referenceValue) {
         return referenceValue.getFilter();
     }
