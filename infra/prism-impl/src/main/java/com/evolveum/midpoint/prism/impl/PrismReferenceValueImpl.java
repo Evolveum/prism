@@ -801,6 +801,7 @@ public class PrismReferenceValueImpl extends PrismValueImpl implements PrismRefe
             //noinspection unchecked
             object.accept(visitor);
         }
+        // TODO what about filter?
     }
 
     @Override
