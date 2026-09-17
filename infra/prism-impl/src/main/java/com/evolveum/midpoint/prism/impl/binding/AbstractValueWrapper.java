@@ -14,7 +14,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
-import com.evolveum.midpoint.prism.impl.xjc.PrismForJAXBUtil;
+
 import com.google.common.base.Objects;
 
 public abstract class AbstractValueWrapper<T> implements Serializable, Cloneable, JaxbVisitable {
@@ -32,7 +32,7 @@ public abstract class AbstractValueWrapper<T> implements Serializable, Cloneable
     public void accept(JaxbVisitor visitor) {
         visitor.visit(this);
         if (getValue() != null) {
-            PrismForJAXBUtil.accept(getValue(), visitor);
+            JaxbVisitable.accept(getValue(), visitor);
         }
     }
     @Override

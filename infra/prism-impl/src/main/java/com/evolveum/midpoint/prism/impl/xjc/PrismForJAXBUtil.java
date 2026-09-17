@@ -10,7 +10,7 @@ package com.evolveum.midpoint.prism.impl.xjc;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
-import jakarta.xml.bind.JAXBElement;
+
 import jakarta.xml.bind.annotation.XmlAnyElement;
 import javax.xml.namespace.QName;
 
@@ -400,18 +400,6 @@ public final class PrismForJAXBUtil {
             rval.setTargetName((PolyString) null);
         } else {
             rval.setTargetName(name.toPolyString());
-        }
-    }
-
-    public static void accept(Object object, JaxbVisitor visitor) {
-        if (object instanceof JaxbVisitable visitable) {
-            visitable.accept(visitor);
-        } else if (object instanceof Collection collection) {
-            for (Object item : collection) {
-                accept(item, visitor);
-            }
-        } else if (object instanceof JAXBElement element) {
-            accept(element.getValue(), visitor);
         }
     }
 

@@ -6,6 +6,10 @@
 
 package com.evolveum.prism.xml.ns._public.query_3;
 
+import com.evolveum.midpoint.prism.JaxbVisitable;
+
+import com.evolveum.midpoint.prism.JaxbVisitor;
+
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -47,7 +51,7 @@ import com.evolveum.midpoint.util.DebugUtil;
         "filter",
         "paging"
 })
-public class QueryType implements PlainStructured.WithoutStrategy, DebugDumpable {
+public class QueryType implements PlainStructured.WithoutStrategy, DebugDumpable, JaxbVisitable {
 
     @Serial private static final long serialVersionUID = 201105211233L;
 
@@ -207,4 +211,10 @@ public class QueryType implements PlainStructured.WithoutStrategy, DebugDumpable
         return sb.toString();
     }
 
+    @Override
+    public void accept(JaxbVisitor visitor) {
+        visitor.visit(this);
+        JaxbVisitable.accept(filter, visitor);
+        // add paging when needed (it's not visitable now)
+    }
 }
