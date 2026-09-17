@@ -16,6 +16,8 @@ import com.evolveum.midpoint.prism.path.TypedItemPath;
 
 import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
+import com.evolveum.midpoint.prism.query.Visitor;
+
 import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -167,5 +169,13 @@ public class ReferencedByFilterImpl extends ObjectFilterImpl implements Referenc
     @Override
     public void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer) {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void accept(Visitor visitor) {
+        super.accept(visitor);
+        if (filter != null) {
+            filter.accept(visitor);
+        }
     }
 }
