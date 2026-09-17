@@ -62,9 +62,14 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
 
     private T value;
 
-    // The rawElement is set during a schema-less parsing, e.g. during parsing without a definition.
-    // We can't do anything smarter, as we don't have definition nor prism context. So we store the raw
-    // elements here and process them later (e.g. during applyDefinition or getting a value with explicit type).
+    /**
+     * The rawElement is set during a schema-less parsing, e.g. during parsing without a definition.
+     * We can't do anything smarter, as we don't have definition nor prism context. So we store the raw
+     * elements here and process them later (e.g. during applyDefinition or getting a value with explicit type).
+     *
+     * This element (at its root level) can contain a {@link TrustDescriptor} that will be passed to {@link #expression}
+     * after parsing. (Currently we don't need to pass it to {@link #value}.)
+     */
     private XNodeImpl rawElement;
 
     // TODO Clarify whether the expression may be present along with the value
@@ -186,6 +191,9 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                         // Be careful here. Expression element can be legal sub-element of complex properties.
                         // Therefore parse expression only if there is no legal value.
                         expression = maybeValue.getExpression();
+                        if (expression != null) {
+                            expression.getExpression().setTrustDescriptor(rawElement.getTrustDescriptor());
+                        }
                     }
                 }
                 rawElement = null;

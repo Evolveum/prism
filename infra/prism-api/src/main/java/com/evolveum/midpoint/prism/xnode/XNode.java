@@ -49,8 +49,6 @@ public interface XNode extends DebugDumpable, Visitable<XNode>, Cloneable, Copya
         return this;
     }
 
-    XNode getParent();
-
     void setDefinition(ItemDefinition<?> definition);
     ItemDefinition<?> getDefinition();
 

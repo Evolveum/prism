@@ -13,10 +13,8 @@ import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
-import com.evolveum.midpoint.prism.AbstractFreezable;
-import com.evolveum.midpoint.prism.ItemDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismNamespaceContext;
+import com.evolveum.midpoint.prism.*;
+import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
@@ -50,8 +48,13 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
     private static final QName DUMMY_NAME = new QName(null, "dummy");
 
-    // Common fields
-    protected XNodeImpl parent;         // currently unused
+    /**
+     * Stores trust descriptor. Used for {@link PrismPropertyValueImpl#rawElement}.
+     * There are much more property values than XNode values in running system, so this presumably spoils less memory.
+     *
+     * TEMPORARY
+     */
+    private TrustDescriptor trustDescriptor;
 
     /**
      * If set to true that the element came from the explicit type definition
@@ -97,13 +100,13 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         this.namespaceContext = local;
     }
 
-    public XNodeImpl getParent() {
-        return parent;
+    public TrustDescriptor getTrustDescriptor() {
+        return trustDescriptor;
     }
 
-    public void setParent(XNodeImpl parent) {
-        checkMutable();
-        this.parent = parent;
+    public void setTrustDescriptor(TrustDescriptor trustDescriptor) {
+        // TODO check mutable
+        this.trustDescriptor = trustDescriptor;
     }
 
     public File getOriginFile() {
