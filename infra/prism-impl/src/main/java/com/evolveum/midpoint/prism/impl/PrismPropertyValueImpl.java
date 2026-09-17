@@ -110,6 +110,13 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         try {
             notifyParent(PrismPropertyImpl::valueChangeStart);
             this.value = value;
+            if (rawElement != null
+                    && rawElement.getTrustDescriptor() != null
+                    && value instanceof TrustDescriptorAware trustDescriptorAware) {
+                // We could consider setting the trust descriptor recursively to all sub-values, but for now this is enough
+                // for a particular midPoint use case.
+                trustDescriptorAware.setTrustDescriptor(rawElement.getTrustDescriptor());
+            }
             this.rawElement = null;
             checkValue();
             notifyParent(PrismPropertyImpl::valueChangeEnd);
@@ -186,6 +193,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 if (maybeValue != null) { // should be the case
                     var maybeRealValue = maybeValue.getRealValue();
                     if (maybeRealValue != null) {
+                        // In the following method we set the trust descriptor.
                         setValue(maybeRealValue);
                     } else {
                         // Be careful here. Expression element can be legal sub-element of complex properties.
