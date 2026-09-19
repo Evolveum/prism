@@ -61,6 +61,7 @@ public abstract class DefinitionImpl
     protected String displayName;
     protected Integer displayOrder;
     protected String help;
+    protected String externalGroup;
     protected String documentation;
     protected boolean deprecated = false;
     protected String deprecatedSince;
@@ -287,6 +288,17 @@ public abstract class DefinitionImpl
     }
 
     @Override
+    public String getExternalGroup() {
+        return externalGroup;
+    }
+
+    @Override
+    public void setExternalGroup(String group) {
+        checkMutable();
+        this.externalGroup = group;
+    }
+
+    @Override
     public String getDocumentation() {
         return documentation;
     }
@@ -395,6 +407,7 @@ public abstract class DefinitionImpl
         this.displayName = source.getDisplayName();
         this.displayOrder = source.getDisplayOrder();
         this.help = source.getHelp();
+        this.externalGroup = source.getExternalGroup();
         this.documentation = source.getDocumentation();
         this.isAbstract = source.isAbstract();
         this.deprecated = source.isDeprecated();

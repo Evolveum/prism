@@ -460,6 +460,7 @@ public class SchemaDomSerializer {
         addAnnotation(A_DISPLAY_NAME, definition.getDisplayName(), appInfo);
         addToStringAnnotation(A_DISPLAY_ORDER, definition.getDisplayOrder(), appInfo);
         addAnnotation(A_HELP, definition.getHelp(), appInfo);
+        addAnnotation(A_EXTERNAL_GROUP, definition.getExternalGroup(), appInfo);
         addDisplayHint(definition, appInfo);
 
         addDocumentation(definition, aie);
