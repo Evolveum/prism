@@ -108,11 +108,24 @@ public interface PrismParser {
 
     /**
      * Switches the parser into "compatibility" (or relaxed) parsing mode.
-     * TODO description here
+     * In this mode the parser tries to parse the input even if it is inconsistent with the schema -
+     * the inconsistencies are reported as warnings instead of causing a {@code SchemaException}.
      * @return Updated parser.
      */
     @NotNull
     PrismParser compat();
+
+    /**
+     * Switches the parser into "compatibility" (or relaxed) parsing mode for the given object type.
+     * <p>
+     * The parser remains strict for all other object types. Objects of the given type, and their
+     * entire subtrees, are parsed leniently - inconsistencies are reported as warnings instead of
+     * causing a {@code SchemaException}.
+     * @param typeName Object type for which the compatibility mode should be enabled.
+     * @return Updated parser.
+     */
+    @NotNull
+    PrismParser compatFor(@NotNull QName typeName);
 
     /**
      * Does not check for existing values during parsing. To be used in situations where the data can be trusted

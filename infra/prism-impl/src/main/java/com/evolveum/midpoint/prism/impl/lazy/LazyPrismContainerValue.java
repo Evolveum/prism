@@ -39,16 +39,20 @@ public class LazyPrismContainerValue<C extends Containerable>
 
     private Itemable parent;
 
-    public LazyPrismContainerValue(ComplexTypeDefinition ctd, ParsingContext parsingContext, @NotNull MapXNodeImpl xnode) {
+    /** Effective compat mode at the time the lazy value was created. Restored when the value is materialized. */
+    private final boolean forceCompatOnMaterialize;
+
+    public LazyPrismContainerValue(ComplexTypeDefinition ctd, ParsingContext parsingContext, boolean forceCompatOnMaterialize, @NotNull MapXNodeImpl xnode) {
         super(parsingContext, xnode);
         this.complexTypeDefinition = ctd;
+        this.forceCompatOnMaterialize = forceCompatOnMaterialize;
     }
 
     public LazyPrismContainerValue(LazyPrismContainerValue<C> other) {
         super(other);
         this.complexTypeDefinition = other.complexTypeDefinition;
         this.parent = other.parent;
-
+        this.forceCompatOnMaterialize = other.forceCompatOnMaterialize;
     }
 
     @Override
@@ -90,8 +94,14 @@ public class LazyPrismContainerValue<C extends Containerable>
     protected PrismContainerValue<C> materialize(Source<MapXNodeImpl> source) {
         trackCallers();
         try {
+            ParsingContext pc = source.parsingContext();
+            if (forceCompatOnMaterialize && !pc.isCompat()) {
+                // The value was created in compat mode (e.g. per-type compat), but that is not
+                // (or no longer) reflected in the stored context - force compat for the materialization.
+                pc = pc.clone().compat();
+            }
             var ret = ((PrismContextImpl) PrismContext.get()).getPrismUnmarshaller()
-                    .parseRealContainerValueFromMap(source.value(), containerDef(), source.parsingContext());
+                    .parseRealContainerValueFromMap(source.value(), containerDef(), pc);
             // We set parent, if it was provided before materialization
             ret.setParent(parent);
             if (isImmutable()) {

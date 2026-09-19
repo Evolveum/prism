@@ -46,6 +46,9 @@ public interface PrismParserNoIO extends PrismParser {
     @NotNull
     PrismParserNoIO compat();
     @Override
+    @NotNull
+    PrismParserNoIO compatFor(@NotNull QName typeName);
+    @Override
     @NotNull PrismParserNoIO fastAddOperations();
     @Override
     @NotNull

@@ -14,6 +14,7 @@ import com.evolveum.midpoint.util.logging.Trace;
 
 import javax.xml.namespace.QName;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -62,6 +63,40 @@ public interface ParsingContext extends Cloneable {
     ParsingContext strict();
 
     ParsingContext compat();
+
+    /**
+     * Enables the compatibility (relaxed) mode of operation for the given object type.
+     * <p>
+     * The parser remains strict for all other object types. Objects of the given type, and their
+     * entire subtrees, are parsed leniently - inconsistencies are reported as warnings instead of
+     * causing a {@code SchemaException}.
+     * @param typeName Object type for which the compatibility mode should be enabled.
+     * @return Updated context.
+     */
+    ParsingContext enableCompatFor(QName typeName);
+
+    /**
+     * Returns true if the compatibility mode has been enabled for the given object type.
+     * @param typeName Object type to check. May be null.
+     */
+    boolean isCompatFor(QName typeName);
+
+    /**
+     * Returns the set of object types for which the compatibility mode has been enabled.
+     */
+    Set<QName> getCompatForTypes();
+
+    /**
+     * Registers the start of parsing an object of the given type. Used internally by the parser
+     * to determine the effective mode (strict/compat) of the current parsing scope.
+     * @param typeName Type of the object being parsed.
+     */
+    void pushObjectType(QName typeName);
+
+    /**
+     * Registers the end of parsing an object. Counterpart of {@link #pushObjectType(QName)}.
+     */
+    void popObjectType();
 
     XNodeProcessorEvaluationMode getEvaluationMode();
 

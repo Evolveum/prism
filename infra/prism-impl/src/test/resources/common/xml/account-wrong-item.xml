@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2010-2024 Evolveum and contributors
+  ~
+  ~ Licensed under the EUPL-1.2 or later.
+  -->
+
+
+<!-- Same as account-barbossa.xml, but with an unknown item in the extension. -->
+<account xmlns="http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd"
+         xmlns:ext="http://midpoint.evolveum.com/xml/ns/test/extension"
+         oid="94a0ee25-262f-4c49-ad5c-567418a5f5f3">
+    <name>hbarbossa</name>
+    <extension>
+        <ext:stringType_Wrong>FOObar</ext:stringType_Wrong>
+    </extension>
+</account>

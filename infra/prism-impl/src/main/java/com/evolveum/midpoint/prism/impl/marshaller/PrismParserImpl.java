@@ -110,6 +110,12 @@ abstract class PrismParserImpl implements PrismParser {
         return create(source, language, context.clone().compat(), prismContext, itemDefinition, itemName, typeName, typeClass);
     }
 
+    @NotNull
+    @Override
+    public PrismParser compatFor(@NotNull QName compatTypeName) {
+        return create(source, language, context.clone().enableCompatFor(compatTypeName), prismContext, itemDefinition, itemName, typeName, typeClass);
+    }
+
     @Override
     public @NotNull PrismParser fastAddOperations() {
         return create(source, language, context.clone().fastAddOperations(), prismContext, itemDefinition, itemName, typeName, typeClass);

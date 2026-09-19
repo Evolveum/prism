@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2010-2024 Evolveum and contributors
+  ~
+  ~ Licensed under the EUPL-1.2 or later.
+  -->
+
+
+<!-- A user that is clean by itself, but contains a composite account object
+     with an unknown item in its extension. -->
+<user oid="c0c010c0-d34d-b33f-f00d-111111114444"
+        xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+        xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+        xmlns='http://midpoint.evolveum.com/xml/ns/test/foo-1.xsd'
+        xmlns:ext="http://midpoint.evolveum.com/xml/ns/test/extension">
+
+    <name>nest</name>
+
+    <accountRef oid="c0c010c0-d34d-b33f-f00d-aaaaaaaa2222">
+        <object>
+            <name>jsparrow</name>
+            <extension>
+                <ext:stringType_Wrong>FOObar</ext:stringType_Wrong>
+            </extension>
+        </object>
+    </accountRef>
+
+</user>

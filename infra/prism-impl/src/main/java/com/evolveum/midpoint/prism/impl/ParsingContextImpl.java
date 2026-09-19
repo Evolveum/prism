@@ -17,7 +17,9 @@ import javax.xml.namespace.QName;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -35,6 +37,10 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     private boolean fastAddOperations;
     private boolean preserveNamespaceContext;
     private Set<QName> lazyDeserialization = new HashSet<>();
+    /** Object types for which the compatibility mode is enabled (the parser stays strict for the other types). */
+    private Set<QName> compatTypes = new HashSet<>();
+    /** Types of the objects currently being parsed (outermost first). Transient parsing state. */
+    private final LinkedList<QName> currentObjectTypes = new LinkedList<>();
     private boolean isValidation = false;
 
     private ParsingContextImpl() {
@@ -76,17 +82,31 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
 
     @Override
     public XNodeProcessorEvaluationMode getEvaluationMode() {
-        return evaluationMode;
+        return isCompat() ? XNodeProcessorEvaluationMode.COMPAT : XNodeProcessorEvaluationMode.STRICT;
     }
 
     @Override
     public boolean isCompat() {
-        return evaluationMode == XNodeProcessorEvaluationMode.COMPAT;
+        return evaluationMode == XNodeProcessorEvaluationMode.COMPAT || isCompatForCurrentObject();
     }
 
     @Override
     public boolean isStrict() {
-        return evaluationMode == XNodeProcessorEvaluationMode.STRICT;
+        return !isCompat();
+    }
+
+    private boolean isCompatForCurrentObject() {
+        if (compatTypes.isEmpty() || currentObjectTypes.isEmpty()) {
+            return false;
+        }
+        // The compatibility mode applies to the whole subtree of a compatible object,
+        // so we check all the object types currently being parsed, not just the innermost one.
+        for (QName currentType : currentObjectTypes) {
+            if (compatTypes.contains(currentType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -168,6 +188,8 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
         clone.allowMissingRefTypes = allowMissingRefTypes;
         clone.warnings.addAll(warnings);
         clone.lazyDeserialization.addAll(lazyDeserialization);
+        clone.compatTypes.addAll(compatTypes);
+        clone.currentObjectTypes.addAll(currentObjectTypes);
         return clone;
     }
 
@@ -192,6 +214,32 @@ public class ParsingContextImpl implements ParsingContext, Serializable {
     public ParsingContext compat() {
         this.setEvaluationMode(XNodeProcessorEvaluationMode.COMPAT);
         return this;
+    }
+
+    @Override
+    public ParsingContext enableCompatFor(QName typeName) {
+        compatTypes.add(Objects.requireNonNull(typeName, "typeName"));
+        return this;
+    }
+
+    @Override
+    public boolean isCompatFor(QName typeName) {
+        return typeName != null && compatTypes.contains(typeName);
+    }
+
+    @Override
+    public Set<QName> getCompatForTypes() {
+        return compatTypes;
+    }
+
+    @Override
+    public void pushObjectType(QName typeName) {
+        currentObjectTypes.push(typeName);
+    }
+
+    @Override
+    public void popObjectType() {
+        currentObjectTypes.pop();
     }
 
     @Override

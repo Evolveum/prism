@@ -134,31 +134,46 @@ public class PrismUnmarshaller {
             }
         }
 
-        if (!pc.isValidation()) {
-            if (!(itemDef instanceof PrismObjectDefinition)) {
-                pc.warnOrThrow(LOGGER, () -> new ValidationLog(
-                        ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
-                        child.getSourceLocation(),
-                        new TechnicalMessage("Cannot parse object from element '%s' the element does not define an object, it is defined as '%s'",
-                                new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME),
-                                new Argument(itemInfo.getItemDefinition(), Argument.ArgumentType.DEFINITION)),
-                        "Cannot parse object from element '%s' the element does not define an object, it is defined as '%s'".formatted(itemInfo.getItemName().getLocalPart(), itemInfo.getItemDefinition().getItemName().getLocalPart())));
+        PrismObjectDefinition<?> objectDefinition = itemDef instanceof PrismObjectDefinition<?> def ? def : null;
+        if (objectDefinition != null) {
+            pc.pushObjectType(objectDefinition.getComplexTypeDefinition().getTypeName());
+        }
+        try {
+            if (!pc.isValidation()) {
+                if (!(itemDef instanceof PrismObjectDefinition)) {
+                    pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            child.getSourceLocation(),
+                            new TechnicalMessage("Cannot parse object from element '%s' the element does not define an object, it is defined as '%s'",
+                                    new Argument(itemInfo.getItemName(), Argument.ArgumentType.QNAME),
+                                    new Argument(itemInfo.getItemDefinition(), Argument.ArgumentType.DEFINITION)),
+                            "Cannot parse object from element '%s' the element does not define an object, it is defined as '%s'".formatted(itemInfo.getItemName().getLocalPart(), itemInfo.getItemDefinition().getItemName().getLocalPart())));
+                }
+            }
+
+            return (PrismObject<O>) parseItemInternal(child, itemInfo.getItemName(), itemDef, pc);
+        } finally {
+            if (objectDefinition != null) {
+                pc.popObjectType();
             }
         }
-
-        return (PrismObject<O>) parseItemInternal(child, itemInfo.getItemName(), itemDef, pc);
     }
 
     // TODO migrate to parseItem eventually
     @SuppressWarnings("unchecked")
     private <O extends Objectable> PrismObject<O> parseObject(MapXNodeImpl map, PrismObjectDefinition<O> objectDefinition,
             ParsingContext pc) throws SchemaException {
-        ItemInfo<?> itemInfo = ItemInfo.determine(objectDefinition,
-                null, null, ARTIFICIAL_OBJECT_NAME,
-                map.getTypeQName(), null,
-                null, PrismObjectDefinition.class, pc, schemaRegistry);
-        return (PrismObject<O>) parseItemInternal(map, itemInfo.getItemName(), itemInfo.getItemDefinition(), pc);
+        pc.pushObjectType(objectDefinition.getComplexTypeDefinition().getTypeName());
+        try {
+            ItemInfo<?> itemInfo = ItemInfo.determine(objectDefinition,
+                    null, null, ARTIFICIAL_OBJECT_NAME,
+                    map.getTypeQName(), null,
+                    null, PrismObjectDefinition.class, pc, schemaRegistry);
+            return (PrismObject<O>) parseItemInternal(map, itemInfo.getItemName(), itemInfo.getItemDefinition(), pc);
+        } finally {
+            pc.popObjectType();
+        }
     }
 
     Item<?, ?> parseItem(@NotNull RootXNodeImpl root,
@@ -176,7 +191,17 @@ public class PrismUnmarshaller {
         } else {
             realDefinition = itemInfo.getItemDefinition();
         }
-        return parseItemInternal(root.getSubnode(), itemInfo.getItemName(), realDefinition, pc);
+        PrismObjectDefinition<?> objectDefinition = realDefinition instanceof PrismObjectDefinition<?> def ? def : null;
+        if (objectDefinition != null) {
+            pc.pushObjectType(objectDefinition.getComplexTypeDefinition().getTypeName());
+        }
+        try {
+            return parseItemInternal(root.getSubnode(), itemInfo.getItemName(), realDefinition, pc);
+        } finally {
+            if (objectDefinition != null) {
+                pc.popObjectType();
+            }
+        }
     }
 
     @NotNull
@@ -293,25 +318,34 @@ public class PrismUnmarshaller {
 
         PrismContainer<C> container = containerDef.instantiate(itemName);
 
-        if (node instanceof ListXNodeImpl list) {
-            if (containerDef instanceof PrismObject && list.size() > 1) {
-                pc.warnOrThrow(LOGGER, () -> new ValidationLog(
-                        ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
-                        node.getSourceLocation(),
-                        new TechnicalMessage("Multiple values for a 'PrismObject': '%s'",
-                                new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
-                        "Multiple values for a 'PrismObject': '%s'".formatted(node.getElementName().getLocalPart())));
-                parseContainerValueToContainer(container, list.get(0), pc);
-            } else {
-                for (XNodeImpl subNode : list) {
-                    parseContainerValueToContainer(container, subNode, pc);
-                }
-            }
-        } else {
-            parseContainerValueToContainer(container, node, pc);
+        if (containerDef instanceof PrismObjectDefinition<?>) {
+            pc.pushObjectType(containerDef.getComplexTypeDefinition().getTypeName());
         }
-        return container;
+        try {
+            if (node instanceof ListXNodeImpl list) {
+                if (containerDef instanceof PrismObject && list.size() > 1) {
+                    pc.warnOrThrow(LOGGER, () -> new ValidationLog(
+                            ValidationLogType.ERROR,
+                            ValidationLogType.Specification.UNKNOW,
+                            node.getSourceLocation(),
+                            new TechnicalMessage("Multiple values for a 'PrismObject': '%s'",
+                                    new Argument(node.debugDump(), Argument.ArgumentType.RAW)),
+                            "Multiple values for a 'PrismObject': '%s'".formatted(node.getElementName().getLocalPart())));
+                    parseContainerValueToContainer(container, list.get(0), pc);
+                } else {
+                    for (XNodeImpl subNode : list) {
+                        parseContainerValueToContainer(container, subNode, pc);
+                    }
+                }
+            } else {
+                parseContainerValueToContainer(container, node, pc);
+            }
+            return container;
+        } finally {
+            if (containerDef instanceof PrismObjectDefinition<?>) {
+                pc.popObjectType();
+            }
+        }
     }
 
     private <C extends Containerable> void parseContainerValueToContainer(PrismContainer<C> container, XNodeImpl node,
@@ -414,7 +448,9 @@ public class PrismUnmarshaller {
         var ctd = refineContainerCtdFromXsiType(containerDef.getComplexTypeDefinition(), map, pc);
 
         if (pc.isUseLazyDeserializationFor(ctd.getTypeName())) {
-            return new LazyPrismContainerValue<>(ctd, pc, map);
+            // Capture the effective mode (global or per-type compat), so that the deferred materialization
+            // behaves the same way as if the value was parsed eagerly.
+            return new LazyPrismContainerValue<>(ctd, pc, pc.isCompat(), map);
         }
         return parseRealContainerValueFromMap(map, containerDef, pc);
     }
