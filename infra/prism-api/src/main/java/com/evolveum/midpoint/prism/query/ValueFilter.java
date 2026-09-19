@@ -21,7 +21,7 @@ import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.midpoint.util.exception.SchemaException;
 
 public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
-        extends ObjectFilter, ItemFilter, Itemable {
+        extends ObjectFilter, ItemFilter, Itemable, ExpressionAware {
 
     @NotNull
     @Override
@@ -82,11 +82,6 @@ public interface ValueFilter<V extends PrismValue, D extends ItemDefinition<?>>
      * @param values values to be set, have to be parent-less
      */
     void setValues(@NotNull Collection<V> values);
-
-    @Nullable
-    ExpressionWrapper getExpression();
-
-    void setExpression(@Nullable ExpressionWrapper expression);
 
     @Nullable
     ItemPath getRightHandSidePath();

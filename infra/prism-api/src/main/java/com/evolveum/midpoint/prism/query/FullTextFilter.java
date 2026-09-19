@@ -7,23 +7,15 @@
 
 package com.evolveum.midpoint.prism.query;
 
-import com.evolveum.midpoint.prism.ExpressionWrapper;
 import com.evolveum.midpoint.prism.path.ItemPath;
 
 import java.util.Collection;
 
-/**
- *
- */
-public interface FullTextFilter extends ObjectFilter {
+public interface FullTextFilter extends ObjectFilter, ExpressionAware {
 
     Collection<String> getValues();
 
     void setValues(Collection<String> values);
-
-    ExpressionWrapper getExpression();
-
-    void setExpression(ExpressionWrapper expression);
 
     @Override
     FullTextFilter clone();

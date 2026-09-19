@@ -8,6 +8,9 @@ package com.evolveum.midpoint.prism;
 
 import com.evolveum.midpoint.util.annotation.Experimental;
 import com.evolveum.prism.xml.ns._public.types_3.RawType;
+import jakarta.xml.bind.JAXBElement;
+
+import java.util.Collection;
 
 /**
  *  Represents visitable JAXB bean.
@@ -17,6 +20,18 @@ import com.evolveum.prism.xml.ns._public.types_3.RawType;
 @Experimental
 @FunctionalInterface
 public interface JaxbVisitable {
+
+    static void accept(Object object, JaxbVisitor visitor) {
+        if (object instanceof JaxbVisitable visitable) {
+            visitable.accept(visitor);
+        } else if (object instanceof Collection<?> collection) {
+            for (Object item : collection) {
+                accept(item, visitor);
+            }
+        } else if (object instanceof JAXBElement<?> element) {
+            accept(element.getValue(), visitor);
+        }
+    }
 
     void accept(JaxbVisitor visitor);
 

@@ -16,6 +16,8 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.util.CloneUtil;
 import com.evolveum.midpoint.util.PrettyPrinter;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Contains the expression that can be part of e.g. prism filters (or other data).
  */
@@ -26,31 +28,31 @@ public class ExpressionWrapper implements Cloneable, Serializable, Freezable {
     /**
      * Name of the expression root element (e.g. "expression").
      */
-    private final QName elementName;
+    @NotNull private final QName elementName;
 
     /**
      * Content of the expression.
      * TODO specify more precisely
      */
-    private final Object expression;
+    @NotNull private final TrustDescriptorAware expression;
 
-    public ExpressionWrapper(QName elementName, Object expression) {
+    public ExpressionWrapper(@NotNull QName elementName, @NotNull TrustDescriptorAware expression) {
         super();
         this.elementName = elementName;
         this.expression = expression;
     }
 
-    public QName getElementName() {
+    public @NotNull QName getElementName() {
         return elementName;
     }
 
-    public Object getExpression() {
+    public @NotNull TrustDescriptorAware getExpression() {
         return expression;
     }
 
     public ExpressionWrapper clone() {
         // todo call super.clone?
-        Object expressionClone = CloneUtil.clone(expression);
+        TrustDescriptorAware expressionClone = CloneUtil.clone(expression);
         return new ExpressionWrapper(elementName, expressionClone);
     }
 

@@ -15,6 +15,7 @@ import static org.testng.AssertJUnit.*;
 
 import static com.evolveum.midpoint.prism.PrismInternalTestUtil.*;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.evolveum.midpoint.util.exception.CommonException;
 import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -1101,14 +1103,15 @@ public class TestDelta extends AbstractPrismTest {
     public void testObjectDeltaApplyToWithExpressions() throws Exception {
         given();
         PrismObject<UserType> user = PrismTestUtil.parseObject(USER_JACK_FILE_XML);
+        PrismPropertyValue<String> const1 = expressionBasedValue("const1");
+        PrismPropertyValue<String> const2 = expressionBasedValue("const2");
         ObjectDelta<UserType> addDelta = PrismTestUtil.getPrismContext().deltaFor(UserType.class)
                 .item(UserType.F_ADDITIONAL_NAMES)
-                .add(expressionBasedValue("const1"),
-                        expressionBasedValue("const2"))
+                .add(const1.clone(), const2.clone())
                 .asObjectDelta(USER_JACK_OID);
         ObjectDelta<UserType> deleteDelta = PrismTestUtil.getPrismContext().deltaFor(UserType.class)
                 .item(UserType.F_ADDITIONAL_NAMES)
-                .delete(expressionBasedValue("const1"))
+                .delete(const1.clone())
                 .asObjectDelta(USER_JACK_OID);
 
         when("values are added");
@@ -1116,20 +1119,32 @@ public class TestDelta extends AbstractPrismTest {
 
         then("they are there");
         user.checkConsistence();
-        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, "const1", "const2");
+        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, const1.getExpression(), const2.getExpression());
 
         when("a value is removed");
         deleteDelta.applyTo(user);
 
         then("it is gone");
         user.checkConsistence();
-        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, "const2");
+        assertPropertyValueExpressions(user, UserType.F_ADDITIONAL_NAMES, const2.getExpression());
+    }
+
+    // Serializable is because of cloning needs (good enough for test purposes)
+    record StringBasedExpressionWrapper(String value) implements TrustDescriptorAware, Serializable {
+        @Override
+        public @Nullable TrustDescriptor getTrustDescriptor() {
+            return null;
+        }
+
+        @Override
+        public void setTrustDescriptor(@Nullable TrustDescriptor trustDescriptor) {
+        }
     }
 
     private PrismPropertyValue<String> expressionBasedValue(String content) {
         PrismPropertyValue<String> value = getPrismContext().itemFactory().createPropertyValue();
         value.setExpression(
-                new ExpressionWrapper(new QName("expression"), content));
+                new ExpressionWrapper(new QName("expression"), new StringBasedExpressionWrapper(content)));
         return value;
     }
 
