@@ -43,9 +43,9 @@ public class PrismUtilInternal {
             return null;
         }
         RootXNodeImpl expressionRoot = new RootXNodeImpl(expressionEntry);
-        PrismPropertyValue expressionPropertyValue = PrismContext.get().parserFor(expressionRoot).parseItemValue();
-        ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
-        return expressionWrapper;
+        PrismPropertyValue<? extends TrustDescriptorAware> expressionPropertyValue =
+                PrismContext.get().parserFor(expressionRoot).parseItemValue();
+        return new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
     }
 
     @NotNull

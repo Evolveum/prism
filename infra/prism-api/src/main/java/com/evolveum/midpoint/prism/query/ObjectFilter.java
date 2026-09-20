@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 
 import com.evolveum.midpoint.prism.path.TypedItemPath;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.evolveum.midpoint.prism.*;
@@ -69,4 +70,14 @@ public interface ObjectFilter extends DebugDumpable, Serializable, Revivable, Fr
 
     void transformItemPaths(ItemPath parentPath, ItemDefinition<?> parentDef, FilterItemPathTransformer transformer);
 
+    default void setTrustDescriptor(@NotNull TrustDescriptor trustDescriptor) {
+        accept(innerFilter -> {
+            if (innerFilter instanceof ExpressionAware expressionAware) {
+                var expression = expressionAware.getExpression();
+                if (expression != null) {
+                    expression.getExpression().setTrustDescriptor(trustDescriptor);
+                }
+            }
+        });
+    }
 }

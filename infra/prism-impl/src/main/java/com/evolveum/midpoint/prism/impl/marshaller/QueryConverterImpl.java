@@ -110,6 +110,8 @@ public class QueryConverterImpl implements QueryConverter {
 
     /**
      * Used by XNodeProcessor and similar code that does not have complete schema for the filter
+     *
+     * Does not set {@link TrustDescriptor} on the filter, because it does not have it here.
      */
     @Override
     public ObjectFilter parseFilter(XNode xnode, Class<? extends Containerable> clazz) throws SchemaException {
@@ -119,11 +121,14 @@ public class QueryConverterImpl implements QueryConverter {
         return parseFilterInternal(xmap, pcd, false, null);
     }
 
-    private ObjectFilter parseFilter(MapXNode xmap, ItemDefinition<?> def) throws SchemaException {
+    private ObjectFilter parseFilter(MapXNode xmap, ItemDefinition<?> def, TrustDescriptor trustDescriptor)
+            throws SchemaException {
         if (xmap == null) {
             return null;
         }
-        return parseFilterInternal((MapXNodeImpl) xmap, def, false, null);
+        var filter = parseFilterInternal((MapXNodeImpl) xmap, def, false, null);
+        setTrustDescriptor(filter, trustDescriptor);
+        return filter;
     }
 
     @Override
@@ -163,16 +168,25 @@ public class QueryConverterImpl implements QueryConverter {
     @Override
     public ObjectFilter parseFilter(@NotNull SearchFilterType filter, @NotNull ItemDefinition<?> def) throws SchemaException {
         if (filter.getText() != null) {
-            return parseTextFilter(filter.getText(), filter.getFilterClauseXNode().namespaceContext(), def);
+            return parseTextFilter(
+                    filter.getText(),
+                    filter.getFilterClauseXNode().namespaceContext(),
+                    def,
+                    filter.getTrustDescriptor());
+        } else {
+            return parseFilter(filter.getFilterClauseXNode(), def, filter.getTrustDescriptor());
         }
-
-        return parseFilter(filter.getFilterClauseXNode(), def);
     }
 
     private ObjectFilter parseTextFilter(
-            @NotNull String filter, PrismNamespaceContext context, @NotNull ItemDefinition<?> def)
+            @NotNull String filterText,
+            PrismNamespaceContext context,
+            @NotNull ItemDefinition<?> def,
+            @Nullable TrustDescriptor trustDescriptor)
             throws SchemaException {
-        return prismContext.createQueryParser(context.allPrefixes()).parseFilter(def, filter);
+        var filter = prismContext.createQueryParser(context.allPrefixes()).parseFilter(def, filterText);
+        setTrustDescriptor(filter, trustDescriptor);
+        return filter;
     }
 
     private ObjectFilter parseFilterInternal(
@@ -302,7 +316,8 @@ public class QueryConverterImpl implements QueryConverter {
                     return null;
                 } else {
                     RootXNodeImpl expressionRoot = clauseXMap.getEntryAsRoot(expressionEntry.getKey());
-                    PrismPropertyValue<?> expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
+                    PrismPropertyValue<? extends TrustDescriptorAware> expressionPropertyValue =
+                            prismContext.parserFor(expressionRoot).parseItemValue();
                     ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
                     // Return expression
                 }
@@ -340,7 +355,8 @@ public class QueryConverterImpl implements QueryConverter {
         return value;
     }
 
-    private ObjectFilter parseTextFilter(XNodeImpl clauseContent, ItemDefinition<?> pcd, boolean preliminaryParsingOnly) throws SchemaException {
+    private ObjectFilter parseTextFilter(XNodeImpl clauseContent, ItemDefinition<?> pcd, boolean preliminaryParsingOnly)
+            throws SchemaException {
         if (clauseContent instanceof PrimitiveXNode<?> node) {
             String filter = node.getParsedValue(DOMUtil.XSD_STRING, String.class);
             if (filter != null) {
@@ -348,7 +364,7 @@ public class QueryConverterImpl implements QueryConverter {
                     // FIXME: Run syntax validation
                     return null;
                 }
-                return parseTextFilter(filter, clauseContent.namespaceContext(), pcd);
+                return parseTextFilter(filter, clauseContent.namespaceContext(), pcd, null);
             }
         }
         throw new SchemaException("Element text must contain textual filter");
@@ -491,19 +507,24 @@ public class QueryConverterImpl implements QueryConverter {
                     return null;
                 } else {
                     RootXNodeImpl expressionRoot = clauseXMap.getEntryAsRoot(expressionEntry.getKey());
-                    PrismPropertyValue<?> expressionPropertyValue = prismContext.parserFor(expressionRoot).parseItemValue();
-                    ExpressionWrapper expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
+                    PrismPropertyValue<? extends TrustDescriptorAware> expressionPropertyValue =
+                            prismContext.parserFor(expressionRoot).parseItemValue();
+                    var expressionWrapper = new ExpressionWrapper(expressionEntry.getKey(), expressionPropertyValue.getValue());
                     if (isEq) {
                         //noinspection unchecked
-                        return EqualFilterImpl.createEqual(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper);
+                        return EqualFilterImpl.createEqual(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper);
                     } else if (isSubstring) {
-                        return SubstringFilterImpl.createSubstring(itemPath, (PrismPropertyDefinition<?>) itemDefinition, matchingRule, expressionWrapper, getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
+                        return SubstringFilterImpl.createSubstring(
+                                itemPath, (PrismPropertyDefinition<?>) itemDefinition, matchingRule, expressionWrapper, getAnchorStart(clauseXMap), getAnchorEnd(clauseXMap));
                     } else if (isGt || isGtEq) {
                         //noinspection unchecked
-                        return GreaterFilterImpl.createGreater(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isGtEq);
+                        return GreaterFilterImpl.createGreater(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isGtEq);
                     } else {
                         //noinspection unchecked
-                        return LessFilterImpl.createLess(itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isLtEq);
+                        return LessFilterImpl.createLess(
+                                itemPath, (PrismPropertyDefinition<T>) itemDefinition, matchingRule, expressionWrapper, isLtEq);
                     }
                 }
             } else {
@@ -1264,27 +1285,27 @@ public class QueryConverterImpl implements QueryConverter {
 
     @NotNull
     private ObjectQuery createObjectQueryInternal(
-            Class<?> clazz, SearchFilterType filterType, PagingType pagingType)
+            Class<?> clazz, SearchFilterType filterBean, PagingType pagingType)
             throws SchemaException {
         ItemDefinition<?> objDef = getItemDefinitionForTypeClass(clazz);
         if (objDef == null) {
             throw new SchemaException("cannot find obj/container definition for class " + clazz);
         } else {
-            return createObjectQueryInternal(objDef, filterType, pagingType);
+            return createObjectQueryInternal(objDef, filterBean, pagingType);
         }
     }
 
     @NotNull
     private ObjectQuery createObjectQueryInternal(
-            ItemDefinition<?> objDef, SearchFilterType filterType, PagingType pagingType)
+            ItemDefinition<?> objDef, SearchFilterType filterBean, PagingType pagingType)
             throws SchemaException {
 
         try {
             ObjectQuery query = ObjectQueryImpl.createObjectQuery();
 
-            if (filterType != null && filterType.containsFilterClause()) {
-                MapXNodeImpl rootFilter = (MapXNodeImpl) filterType.getFilterClauseXNode();
-                ObjectFilter filter = parseFilter(rootFilter, objDef);
+            if (filterBean != null && filterBean.containsFilterClause()) {
+                MapXNodeImpl rootFilter = (MapXNodeImpl) filterBean.getFilterClauseXNode();
+                ObjectFilter filter = parseFilter(rootFilter, objDef, filterBean.getTrustDescriptor());
                 query.setFilter(filter);
             }
 
@@ -1296,7 +1317,12 @@ public class QueryConverterImpl implements QueryConverter {
         } catch (SchemaException ex) {
             throw new SchemaException("Failed to convert query. Reason: " + ex.getMessage(), ex);
         }
+    }
 
+    private void setTrustDescriptor(@Nullable ObjectFilter filter, @Nullable TrustDescriptor trustDescriptor) {
+        if (filter != null && trustDescriptor != null) {
+            filter.setTrustDescriptor(trustDescriptor);
+        }
     }
 
     @Contract("null -> null; !null -> !null")
@@ -1337,9 +1363,8 @@ public class QueryConverterImpl implements QueryConverter {
         }
 
     private boolean axiomSupportedFilter(ObjectFilter filter) {
-        if (filter instanceof AllFilter || filter instanceof NoneFilter || filter instanceof UndefinedFilter) {
-            return false;
-        }
-        return true;
+        return !(filter instanceof AllFilter)
+                && !(filter instanceof NoneFilter)
+                && !(filter instanceof UndefinedFilter);
     }
 }

@@ -199,22 +199,16 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
     }
 
     public void checkConsistence() {
-        foreach(pval -> {
-            if (pval.getParent() != null) {
-                if (pval instanceof PrismObjectValue) {
-                    // Object values are exceptions from this rule. They could have a parent. TODO reconsider this.
-                } else {
-                    throw new IllegalStateException(
-                            "Value %s in triple %s has parent, looks like it was not cloned properly".formatted(
-                                    pval, this));
-                }
-                // Note that we do not check for empty values recursively. The reason is that, generally, empty PCVs are legal.
-                // We just don't want them to be in the delta set. And even this may change in future.
-                if (pval.isEmpty()) {
-                    throw new IllegalStateException("Empty value %s in triple %s".formatted(pval, this));
-                }
-            }
-        });
+        // Currently, there's nothing to do here.
+        //
+        // Before 4.11, we checked:
+        //
+        // 1. Parent-less of values, but there are cases (e.g. in midPoint reports) when the values
+        // actuall can have a parent (e.g. when taking assignments from an object, without cloning).
+        //
+        // 2. Non-emptiness of values returned, but the check itself was flawed (applied only for PrismObjects, because
+        // of a bug). In general, PCVs can be empty. So let's remove this check for now.
+        //
     }
 
     @Override

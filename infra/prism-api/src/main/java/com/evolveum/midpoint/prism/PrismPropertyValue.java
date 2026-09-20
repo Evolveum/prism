@@ -29,7 +29,7 @@ import static com.evolveum.midpoint.prism.CloneStrategy.LITERAL_MUTABLE;
 /**
  * @author lazyman
  */
-public interface PrismPropertyValue<T> extends DebugDumpable, Serializable, PrismValue {
+public interface PrismPropertyValue<T> extends PrismValue {
 
     void setValue(T value);
 
