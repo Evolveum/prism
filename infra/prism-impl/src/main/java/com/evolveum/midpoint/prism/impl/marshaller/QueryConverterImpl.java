@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.query.Visitor;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -129,7 +127,7 @@ public class QueryConverterImpl implements QueryConverter {
             return null;
         }
         var filter = parseFilterInternal((MapXNodeImpl) xmap, def, false, null);
-        setTrustDescriptors(filter, trustDescriptor);
+        setTrustDescriptor(filter, trustDescriptor);
         return filter;
     }
 
@@ -187,7 +185,7 @@ public class QueryConverterImpl implements QueryConverter {
             @Nullable TrustDescriptor trustDescriptor)
             throws SchemaException {
         var filter = prismContext.createQueryParser(context.allPrefixes()).parseFilter(def, filterText);
-        setTrustDescriptors(filter, trustDescriptor);
+        setTrustDescriptor(filter, trustDescriptor);
         return filter;
     }
 
@@ -1321,18 +1319,10 @@ public class QueryConverterImpl implements QueryConverter {
         }
     }
 
-    private void setTrustDescriptors(@Nullable ObjectFilter filter, @Nullable TrustDescriptor trustDescriptor) {
-        if (filter == null || trustDescriptor == null) {
-            return;
+    private void setTrustDescriptor(@Nullable ObjectFilter filter, @Nullable TrustDescriptor trustDescriptor) {
+        if (filter != null && trustDescriptor != null) {
+            filter.setTrustDescriptor(trustDescriptor);
         }
-        filter.accept(innerFilter -> {
-            if (innerFilter instanceof ExpressionAware expressionAware) {
-                var expression = expressionAware.getExpression();
-                if (expression != null) {
-                    expression.getExpression().setTrustDescriptor(trustDescriptor);
-                }
-            }
-        });
     }
 
     @Contract("null -> null; !null -> !null")
