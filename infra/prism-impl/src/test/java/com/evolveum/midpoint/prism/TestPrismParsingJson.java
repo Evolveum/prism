@@ -6,12 +6,23 @@
 
 package com.evolveum.midpoint.prism;
 
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.EXTRA_SCHEMA_DIR;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.NS_USER_EXT;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.NS_WEAPONS;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.NS_WEAPONS_PREFIX;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.USER_EXT_BAR_ELEMENT;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.USER_QNAME;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.constructInitializedPrismContext;
+import static com.evolveum.midpoint.prism.PrismInternalTestUtil.constructPrismContext;
+
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -20,14 +31,18 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.evolveum.midpoint.prism.foo.UserType;
+import com.evolveum.midpoint.prism.impl.PrismContextImpl;
 import com.evolveum.midpoint.prism.impl.lex.json.reader.JsonReader;
 import com.evolveum.midpoint.prism.impl.lex.json.writer.JsonWriter;
 import com.evolveum.midpoint.prism.impl.xnode.MapXNodeImpl;
+import com.evolveum.midpoint.prism.impl.xnode.PrimitiveXNodeImpl;
 import com.evolveum.midpoint.prism.impl.xnode.RootXNodeImpl;
+import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.PrimitiveXNode;
 import com.evolveum.midpoint.prism.xnode.XNode;
+import com.evolveum.midpoint.util.DOMUtil;
 import com.evolveum.midpoint.util.exception.SchemaException;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 import com.evolveum.prism.xml.ns._public.types_3.ProtectedDataType;
@@ -70,6 +85,51 @@ public class TestPrismParsingJson extends TestPrismParsing {
         @NotNull
         RootXNodeImpl rootXNode = parser.read(new ParserFileSource(jackContext), getPrismContext().getDefaultParsingContext(), null);
         assertContextJack(rootXNode);
+    }
+
+    @Test
+    public void testItemPathValueSerializationPreservesUsedNamespaceContext() throws Exception {
+        PrismContextImpl writingContext = constructPrismContext();
+        writingContext.getSchemaRegistry().registerDynamicSchemaExtensions(Map.of("test dynamic user extension",
+                DOMUtil.parseFile(new File(EXTRA_SCHEMA_DIR, "extension/user.xsd")).getDocumentElement()));
+        writingContext.initialize();
+
+        PrismContextImpl parsingContext = constructInitializedPrismContext();
+        PrimitiveXNodeImpl<ItemPathType> pathNode = new PrimitiveXNodeImpl<>();
+        pathNode.setValue(
+                new ItemPathType(ItemPath.create(
+                        UserType.F_EXTENSION,
+                        new ItemName(NS_WEAPONS, "weapon", NS_WEAPONS_PREFIX),
+                        USER_EXT_BAR_ELEMENT)),
+                ItemPathType.COMPLEX_TYPE);
+
+        MapXNodeImpl userNode = new MapXNodeImpl();
+        userNode.put(new QName("path"), pathNode);
+
+        RootXNodeImpl root = new RootXNodeImpl(USER_QNAME, userNode);
+        String serialized = new JsonWriter(writingContext.getSchemaRegistry()).write(root, null);
+
+        display("Serialized ItemPathType with dynamic namespace");
+        display(serialized);
+
+        // Dynamic schema extension namespaces have to be persisted locally, because they may not be registered when the value is parsed later.
+        assertTrue(serialized.contains(NS_USER_EXT));
+        assertTrue(serialized.contains(":" + USER_EXT_BAR_ELEMENT.getLocalPart()));
+
+        // Static namespaces should continue to rely on the ambient namespace context.
+        assertFalse(
+                serialized.contains("\"" + NS_WEAPONS_PREFIX + "\":\"" + NS_WEAPONS + "\""),
+                "Static namespace should not be serialized as local ItemPath context");
+
+        RootXNodeImpl reparsed = (RootXNodeImpl) parsingContext
+                .parserFor(serialized)
+                .language(getOutputFormat())
+                .parseToXNode();
+
+        PrimitiveXNode<ItemPathType> reparsedPathNode = get(PrimitiveXNode.class, reparsed.toMapXNode(), "user", "path");
+        ItemPathType reparsedPath = reparsedPathNode.getParsedValue(ItemPathType.COMPLEX_TYPE, ItemPathType.class);
+
+        assertEquals(reparsedPath.getItemPath().lastName(), USER_EXT_BAR_ELEMENT);
     }
 
     private void assertContextJack(@NotNull RootXNodeImpl rootXNode) throws SchemaException {

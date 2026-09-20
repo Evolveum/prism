@@ -76,6 +76,18 @@ public interface PrismPresentationDefinition {
     String getHelp();
 
     /**
+     * Returns the name of the external group this item belongs to, for presentation purposes.
+     *
+     * The GUI may use this to group (e.g. into collapsible sections) the items
+     * sharing the same group. The value is a display-ready label, not a key.
+     *
+     * Returns null if no group is set.
+     *
+     * Corresponds to "externalGroup" XSD annotation.
+     */
+    String getExternalGroup();
+
+    /**
      * Must contains <documentation> tag because of html tags used in text.
      */
     String getDocumentation();
@@ -118,6 +130,11 @@ public interface PrismPresentationDefinition {
         }
 
         @Override
+        default String getExternalGroup() {
+            return prismPresentationDefinition().getExternalGroup();
+        }
+
+        @Override
         default String getDocumentation() {
             return prismPresentationDefinition().getDocumentation();
         }
@@ -140,6 +157,7 @@ public interface PrismPresentationDefinition {
         void setDisplayName(String displayName);
         void setDisplayOrder(Integer displayOrder);
         void setHelp(String help);
+        void setExternalGroup(String group);
         void setDocumentation(String documentation);
         void setDiagrams(List<ItemDiagramSpecification> value);
 
@@ -173,6 +191,11 @@ public interface PrismPresentationDefinition {
             }
 
             @Override
+            default void setExternalGroup(String group) {
+                prismPresentationDefinition().setExternalGroup(group);
+            }
+
+            @Override
             default void setDocumentation(String documentation) {
                 prismPresentationDefinition().setDocumentation(documentation);
             }
@@ -193,6 +216,7 @@ public interface PrismPresentationDefinition {
         private String displayName;
         private Integer displayOrder;
         private String help;
+        private String group;
         private String documentation;
         private List<ItemDiagramSpecification> diagrams;
 
@@ -252,6 +276,17 @@ public interface PrismPresentationDefinition {
         }
 
         @Override
+        public String getExternalGroup() {
+            return group;
+        }
+
+        @Override
+        public void setExternalGroup(String group) {
+            checkMutable();
+            this.group = group;
+        }
+
+        @Override
         public String getDocumentation() {
             return documentation;
         }
@@ -285,6 +320,7 @@ public interface PrismPresentationDefinition {
             this.displayName = source.displayName;
             this.displayOrder = source.displayOrder;
             this.help = source.help;
+            this.group = source.group;
             this.documentation = source.documentation;
             this.diagrams = CloneUtil.cloneCollectionMembers(source.diagrams);
         }
@@ -301,13 +337,14 @@ public interface PrismPresentationDefinition {
                     && Objects.equals(displayName, data.displayName)
                     && Objects.equals(displayOrder, data.displayOrder)
                     && Objects.equals(help, data.help)
+                    && Objects.equals(group, data.group)
                     && Objects.equals(documentation, data.documentation)
                     && Objects.equals(diagrams, data.diagrams);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(displayHint, emphasized, displayName, displayOrder, help, documentation, diagrams);
+            return Objects.hash(displayHint, emphasized, displayName, displayOrder, help, group, documentation, diagrams);
         }
     }
 

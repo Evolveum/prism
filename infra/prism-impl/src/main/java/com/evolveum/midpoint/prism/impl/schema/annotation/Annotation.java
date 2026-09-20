@@ -110,6 +110,9 @@ public enum Annotation {
     HELP(AnnotationBasedFeature.forString(
             A_HELP, PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setHelp)),
 
+    EXTERNAL_GROUP(AnnotationBasedFeature.forString(
+            A_EXTERNAL_GROUP, PrismPresentationDefinition.Mutable.class, PrismPresentationDefinition.Mutable::setExternalGroup)),
+
     HETEROGENEOUS_LIST_ITEM(AnnotationBasedFeature.forBooleanMark(
             A_HETEROGENEOUS_LIST_ITEM, ItemDefinition.ItemDefinitionMutator.class, ItemDefinition.ItemDefinitionMutator::setHeterogeneousListItem)),
 
