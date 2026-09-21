@@ -188,6 +188,8 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
         PrismPropertyDefinition<?> propertyDefinition = (PrismPropertyDefinition<?>) definition;
         if (!propertyDefinition.isAnyType()) {
             if (rawElement != null) {
+                checkMutable();
+
                 //noinspection unchecked
                 var maybeValue = parseRawElementToNewValue(this, (PrismPropertyDefinition<T>) propertyDefinition);
                 if (maybeValue != null) { // should be the case
@@ -217,18 +219,18 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                 // TEMPORARY HACKS FIXME as part of MID-2119
                 if (PolyString.class.equals(type) && value instanceof String stringValue) {
                     //noinspection unchecked
-                    value = (T) propertyDefinition.convertStringValueToPolyString(stringValue);
+                    setValue((T) propertyDefinition.convertStringValueToPolyString(stringValue));
                 } else if (String.class.equals(type) && value instanceof PolyString polyString) {
                     //noinspection unchecked
-                    value = (T) polyString.getOrig();
+                    setValue((T) polyString.getOrig());
                 } else if (PolyString.class.equals(type) && value instanceof Map<?, ?> map) {
                     // HACK because of polystring attributes and new repo; FIXME as part of MID-2119
                     //noinspection unchecked
-                    value = (T) new PolyString((String) map.get("o"), (String) map.get("n"));
+                    setValue((T) new PolyString((String) map.get("o"), (String) map.get("n")));
                 } else if (!type.isInstance(value)) {
                     try {
-                        //
-                        value = (T) JavaTypeConverter.convert(type, value);
+                        //noinspection unchecked
+                        setValue((T) JavaTypeConverter.convert(type, value));
                     } catch (Exception e) {
                         // one more attempt to convert the value
                         // H=trere if the schema is runtime and type is string, type was lost somewhere along the way.
@@ -236,7 +238,7 @@ public class PrismPropertyValueImpl<T> extends PrismValueImpl
                                 && propertyDefinition.isRuntimeSchema()
                                 && value instanceof String stringValue) {
                             //noinspection unchecked
-                            value = (T) XmlTypeConverter.toJavaValue(stringValue, type);
+                            setValue((T) XmlTypeConverter.toJavaValue(stringValue, type));
                         } else {
                             throw new SchemaException(
                                     "Incorrect value type. Expected %s (%s) for property '%s', current is: %s".formatted(

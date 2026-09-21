@@ -122,7 +122,7 @@ public class SearchFilterType extends AbstractFreezable
     }
 
     public void setTrustDescriptor(TrustDescriptor trustDescriptor) {
-        //checkMutable();
+        checkMutable();
         this.trustDescriptor = trustDescriptor;
     }
 

@@ -103,7 +103,7 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
     }
 
     public void setTrustDescriptor(TrustDescriptor trustDescriptor) {
-        // TODO check mutable
+        checkMutable();
         this.trustDescriptor = trustDescriptor;
     }
 
