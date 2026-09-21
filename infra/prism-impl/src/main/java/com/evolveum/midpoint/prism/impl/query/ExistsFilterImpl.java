@@ -157,7 +157,7 @@ public final class ExistsFilterImpl extends AbstractItemFilter implements Exists
     public void accept(Visitor visitor) {
         super.accept(visitor);
         if (filter != null) {
-            visitor.visit(filter);
+            filter.accept(visitor);
         }
     }
 

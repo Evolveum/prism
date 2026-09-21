@@ -182,7 +182,7 @@ public class TypeFilterImpl extends ObjectFilterImpl implements TypeFilter {
     public void accept(Visitor visitor) {
         super.accept(visitor);
         if (filter != null) {
-            visitor.visit(filter);
+            filter.accept(visitor);
         }
     }
 

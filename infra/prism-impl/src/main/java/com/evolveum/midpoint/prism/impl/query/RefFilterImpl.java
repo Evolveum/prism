@@ -17,6 +17,8 @@ import javax.xml.namespace.QName;
 
 import com.evolveum.midpoint.prism.query.FilterItemPathTransformer;
 
+import com.evolveum.midpoint.prism.query.Visitor;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -240,6 +242,13 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
             // targetObjectDefinition
             filter.transformItemPaths(ItemPath.EMPTY_PATH, targetDef, transformer);
         }
+    }
 
+    @Override
+    public void accept(Visitor visitor) {
+        super.accept(visitor);
+        if (filter != null) {
+            filter.accept(visitor);
+        }
     }
 }

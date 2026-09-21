@@ -204,7 +204,7 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
         // Before 4.11, we checked:
         //
         // 1. Parent-less of values, but there are cases (e.g. in midPoint reports) when the values
-        // actuall can have a parent (e.g. when taking assignments from an object, without cloning).
+        // actually can have a parent (e.g. when taking assignments from an object, without cloning).
         //
         // 2. Non-emptiness of values returned, but the check itself was flawed (applied only for PrismObjects, because
         // of a bug). In general, PCVs can be empty. So let's remove this check for now.

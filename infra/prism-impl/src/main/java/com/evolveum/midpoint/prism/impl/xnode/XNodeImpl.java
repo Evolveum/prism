@@ -50,9 +50,7 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
 
     /**
      * Stores trust descriptor. Used for {@link PrismPropertyValueImpl#rawElement}.
-     * There are much more property values than XNode values in running system, so this presumably spoils less memory.
-     *
-     * TEMPORARY
+     * There are many more property values than XNode values in the running system, so this presumably spoils less memory.
      */
     private TrustDescriptor trustDescriptor;
 
@@ -247,6 +245,7 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         setTypeQName(xnode.getTypeQName());
         setComment(xnode.getComment());
         setMaxOccurs(xnode.getMaxOccurs());
+        setTrustDescriptor(xnode.getTrustDescriptor());
     }
 
     public abstract String getDesc();
@@ -313,6 +312,7 @@ public abstract class XNodeImpl extends AbstractFreezable implements XNode {
         target.setOriginFile(getOriginFile());
         target.setParserData(CloneUtil.clone(getParserData()));
         target.setTypeQName(getTypeQName());
+        target.setTrustDescriptor(getTrustDescriptor());
         return target;
     }
 

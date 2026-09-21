@@ -37,7 +37,7 @@ public abstract class AbstractPlainStructured implements PlainStructured, Serial
      * Moreover, we don't want to add 4 bytes to really _all_ property values.
      *
      * The only problem in placing the descriptor here is that it won't work with other forms of {@link PrismPropertyValue}:
-     * raw values and expression-based values. But both should acceptable for scripts and expressions in midPoint 4.11.
+     * raw values and expression-based values. But both should be acceptable for scripts and expressions in midPoint 4.11.
      *
      * Behavior:
      *

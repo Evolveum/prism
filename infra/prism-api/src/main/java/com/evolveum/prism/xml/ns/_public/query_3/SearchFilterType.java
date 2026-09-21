@@ -61,7 +61,7 @@ public class SearchFilterType extends AbstractFreezable
      * Trust descriptor attached to this filter. Clients can use it to determine trustworthiness of expressions
      * embedded in the filter.
      *
-     * See also {@code AbstractPlainStructured#trustedDescriptor}.
+     * See also {@code AbstractPlainStructured#trustDescriptor}.
      *
      * @see TrustDescriptor
      */
