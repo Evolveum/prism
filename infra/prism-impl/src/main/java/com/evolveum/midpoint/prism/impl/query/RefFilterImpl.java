@@ -251,4 +251,12 @@ public class RefFilterImpl extends ValueFilterImpl<PrismReferenceValue, PrismRef
             filter.accept(visitor);
         }
     }
+
+    @Override
+    protected void performFreeze() {
+        super.performFreeze();
+        if (filter != null) {
+            filter.freeze();
+        }
+    }
 }
