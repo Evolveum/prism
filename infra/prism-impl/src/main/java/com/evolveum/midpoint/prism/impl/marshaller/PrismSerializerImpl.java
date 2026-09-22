@@ -9,7 +9,6 @@ package com.evolveum.midpoint.prism.impl.marshaller;
 
 import com.evolveum.midpoint.prism.*;
 import com.evolveum.midpoint.prism.impl.PrismContextImpl;
-import com.evolveum.midpoint.prism.impl.PrismPropertyValueImpl;
 import com.evolveum.midpoint.prism.impl.SerializerTarget;
 import com.evolveum.midpoint.prism.path.PathSet;
 import com.evolveum.midpoint.prism.util.PrismMonitor;
@@ -158,19 +157,7 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
 
     @Override
     public T serializeRealValue(Object realValue) throws SchemaException {
-        return serialize(toPrismValue(realValue), itemName);
-    }
-
-    private static PrismValue toPrismValue(Object realValue) {
-        if (realValue instanceof PrismValue prismValue) {
-            return prismValue; // Just a sanity check.
-        } else if (realValue instanceof Containerable containerable) {
-            return containerable.asPrismContainerValue();
-        } else if (realValue instanceof Referencable referencable) {
-            return referencable.asReferenceValue();
-        } else {
-            return new PrismPropertyValueImpl<>(realValue);
-        }
+        return serialize(PrismValue.toPrismValue(realValue), itemName);
     }
 
     @Override
@@ -181,7 +168,7 @@ public class PrismSerializerImpl<T> implements PrismSerializer<T> {
 
     @Override
     public T serializeRealValueContent(Object value) throws SchemaException {
-        return serializePrismValueContent(toPrismValue(value));
+        return serializePrismValueContent(PrismValue.toPrismValue(value));
     }
 
     @Override

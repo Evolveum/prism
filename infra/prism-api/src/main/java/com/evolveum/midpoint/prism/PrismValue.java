@@ -340,4 +340,16 @@ public interface PrismValue
         }
         return ret;
     }
+
+    static PrismValue toPrismValue(Object realValue) {
+        if (realValue instanceof PrismValue prismValue) {
+            return prismValue; // Just a sanity check.
+        } else if (realValue instanceof Containerable containerable) {
+            return containerable.asPrismContainerValue();
+        } else if (realValue instanceof Referencable referencable) {
+            return referencable.asReferenceValue();
+        } else {
+            return PrismContext.get().itemFactory().createPropertyValue(realValue);
+        }
+    }
 }
