@@ -21,6 +21,10 @@ import java.lang.annotation.Target;
  * - No access to system internals.
  * - No state changes, only queries.
  *
+ * BEWARE: Current implementation in midPoint looks only at methods' implementations.
+ * So marking a method as {@link Safe} on an interface may signal an intent, but by itself does not make it safe.
+ * The implementation must be marked as {@link Safe} as well.
+ *
  * == For types (classes and interfaces)
  *
  * Marks a type that is safe to pass into an untrusted script.
