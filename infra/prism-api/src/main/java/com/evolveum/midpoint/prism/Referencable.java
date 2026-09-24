@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * But all these implementations have this interface in common.
  * Whenever possible, code against this interface.
  */
+@Safe
 public interface Referencable {
 
     PrismReferenceValue asReferenceValue();

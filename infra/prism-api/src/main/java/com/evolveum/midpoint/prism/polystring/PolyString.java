@@ -50,6 +50,7 @@ import static com.evolveum.midpoint.util.MiscUtil.stateCheck;
  *
  * @author Radovan Semancik
  */
+@Safe
 public class PolyString implements Matchable<PolyString>, Recomputable, Structured, DebugDumpable, ShortDumpable, Serializable, Comparable<Object> {
     @Serial private static final long serialVersionUID = -5070443143609226661L;
 

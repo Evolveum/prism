@@ -27,6 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+
+import com.evolveum.midpoint.prism.Safe;
+
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParseException;
 import jakarta.xml.bind.JAXBElement;
@@ -85,6 +88,7 @@ import org.w3c.dom.Element;
     "lang",
     "any"
 })
+@Safe
 public class PolyStringType implements DebugDumpable, PlainStructured.WithoutStrategy, JaxbVisitable {
     @Serial private static final long serialVersionUID = 1L;
 
