@@ -42,6 +42,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
+    @Safe
     public String getOid() {
         return oid;
     }
@@ -53,6 +54,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
+    @Safe
     public String getVersion() {
         return version;
     }
@@ -64,6 +66,7 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
+    @Safe
     public O asObjectable() {
         return asContainerable();
     }
@@ -75,11 +78,13 @@ public class PrismObjectValueImpl<O extends Objectable> extends PrismContainerVa
     }
 
     @Override
+    @Safe
     public PolyString getName() {
         return asPrismObject().getName();
     }
 
     @Override
+    @Safe
     public PrismContainer<?> getExtension() {
         return asPrismObject().getExtension();
     }

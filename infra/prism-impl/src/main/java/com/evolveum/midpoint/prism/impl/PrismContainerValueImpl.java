@@ -128,6 +128,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
+    @Safe
     public int size() {
         return items.size();
     }
@@ -215,12 +216,14 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
 
     // For compatibility with other PrismValue types
     @Override
+    @Safe
     public C getValue() {
         return asContainerable();
     }
 
     @Override
     @NotNull
+    @Safe
     public C asContainerable() {
         if (containerable != null) {
             return containerable;
@@ -242,6 +245,7 @@ public class PrismContainerValueImpl<C extends Containerable> extends PrismValue
     }
 
     @Override
+    @Safe
     public boolean canRepresent(Class<?> clazz) {
         Class<C> compileTimeClass = getCompileTimeClass();
         if (compileTimeClass == null) {
