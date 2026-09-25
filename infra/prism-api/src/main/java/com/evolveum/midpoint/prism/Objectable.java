@@ -12,24 +12,25 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
  * @author semancik
  *
  */
+@Safe
 public interface Objectable extends Containerable {
 
-    @Safe // not executable, marking just intent
+    @Safe
     String getOid();
 
     void setOid(String oid);
 
-    @Safe // not executable, marking just intent
+    @Safe
     String getVersion();
 
     void setVersion(String version);
 
-    @Safe // not executable, marking just intent
+    @Safe
     PolyStringType getName();
 
     void setName(PolyStringType name);
 
-    @Safe // not executable, marking just intent
+    @Safe
     String getDescription();
 
     void setDescription(String description);
@@ -40,7 +41,7 @@ public interface Objectable extends Containerable {
      * in a form suitable for log and diagnostic messages (understandable for
      * system administrator).
      */
-    @Safe // not executable, marking just intent
+    @Safe
     String toDebugName();
 
     /**
@@ -50,7 +51,7 @@ public interface Objectable extends Containerable {
      * QNames or URIs.
      * @return
      */
-    @Safe // not executable, marking just intent
+    @Safe
     String toDebugType();
 
     PrismObject asPrismObject();

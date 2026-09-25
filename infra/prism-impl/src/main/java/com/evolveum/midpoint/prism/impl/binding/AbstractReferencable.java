@@ -40,11 +40,13 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     protected abstract T thisInstance();
 
     @Override
+    @Safe
     public QName getType() {
         return asReferenceValue().getTargetType();
     }
 
     @Override
+    @Safe
     public String getOid() {
         return asReferenceValue().getOid();
     }
@@ -58,6 +60,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public QName getRelation() {
         return asReferenceValue().getRelation();
     }
@@ -67,6 +70,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public String getDescription() {
         return asReferenceValue().getDescription();
     }
@@ -76,6 +80,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public SearchFilterType getFilter() {
         return PrismForJAXBUtil.getFilter(asReferenceValue());
     }
@@ -85,6 +90,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public EvaluationTimeType getResolutionTime() {
         return asReferenceValue().getResolutionTime();
     }
@@ -94,6 +100,7 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public ReferentialIntegrityType getReferentialIntegrity() {
         return asReferenceValue().getReferentialIntegrity();
     }
@@ -103,16 +110,19 @@ public abstract class AbstractReferencable<T extends AbstractReferencable<T>> im
     }
 
     @Override
+    @Safe
     public <O extends Objectable> PrismObject<O> getObject() {
         return asReferenceValue().getObject();
     }
 
     @Override
+    @Safe
     public Objectable getObjectable() {
         return PrismForJAXBUtil.getReferenceObjectable(asReferenceValue());
     }
 
     @Override
+    @Safe
     public PolyStringType getTargetName() {
         return PrismForJAXBUtil.getReferenceTargetName(asReferenceValue());
     }

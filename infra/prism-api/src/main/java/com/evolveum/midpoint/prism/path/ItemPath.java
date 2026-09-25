@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.xml.namespace.QName;
 
+import com.evolveum.midpoint.prism.Safe;
 import com.evolveum.prism.xml.ns._public.types_3.ItemPathType;
 
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,7 @@ import com.evolveum.midpoint.util.ShortDumpable;
  * * However, when creating the path, we provide a sequence of COMPONENTS.
  * We transform components into segments by applying a normalization procedure.
  */
+@Safe
 public interface ItemPath extends ShortDumpable, Serializable {
 
     ItemPath EMPTY_PATH = ItemPathImpl.EMPTY_PATH;
@@ -116,6 +118,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
     /**
      * Returns true if the path is empty i.e. has no components.
      */
+    @Safe
     boolean isEmpty();
 
     /**
@@ -132,6 +135,7 @@ public interface ItemPath extends ShortDumpable, Serializable {
     /**
      * Returns path size i.e. the number of components.
      */
+    @Safe
     int size();
 
     /**

@@ -11,6 +11,7 @@ package com.evolveum.prism.xml.ns._public.types_3;
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
 import com.evolveum.midpoint.prism.Raw;
+import com.evolveum.midpoint.prism.Safe;
 import com.evolveum.midpoint.util.MiscUtil;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
@@ -54,6 +55,7 @@ import java.util.*;
     "value",
     "estimatedOldValue"
 })
+@Safe
 public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ItemDeltaType");
@@ -83,6 +85,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
      *     {@link ModificationTypeType }
      *
      */
+    @Safe
     public ModificationTypeType getModificationType() {
         return modificationType;
     }
@@ -107,6 +110,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
      *     {@link Element }
      *
      */
+    @Safe
     public ItemPathType getPath() {
         return path;
     }
@@ -132,6 +136,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
      *
      */
     @NotNull
+    @Safe
     public List<RawType> getValue() {
         return (List<RawType>) (List) value;        // brutal hack
     }
@@ -158,6 +163,7 @@ public class ItemDeltaType implements Serializable, Cloneable, JaxbVisitable {
 
 
     @NotNull
+    @Safe
     public List<RawType> getEstimatedOldValue() {
         return (List<RawType>) (List) estimatedOldValue;        // brutal hack
     }

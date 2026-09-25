@@ -35,6 +35,7 @@ public interface Referencable {
 
     Referencable setupReferenceValue(PrismReferenceValue value);
 
+    @Safe
     String getOid();
 
     static String getOid(Referencable referencable) {
@@ -48,22 +49,31 @@ public interface Referencable {
                 .collect(Collectors.toSet());
     }
 
+    @Safe
     QName getType();
 
+    @Safe
     PolyStringType getTargetName();
 
+    @Safe
     QName getRelation();
 
+    @Safe
     String getDescription();
 
+    @Safe
     EvaluationTimeType getResolutionTime();
 
+    @Safe
     ReferentialIntegrityType getReferentialIntegrity();
 
+    @Safe
     SearchFilterType getFilter();
 
+    @Safe
     <O extends Objectable> PrismObject<O> getObject();
 
+    @Safe
     Objectable getObjectable();
 
     Referencable clone();
