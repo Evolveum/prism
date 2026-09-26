@@ -64,6 +64,7 @@ import com.evolveum.midpoint.util.exception.TunnelException;
  * significant effort to unify XNode and parsed items hashcode computation.
  */
 @XmlType(name = "RawType")
+@Safe
 public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, Revivable, ShortDumpable {
 
     @Serial private static final long serialVersionUID = 4430291958902286779L;
@@ -106,6 +107,7 @@ public class RawType implements PlainStructured.WithoutStrategy, JaxbVisitable, 
         }
     }
 
+    @Safe
     public Object getValue() throws SchemaException {
         return getValue(false);
     }

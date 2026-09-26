@@ -16,6 +16,7 @@ import java.io.Serializable;
 /**
  * @author semancik
  */
+@Safe
 public interface Containerable extends JaxbVisitable, Serializable, DebugDumpable, Freezable, Cloneable {
 
     @Override

@@ -12,20 +12,25 @@ import com.evolveum.prism.xml.ns._public.types_3.PolyStringType;
  * @author semancik
  *
  */
+@Safe
 public interface Objectable extends Containerable {
 
+    @Safe
     String getOid();
 
     void setOid(String oid);
 
+    @Safe
     String getVersion();
 
     void setVersion(String version);
 
+    @Safe
     PolyStringType getName();
 
     void setName(PolyStringType name);
 
+    @Safe
     String getDescription();
 
     void setDescription(String description);
@@ -36,6 +41,7 @@ public interface Objectable extends Containerable {
      * in a form suitable for log and diagnostic messages (understandable for
      * system administrator).
      */
+    @Safe
     String toDebugName();
 
     /**
@@ -45,6 +51,7 @@ public interface Objectable extends Containerable {
      * QNames or URIs.
      * @return
      */
+    @Safe
     String toDebugType();
 
     PrismObject asPrismObject();

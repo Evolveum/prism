@@ -19,6 +19,7 @@ import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
 
 import org.jetbrains.annotations.Nullable;
 
+@Safe
 public abstract class AbstractPlainStructured implements PlainStructured, Serializable, JaxbVisitable, TrustDescriptorAware {
 
     @Serial private static final long serialVersionUID = 1L;

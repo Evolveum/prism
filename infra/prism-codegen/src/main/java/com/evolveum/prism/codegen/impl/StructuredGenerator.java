@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+import com.evolveum.midpoint.prism.*;
+
 import com.sun.codemodel.*;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -24,10 +26,6 @@ import javax.xml.namespace.QName;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.evolveum.midpoint.prism.ComplexTypeDefinition;
-import com.evolveum.midpoint.prism.PrismConstants;
-import com.evolveum.midpoint.prism.PrismReferenceValue;
-import com.evolveum.midpoint.prism.TypeDefinition;
 import com.evolveum.midpoint.prism.impl.PrismReferenceValueImpl;
 import com.evolveum.midpoint.prism.xml.XmlTypeConverter;
 import com.evolveum.midpoint.util.Producer;
@@ -91,11 +89,13 @@ public abstract class StructuredGenerator<T extends StructuredContract> extends 
                 JAnnotationUse jaxbAnn = getter.annotate(XmlElement.class);
                 jaxbAnn.param(XML_ELEMENT_NAME, definition.itemName().getLocalPart());
             }
+            getter.annotate(Safe.class);
             if (shouldImplementGetter(clazz, contract, definition)) {
                 implementGetter(clazz, getter, definition, bindingType);
                 // If we have secondary name for getter we should also implement it.
                 if (definition.secondaryGetterName() != null) {
                     JMethod secondaryGetter = clazz.method(JMod.PUBLIC,  maybeBoxedType, definition.secondaryGetterName());
+                    secondaryGetter.annotate(Safe.class);
                     implementGetter(clazz, secondaryGetter, definition, bindingType);
                 }
             }

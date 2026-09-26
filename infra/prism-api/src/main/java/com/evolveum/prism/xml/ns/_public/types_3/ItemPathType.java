@@ -9,6 +9,7 @@ package com.evolveum.prism.xml.ns._public.types_3;
 
 import com.evolveum.midpoint.prism.JaxbVisitable;
 import com.evolveum.midpoint.prism.JaxbVisitor;
+import com.evolveum.midpoint.prism.Safe;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 import com.evolveum.midpoint.prism.binding.StructuredEqualsStrategy;
 import com.evolveum.midpoint.prism.binding.StructuredHashCodeStrategy;
@@ -51,6 +52,7 @@ import java.util.stream.Collectors;
 //   however, unlike RawType, ItemPathType is still present in externally-visible schemas (XSD, WSDL)
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ItemPathType")
+@Safe
 public class ItemPathType implements PlainStructured, Serializable, Cloneable, JaxbVisitable {
 
     public static final QName COMPLEX_TYPE = new QName("http://prism.evolveum.com/xml/ns/public/types-3", "ItemPathType");
@@ -68,6 +70,7 @@ public class ItemPathType implements PlainStructured, Serializable, Cloneable, J
 
     @NotNull
     @Contract(pure = true)
+    @Safe
     public ItemPath getItemPath() {
         return itemPath != null ? itemPath : ItemPath.EMPTY_PATH;
     }

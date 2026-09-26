@@ -20,18 +20,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.evolveum.midpoint.prism.*;
+
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.*;
 import javax.xml.namespace.QName;
 
-import com.evolveum.midpoint.prism.PrismObject;
 import com.evolveum.midpoint.prism.binding.PlainStructured;
 
 import org.w3c.dom.Element;
 
-import com.evolveum.midpoint.prism.JaxbVisitable;
-import com.evolveum.midpoint.prism.JaxbVisitor;
-import com.evolveum.midpoint.prism.PrismConstants;
 import com.evolveum.midpoint.util.exception.SystemException;
 
 /**
@@ -76,6 +75,7 @@ import com.evolveum.midpoint.util.exception.SystemException;
         "oid",
         "itemDelta"
 })
+@Safe
 public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVisitable {
 
 
@@ -107,6 +107,7 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
      * @return possible object is
      * {@link ChangeTypeType }
      */
+    @Safe
     public ChangeTypeType getChangeType() {
         return changeType;
     }
@@ -127,6 +128,7 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
      * @return possible object is
      * {@link QName }
      */
+    @Safe
     public QName getObjectType() {
         return objectType;
     }
@@ -144,6 +146,7 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
     /**
      * Gets the value of the objectToAdd property.
      */
+    @Safe
     public ObjectType getObjectToAdd() {
         return objectToAdd;
     }
@@ -161,6 +164,7 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
      * @return possible object is
      * {@link String }
      */
+    @Safe
     public String getOid() {
         return oid;
     }
@@ -195,6 +199,7 @@ public class ObjectDeltaType implements PlainStructured.WithoutStrategy, JaxbVis
      * Objects of the following type(s) are allowed in the list
      * {@link ItemDeltaType }
      */
+    @Safe
     public List<ItemDeltaType> getItemDelta() {
         return this.itemDelta;
     }

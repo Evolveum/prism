@@ -28,12 +28,14 @@ import java.util.stream.Collectors;
  * But all these implementations have this interface in common.
  * Whenever possible, code against this interface.
  */
+@Safe
 public interface Referencable {
 
     PrismReferenceValue asReferenceValue();
 
     Referencable setupReferenceValue(PrismReferenceValue value);
 
+    @Safe
     String getOid();
 
     static String getOid(Referencable referencable) {
@@ -47,22 +49,31 @@ public interface Referencable {
                 .collect(Collectors.toSet());
     }
 
+    @Safe
     QName getType();
 
+    @Safe
     PolyStringType getTargetName();
 
+    @Safe
     QName getRelation();
 
+    @Safe
     String getDescription();
 
+    @Safe
     EvaluationTimeType getResolutionTime();
 
+    @Safe
     ReferentialIntegrityType getReferentialIntegrity();
 
+    @Safe
     SearchFilterType getFilter();
 
+    @Safe
     <O extends Objectable> PrismObject<O> getObject();
 
+    @Safe
     Objectable getObjectable();
 
     Referencable clone();
