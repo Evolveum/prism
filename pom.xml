@@ -641,7 +641,6 @@
                     <configLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/checkstyle.xml</configLocation>
                     <!--suppress MavenModelInspection: provided by mvn(w)/IDE/Jenkins -->
                     <suppressionsLocation>${maven.multiModuleProjectDirectory}/config/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-                    <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
@@ -660,27 +659,28 @@
                 </executions>
             </plugin>
             <plugin>
-                  <groupId>org.jacoco</groupId>
-                  <artifactId>jacoco-maven-plugin</artifactId>
-                   <executions>
-			<execution>
-			    <id>jacoco-initialize</id>
-			    <goals>
-				<goal>prepare-agent</goal>
-			    </goals>
-			</execution>
-			<execution>
-			    <id>jacoco-site</id>
-			    <phase>package</phase>
-			    <goals>
-				<goal>report</goal>
-			    </goals>
-			</execution>
-		    </executions>
-                  <configuration>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.15</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
                     <propertyName>jacoco.argLine</propertyName>
-                  </configuration>
-                </plugin>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -802,7 +802,6 @@
                 <configuration>
                     <!--suppress MavenModelInspection: provided by mvn(w)/IDE/Jenkins -->
                     <configLocation>${maven.multiModuleProjectDirectory}/build-system/checkstyle-configs/checkstyle.xml</configLocation>
-                    <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError>
                     <linkXRef>false</linkXRef>
