@@ -28,7 +28,7 @@ public abstract class AbstractPlainStructured implements PlainStructured, Serial
      * A {@link TrustDescriptor} attached to this data. It is here to make sure it's propagated along with the data, e.g.
      * when cloning, moving between parents, merging, etc.
      *
-     * The urgent need (midPoint 4.11) is to provide this for {@code ExpressionType}, {@code ScriptExpressionEvaluatorType},
+     * The urgent need (midPoint 4.11.0) is to provide this for {@code ExpressionType}, {@code ScriptExpressionEvaluatorType},
      * and a couple of others. Majority of them are {@code AbstractPlainStructured}, hence we provide the descriptor here.
      *
      * Alternatives were to put it into {@link PrismPropertyValue} but in midPoint, these beans are usually passed in their pure
@@ -38,7 +38,7 @@ public abstract class AbstractPlainStructured implements PlainStructured, Serial
      * Moreover, we don't want to add 4 bytes to really _all_ property values.
      *
      * The only problem in placing the descriptor here is that it won't work with other forms of {@link PrismPropertyValue}:
-     * raw values and expression-based values. But both should be acceptable for scripts and expressions in midPoint 4.11.
+     * raw values and expression-based values. But both should be acceptable for scripts and expressions in midPoint 4.11.0.
      *
      * Behavior:
      *

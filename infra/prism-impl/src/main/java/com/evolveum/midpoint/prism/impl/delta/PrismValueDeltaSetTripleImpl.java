@@ -201,7 +201,7 @@ public class PrismValueDeltaSetTripleImpl<V extends PrismValue> extends DeltaSet
     public void checkConsistence() {
         // Currently, there's nothing to do here.
         //
-        // Before 4.11, we checked:
+        // Before 4.11.0, we checked:
         //
         // 1. Parent-less of values, but there are cases (e.g. in midPoint reports) when the values
         // actually can have a parent (e.g. when taking assignments from an object, without cloning).
