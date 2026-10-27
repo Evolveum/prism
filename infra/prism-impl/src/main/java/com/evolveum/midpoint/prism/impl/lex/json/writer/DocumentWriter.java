@@ -17,6 +17,7 @@ import javax.xml.namespace.QName;
 import com.evolveum.midpoint.prism.path.ItemName;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import com.evolveum.midpoint.prism.impl.marshaller.ItemPathSerialization;
 import com.evolveum.midpoint.prism.impl.xnode.*;
 import com.evolveum.midpoint.prism.path.ItemPath;
 import com.evolveum.midpoint.prism.path.UniformItemPath;
+import com.evolveum.midpoint.prism.polystring.PolyString;
 import com.evolveum.midpoint.prism.schema.SchemaRegistry;
 import com.evolveum.midpoint.prism.xnode.MapXNode;
 import com.evolveum.midpoint.prism.xnode.MetadataAware;
@@ -200,7 +202,7 @@ class DocumentWriter {
                 writeQName(name, context);
 
             } else {
-                generator.writeObject(value);
+                writeObject(value);
             }
         } else {
             // we assume content is namespace sensitive
@@ -215,7 +217,7 @@ class DocumentWriter {
         if (!Strings.isNullOrEmpty(value.getNamespaceURI())) {
             Optional<String> prefix = context.withoutDefault().prefixFor(value.getNamespaceURI());
             if (prefix.isPresent()) {
-                generator.writeString(prefix.get() + ":" + value.getLocalPart());
+                writeString(prefix.get() + ":" + value.getLocalPart());
                 return;
             }
         }
@@ -245,7 +247,7 @@ class DocumentWriter {
             writeNamespaceContextIfNeeded(localContext);
             generator.writeFieldName(JsonInfraItems.PROP_VALUE);
         }
-        generator.writeString(value);
+        writeString(value);
         if (!localContext.isLocalEmpty()) {
             generator.writeEndObject();
         }
@@ -255,7 +257,7 @@ class DocumentWriter {
         writeInlineTypeIfNeeded(node);
         Element schemaElement = node.getSchemaElement();
         DOMUtil.fixNamespaceDeclarations(schemaElement); // TODO reconsider if it's OK to modify schema DOM element in this way
-        generator.writeObject(schemaElement);
+        writeObject(schemaElement);
     }
 
     private void writeIncomplete() throws IOException {
@@ -320,7 +322,7 @@ class DocumentWriter {
         if (!itemLocal.isLocalEmpty()) {
             if (itemLocal.isDefaultNamespaceOnly()) {
                 generator.writeFieldName(JsonInfraItems.PROP_NAMESPACE);
-                generator.writeString(itemLocal.defaultNamespace().get());
+                writeString(itemLocal.defaultNamespace().get());
                 return;
             } else {
                 // context should be emitted
@@ -328,7 +330,7 @@ class DocumentWriter {
                 generator.writeStartObject();
                 for (Map.Entry<String, String> prefixPair : itemLocal.localPrefixes().entrySet()) {
                     generator.writeFieldName(prefixPair.getKey());
-                    generator.writeString(prefixPair.getValue());
+                    writeString(prefixPair.getValue());
                 }
                 generator.writeEndObject();
             }
@@ -421,6 +423,24 @@ class DocumentWriter {
         if (ctx.supportsInlineTypes() && explicitType != null) {
             ctx.writeInlineType(explicitType);
         }
+    }
+
+    private void writeObject(Object value) throws IOException {
+        if (value instanceof String string) {
+            writeString(string);
+        } else if (value instanceof PolyString polyString) {
+            writeString(polyString.getOrig());
+        } else {
+            generator.writeObject(value);
+        }
+    }
+
+    private void writeString(String value) throws IOException {
+        // Prevent persisting JSON strings that exceed the limit. MID-12813
+        if (value != null && ctx instanceof JsonWritingContext) {
+            StreamReadConstraints.defaults().validateStringLength(value.length());
+        }
+        generator.writeString(value);
     }
 
     private QName getExplicitType(XNodeImpl xnode) {
