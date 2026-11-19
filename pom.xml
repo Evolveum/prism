@@ -92,6 +92,9 @@
         <redirectTestOutputToFile>true</redirectTestOutputToFile>
 
         <!-- START of Spring Boot dependencies overrides (temporary/security fixes, revise regularly!) -->
+        <!-- keep both aligned, they share jackson-annotations (2.21). Must match midPoint. -->
+        <jackson-2-bom.version>2.21.8</jackson-2-bom.version>
+        <jackson-bom.version>3.1.8</jackson-bom.version>
 
         <!-- END of Spring Boot dependencies overrides -->
 
