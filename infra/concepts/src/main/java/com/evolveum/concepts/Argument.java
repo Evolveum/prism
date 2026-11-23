@@ -24,6 +24,6 @@ public record Argument(
         STRING,
         INT,
         RAW,
-        UNKNOW
+        UNKNOWN
     }
 }

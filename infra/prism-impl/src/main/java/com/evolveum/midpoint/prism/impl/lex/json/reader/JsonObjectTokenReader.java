@@ -147,7 +147,7 @@ class JsonObjectTokenReader {
             if (token == null) {
                 ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         null,
                         new TechnicalMessage("Unexpected end of data while parsing a map structure"),
                         "Unexpected end of data while parsing a map structure"));
@@ -169,7 +169,7 @@ class JsonObjectTokenReader {
         if (currentFieldName != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     null,
                     new TechnicalMessage("Two field names in succession: '%s' and '%s'",
                             new Argument(currentFieldName.getName(), Argument.ArgumentType.STRING),
@@ -230,7 +230,7 @@ class JsonObjectTokenReader {
         if (incomplete != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     currentFieldValue.getSourceLocation(),
                     new TechnicalMessage("Duplicate '@incomplete' marker found with the value: '%s'",
                             new Argument(currentFieldValue, Argument.ArgumentType.XNODE)),
@@ -243,7 +243,7 @@ class JsonObjectTokenReader {
         } else {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     currentFieldValue.getSourceLocation(),
                 new TechnicalMessage("'@incomplete' marker found with incompatible value: '%s'",
                         new Argument(currentFieldValue, Argument.ArgumentType.XNODE)),
@@ -255,7 +255,7 @@ class JsonObjectTokenReader {
         if (wrappedValue != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     currentFieldValue.getSourceLocation(),
                     new TechnicalMessage("Value (' '%s' ') defined more than once",
                             new Argument(JsonInfraItems.PROP_VALUE, Argument.ArgumentType.RAW)),
@@ -274,7 +274,7 @@ class JsonObjectTokenReader {
                 } else {
                     ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                             ValidationLogType.ERROR,
-                            ValidationLogType.Specification.UNKNOW,
+                            ValidationLogType.Specification.UNKNOWN,
                             metadataValue.getSourceLocation(),
                             new TechnicalMessage("Metadata is not a map 'XNode': '%s'",
                                     new Argument(metadataValue.debugDump(), Argument.ArgumentType.RAW)),
@@ -284,7 +284,7 @@ class JsonObjectTokenReader {
         } else {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     currentFieldValue.getSourceLocation(),
                     new TechnicalMessage("Metadata is not a map or list 'XNode': '%s'",
                             new Argument(currentFieldValue.debugDump(), Argument.ArgumentType.RAW)),
@@ -296,7 +296,7 @@ class JsonObjectTokenReader {
         if (elementName != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     value.getSourceLocation(),
                     new TechnicalMessage("Element name defined more than once"),
                     "Element name defined more than once"));
@@ -323,7 +323,7 @@ class JsonObjectTokenReader {
         if (typeName != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     value.getSourceLocation(),
                     new TechnicalMessage("Value type defined more than once"),
                     "Value type defined more than once"));
@@ -338,7 +338,7 @@ class JsonObjectTokenReader {
         if (namespaceSensitiveStarted) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     value.getSourceLocation(),
                     new TechnicalMessage("Namespace declared after other fields: '%s'",
                             new Argument(ctx.getPositionSuffix(), Argument.ArgumentType.RAW)),
@@ -347,7 +347,7 @@ class JsonObjectTokenReader {
         if (map != null) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     value.getSourceLocation(),
                     new TechnicalMessage("Namespace defined more than once"),
                     "Namespace defined more than once"));
@@ -369,7 +369,7 @@ class JsonObjectTokenReader {
         if (haveRegular + haveWrapped + haveIncomplete > 1) {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     map.getSourceLocation(),
                     new TechnicalMessage("More than one of '%s', '%s' and regular content present",
                         new Argument(PROP_VALUE, Argument.ArgumentType.STRING),
@@ -409,7 +409,7 @@ class JsonObjectTokenReader {
             } else {
                 ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         rv.getSourceLocation(),
                     new TechnicalMessage("Couldn't apply metadata to non-metadata-aware node: '%s'",
                             new Argument(rv, Argument.ArgumentType.XNODE)),
@@ -424,7 +424,7 @@ class JsonObjectTokenReader {
                 if (!wrappedValue.getElementName().equals(elementName)) {
                     ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                             ValidationLogType.ERROR,
-                            ValidationLogType.Specification.UNKNOW,
+                            ValidationLogType.Specification.UNKNOWN,
                             rv.getSourceLocation(),
                             new TechnicalMessage("Conflicting element names for '%s' ('%s') and regular content ('%s'; ) present",
                                 new Argument(JsonInfraItems.PROP_VALUE, Argument.ArgumentType.STRING),
@@ -442,7 +442,7 @@ class JsonObjectTokenReader {
             if (wrappedValue != null && wrappedValue.getTypeQName() != null && !wrappedValue.getTypeQName().equals(typeName)) {
                 ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         rv.getSourceLocation(),
                         new TechnicalMessage("Conflicting type names for '%s' ('%s') and regular content ('%s') present",
                                 new Argument(JsonInfraItems.PROP_VALUE, Argument.ArgumentType.STRING),
@@ -461,7 +461,7 @@ class JsonObjectTokenReader {
         } else {
             ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     currentFieldValue.getSourceLocation(),
                     new TechnicalMessage("Value of '%s' attribute must be a primitive one. It is '%s' instead",
                         new Argument(name, Argument.ArgumentType.QNAME),

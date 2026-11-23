@@ -111,7 +111,7 @@ class JsonOtherTokenReader {
             if (token == null) {
                 ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         list.getSourceLocation(),
                         new TechnicalMessage("Unexpected end of data while parsing a list structure at " + ctx.getPositionSuffix()),
                         "Unexpected end of data while parsing a list structure at " + ctx.getPositionSuffix()));

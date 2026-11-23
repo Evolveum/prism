@@ -166,7 +166,7 @@ class DomReader {
                 } else {
                     parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                             ValidationLogType.ERROR,
-                            ValidationLogType.Specification.UNKNOW,
+                            ValidationLogType.Specification.UNKNOWN,
                             node.getSourceLocation(),
                             new TechnicalMessage("Attempt to add metadata to non-metadata-aware 'XNode': '%s'",
                                     new Argument(node, Argument.ArgumentType.XNODE)),
@@ -175,7 +175,7 @@ class DomReader {
             } else {
                 parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         metadata.getSourceLocation(),
                         new TechnicalMessage("Metadata is not of 'Map' type: '%s'", new Argument(metadata, Argument.ArgumentType.RAW)),
                         "Metadata is not of 'Map' type: '%s'".formatted(metadata)));
@@ -208,7 +208,7 @@ class DomReader {
         } else {
             ValidationLog validationLog = new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     getSourceLocation(element),
                     new TechnicalMessage("Expected numeric value for '%s' attribute on '%s' but got '%s'",
                             new Argument(PrismConstants.A_MAX_OCCURS.getLocalPart(), Argument.ArgumentType.STRING),
@@ -236,7 +236,7 @@ class DomReader {
         if (DOMUtil.hasApplicationAttributes(element)) {
             parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     getSourceLocation(element),
                     new TechnicalMessage("List should have no application attributes: '%s'",
                             new Argument(element, Argument.ArgumentType.ELEMENT)),
@@ -346,7 +346,7 @@ class DomReader {
             } else {
                 ValidationLog validationLog = new ValidationLog(
                         ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOW,
+                        ValidationLogType.Specification.UNKNOWN,
                         xmap.getSourceLocation(),
                         new TechnicalMessage("Too many schema elements"),
                         "Too many schema elements");
@@ -374,7 +374,7 @@ class DomReader {
         if (!storeElementNames && itemDef == null) {
             ValidationLog validationLog = new ValidationLog(
                     ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOW,
+                    ValidationLogType.Specification.UNKNOWN,
                     getSourceLocationFromListElement(elements),
                     new TechnicalMessage("When '!storeElementNames' the element name must be specified"),
                     "When '!storeElementNames' the element name must be specified");

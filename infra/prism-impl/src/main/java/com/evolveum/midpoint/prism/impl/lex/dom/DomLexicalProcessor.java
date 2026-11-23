@@ -255,7 +255,7 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     private void validationLogging(ParsingContext pc, String message, SourceLocation sourceLocation) throws SchemaException {
         pc.warnOrThrow(LOGGER, () -> new ValidationLog(
                 ValidationLogType.ERROR,
-                ValidationLogType.Specification.UNKNOW,
+                ValidationLogType.Specification.UNKNOWN,
                 sourceLocation,
                 new TechnicalMessage(message),
                 message));

@@ -236,7 +236,7 @@ abstract class PrismParserImpl implements PrismParser {
     Object doParseItemOrRealValue() throws IOException, SchemaException {
         RootXNodeImpl xnode = getLexicalProcessor().read(source, context, itemDefinition);
         if (itemDefinition != null || itemName != null || typeName != null || typeClass != null) {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, xnode.getSourceLocation(),
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOWN, xnode.getSourceLocation(),
                     new TechnicalMessage("Item definition, item name, type name and type class must be null when calling parseItemOrRealValue."),
                     "Item definition, item name, type name and type class must be null when calling parseItemOrRealValue.");
             context.warnOrThrow(LOGGER, validationLog);
@@ -266,10 +266,10 @@ abstract class PrismParserImpl implements PrismParser {
             value.setParent(null);
             return value;
         } else {
-            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, SourceLocation.unknown(),
+            ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOWN, SourceLocation.unknown(),
                     new TechnicalMessage("Expected one item value, got %s while parsing %s",
                             new Argument(item.getValues().size(), Argument.ArgumentType.INT),
-                            new Argument(item, Argument.ArgumentType.UNKNOW)),
+                            new Argument(item, Argument.ArgumentType.UNKNOWN)),
                     "Expected one item value, got %s while parsing %s".formatted(item.getValues().size(), item));
             context.warn(LOGGER, validationLog);
             throw new IllegalStateException(validationLog.message());
@@ -309,7 +309,7 @@ abstract class PrismParserImpl implements PrismParser {
                 RawType value = property.getRealValue();
                 return (T) new RawObjectType(value);
             } else {
-                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOW, root.getSourceLocation(),
+                ValidationLog validationLog = new ValidationLog(ValidationLogType.ERROR, ValidationLogType.Specification.UNKNOWN, root.getSourceLocation(),
                         new TechnicalMessage("Value was parsed as %s instead of PrismObject",
                             new Argument(parsed.getClass().getName(), Argument.ArgumentType.STRING)),
                         "Value was parsed as %s instead of PrismObject".formatted(parsed.getClass().getName()));
