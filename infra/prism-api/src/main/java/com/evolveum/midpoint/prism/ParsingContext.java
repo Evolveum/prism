@@ -15,7 +15,6 @@ import com.evolveum.midpoint.util.logging.Trace;
 import javax.xml.namespace.QName;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * TODO TODO TODO
@@ -40,8 +39,6 @@ public interface ParsingContext extends Cloneable {
     void warn(Trace logger, ValidationLog validationLog);
 
     void warnOrThrow(Trace logger, ValidationLog validationLog) throws SchemaException;
-
-    void warnOrThrow(Trace logger, Supplier<ValidationLog> validationLog) throws SchemaException;
 
     void warnOrThrow(Trace logger, ValidationLog validationLog, Throwable t) throws SchemaException;
 

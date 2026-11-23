@@ -12,9 +12,6 @@ import java.util.Objects;
 import javax.xml.namespace.QName;
 
 import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
-import com.evolveum.concepts.ValidationLog;
-import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -109,12 +106,8 @@ class JsonOtherTokenReader {
         for (;;) {
             JsonToken token = parser.nextToken();
             if (token == null) {
-                ctx.prismParsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
-                        ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOWN,
-                        list.getSourceLocation(),
-                        new TechnicalMessage("Unexpected end of data while parsing a list structure at " + ctx.getPositionSuffix()),
-                        "Unexpected end of data while parsing a list structure at " + ctx.getPositionSuffix()));
+                ctx.prismParsingContext.warnOrThrow(LOGGER, ValidatorUtil.error(list.getSourceLocation(),
+                        "Unexpected end of data while parsing a list structure at %s", ctx.getPositionSuffix()));
                 return list;
             } else if (token == JsonToken.END_ARRAY) {
                 return list;

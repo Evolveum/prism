@@ -164,21 +164,12 @@ class DomReader {
                 if (node instanceof MetadataAware aware) {
                     aware.addMetadataNode((MapXNode) metadata);
                 } else {
-                    parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
-                            ValidationLogType.ERROR,
-                            ValidationLogType.Specification.UNKNOWN,
-                            node.getSourceLocation(),
-                            new TechnicalMessage("Attempt to add metadata to non-metadata-aware 'XNode': '%s'",
-                                    new Argument(node, Argument.ArgumentType.XNODE)),
-                            "Attempt to add metadata to non-metadata-aware node"));
+                    parsingContext.warnOrThrow(LOGGER, ValidatorUtil.error(node.getSourceLocation(),
+                            "Attempt to add metadata to non-metadata-aware 'XNode': '%s'", node));
                 }
             } else {
-                parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
-                        ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOWN,
-                        metadata.getSourceLocation(),
-                        new TechnicalMessage("Metadata is not of 'Map' type: '%s'", new Argument(metadata, Argument.ArgumentType.RAW)),
-                        "Metadata is not of 'Map' type: '%s'".formatted(metadata)));
+                parsingContext.warnOrThrow(LOGGER, ValidatorUtil.error(metadata.getSourceLocation(),
+                        "Metadata is not of 'Map' type: '%s'", metadata));
             }
         }
     }
@@ -206,15 +197,9 @@ class DomReader {
         if (StringUtils.isNumeric(maxOccursString)) {
             return Integer.parseInt(maxOccursString);
         } else {
-            ValidationLog validationLog = new ValidationLog(
-                    ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOWN,
-                    getSourceLocation(element),
-                    new TechnicalMessage("Expected numeric value for '%s' attribute on '%s' but got '%s'",
-                            new Argument(PrismConstants.A_MAX_OCCURS.getLocalPart(), Argument.ArgumentType.STRING),
-                            new Argument(DOMUtil.getQName(element), Argument.ArgumentType.STRING),
-                            new Argument(maxOccursString, Argument.ArgumentType.STRING)),
-                    "Expected numeric value for '%s' attribute on '%s' but got '%s'".formatted(PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString));
+            ValidationLog validationLog = ValidatorUtil.error(getSourceLocation(element),
+                    "Expected numeric value for '%s' attribute on '%s' but got '%s'",
+                    PrismConstants.A_MAX_OCCURS.getLocalPart(), DOMUtil.getQName(element), maxOccursString);
             parsingContext.warnOrThrow(LOGGER, validationLog);
 
             throw new SchemaException(validationLog.message());
@@ -234,13 +219,8 @@ class DomReader {
     // all the sub-elements should be compatible (this is not enforced here, however)
     private ListXNodeImpl readElementContentToList(Element element, XNodeDefinition parentDef, PrismNamespaceContext parentNsContext) throws SchemaException {
         if (DOMUtil.hasApplicationAttributes(element)) {
-            parsingContext.warnOrThrow(LOGGER, () -> new ValidationLog(
-                    ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOWN,
-                    getSourceLocation(element),
-                    new TechnicalMessage("List should have no application attributes: '%s'",
-                            new Argument(element, Argument.ArgumentType.ELEMENT)),
-                    "List should have no application attributes: '%s'".formatted(element)));
+            parsingContext.warnOrThrow(LOGGER, ValidatorUtil.error(getSourceLocation(element),
+                    "List should have no application attributes: '%s'", element));
         }
         return parseElementList(DOMUtil.listChildElements(element), null, parentDef, parentNsContext, true);
     }
@@ -344,12 +324,7 @@ class DomReader {
             if (elements.size() == 1) {
                 xsub = parseSchemaElement(elements.iterator().next(), parentNsContext);
             } else {
-                ValidationLog validationLog = new ValidationLog(
-                        ValidationLogType.ERROR,
-                        ValidationLogType.Specification.UNKNOWN,
-                        xmap.getSourceLocation(),
-                        new TechnicalMessage("Too many schema elements"),
-                        "Too many schema elements");
+                ValidationLog validationLog = ValidatorUtil.error(xmap.getSourceLocation(), "Too many schema elements");
                 parsingContext.warnOrThrow(LOGGER, validationLog);
                 throw new SchemaException(validationLog.message());
             }
@@ -372,11 +347,7 @@ class DomReader {
     @Contract("!null, null, false -> fail")
     private ListXNodeImpl parseElementList(List<Element> elements, @Nullable XNodeDefinition itemDef, @NotNull XNodeDefinition parentDef, PrismNamespaceContext parentNsContext, boolean storeElementNames) throws SchemaException {
         if (!storeElementNames && itemDef == null) {
-            ValidationLog validationLog = new ValidationLog(
-                    ValidationLogType.ERROR,
-                    ValidationLogType.Specification.UNKNOWN,
-                    getSourceLocationFromListElement(elements),
-                    new TechnicalMessage("When '!storeElementNames' the element name must be specified"),
+            ValidationLog validationLog = ValidatorUtil.error(getSourceLocationFromListElement(elements),
                     "When '!storeElementNames' the element name must be specified");
             parsingContext.warnOrThrow(LOGGER, validationLog);
             throw new IllegalArgumentException(validationLog.message());

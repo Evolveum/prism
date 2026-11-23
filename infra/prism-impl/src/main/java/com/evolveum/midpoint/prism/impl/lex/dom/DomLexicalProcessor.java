@@ -6,6 +6,7 @@
 
 package com.evolveum.midpoint.prism.impl.lex.dom;
 
+import com.evolveum.midpoint.prism.impl.lex.ValidatorUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +16,6 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import com.evolveum.concepts.SourceLocation;
-import com.evolveum.concepts.TechnicalMessage;
-import com.evolveum.concepts.ValidationLog;
-import com.evolveum.concepts.ValidationLogType;
 import com.evolveum.midpoint.prism.marshaller.XNodeProcessorEvaluationMode;
 
 import org.apache.commons.io.IOUtils;
@@ -253,11 +251,6 @@ public class DomLexicalProcessor implements LexicalProcessor<String> {
     }
 
     private void validationLogging(ParsingContext pc, String message, SourceLocation sourceLocation) throws SchemaException {
-        pc.warnOrThrow(LOGGER, () -> new ValidationLog(
-                ValidationLogType.ERROR,
-                ValidationLogType.Specification.UNKNOWN,
-                sourceLocation,
-                new TechnicalMessage(message),
-                message));
+        pc.warnOrThrow(LOGGER, ValidatorUtil.error(sourceLocation, message));
     }
 }
